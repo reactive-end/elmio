@@ -4,5 +4,12 @@
   "private": true,
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "scripts": {
+    "lint": "prettier --check \"**/*.{ts,tsx,mts,json}\" && npm run lint --workspaces --if-present",
+    "lint:fix": "prettier --write \"**/*.{ts,tsx,mts,json}\" && npm run lint --workspaces --if-present -- --fix"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
 }
