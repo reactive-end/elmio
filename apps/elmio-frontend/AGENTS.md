@@ -28,3 +28,5 @@ This version has breaking changes. APIs, conventions, and file structure may all
 - Cada componente vive en su carpeta con maximo 3 archivos: `Componente.tsx`, `Componente.d.ts` y `useComponente.ts`.
 - Las pantallas no contienen logica de negocio; esta se delega a hooks.
 - Las llamadas a APIs externas o servicios van en archivos `.service.ts` dentro de una carpeta `services/`.
+- El componente `CedulaInput` (molecule) maneja la entrada de cedula de identidad con Select (V, E, G) y campo numerico formateado con espacios (min 7, max 9 digitos).
+- El componente `PhoneInput` (molecule) maneja la entrada de telefono con Select (0412, 0422, 0414, 0424, 0416, 0426) y campo numerico de exactamente 7 digitos formateado con espacios.
