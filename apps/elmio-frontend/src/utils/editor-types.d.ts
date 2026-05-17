@@ -70,6 +70,30 @@ export interface ColumnaPie {
   enlaces: { id: string; texto: string; href: string }[]
 }
 
+export interface AliadoLogo {
+  id: string
+  nombre: string
+  logo: string
+  href: string
+}
+
+export interface PilarItem {
+  id: string
+  icono: string
+  titulo: string
+  texto: string
+  textoBoton: string
+  enlaceBoton: string
+}
+
+export interface MenuItem {
+  id: string
+  label: string
+  href: string
+  icono: string
+  submenus: { id: string; label: string; href: string; descripcion: string }[]
+}
+
 export interface ContenidoSeccion {
   titulo: string
   subtitulo: string
@@ -86,6 +110,20 @@ export interface ContenidoSeccion {
   logoUrl: string
   /** Copyright para el pie */
   copyright: string
+  /** Aliados/logos partners */
+  aliados: AliadoLogo[]
+  /** Pilares (para seccion de pilares) */
+  pilares: PilarItem[]
+  /** Menu de navegacion (para cabecera) */
+  menu: MenuItem[]
+  /** Texto enriquecido (para infoText) */
+  cuerpoHtml: string
+  /** Configuracion de autoplay para carruseles */
+  autoplay: boolean
+  /** Velocidad de autoplay en milisegundos */
+  autoplayVelocidad: number
+  /** Identificador HTML para anclaje */
+  htmlId: string
 }
 
 export interface SeccionMarketplace {

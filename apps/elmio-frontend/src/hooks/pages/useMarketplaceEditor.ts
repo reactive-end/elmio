@@ -123,7 +123,14 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
       tipo,
       visible: true,
       orden: secciones.length,
-      contenido: { titulo: '', subtitulo: '', descripcion: '', textoBoton: '', enlaceBoton: '', imagenUrl: '', elementos: [], productosIds: [], diapositivas: [], columnasPie: [], logoUrl: '', copyright: '' },
+      contenido: {
+        titulo: '', subtitulo: '', descripcion: '', textoBoton: '', enlaceBoton: '',
+        imagenUrl: '', elementos: [], productosIds: [], diapositivas: [], columnasPie: [],
+        logoUrl: '', copyright: '', aliados: [], pilares: [], menu: [], cuerpoHtml: '',
+        autoplay: tipo === 'principal' || tipo === 'franja' || tipo === 'productos',
+        autoplayVelocidad: 5000,
+        htmlId: '',
+      },
       estilo: estiloPorDefecto(tipo),
     }
     setSecciones((prev) => [...prev, nueva])

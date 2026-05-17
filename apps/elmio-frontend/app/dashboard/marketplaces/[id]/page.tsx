@@ -16,14 +16,34 @@ import { PixelInput } from '@/components/molecules/PixelInput/PixelInput'
 import { ColorInput } from '@/components/molecules/ColorInput/ColorInput'
 import { FontSelect } from '@/components/molecules/FontSelect/FontSelect'
 import { GradientBuilder } from '@/components/molecules/GradientBuilder/GradientBuilder'
+import { ImagePicker } from '@/components/molecules/ImagePicker/ImagePicker'
+import { SectionRenderer } from '@/components/renderers/SectionRenderer'
 import { useMarketplaceEditor } from '@/src/hooks/pages/useMarketplaceEditor'
-import type { SeccionMarketplace, TipoSeccion } from '@/src/utils/editor-types.d'
+import type { SeccionMarketplace, TipoSeccion, Diapositiva, ColumnaPie, AliadoLogo, PilarItem, MenuItem } from '@/src/utils/editor-types.d'
 import { MERCADO_PRUEBA, etiquetaTipo } from './mock-data'
 
 type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones'
 type PestanaPropiedades = 'contenido' | 'estilos' | 'elementos'
 
-const tiposDisponibles: TipoSeccion[] = ['principal', 'caracteristicas', 'productos', 'aliados', 'banner', 'texto', 'pie', 'personalizado']
+interface ProductoMarketplace {
+  id: string
+  nombre: string
+  categoria: string
+  precio: string
+  imagenUrl: string
+  accionTipo: 'redirect' | 'trigger'
+  accionEtiqueta: string
+  destinoUrl: string
+}
+
+const tiposDisponibles: TipoSeccion[] = ['cabecera', 'principal', 'caracteristicas', 'productos', 'banner', 'doble-banner', 'aliados', 'pilares', 'franja', 'texto', 'pie']
+
+const productosDisponibles: ProductoMarketplace[] = [
+  { id: 'prod-loan-001', nombre: 'Prestamo Personal', categoria: 'Prestamos', precio: '$500', imagenUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=900&q=80', accionTipo: 'trigger', accionEtiqueta: 'Simular cuotas', destinoUrl: '' },
+  { id: 'prod-loan-002', nombre: 'Prestamo Vehicular', categoria: 'Prestamos', precio: '$5,000', imagenUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80', accionTipo: 'redirect', accionEtiqueta: 'Ir al flujo vehicular', destinoUrl: '/productos/prestamo-vehicular' },
+  { id: 'prod-ins-001', nombre: 'Seguro de Vida', categoria: 'Seguros', precio: '$50', imagenUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80', accionTipo: 'trigger', accionEtiqueta: 'Cotizar cobertura', destinoUrl: '' },
+  { id: 'prod-ins-002', nombre: 'Seguro Vehicular', categoria: 'Seguros', precio: '$80', imagenUrl: 'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=900&q=80', accionTipo: 'redirect', accionEtiqueta: 'Abrir landing', destinoUrl: '/productos/seguro-vehicular' },
+]
 
 export default function MarketplaceEditorPage() {
   const editor = useMarketplaceEditor(MERCADO_PRUEBA)
@@ -32,6 +52,18 @@ export default function MarketplaceEditorPage() {
     id: string
     posicion: 'antes' | 'despues'
   } | null>(null)
+  const [modalAgregarAbierto, setModalAgregarAbierto] = useState(false)
+  const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoSeccion>('principal')
+
+  const abrirModalAgregar = () => {
+    setTipoSeleccionado('principal')
+    setModalAgregarAbierto(true)
+  }
+
+  const confirmarAgregarSeccion = () => {
+    editor.agregarSeccion(tipoSeleccionado)
+    setModalAgregarAbierto(false)
+  }
 
   return (
     <DashboardTemplate>
@@ -94,8 +126,13 @@ export default function MarketplaceEditorPage() {
             </div>
             <div className="flex-1 overflow-y-auto bg-gray-100">
               {editor.secciones.filter((s) => s.visible).sort((a, b) => a.orden - b.orden).map((seccion) => (
-                <VistaPreviaSeccion key={seccion.id} seccion={seccion} seleccionada={editor.seleccionadaId === seccion.id}
-                  onClick={() => { editor.setSeleccionadaId(seccion.id); editor.setPestana('edicion') }} />
+                <SectionRenderer
+                  key={seccion.id}
+                  seccion={seccion}
+                  previewMode
+                  seleccionada={editor.seleccionadaId === seccion.id}
+                  onClick={() => { editor.setSeleccionadaId(seccion.id); editor.setPestana('edicion') }}
+                />
               ))}
             </div>
           </div>
@@ -107,22 +144,9 @@ export default function MarketplaceEditorPage() {
             <div className="w-72 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-y-auto p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Secciones</h3>
-                <div className="relative">
-                  <button type="button" onClick={() => editor.setMostrarMenuAgregar(!editor.mostrarMenuAgregar)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary text-white hover:bg-secondary-dark transition-colors">
-                    <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-                  </button>
-                  {editor.mostrarMenuAgregar && (
-                    <div className="absolute top-full right-0 mt-1 z-50 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden w-52">
-                      <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Agregar seccion</div>
-                      {tiposDisponibles.map((tipo) => (
-                        <button key={tipo} type="button" onClick={() => editor.agregarSeccion(tipo)}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-body hover:bg-surface-muted transition-colors">
-                          {etiquetaTipo[tipo]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <button type="button" onClick={abrirModalAgregar} className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary text-white hover:bg-secondary-dark transition-colors">
+                  <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+                </button>
               </div>
               <div className="flex flex-col gap-1">
                 {editor.secciones.map((seccion) => (
@@ -167,20 +191,11 @@ export default function MarketplaceEditorPage() {
 
                   {/* Contenido */}
                   {editor.pestanaProp === 'contenido' && (
-                    <div className="flex flex-col gap-4">
-                      <Grupo etiqueta="Texto principal">
-                        <CampoTexto etiqueta="Titulo" valor={editor.seleccionada.contenido.titulo} onChange={(v) => editor.actualizarContenido('titulo', v)} placeholder="Ej: Tu futuro financiero, hoy." />
-                        <CampoTexto etiqueta="Subtitulo" valor={editor.seleccionada.contenido.subtitulo} onChange={(v) => editor.actualizarContenido('subtitulo', v)} placeholder="Un texto breve debajo del titulo" />
-                        <CampoArea etiqueta="Descripcion" valor={editor.seleccionada.contenido.descripcion} onChange={(v) => editor.actualizarContenido('descripcion', v)} placeholder="Texto descriptivo mas extenso..." />
-                      </Grupo>
-                      <Grupo etiqueta="Boton de accion">
-                        <CampoTexto etiqueta="Texto del boton" valor={editor.seleccionada.contenido.textoBoton} onChange={(v) => editor.actualizarContenido('textoBoton', v)} placeholder="Ej: Ver productos" />
-                        <CampoTexto etiqueta="Pagina de destino" valor={editor.seleccionada.contenido.enlaceBoton} onChange={(v) => editor.actualizarContenido('enlaceBoton', v)} placeholder="Ej: /productos" />
-                      </Grupo>
-                      <Grupo etiqueta="Imagen de fondo">
-                        <CampoTexto etiqueta="Direccion de la imagen" valor={editor.seleccionada.contenido.imagenUrl} onChange={(v) => editor.actualizarContenido('imagenUrl', v)} placeholder="https://..." />
-                      </Grupo>
-                    </div>
+                    <ContenidoSeccionPanel
+                      seccion={editor.seleccionada}
+                      actualizarContenido={editor.actualizarContenido}
+                      actualizarSeccion={editor.actualizarSeccion}
+                    />
                   )}
 
                   {/* Estilos */}
@@ -209,7 +224,11 @@ export default function MarketplaceEditorPage() {
                           onDireccionChange={(d) => { editor.setGradienteDireccion(d); if (editor.gradienteActivo) editor.actualizarEstilo('gradienteFondo', `linear-gradient(${d}, ${editor.gradienteInicio}, ${editor.gradienteFin})`) }}
                         />
                         <div className="grid grid-cols-2 gap-2">
-                          <CampoTexto etiqueta="Imagen de fondo" valor={editor.seleccionada.estilo.imagenFondo} onChange={(v) => editor.actualizarEstilo('imagenFondo', v)} placeholder="url(...)" />
+                          <ImagePicker
+                            label="Imagen de fondo"
+                            value={editor.seleccionada.estilo.imagenFondo}
+                            onChange={(value) => editor.actualizarEstilo('imagenFondo', value ? `url(${value})` : '')}
+                          />
                           <PixelInput label="Oscurecer %" value={editor.seleccionada.estilo.opacidadOverlay} onChange={(v) => editor.actualizarEstilo('opacidadOverlay', v)} min={0} max={100} />
                         </div>
                       </TarjetaGrupo>
@@ -304,7 +323,11 @@ export default function MarketplaceEditorPage() {
                           <CampoTexto etiqueta="Titulo" valor={elem.titulo} onChange={(v) => editor.actualizarElemento(elem.id, 'titulo', v)} />
                           <CampoTexto etiqueta="Descripcion" valor={elem.descripcion} onChange={(v) => editor.actualizarElemento(elem.id, 'descripcion', v)} />
                           <CampoTexto etiqueta="Icono" valor={elem.icono} onChange={(v) => editor.actualizarElemento(elem.id, 'icono', v)} placeholder="Star" />
-                          <CampoTexto etiqueta="Imagen" valor={elem.imagenUrl} onChange={(v) => editor.actualizarElemento(elem.id, 'imagenUrl', v)} />
+                          <ImagePicker
+                            label="Imagen"
+                            value={elem.imagenUrl}
+                            onChange={(value) => editor.actualizarElemento(elem.id, 'imagenUrl', value)}
+                          />
                           <CampoTexto etiqueta="Enlace" valor={elem.enlaceUrl} onChange={(v) => editor.actualizarElemento(elem.id, 'enlaceUrl', v)} />
                         </div>
                       ))}
@@ -328,23 +351,10 @@ export default function MarketplaceEditorPage() {
                 <LayoutGrid className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Gestion de secciones — {editor.secciones.length} total</span>
               </div>
-              <div className="relative">
-                <button type="button" onClick={() => editor.setMostrarMenuAgregar(!editor.mostrarMenuAgregar)}
-                  className="flex items-center gap-1.5 text-xs font-medium bg-secondary text-white hover:bg-secondary-dark rounded-lg px-3 py-1.5 transition-colors">
-                  <Plus className="w-3 h-3" strokeWidth={2} /> Agregar seccion
-                </button>
-                {editor.mostrarMenuAgregar && (
-                  <div className="absolute top-full right-0 mt-1 z-50 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden w-52">
-                    <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Tipo de seccion</div>
-                    {tiposDisponibles.map((tipo) => (
-                      <button key={tipo} type="button" onClick={() => editor.agregarSeccion(tipo)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-body hover:bg-surface-muted transition-colors">
-                        {etiquetaTipo[tipo]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button type="button" onClick={abrirModalAgregar}
+                className="flex items-center gap-1.5 text-xs font-medium bg-secondary text-white hover:bg-secondary-dark rounded-lg px-3 py-1.5 transition-colors">
+                <Plus className="w-3 h-3" strokeWidth={2} /> Agregar seccion
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               <div className="flex flex-col gap-2">
@@ -426,46 +436,36 @@ export default function MarketplaceEditorPage() {
           </div>
         )}
       </div>
-    </DashboardTemplate>
-  )
-}
 
-/* ─── Vista previa ─── */
-
-function VistaPreviaSeccion({ seccion, seleccionada, onClick }: {
-  seccion: SeccionMarketplace; seleccionada: boolean; onClick: () => void
-}) {
-  const { contenido, estilo } = seccion
-  const estiloFondo: React.CSSProperties = {}
-  if (estilo.gradienteFondo) estiloFondo.backgroundImage = estilo.gradienteFondo
-  else if (estilo.colorFondo !== 'transparente') estiloFondo.backgroundColor = estilo.colorFondo
-  if (estilo.imagenFondo) estiloFondo.backgroundImage = estilo.imagenFondo
-
-  return (
-    <div onClick={onClick}
-      className={`relative cursor-pointer transition-all ${seleccionada ? 'ring-2 ring-secondary ring-offset-2 rounded-lg z-10 scale-[1.01]' : 'hover:ring-1 hover:ring-secondary/30'}`}
-      style={{ marginTop: estilo.margenSuperior, marginBottom: estilo.margenInferior }}>
-      <div style={{ ...estiloFondo, paddingTop: estilo.paddingSuperior, paddingRight: estilo.paddingDerecho, paddingBottom: estilo.paddingInferior, paddingLeft: estilo.paddingIzquierdo, borderWidth: estilo.anchoBorde, borderColor: estilo.colorBorde, borderRadius: estilo.radioBorde, borderStyle: estilo.anchoBorde > 0 ? (estilo.estiloBorde || 'solid') : undefined }}>
-        {estilo.opacidadOverlay > 0 && <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${estilo.opacidadOverlay / 100})`, borderRadius: estilo.radioBorde }} />}
-        <div className="relative" style={{ maxWidth: estilo.anchoMaximo || 1200, margin: '0 auto' }}>
-          {contenido.titulo && <h2 style={{ fontSize: estilo.tituloTamano, fontWeight: estilo.tituloPeso, color: estilo.tituloColor, textAlign: estilo.tituloAlineacion as never }}>{contenido.titulo}</h2>}
-          {contenido.subtitulo && <p style={{ fontSize: estilo.subtituloTamano, color: estilo.subtituloColor, textAlign: estilo.tituloAlineacion as never, marginTop: 8 }}>{contenido.subtitulo}</p>}
-          {contenido.descripcion && <div style={{ fontSize: estilo.cuerpoTamano, color: estilo.cuerpoColor, textAlign: estilo.cuerpoAlineacion as never, marginTop: 12 }}>{contenido.descripcion}</div>}
-          {contenido.elementos.length > 0 && (
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: estilo.espacioEntreElementos, marginTop: 16 }}>
-              {contenido.elementos.map((elem) => (
-                <div key={elem.id} className="bg-white/10 backdrop-blur rounded-xl p-4" style={{ color: estilo.cuerpoColor }}>
-                  {elem.imagenUrl && <div className="w-12 h-12 rounded-lg bg-gray-200 mb-3 flex items-center justify-center text-gray-400 text-[10px]">img</div>}
-                  <h4 className="text-sm font-semibold mb-1" style={{ color: estilo.tituloColor, fontSize: estilo.cuerpoTamano }}>{elem.titulo}</h4>
-                  {elem.descripcion && <p className="text-xs opacity-70">{elem.descripcion}</p>}
-                </div>
-              ))}
+      {modalAgregarAbierto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm" onClick={() => setModalAgregarAbierto(false)}>
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b border-gray-100 px-6 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Nueva seccion</p>
+              <h3 className="mt-1 text-lg font-semibold text-body">Selecciona el tipo de seccion</h3>
             </div>
-          )}
-          {contenido.textoBoton && <button type="button" className="inline-flex items-center px-6 py-3 rounded-xl font-semibold text-sm mt-4" style={{ backgroundColor: estilo.tituloColor || '#0f4ece', color: '#fff' }}>{contenido.textoBoton}</button>}
+            <div className="flex flex-col gap-4 p-6">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-medium text-gray-400">Tipo de seccion</label>
+                <Select
+                  value={tipoSeleccionado}
+                  onChange={(v) => setTipoSeleccionado(v as TipoSeccion)}
+                  options={tiposDisponibles.map((tipo) => ({ value: tipo, label: etiquetaTipo[tipo] }))}
+                />
+              </div>
+              <p className="text-xs leading-5 text-gray-400">
+                Cada tipo tiene su propio panel de configuracion en la pestaña Contenido del editor.
+              </p>
+            </div>
+            <div className="flex gap-3 border-t border-gray-100 px-6 py-4">
+              <Button type="button" variant="ghost" fullWidth onClick={() => setModalAgregarAbierto(false)}>Cancelar</Button>
+              <Button type="button" fullWidth onClick={confirmarAgregarSeccion}>Agregar seccion</Button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+
+    </DashboardTemplate>
   )
 }
 
@@ -492,6 +492,509 @@ function Grupo({ etiqueta, children }: { etiqueta: string; children: React.React
     <div className="flex flex-col gap-2.5">
       <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{etiqueta}</span>
       {children}
+    </div>
+  )
+}
+
+function ContenidoSeccionPanel({
+  seccion,
+  actualizarContenido,
+  actualizarSeccion,
+}: {
+  seccion: SeccionMarketplace
+  actualizarContenido: (campo: keyof SeccionMarketplace['contenido'], valor: string) => void
+  actualizarSeccion: (id: string, cambios: Partial<SeccionMarketplace>) => void
+}) {
+  const contenido = seccion.contenido
+
+  if (seccion.tipo === 'cabecera') return <PanelCabecera contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'principal') return <PanelPrincipal contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'productos') return <PanelProductos contenido={contenido} actualizarContenido={actualizarContenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'banner') return <PanelBanner contenido={contenido} actualizarContenido={actualizarContenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'doble-banner') return <PanelDobleBanner contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'aliados') return <PanelAliados contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'pilares') return <PanelPilares contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'franja') return <PanelFranja contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'texto') return <PanelTexto contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'pie') return <PanelPie contenido={contenido} actualizarSeccion={actualizarSeccion} seccion={seccion} />
+  if (seccion.tipo === 'caracteristicas') return <PanelCaracteristicas contenido={contenido} actualizarContenido={actualizarContenido} />
+
+  return <BloqueContenidoBase contenido={contenido} actualizarContenido={actualizarContenido} />
+}
+
+function BloqueContenidoBase({
+  contenido,
+  actualizarContenido,
+}: {
+  contenido: SeccionMarketplace['contenido']
+  actualizarContenido: (campo: keyof SeccionMarketplace['contenido'], valor: string) => void
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Texto principal">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarContenido('titulo', v)} placeholder="Ej: Tu futuro financiero, hoy." />
+        <CampoTexto etiqueta="Subtitulo" valor={contenido.subtitulo} onChange={(v) => actualizarContenido('subtitulo', v)} placeholder="Un texto breve debajo del titulo" />
+        <CampoArea etiqueta="Descripcion" valor={contenido.descripcion} onChange={(v) => actualizarContenido('descripcion', v)} placeholder="Texto descriptivo mas extenso..." />
+      </Grupo>
+      <Grupo etiqueta="Boton de accion">
+        <CampoTexto etiqueta="Texto del boton" valor={contenido.textoBoton} onChange={(v) => actualizarContenido('textoBoton', v)} placeholder="Ej: Ver productos" />
+        <CampoTexto etiqueta="Pagina de destino" valor={contenido.enlaceBoton} onChange={(v) => actualizarContenido('enlaceBoton', v)} placeholder="Ej: /productos" />
+      </Grupo>
+      <Grupo etiqueta="Imagen principal">
+        <ImagePicker label="Imagen de la seccion" value={contenido.imagenUrl} onChange={(value) => actualizarContenido('imagenUrl', value)} />
+      </Grupo>
+    </div>
+  )
+}
+
+function CampoSwitch({ etiqueta, activo, onChange }: { etiqueta: string; activo: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4">
+      <span className="text-xs font-medium text-body">{etiqueta}</span>
+      <button type="button" onClick={() => onChange(!activo)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${activo ? 'bg-secondary' : 'bg-gray-200'}`}>
+        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${activo ? 'translate-x-5' : 'translate-x-0.5'}`} />
+      </button>
+    </div>
+  )
+}
+
+/* ─── Paneles por tipo ─── */
+
+function PanelCabecera({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Marca de la cabecera">
+        <CampoTexto etiqueta="Titulo de la pagina" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Ej: ElMio" />
+        <ImagePicker label="Logo de la cabecera" value={contenido.logoUrl} onChange={(value) => actualizarSeccion(seccion.id, { contenido: { ...contenido, logoUrl: value } })} />
+      </Grupo>
+      <Grupo etiqueta="Menu de navegacion">
+        <EditorMenu menu={contenido.menu ?? []} onChange={(menu) => actualizarSeccion(seccion.id, { contenido: { ...contenido, menu } })} />
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelPrincipal({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Diapositivas del hero">
+        <EditorDiapositivas diapositivas={contenido.diapositivas ?? []} onChange={(d) => actualizarSeccion(seccion.id, { contenido: { ...contenido, diapositivas: d } })} />
+      </Grupo>
+      <CampoSwitch etiqueta="Reproduccion automatica" activo={contenido.autoplay} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, autoplay: v } })} />
+      {contenido.autoplay && (
+        <CampoTexto etiqueta="Velocidad (ms)" valor={String(contenido.autoplayVelocidad || 5000)} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, autoplayVelocidad: Number(v) || 5000 } })} placeholder="5000" />
+      )}
+      <CampoTexto etiqueta="ID HTML (anclaje)" valor={contenido.htmlId} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, htmlId: v } })} placeholder="hero" />
+    </div>
+  )
+}
+
+function PanelProductos({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarContenido: (campo: keyof SeccionMarketplace['contenido'], valor: string) => void; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Encabezado del carrusel">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Ej: Productos destacados" />
+        <CampoTexto etiqueta="Subtitulo" valor={contenido.subtitulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, subtitulo: v } })} placeholder="Texto auxiliar del carrusel" />
+        <CampoArea etiqueta="Descripcion" valor={contenido.descripcion} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, descripcion: v } })} placeholder="Mensaje de apoyo para la seccion" />
+      </Grupo>
+      <Grupo etiqueta="CTA global">
+        <CampoTexto etiqueta="Texto del boton (opcional)" valor={contenido.textoBoton} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, textoBoton: v } })} placeholder="Ej: Ver todos los productos" />
+        <CampoTexto etiqueta="Pagina de destino" valor={contenido.enlaceBoton} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, enlaceBoton: v } })} placeholder="Ej: /productos" />
+      </Grupo>
+      <CampoSwitch etiqueta="Carrusel automatico" activo={contenido.autoplay} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, autoplay: v } })} />
+      {contenido.autoplay && (
+        <CampoTexto etiqueta="Velocidad (ms)" valor={String(contenido.autoplayVelocidad || 5000)} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, autoplayVelocidad: Number(v) || 5000 } })} placeholder="5000" />
+      )}
+      <Grupo etiqueta="Productos del carrusel">
+        <SelectorProductos seleccionados={contenido.productosIds}
+          onToggle={(productoId) => {
+            const productoSeleccionado = contenido.productosIds.includes(productoId)
+            const productosIds = productoSeleccionado ? contenido.productosIds.filter((id) => id !== productoId) : [...contenido.productosIds, productoId]
+            actualizarSeccion(seccion.id, { contenido: { ...contenido, productosIds } })
+          }} />
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelBanner({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarContenido: (campo: keyof SeccionMarketplace['contenido'], valor: string) => void; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Texto principal">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Ej: Eres una empresa?" />
+        <CampoTexto etiqueta="Subtitulo" valor={contenido.subtitulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, subtitulo: v } })} placeholder="Texto secundario" />
+        <CampoArea etiqueta="Descripcion" valor={contenido.descripcion} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, descripcion: v } })} placeholder="Texto descriptivo..." />
+      </Grupo>
+      <Grupo etiqueta="Imagen del banner">
+        <ImagePicker label="Imagen" value={contenido.imagenUrl} onChange={(value) => actualizarSeccion(seccion.id, { contenido: { ...contenido, imagenUrl: value } })} />
+      </Grupo>
+      <Grupo etiqueta="Accion">
+        <CampoTexto etiqueta="Texto del boton" valor={contenido.textoBoton} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, textoBoton: v } })} placeholder="Ej: Ser aliado" />
+        <CampoTexto etiqueta="Pagina de destino" valor={contenido.enlaceBoton} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, enlaceBoton: v } })} placeholder="Ej: /aliados" />
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelDobleBanner({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  const banners = contenido.elementos.slice(0, 2)
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Dos banners lado a lado">
+        {[0, 1].map((idx) => {
+          const banner = banners[idx]
+          return (
+            <div key={idx} className="rounded-xl border border-gray-100 p-3">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Banner {idx + 1}</p>
+              <div className="flex flex-col gap-2">
+                <CampoTexto etiqueta="Titulo" valor={banner?.titulo ?? ''} onChange={(v) => {
+                  const nuevos = [...banners]
+                  if (nuevos[idx]) nuevos[idx] = { ...nuevos[idx], titulo: v }
+                  else nuevos[idx] = { id: crypto.randomUUID(), titulo: v, descripcion: '', icono: '', imagenUrl: '', enlaceUrl: '', textoBoton: '', enlaceBoton: '' }
+                  actualizarSeccion(seccion.id, { contenido: { ...contenido, elementos: nuevos } })
+                }} placeholder="Titulo del banner" />
+                <ImagePicker label="Imagen" value={banner?.imagenUrl ?? ''} onChange={(v) => {
+                  const nuevos = [...banners]
+                  if (nuevos[idx]) nuevos[idx] = { ...nuevos[idx], imagenUrl: v }
+                  else nuevos[idx] = { id: crypto.randomUUID(), titulo: '', descripcion: '', icono: '', imagenUrl: v, enlaceUrl: '', textoBoton: '', enlaceBoton: '' }
+                  actualizarSeccion(seccion.id, { contenido: { ...contenido, elementos: nuevos } })
+                }} />
+                <CampoTexto etiqueta="Texto del boton" valor={banner?.textoBoton ?? ''} onChange={(v) => {
+                  const nuevos = [...banners]
+                  if (nuevos[idx]) nuevos[idx] = { ...nuevos[idx], textoBoton: v }
+                  actualizarSeccion(seccion.id, { contenido: { ...contenido, elementos: nuevos } })
+                }} placeholder="Texto del CTA" />
+                <CampoTexto etiqueta="Enlace del boton" valor={banner?.enlaceBoton ?? ''} onChange={(v) => {
+                  const nuevos = [...banners]
+                  if (nuevos[idx]) nuevos[idx] = { ...nuevos[idx], enlaceBoton: v }
+                  actualizarSeccion(seccion.id, { contenido: { ...contenido, elementos: nuevos } })
+                }} placeholder="/productos" />
+              </div>
+            </div>
+          )
+        })}
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelAliados({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Encabezado">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Ej: Nuestros aliados" />
+        <CampoTexto etiqueta="Subtitulo" valor={contenido.subtitulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, subtitulo: v } })} placeholder="Texto auxiliar" />
+      </Grupo>
+      <Grupo etiqueta="Logos de aliados">
+        <EditorAliados aliados={contenido.aliados ?? []} onChange={(a) => actualizarSeccion(seccion.id, { contenido: { ...contenido, aliados: a } })} />
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelPilares({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Encabezado">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Ej: Por que elegirnos" />
+        <CampoTexto etiqueta="Subtitulo" valor={contenido.subtitulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, subtitulo: v } })} placeholder="Texto auxiliar" />
+      </Grupo>
+      <Grupo etiqueta="Pilares">
+        <EditorPilares pilares={contenido.pilares ?? []} onChange={(p) => actualizarSeccion(seccion.id, { contenido: { ...contenido, pilares: p } })} />
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelFranja({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Diapositivas de la franja">
+        <EditorDiapositivas diapositivas={contenido.diapositivas ?? []} onChange={(d) => actualizarSeccion(seccion.id, { contenido: { ...contenido, diapositivas: d } })} />
+      </Grupo>
+      <CampoSwitch etiqueta="Reproduccion automatica" activo={contenido.autoplay} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, autoplay: v } })} />
+      {contenido.autoplay && (
+        <CampoTexto etiqueta="Velocidad (ms)" valor={String(contenido.autoplayVelocidad || 5000)} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, autoplayVelocidad: Number(v) || 5000 } })} placeholder="5000" />
+      )}
+    </div>
+  )
+}
+
+function PanelTexto({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Encabezado">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Titulo de la seccion" />
+        <CampoTexto etiqueta="Subtitulo" valor={contenido.subtitulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, subtitulo: v } })} placeholder="Subtitulo" />
+      </Grupo>
+      <Grupo etiqueta="Cuerpo del texto">
+        <CampoArea etiqueta="Texto plano" valor={contenido.descripcion} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, descripcion: v } })} placeholder="Texto del cuerpo de la seccion" />
+      </Grupo>
+      <Grupo etiqueta="HTML enriquecido (opcional)">
+        <CampoArea etiqueta="HTML" valor={contenido.cuerpoHtml} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, cuerpoHtml: v } })} placeholder="<p>HTML personalizado...</p>" />
+        <p className="text-xs text-gray-400">Si defines HTML, el renderizador usara este contenido en vez del texto plano.</p>
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelPie({ contenido, actualizarSeccion, seccion }: { contenido: SeccionMarketplace['contenido']; actualizarSeccion: (id: string, c: Partial<SeccionMarketplace>) => void; seccion: SeccionMarketplace }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Grupo etiqueta="Marca del pie">
+        <CampoTexto etiqueta="Titulo" valor={contenido.titulo} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, titulo: v } })} placeholder="Ej: ElMio" />
+        <CampoTexto etiqueta="Descripcion" valor={contenido.descripcion} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, descripcion: v } })} placeholder="Mensaje corto de marca" />
+        <ImagePicker label="Logo" value={contenido.logoUrl} onChange={(value) => actualizarSeccion(seccion.id, { contenido: { ...contenido, logoUrl: value } })} />
+        <CampoTexto etiqueta="Copyright" valor={contenido.copyright} onChange={(v) => actualizarSeccion(seccion.id, { contenido: { ...contenido, copyright: v } })} placeholder="Ej: 2026 ElMio. Todos los derechos reservados." />
+      </Grupo>
+      <Grupo etiqueta="Columnas del pie">
+        <EditorColumnasPie columnas={contenido.columnasPie ?? []} onChange={(c) => actualizarSeccion(seccion.id, { contenido: { ...contenido, columnasPie: c } })} />
+      </Grupo>
+    </div>
+  )
+}
+
+function PanelCaracteristicas({ contenido, actualizarContenido }: { contenido: SeccionMarketplace['contenido']; actualizarContenido: (campo: keyof SeccionMarketplace['contenido'], valor: string) => void }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <BloqueContenidoBase contenido={contenido} actualizarContenido={actualizarContenido} />
+      <Grupo etiqueta="Elementos de la grilla">
+        <p className="text-xs text-gray-400">Agrega o ajusta los items desde la pestaña <span className="font-medium text-body">Elementos</span>.</p>
+      </Grupo>
+    </div>
+  )
+}
+
+/* ─── Editores especificos ─── */
+
+function EditorDiapositivas({ diapositivas, onChange }: { diapositivas: Diapositiva[]; onChange: (d: Diapositiva[]) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {diapositivas.map((slide, idx) => (
+        <div key={slide.id} className="rounded-xl border border-gray-100 p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Slide {idx + 1}</span>
+            <button type="button" onClick={() => onChange(diapositivas.filter((_, i) => i !== idx))} className="text-gray-300 transition-colors hover:text-red-500">
+              <X className="h-3 w-3" strokeWidth={1.5} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <ImagePicker label="Imagen" value={slide.imagen} onChange={(v) => {
+              const nuevos = diapositivas.map((s, i) => i === idx ? { ...s, imagen: v } : s)
+              onChange(nuevos)
+            }} />
+            <CampoTexto etiqueta="Titulo" valor={slide.titulo} onChange={(v) => {
+              const nuevos = diapositivas.map((s, i) => i === idx ? { ...s, titulo: v } : s)
+              onChange(nuevos)
+            }} placeholder="Titulo de la slide" />
+            <CampoTexto etiqueta="Subtitulo" valor={slide.subtitulo} onChange={(v) => {
+              const nuevos = diapositivas.map((s, i) => i === idx ? { ...s, subtitulo: v } : s)
+              onChange(nuevos)
+            }} placeholder="Subtitulo" />
+            <CampoArea etiqueta="Texto" valor={slide.texto} onChange={(v) => {
+              const nuevos = diapositivas.map((s, i) => i === idx ? { ...s, texto: v } : s)
+              onChange(nuevos)
+            }} placeholder="Texto descriptivo" />
+            <div className="grid grid-cols-2 gap-2">
+              <CampoTexto etiqueta="Texto boton" valor={slide.textoBoton} onChange={(v) => {
+                const nuevos = diapositivas.map((s, i) => i === idx ? { ...s, textoBoton: v } : s)
+                onChange(nuevos)
+              }} placeholder="CTA" />
+              <CampoTexto etiqueta="Enlace" valor={slide.enlaceBoton} onChange={(v) => {
+                const nuevos = diapositivas.map((s, i) => i === idx ? { ...s, enlaceBoton: v } : s)
+                onChange(nuevos)
+              }} placeholder="/productos" />
+            </div>
+          </div>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...diapositivas, { id: crypto.randomUUID(), imagen: '', titulo: '', subtitulo: '', texto: '', textoBoton: '', enlaceBoton: '' }])}
+        className="rounded-xl border border-dashed border-gray-200 py-3 text-xs font-medium text-secondary transition-colors hover:border-secondary hover:bg-secondary/5">
+        + Agregar slide
+      </button>
+    </div>
+  )
+}
+
+function EditorMenu({ menu, onChange }: { menu: MenuItem[]; onChange: (m: MenuItem[]) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {menu.map((item, idx) => (
+        <div key={item.id} className="rounded-xl border border-gray-100 p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Item {idx + 1}</span>
+            <button type="button" onClick={() => onChange(menu.filter((_, i) => i !== idx))} className="text-gray-300 transition-colors hover:text-red-500">
+              <X className="h-3 w-3" strokeWidth={1.5} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <CampoTexto etiqueta="Etiqueta" valor={item.label} onChange={(v) => { const n = menu.map((m, i) => i === idx ? { ...m, label: v } : m); onChange(n) }} placeholder="Ej: Productos" />
+            <CampoTexto etiqueta="Ruta" valor={item.href} onChange={(v) => { const n = menu.map((m, i) => i === idx ? { ...m, href: v } : m); onChange(n) }} placeholder="/productos" />
+          </div>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...menu, { id: crypto.randomUUID(), label: '', href: '', icono: '', submenus: [] }])}
+        className="rounded-xl border border-dashed border-gray-200 py-3 text-xs font-medium text-secondary transition-colors hover:border-secondary hover:bg-secondary/5">
+        + Agregar item de menu
+      </button>
+    </div>
+  )
+}
+
+function EditorAliados({ aliados, onChange }: { aliados: AliadoLogo[]; onChange: (a: AliadoLogo[]) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {aliados.map((aliado, idx) => (
+        <div key={aliado.id} className="rounded-xl border border-gray-100 p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Aliado {idx + 1}</span>
+            <button type="button" onClick={() => onChange(aliados.filter((_, i) => i !== idx))} className="text-gray-300 transition-colors hover:text-red-500">
+              <X className="h-3 w-3" strokeWidth={1.5} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <CampoTexto etiqueta="Nombre" valor={aliado.nombre} onChange={(v) => { const n = aliados.map((a, i) => i === idx ? { ...a, nombre: v } : a); onChange(n) }} placeholder="Ej: Mercantil Seguros" />
+            <ImagePicker label="Logo" value={aliado.logo} onChange={(v) => { const n = aliados.map((a, i) => i === idx ? { ...a, logo: v } : a); onChange(n) }} />
+            <CampoTexto etiqueta="Enlace" valor={aliado.href} onChange={(v) => { const n = aliados.map((a, i) => i === idx ? { ...a, href: v } : a); onChange(n) }} placeholder="/aliados/mercantil" />
+          </div>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...aliados, { id: crypto.randomUUID(), nombre: '', logo: '', href: '' }])}
+        className="rounded-xl border border-dashed border-gray-200 py-3 text-xs font-medium text-secondary transition-colors hover:border-secondary hover:bg-secondary/5">
+        + Agregar aliado
+      </button>
+    </div>
+  )
+}
+
+function EditorPilares({ pilares, onChange }: { pilares: PilarItem[]; onChange: (p: PilarItem[]) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {pilares.map((pilar, idx) => (
+        <div key={pilar.id} className="rounded-xl border border-gray-100 p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Pilar {idx + 1}</span>
+            <button type="button" onClick={() => onChange(pilares.filter((_, i) => i !== idx))} className="text-gray-300 transition-colors hover:text-red-500">
+              <X className="h-3 w-3" strokeWidth={1.5} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <CampoTexto etiqueta="Titulo" valor={pilar.titulo} onChange={(v) => { const n = pilares.map((p, i) => i === idx ? { ...p, titulo: v } : p); onChange(n) }} placeholder="Ej: Seguridad" />
+            <ImagePicker label="Icono" value={pilar.icono} onChange={(v) => { const n = pilares.map((p, i) => i === idx ? { ...p, icono: v } : p); onChange(n) }} />
+            <CampoArea etiqueta="Texto" valor={pilar.texto} onChange={(v) => { const n = pilares.map((p, i) => i === idx ? { ...p, texto: v } : p); onChange(n) }} placeholder="Descripcion del pilar" />
+            <div className="grid grid-cols-2 gap-2">
+              <CampoTexto etiqueta="Texto boton" valor={pilar.textoBoton} onChange={(v) => { const n = pilares.map((p, i) => i === idx ? { ...p, textoBoton: v } : p); onChange(n) }} placeholder="CTA" />
+              <CampoTexto etiqueta="Enlace" valor={pilar.enlaceBoton} onChange={(v) => { const n = pilares.map((p, i) => i === idx ? { ...p, enlaceBoton: v } : p); onChange(n) }} placeholder="/ruta" />
+            </div>
+          </div>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...pilares, { id: crypto.randomUUID(), icono: '', titulo: '', texto: '', textoBoton: '', enlaceBoton: '' }])}
+        className="rounded-xl border border-dashed border-gray-200 py-3 text-xs font-medium text-secondary transition-colors hover:border-secondary hover:bg-secondary/5">
+        + Agregar pilar
+      </button>
+    </div>
+  )
+}
+
+function EditorColumnasPie({ columnas, onChange }: { columnas: ColumnaPie[]; onChange: (c: ColumnaPie[]) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {columnas.map((columna, idx) => (
+        <div key={columna.id} className="rounded-xl border border-gray-100 bg-gray-50/70 p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <CampoTexto etiqueta="" valor={columna.titulo} onChange={(v) => {
+              const n = columnas.map((c, i) => i === idx ? { ...c, titulo: v } : c)
+              onChange(n)
+            }} placeholder="Titulo de la columna" />
+            <button type="button" onClick={() => onChange(columnas.filter((_, i) => i !== idx))} className="ml-2 text-gray-300 transition-colors hover:text-red-500">
+              <X className="h-3 w-3" strokeWidth={1.5} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {columna.enlaces.map((enlace, linkIdx) => (
+              <div key={enlace.id} className="flex items-center gap-2">
+                <CampoTexto etiqueta="" valor={enlace.texto} onChange={(v) => {
+                  const n = columnas.map((c, i) => i === idx ? { ...c, enlaces: c.enlaces.map((l, li) => li === linkIdx ? { ...l, texto: v } : l) } : c)
+                  onChange(n)
+                }} placeholder="Texto del enlace" />
+                <CampoTexto etiqueta="" valor={enlace.href} onChange={(v) => {
+                  const n = columnas.map((c, i) => i === idx ? { ...c, enlaces: c.enlaces.map((l, li) => li === linkIdx ? { ...l, href: v } : l) } : c)
+                  onChange(n)
+                }} placeholder="/ruta" />
+                <button type="button" onClick={() => {
+                  const n = columnas.map((c, i) => i === idx ? { ...c, enlaces: c.enlaces.filter((_, li) => li !== linkIdx) } : c)
+                  onChange(n)
+                }} className="text-gray-300 transition-colors hover:text-red-500">
+                  <X className="h-3 w-3" strokeWidth={1.5} />
+                </button>
+              </div>
+            ))}
+            <button type="button" onClick={() => {
+              const n = columnas.map((c, i) => i === idx ? { ...c, enlaces: [...c.enlaces, { id: crypto.randomUUID(), texto: '', href: '' }] } : c)
+              onChange(n)
+            }} className="text-[11px] font-medium text-secondary">+ Agregar enlace</button>
+          </div>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...columnas, { id: crypto.randomUUID(), titulo: '', enlaces: [] }])}
+        className="rounded-xl border border-dashed border-gray-200 py-3 text-xs font-medium text-secondary transition-colors hover:border-secondary hover:bg-secondary/5">
+        + Agregar columna
+      </button>
+    </div>
+  )
+}
+
+function SelectorProductos({
+  seleccionados,
+  onToggle,
+}: {
+  seleccionados: string[]
+  onToggle: (productoId: string) => void
+}) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {productosDisponibles.map((producto) => {
+        const activo = seleccionados.includes(producto.id)
+
+        return (
+          <button
+            key={producto.id}
+            type="button"
+            onClick={() => onToggle(producto.id)}
+            className={`overflow-hidden rounded-2xl border text-left transition-all duration-200 ${activo ? 'border-secondary bg-secondary/5 shadow-sm ring-2 ring-secondary/10' : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'}`}
+          >
+            <div className="relative h-32 bg-gray-100">
+              {producto.imagenUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={producto.imagenUrl} alt={producto.nombre} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-gray-300">
+                  <ImageIcon className="h-6 w-6" strokeWidth={1.5} />
+                </div>
+              )}
+              <div className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-secondary shadow-sm">
+                {activo ? 'Incluido' : 'Disponible'}
+              </div>
+            </div>
+            <div className="p-4">
+              <p className="text-sm font-semibold text-body">{producto.nombre}</p>
+              <div className="mt-3 space-y-1 text-[11px] text-gray-500">
+                <p>
+                  {producto.accionTipo === 'redirect'
+                    ? `Accion: redireccion a ${producto.destinoUrl}`
+                    : `Accion: ${producto.accionEtiqueta}`}
+                </p>
+                <p>
+                  {activo ? 'Se mostrara en el carrusel renderizado.' : 'Disponible para agregar al carrusel.'}
+                </p>
+              </div>
+            </div>
+          </button>
+        )
+      })}
     </div>
   )
 }
