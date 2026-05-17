@@ -1,7 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronDown, ChevronRight, LayoutDashboard, Store, Settings, Package, List, ShoppingBag } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  Images,
+  LayoutDashboard,
+  List,
+  Package,
+  Settings,
+  ShoppingBag,
+  Store,
+} from 'lucide-react'
 import { Logo } from '@/components/atoms/Logo/Logo'
 import type { SidebarProps } from './Sidebar.d'
 
@@ -43,6 +53,14 @@ const NAV: NavGroup[] = [
     children: [
       { key: 'products-list', label: 'Ver productos', href: '/dashboard/products', icon: List },
       { key: 'products-new', label: 'Nuevo producto', href: '/dashboard/products/new', icon: ShoppingBag },
+    ],
+  },
+  {
+    key: 'gallery',
+    label: 'Galeria',
+    icon: Images,
+    children: [
+      { key: 'gallery-library', label: 'Biblioteca', href: '/dashboard/gallery', icon: Images },
     ],
   },
   {

@@ -47,6 +47,7 @@ export interface UseMarketplaceEditorReturn {
   agregarSeccion: (tipo: TipoSeccion) => void
   toggleVisibilidad: (id: string) => void
   moverSeccion: (id: string, direccion: 'arriba' | 'abajo') => void
+  reordenarSeccion: (origenId: string, destinoId: string, posicion?: 'antes' | 'despues') => void
   eliminarSeccion: (id: string) => void
   guardar: () => void
 }
@@ -55,7 +56,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   const [marketplace, setMarketplace] = useState(mercadoInicial)
   const [secciones, setSecciones] = useState<SeccionMarketplace[]>(mercadoInicial.secciones)
   const [seleccionadaId, setSeleccionadaId] = useState<string | null>(secciones[0]?.id ?? null)
-  const [pestana, setPestana] = useState<PestanaEditor>('vista-previa')
+  const [pestana, setPestana] = useState<PestanaEditor>('secciones')
   const [pestanaProp, setPestanaProp] = useState<PestanaPropiedades>('contenido')
   const [alerta, setAlerta] = useState<AlertaState | null>(null)
   const [mostrarMenuAgregar, setMostrarMenuAgregar] = useState(false)
@@ -146,6 +147,33 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     })
   }
 
+  const reordenarSeccion = (
+    origenId: string,
+    destinoId: string,
+    posicion: 'antes' | 'despues' = 'antes',
+  ) => {
+    if (origenId === destinoId) return
+
+    setSecciones((prev) => {
+      const origenIdx = prev.findIndex((s) => s.id === origenId)
+      const destinoIdx = prev.findIndex((s) => s.id === destinoId)
+
+      if (origenIdx === -1 || destinoIdx === -1) return prev
+
+      const copia = [...prev]
+      const [seccionMovida] = copia.splice(origenIdx, 1)
+
+      if (!seccionMovida) return prev
+
+      const destinoAjustado = origenIdx < destinoIdx ? destinoIdx - 1 : destinoIdx
+      const indiceInsercion = posicion === 'antes' ? destinoAjustado : destinoAjustado + 1
+
+      copia.splice(indiceInsercion, 0, seccionMovida)
+
+      return copia.map((s, i) => ({ ...s, orden: i }))
+    })
+  }
+
   const eliminarSeccion = (id: string) => {
     setSecciones((prev) => prev.filter((s) => s.id !== id))
     if (seleccionadaId === id) setSeleccionadaId(null)
@@ -164,7 +192,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     construirGradiente,
     actualizarSeccion, actualizarContenido, actualizarEstilo,
     agregarElemento, actualizarElemento, eliminarElemento,
-    agregarSeccion, toggleVisibilidad, moverSeccion, eliminarSeccion,
+    agregarSeccion, toggleVisibilidad, moverSeccion, reordenarSeccion, eliminarSeccion,
     guardar,
   }
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   ArrowLeft, Plus, GripVertical, Trash2, Eye, EyeOff, Save,
   Palette, Type, LayoutGrid, X, Ruler, ArrowUpDown, Square,
@@ -26,6 +27,11 @@ const tiposDisponibles: TipoSeccion[] = ['principal', 'caracteristicas', 'produc
 
 export default function MarketplaceEditorPage() {
   const editor = useMarketplaceEditor(MERCADO_PRUEBA)
+  const [seccionArrastradaId, setSeccionArrastradaId] = useState<string | null>(null)
+  const [objetivoArrastre, setObjetivoArrastre] = useState<{
+    id: string
+    posicion: 'antes' | 'despues'
+  } | null>(null)
 
   return (
     <DashboardTemplate>
@@ -48,9 +54,9 @@ export default function MarketplaceEditorPage() {
           <div className="flex items-center gap-2">
             <div className="flex bg-gray-100 rounded-xl p-0.5">
               {([
-                { id: 'vista-previa' as PestanaEditor, label: 'Vista previa' },
-                { id: 'edicion' as PestanaEditor, label: 'Edicion' },
                 { id: 'secciones' as PestanaEditor, label: 'Secciones' },
+                { id: 'edicion' as PestanaEditor, label: 'Edicion' },
+                { id: 'vista-previa' as PestanaEditor, label: 'Vista previa' },
               ]).map((tab) => (
                 <button
                   key={tab.id}
@@ -343,12 +349,52 @@ export default function MarketplaceEditorPage() {
             <div className="flex-1 overflow-y-auto p-4">
               <div className="flex flex-col gap-2">
                 {editor.secciones.sort((a, b) => a.orden - b.orden).map((seccion) => (
-                  <div key={seccion.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${seccion.visible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50/50'}`}>
-                    <div className="flex flex-col gap-0.5">
-                      <button type="button" onClick={() => editor.moverSeccion(seccion.id, 'arriba')} className="text-gray-300 hover:text-gray-500 transition-colors leading-none text-[10px]">▲</button>
-                      <button type="button" onClick={() => editor.moverSeccion(seccion.id, 'abajo')} className="text-gray-300 hover:text-gray-500 transition-colors leading-none text-[10px]">▼</button>
-                    </div>
-                    <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0" strokeWidth={1.5} />
+                  <div
+                    key={seccion.id}
+                    onDragOver={(event) => {
+                      event.preventDefault()
+
+                      const limites = event.currentTarget.getBoundingClientRect()
+                      const posicion = event.clientY < limites.top + limites.height / 2 ? 'antes' : 'despues'
+
+                      setObjetivoArrastre({ id: seccion.id, posicion })
+                    }}
+                    onDrop={() => {
+                      if (!seccionArrastradaId || !objetivoArrastre) return
+
+                      editor.reordenarSeccion(
+                        seccionArrastradaId,
+                        objetivoArrastre.id,
+                        objetivoArrastre.posicion,
+                      )
+
+                      setSeccionArrastradaId(null)
+                      setObjetivoArrastre(null)
+                    }}
+                    onDragLeave={(event) => {
+                      if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                        setObjetivoArrastre((actual) => (actual?.id === seccion.id ? null : actual))
+                      }
+                    }}
+                    className={`relative flex items-center gap-3 p-3 rounded-xl border transition-all duration-150 ${seccion.visible ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50/50'} ${seccionArrastradaId === seccion.id ? 'scale-[0.985] opacity-45 shadow-none' : 'shadow-sm hover:border-gray-300 hover:shadow-md'}`}
+                  >
+                    {objetivoArrastre?.id === seccion.id && objetivoArrastre.posicion === 'antes' && (
+                      <div className="absolute left-3 right-3 top-0 h-0.5 rounded-full bg-secondary shadow-[0_0_0_3px_rgba(15,78,206,0.12)]" />
+                    )}
+                    <button
+                      type="button"
+                      draggable
+                      onDragStart={() => setSeccionArrastradaId(seccion.id)}
+                      onDragEnd={() => {
+                        setSeccionArrastradaId(null)
+                        setObjetivoArrastre(null)
+                      }}
+                      className={`cursor-grab active:cursor-grabbing rounded-lg p-1.5 transition-all ${seccionArrastradaId === seccion.id ? 'bg-secondary/10 text-secondary' : 'text-gray-300 hover:bg-gray-100 hover:text-gray-500'}`}
+                      aria-label={`Reordenar ${seccion.nombre}`}
+                      title="Arrastra para reordenar"
+                    >
+                      <GripVertical className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />
+                    </button>
                     <span className="text-[10px] font-medium bg-gray-100 text-gray-500 rounded-md px-2 py-0.5 uppercase flex-shrink-0">{etiquetaTipo[seccion.tipo]}</span>
                     <span className={`text-sm flex-1 ${seccion.visible ? 'text-body font-medium' : 'text-gray-400'}`}>{seccion.nombre}</span>
                     <button type="button" onClick={() => editor.toggleVisibilidad(seccion.id)}
@@ -364,6 +410,9 @@ export default function MarketplaceEditorPage() {
                       className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar">
                       <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                     </button>
+                    {objetivoArrastre?.id === seccion.id && objetivoArrastre.posicion === 'despues' && (
+                      <div className="absolute left-3 right-3 bottom-0 h-0.5 rounded-full bg-secondary shadow-[0_0_0_3px_rgba(15,78,206,0.12)]" />
+                    )}
                   </div>
                 ))}
               </div>
