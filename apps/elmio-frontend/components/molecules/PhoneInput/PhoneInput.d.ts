@@ -1,18 +1,18 @@
-/** Codigos de operadora movil validos en Venezuela. */
-export type PhoneCode = '0412' | '0422' | '0414' | '0424' | '0416' | '0426'
-
-/** Valor completo de un telefono: codigo de operadora + digitos sin formatear. */
-export interface PhoneValue {
-  code: PhoneCode
-  digits: string
+export interface CountryCode {
+  code: string
+  dial: string
+  flag: string
+  name: string
 }
 
-/** Propiedades del componente PhoneInput. */
+export type OperatorPrefix = '412' | '422' | '414' | '424' | '416' | '426'
+
 export interface PhoneInputProps {
-  /** Valor controlado del componente. */
-  value?: PhoneValue
-  /** Callback invocado cuando cambia el codigo o los digitos. */
-  onChange?: (value: PhoneValue) => void
-  /** Texto del placeholder para el campo numerico. */
-  placeholder?: string
+  displayValue: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  countryCode: CountryCode
+  onCountryCodeChange: (code: CountryCode) => void
+  operatorPrefix: OperatorPrefix
+  onOperatorPrefixChange: (prefix: OperatorPrefix) => void
+  hasError?: boolean
 }

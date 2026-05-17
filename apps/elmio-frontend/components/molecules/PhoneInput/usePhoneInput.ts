@@ -1,89 +1,48 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
-import { z } from 'zod'
-import type { PhoneCode, PhoneValue } from './PhoneInput.d'
+import { useState } from 'react'
+import type { CountryCode, OperatorPrefix } from './PhoneInput.d'
 
-const CODE_OPTIONS: PhoneCode[] = ['0412', '0422', '0414', '0424', '0416', '0426']
-const EXACT_DIGITS = 7
+const COUNTRY_CODES: CountryCode[] = [
+  { code: 'VE', dial: '+58', flag: '🇻🇪', name: 'Venezuela' },
+  { code: 'CO', dial: '+57', flag: '🇨🇴', name: 'Colombia' },
+  { code: 'MX', dial: '+52', flag: '🇲🇽', name: 'Mexico' },
+  { code: 'US', dial: '+1', flag: '🇺🇸', name: 'Estados Unidos' },
+  { code: 'ES', dial: '+34', flag: '🇪🇸', name: 'Espana' },
+  { code: 'AR', dial: '+54', flag: '🇦🇷', name: 'Argentina' },
+  { code: 'CL', dial: '+56', flag: '🇨🇱', name: 'Chile' },
+  { code: 'PE', dial: '+51', flag: '🇵🇪', name: 'Peru' },
+]
 
-/** Esquema Zod para validar un valor de telefono completo. */
-export const phoneSchema = z.object({
-  code: z.enum(['0412', '0422', '0414', '0424', '0416', '0426']),
-  digits: z.string().regex(/^\d{7}$/, 'Debe contener exactamente 7 digitos'),
-})
+const OPERATOR_PREFIXES: OperatorPrefix[] = ['412', '422', '414', '424', '416', '426']
 
-/**
- * Formatea una cadena de 7 digitos en el formato visual de telefono.
- *
- * Ejemplo:
- *   "7413675" → "741 36 75"
- *
- * @param raw - Cadena de digitos sin formatear.
- * @returns Cadena con espacios en las posiciones correspondientes.
- */
-function formatPhoneDigits(raw: string): string {
-  const cleaned = raw.replace(/\D/g, '')
-  const total = cleaned.length
-
-  if (total <= 3) return cleaned
-  if (total <= 5) return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`
-  return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, EXACT_DIGITS)}`
+export interface UsePhoneInputReturn {
+  open: boolean
+  countryCodes: CountryCode[]
+  operatorPrefixes: OperatorPrefix[]
+  toggleOpen: () => void
+  handleSelectCountry: (code: CountryCode) => void
 }
 
 /**
- * Hook que encapsula la logica de estado y validacion para el componente PhoneInput.
- *
- * @param initial - Valor inicial opcional del telefono.
- * @returns Estado, manejadores y metadatos necesarios para renderizar el componente.
+ * Hook que maneja la logica del selector de pais y prefijo de operadora.
  */
-export function usePhoneInput(initial?: PhoneValue) {
-  const [code, setCode] = useState<PhoneCode>(initial?.code ?? '0412')
-  const [displayDigits, setDisplayDigits] = useState(
-    initial?.digits ? formatPhoneDigits(initial.digits) : '',
-  )
-  const inputRef = useRef<HTMLInputElement>(null)
+export function usePhoneInput(
+  onCountryCodeChange: (code: CountryCode) => void,
+): UsePhoneInputReturn {
+  const [open, setOpen] = useState(false)
 
-  const rawDigits = displayDigits.replace(/\D/g, '')
-
-  /** Indica si los digitos actuales cumplen exactamente con los 7 requeridos. */
-  const isValid = rawDigits.length === EXACT_DIGITS
-
-  const handleCodeChange = useCallback((next: PhoneCode) => {
-    setCode(next)
-  }, [])
-
-  /**
-   * Procesa el cambio en el campo numerico: limpia caracteres no digitos,
-   * trunca al maximo de 7 y formatea con espacios (XXX XX XX).
-   */
-  const handleDigitsChange = useCallback(
-    (raw: string) => {
-      const cleaned = raw.replace(/\D/g, '').slice(0, EXACT_DIGITS)
-      const oldFormatted = displayDigits
-      const formatted = formatPhoneDigits(cleaned)
-      setDisplayDigits(formatted)
-
-      requestAnimationFrame(() => {
-        if (!inputRef.current) return
-        const cursorPos = inputRef.current.selectionStart ?? 0
-        const oldSpaces = oldFormatted.slice(0, cursorPos).split(' ').length - 1
-        const newSpaces = formatted.slice(0, cursorPos).split(' ').length - 1
-        const adjusted = cursorPos + (newSpaces - oldSpaces)
-        inputRef.current.setSelectionRange(adjusted, adjusted)
-      })
-    },
-    [displayDigits],
-  )
+  const toggleOpen = () => setOpen((v) => !v)
+  const handleSelectCountry = (code: CountryCode) => {
+    onCountryCodeChange(code)
+    setOpen(false)
+  }
 
   return {
-    code,
-    displayDigits,
-    rawDigits,
-    isValid,
-    inputRef,
-    codeOptions: CODE_OPTIONS,
-    handleCodeChange,
-    handleDigitsChange,
-  } as const
+    open,
+    countryCodes: COUNTRY_CODES,
+    operatorPrefixes: OPERATOR_PREFIXES,
+    toggleOpen,
+    handleSelectCountry,
+  }
 }

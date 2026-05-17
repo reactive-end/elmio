@@ -1,7 +1,5 @@
-/**
- * Pagina principal de la aplicacion.
- * Actualmente vacia; se agregara contenido en futuras iteraciones.
- */
+import { redirect } from 'next/navigation'
+
 export default function Home() {
-  return <main />
+  redirect('/login')
 }

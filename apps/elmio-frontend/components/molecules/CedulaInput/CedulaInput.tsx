@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useCedulaInput } from './useCedulaInput'
 import type { CedulaInputProps, CedulaValue } from './CedulaInput.d'
 
@@ -12,30 +12,35 @@ import type { CedulaInputProps, CedulaValue } from './CedulaInput.d'
  *
  * El campo numerico se formatea automaticamente con espacios segun la cantidad
  * de digitos ingresados (minimo 7, maximo 9).
+ * Ambos elementos ocupan el ancho completo y comparten los estilos del sistema.
  */
 export default function CedulaInput({ value, onChange, placeholder }: CedulaInputProps) {
-  const {
-    letter,
-    displayDigits,
-    rawDigits,
-    inputRef,
-    letterOptions,
-    handleLetterChange,
-    handleDigitsChange,
-  } = useCedulaInput(value)
+  const { letter, displayDigits, rawDigits, inputRef, letterOptions, handleLetterChange, handleDigitsChange } =
+    useCedulaInput(value)
+
+  /** Ref estable a onChange para romper el ciclo de dependencias en el efecto. */
+  const onChangeRef = useRef(onChange)
 
   useEffect(() => {
-    if (onChange) {
-      onChange({ letter, digits: rawDigits } satisfies CedulaValue)
-    }
-  }, [letter, rawDigits, onChange])
+    onChangeRef.current = onChange
+  })
+
+  useEffect(() => {
+    onChangeRef.current?.({ letter, digits: rawDigits } satisfies CedulaValue)
+  }, [letter, rawDigits])
+
+  const baseSelect =
+    'rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-body transition-all duration-200 outline-none focus:border-border-focus focus:ring-2 focus:ring-ring/20'
+
+  const baseInput =
+    'rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-body placeholder:text-gray-400 transition-all duration-200 outline-none focus:border-border-focus focus:ring-2 focus:ring-ring/20'
 
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex gap-2 w-full">
       <select
         value={letter}
         onChange={(e) => handleLetterChange(e.target.value as CedulaValue['letter'])}
-        className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+        className={`${baseSelect} w-20 flex-shrink-0 appearance-none`}
       >
         {letterOptions.map((opt) => (
           <option key={opt} value={opt}>
@@ -52,7 +57,7 @@ export default function CedulaInput({ value, onChange, placeholder }: CedulaInpu
         onChange={(e) => handleDigitsChange(e.target.value)}
         placeholder={placeholder ?? '28 502 328'}
         maxLength={MAX_DIGITS + 2}
-        className="h-10 w-full max-w-44 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+        className={`${baseInput} flex-1 min-w-0`}
       />
     </div>
   )
