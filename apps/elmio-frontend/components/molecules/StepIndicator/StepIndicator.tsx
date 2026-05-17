@@ -36,7 +36,11 @@ export function StepIndicator({
                       : 'bg-gray-100 text-gray-400'
                 }`}
               >
-                {isCompleted ? <Check className="w-4 h-4" strokeWidth={2.5} /> : <StepIcon className="w-4 h-4" strokeWidth={2} />}
+                {isCompleted ? (
+                  <Check className="w-4 h-4" strokeWidth={2.5} />
+                ) : (
+                  <StepIcon className="w-4 h-4" strokeWidth={2} />
+                )}
               </div>
               <span
                 className={`text-xs font-medium hidden sm:inline transition-colors duration-300 ${

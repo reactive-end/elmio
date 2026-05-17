@@ -22,7 +22,8 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
   private readonly storageRoot = resolve(process.cwd(), 'storage', 'gallery');
   private readonly metadataFileName = 'gallery.metadata.json';
   private readonly bucketName = process.env.GCS_BUCKET_NAME ?? '';
-  private readonly publicBaseUrl = process.env.GCS_PUBLIC_BASE_URL?.trim() ?? '';
+  private readonly publicBaseUrl =
+    process.env.GCS_PUBLIC_BASE_URL?.trim() ?? '';
   private readonly storageClient = this.createStorageClient();
 
   private createStorageClient(): Storage {
@@ -31,7 +32,9 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
 
     if (credentialsJson) {
       const options = {
-        credentials: JSON.parse(credentialsJson) as StorageOptions['credentials'],
+        credentials: JSON.parse(
+          credentialsJson,
+        ) as StorageOptions['credentials'],
       } satisfies StorageOptions;
 
       return new Storage(options);
@@ -49,18 +52,28 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
   }
 
   private getMetadataFilePath(tenantDirectory: string): string {
-    return join(this.getTenantDirectoryPath(tenantDirectory), this.metadataFileName);
+    return join(
+      this.getTenantDirectoryPath(tenantDirectory),
+      this.metadataFileName,
+    );
   }
 
   private async ensureTenantDirectory(tenantDirectory: string): Promise<void> {
-    await mkdir(this.getTenantDirectoryPath(tenantDirectory), { recursive: true });
+    await mkdir(this.getTenantDirectoryPath(tenantDirectory), {
+      recursive: true,
+    });
   }
 
-  private async readMetadata(tenantDirectory: string): Promise<GalleryMetadataFile> {
+  private async readMetadata(
+    tenantDirectory: string,
+  ): Promise<GalleryMetadataFile> {
     await this.ensureTenantDirectory(tenantDirectory);
 
     try {
-      const raw = await readFile(this.getMetadataFilePath(tenantDirectory), 'utf8');
+      const raw = await readFile(
+        this.getMetadataFilePath(tenantDirectory),
+        'utf8',
+      );
       const parsed = JSON.parse(raw) as GalleryMetadataFile;
       return { images: parsed.images ?? [] };
     } catch {
@@ -89,9 +102,15 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
     return `${randomUUID()}${extension}`;
   }
 
-  private buildStoragePath(tenantDirectory: string, originalName: string): string {
+  private buildStoragePath(
+    tenantDirectory: string,
+    originalName: string,
+  ): string {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const safeName = originalName.trim().toLowerCase().replace(/[^a-z0-9.-]+/g, '-');
+    const safeName = originalName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9.-]+/g, '-');
 
     return `${tenantDirectory}/${timestamp}-${safeName}`;
   }
@@ -113,18 +132,22 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
       return this.buildPublicUrl(objectKey);
     }
 
-    const [signedUrl] = await this.getBucket().file(objectKey).getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 1000 * 60 * 15,
-      version: 'v4',
-    });
+    const [signedUrl] = await this.getBucket()
+      .file(objectKey)
+      .getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 1000 * 60 * 15,
+        version: 'v4',
+      });
 
     return signedUrl;
   }
 
   private getBucket() {
     if (!this.bucketName) {
-      throw new Error('Debes definir GCS_BUCKET_NAME para usar la galeria en Google Cloud Storage.');
+      throw new Error(
+        'Debes definir GCS_BUCKET_NAME para usar la galeria en Google Cloud Storage.',
+      );
     }
 
     return this.storageClient.bucket(this.bucketName);
@@ -164,13 +187,15 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
       createdAt: new Date().toISOString(),
     };
 
-    await this.getBucket().file(objectKey).save(input.buffer, {
-      contentType: input.mimeType,
-      resumable: false,
-      metadata: {
-        cacheControl: 'public, max-age=31536000, immutable',
-      },
-    });
+    await this.getBucket()
+      .file(objectKey)
+      .save(input.buffer, {
+        contentType: input.mimeType,
+        resumable: false,
+        metadata: {
+          cacheControl: 'public, max-age=31536000, immutable',
+        },
+      });
 
     const metadata = await this.readMetadata(input.tenantDirectory);
     metadata.images.unshift(image);
@@ -211,7 +236,11 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
   async resolveFile(
     tenantDirectory: string,
     imageId: string,
-  ): Promise<{ image: GalleryImage; absolutePath?: string; publicUrl?: string } | null> {
+  ): Promise<{
+    image: GalleryImage;
+    absolutePath?: string;
+    publicUrl?: string;
+  } | null> {
     const metadata = await this.readMetadata(tenantDirectory);
     const image = metadata.images.find((item) => item.id === imageId);
 

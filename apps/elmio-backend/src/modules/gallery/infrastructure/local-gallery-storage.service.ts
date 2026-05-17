@@ -26,18 +26,28 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
   }
 
   private getMetadataFilePath(tenantDirectory: string): string {
-    return join(this.getTenantDirectoryPath(tenantDirectory), this.metadataFileName);
+    return join(
+      this.getTenantDirectoryPath(tenantDirectory),
+      this.metadataFileName,
+    );
   }
 
   private async ensureTenantDirectory(tenantDirectory: string): Promise<void> {
-    await mkdir(this.getTenantDirectoryPath(tenantDirectory), { recursive: true });
+    await mkdir(this.getTenantDirectoryPath(tenantDirectory), {
+      recursive: true,
+    });
   }
 
-  private async readMetadata(tenantDirectory: string): Promise<GalleryMetadataFile> {
+  private async readMetadata(
+    tenantDirectory: string,
+  ): Promise<GalleryMetadataFile> {
     await this.ensureTenantDirectory(tenantDirectory);
 
     try {
-      const raw = await readFile(this.getMetadataFilePath(tenantDirectory), 'utf8');
+      const raw = await readFile(
+        this.getMetadataFilePath(tenantDirectory),
+        'utf8',
+      );
       const parsed = JSON.parse(raw) as GalleryMetadataFile;
 
       return { images: parsed.images ?? [] };
@@ -67,9 +77,15 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
     return `${randomUUID()}${extension}`;
   }
 
-  private buildStoragePath(tenantDirectory: string, originalName: string): string {
+  private buildStoragePath(
+    tenantDirectory: string,
+    originalName: string,
+  ): string {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const safeName = originalName.trim().toLowerCase().replace(/[^a-z0-9.-]+/g, '-');
+    const safeName = originalName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9.-]+/g, '-');
 
     return `${tenantDirectory}/${timestamp}-${safeName}`;
   }
@@ -136,7 +152,10 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
     metadata.images = metadata.images.filter((item) => item.id !== imageId);
     await this.writeMetadata(tenantDirectory, metadata);
 
-    const absolutePath = join(this.getTenantDirectoryPath(tenantDirectory), image.fileName);
+    const absolutePath = join(
+      this.getTenantDirectoryPath(tenantDirectory),
+      image.fileName,
+    );
 
     try {
       await unlink(absolutePath);
@@ -156,7 +175,11 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
   async resolveFile(
     tenantDirectory: string,
     imageId: string,
-  ): Promise<{ image: GalleryImage; absolutePath?: string; publicUrl?: string } | null> {
+  ): Promise<{
+    image: GalleryImage;
+    absolutePath?: string;
+    publicUrl?: string;
+  } | null> {
     const metadata = await this.readMetadata(tenantDirectory);
     const image = metadata.images.find((item) => item.id === imageId);
 
@@ -164,7 +187,10 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
       return null;
     }
 
-    const absolutePath = join(this.getTenantDirectoryPath(tenantDirectory), image.fileName);
+    const absolutePath = join(
+      this.getTenantDirectoryPath(tenantDirectory),
+      image.fileName,
+    );
 
     try {
       await stat(absolutePath);

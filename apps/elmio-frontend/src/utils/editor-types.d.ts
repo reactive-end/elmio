@@ -1,7 +1,16 @@
 export type TipoSeccion =
-  | 'principal' | 'caracteristicas' | 'productos' | 'aliados'
-  | 'banner' | 'doble-banner' | 'franja' | 'pilares'
-  | 'texto' | 'pie' | 'cabecera' | 'personalizado'
+  | 'principal'
+  | 'caracteristicas'
+  | 'productos'
+  | 'aliados'
+  | 'banner'
+  | 'doble-banner'
+  | 'franja'
+  | 'pilares'
+  | 'texto'
+  | 'pie'
+  | 'cabecera'
+  | 'personalizado'
 
 export interface EstiloSeccion {
   paddingSuperior: number

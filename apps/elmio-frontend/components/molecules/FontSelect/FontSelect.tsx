@@ -53,7 +53,10 @@ export function FontSelect({ label, value, onChange }: FontSelectProps) {
             </optgroup>
           ))}
         </select>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" strokeWidth={1.5} />
+        <ChevronDown
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+          strokeWidth={1.5}
+        />
       </div>
 
       {/* Preview */}

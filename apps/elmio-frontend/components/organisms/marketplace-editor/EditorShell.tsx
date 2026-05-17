@@ -1,0 +1,216 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Alert } from '@/components/atoms/Alert/Alert'
+import { Spinner } from '@/components/atoms/Spinner/Spinner'
+import { EditorTopBar } from './EditorTopBar'
+import { SeccionesTab } from './SeccionesTab'
+import { EdicionTab } from './EdicionTab'
+import { VistaPreviaTab } from './VistaPreviaTab'
+import { AgregarSeccionModal } from './AgregarSeccionModal'
+import { useMarketplaceEditor } from '@/src/hooks/pages/useMarketplaceEditor'
+import { MERCADO_PRUEBA } from '@/src/data/marketplace-mock'
+import { marketplaceService } from '@/src/services/marketplace.service'
+import type { DatosMarketplace, TipoSeccion } from '@/src/utils/editor-types.d'
+
+type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones'
+type PestanaPropiedades = 'contenido' | 'estilos' | 'elementos'
+
+interface EditorShellProps {
+  id: string
+}
+
+/**
+ * Shell principal del editor de marketplace.
+ * Carga la configuracion desde el backend, compone el editor completo
+ * y persiste los cambios al guardar.
+ */
+export function EditorShell({ id }: EditorShellProps) {
+  const [datosIniciales, setDatosIniciales] = useState<DatosMarketplace | null>(null)
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    let cancelado = false
+
+    const cargar = async () => {
+      try {
+        const data = await marketplaceService.getById(id)
+        if (!cancelado) {
+          setDatosIniciales(data)
+        }
+      } catch {
+        if (!cancelado) {
+          setDatosIniciales(MERCADO_PRUEBA)
+        }
+      } finally {
+        if (!cancelado) {
+          setCargando(false)
+        }
+      }
+    }
+
+    void cargar()
+
+    return () => {
+      cancelado = true
+    }
+  }, [id])
+
+  if (cargando) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner />
+          <p className="text-sm text-gray-500">Cargando marketplace...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <EditorInterno datosIniciales={datosIniciales ?? MERCADO_PRUEBA} />
+}
+
+interface EditorInternoProps {
+  datosIniciales: DatosMarketplace
+}
+
+function EditorInterno({ datosIniciales }: EditorInternoProps) {
+  const editor = useMarketplaceEditor(datosIniciales)
+  const [seccionArrastradaId, setSeccionArrastradaId] = useState<string | null>(null)
+  const [objetivoArrastre, setObjetivoArrastre] = useState<{
+    id: string
+    posicion: 'antes' | 'despues'
+  } | null>(null)
+  const [modalAgregarAbierto, setModalAgregarAbierto] = useState(false)
+  const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoSeccion>('principal')
+
+  const abrirModalAgregar = () => {
+    setTipoSeleccionado('principal')
+    setModalAgregarAbierto(true)
+  }
+
+  const confirmarAgregarSeccion = () => {
+    editor.agregarSeccion(tipoSeleccionado)
+    setModalAgregarAbierto(false)
+  }
+
+  const handleDrop = () => {
+    if (!seccionArrastradaId || !objetivoArrastre) return
+    editor.reordenarSeccion(seccionArrastradaId, objetivoArrastre.id, objetivoArrastre.posicion)
+    setSeccionArrastradaId(null)
+    setObjetivoArrastre(null)
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault()
+        editor.guardar()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [editor])
+
+  return (
+    <div className="h-[calc(100dvh-8rem)] flex flex-col">
+      <EditorTopBar
+        nombre={editor.marketplace.nombre}
+        slug={editor.marketplace.slug}
+        pestana={editor.pestana as PestanaEditor}
+        onNombreChange={(v) => editor.setMarketplace({ ...editor.marketplace, nombre: v })}
+        onPestanaChange={(p) => editor.setPestana(p as PestanaEditor)}
+        onGuardar={editor.guardar}
+      />
+
+      {editor.alerta && (
+        <div className="mb-4 flex-shrink-0">
+          <Alert
+            type={editor.alerta.type}
+            message={editor.alerta.message}
+            onDismiss={() => editor.setAlerta(null)}
+          />
+        </div>
+      )}
+
+      {editor.pestana === 'vista-previa' && (
+        <VistaPreviaTab
+          secciones={editor.secciones}
+          seleccionadaId={editor.seleccionadaId}
+          onSeccionClick={(id) => {
+            editor.setSeleccionadaId(id)
+            editor.setPestana('edicion')
+          }}
+        />
+      )}
+
+      {editor.pestana === 'edicion' && (
+        <EdicionTab
+          secciones={editor.secciones}
+          seleccionada={editor.seleccionada}
+          seleccionadaId={editor.seleccionadaId}
+          pestanaProp={editor.pestanaProp as PestanaPropiedades}
+          fuente={editor.marketplace.tema.fuente}
+          gradienteActivo={editor.gradienteActivo}
+          gradienteInicio={editor.gradienteInicio}
+          gradienteFin={editor.gradienteFin}
+          gradienteDireccion={editor.gradienteDireccion}
+          onSelectSeccion={(sId) => editor.setSeleccionadaId(sId)}
+          onAgregarClick={abrirModalAgregar}
+          actualizarSeccion={editor.actualizarSeccion}
+          actualizarContenido={editor.actualizarContenido}
+          actualizarEstilo={(campo, valor) =>
+            editor.actualizarEstilo(campo, valor as string | number)
+          }
+          setPestanaProp={(p) => editor.setPestanaProp(p as PestanaPropiedades)}
+          agregarElemento={editor.agregarElemento}
+          actualizarElemento={editor.actualizarElemento}
+          eliminarElemento={editor.eliminarElemento}
+          onGradienteActivoChange={editor.setGradienteActivo}
+          onGradienteInicioChange={editor.setGradienteInicio}
+          onGradienteFinChange={editor.setGradienteFin}
+          onGradienteDireccionChange={editor.setGradienteDireccion}
+          onFuenteChange={(f) =>
+            editor.setMarketplace({
+              ...editor.marketplace,
+              tema: { ...editor.marketplace.tema, fuente: f },
+            })
+          }
+        />
+      )}
+
+      {editor.pestana === 'secciones' && (
+        <SeccionesTab
+          secciones={editor.secciones}
+          seccionArrastradaId={seccionArrastradaId}
+          objetivoArrastre={objetivoArrastre}
+          onAgregarClick={abrirModalAgregar}
+          onDragStart={setSeccionArrastradaId}
+          onDragEnd={() => {
+            setSeccionArrastradaId(null)
+            setObjetivoArrastre(null)
+          }}
+          onDragOver={(seccionId, posicion) => setObjetivoArrastre({ id: seccionId, posicion })}
+          onDragLeave={() => setObjetivoArrastre(null)}
+          onDrop={handleDrop}
+          onVisibilidad={editor.toggleVisibilidad}
+          onEditar={(sId) => {
+            editor.setSeleccionadaId(sId)
+            editor.setPestana('edicion')
+          }}
+          onEliminar={editor.eliminarSeccion}
+        />
+      )}
+
+      <AgregarSeccionModal
+        abierto={modalAgregarAbierto}
+        tipoSeleccionado={tipoSeleccionado}
+        onTipoChange={setTipoSeleccionado}
+        onConfirmar={confirmarAgregarSeccion}
+        onCancelar={() => setModalAgregarAbierto(false)}
+      />
+    </div>
+  )
+}

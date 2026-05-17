@@ -7,7 +7,14 @@ import type { PixelInputProps } from './PixelInput.d'
  * Componente molecule para ingresar valores en pixeles.
  * Muestra botones +/- para ajuste rapido y el valor con sufijo "px".
  */
-export function PixelInput({ label, value, onChange, min = 0, max = 2000, step = 1 }: PixelInputProps) {
+export function PixelInput({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 2000,
+  step = 1,
+}: PixelInputProps) {
   const decrement = () => {
     const next = value - step
     if (next >= min) onChange(next)

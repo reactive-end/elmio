@@ -2,9 +2,14 @@
 
 import { useState, useCallback } from 'react'
 import type {
-  SeccionMarketplace, TipoSeccion, EstiloSeccion, ContenidoSeccion, DatosMarketplace,
+  SeccionMarketplace,
+  TipoSeccion,
+  EstiloSeccion,
+  ContenidoSeccion,
+  DatosMarketplace,
 } from '@/src/utils/editor-types.d'
-import { estiloPorDefecto } from '@/app/dashboard/marketplaces/[id]/mock-data'
+import { estiloPorDefecto } from '@/src/data/marketplace-mock'
+import { marketplaceService } from '@/src/services/marketplace.service'
 
 type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones'
 type PestanaPropiedades = 'contenido' | 'estilos' | 'elementos'
@@ -66,16 +71,14 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   const [gradienteFin, setGradienteFin] = useState('#13ce99')
   const [gradienteDireccion, setGradienteDireccion] = useState('135deg')
 
-  const construirGradiente = () => `linear-gradient(${gradienteDireccion}, ${gradienteInicio}, ${gradienteFin})`
+  const construirGradiente = () =>
+    `linear-gradient(${gradienteDireccion}, ${gradienteInicio}, ${gradienteFin})`
 
   const seleccionada = secciones.find((s) => s.id === seleccionadaId) ?? null
 
-  const actualizarSeccion = useCallback(
-    (id: string, cambios: Partial<SeccionMarketplace>) => {
-      setSecciones((prev) => prev.map((s) => (s.id === id ? { ...s, ...cambios } : s)))
-    },
-    [],
-  )
+  const actualizarSeccion = useCallback((id: string, cambios: Partial<SeccionMarketplace>) => {
+    setSecciones((prev) => prev.map((s) => (s.id === id ? { ...s, ...cambios } : s)))
+  }, [])
 
   const actualizarContenido = (campo: keyof ContenidoSeccion, valor: string) => {
     if (!seleccionada) return
@@ -92,9 +95,19 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     actualizarSeccion(seleccionada.id, {
       contenido: {
         ...seleccionada.contenido,
-        elementos: [...seleccionada.contenido.elementos, {
-          id: crypto.randomUUID(), titulo: 'Nuevo elemento', descripcion: '', icono: 'Star', imagenUrl: '', enlaceUrl: '', textoBoton: '', enlaceBoton: '',
-        }],
+        elementos: [
+          ...seleccionada.contenido.elementos,
+          {
+            id: crypto.randomUUID(),
+            titulo: 'Nuevo elemento',
+            descripcion: '',
+            icono: 'Star',
+            imagenUrl: '',
+            enlaceUrl: '',
+            textoBoton: '',
+            enlaceBoton: '',
+          },
+        ],
       },
     })
   }
@@ -104,7 +117,9 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     actualizarSeccion(seleccionada.id, {
       contenido: {
         ...seleccionada.contenido,
-        elementos: seleccionada.contenido.elementos.map((e) => (e.id === id ? { ...e, [campo]: valor } : e)),
+        elementos: seleccionada.contenido.elementos.map((e) =>
+          e.id === id ? { ...e, [campo]: valor } : e,
+        ),
       },
     })
   }
@@ -112,7 +127,10 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   const eliminarElemento = (id: string) => {
     if (!seleccionada) return
     actualizarSeccion(seleccionada.id, {
-      contenido: { ...seleccionada.contenido, elementos: seleccionada.contenido.elementos.filter((e) => e.id !== id) },
+      contenido: {
+        ...seleccionada.contenido,
+        elementos: seleccionada.contenido.elementos.filter((e) => e.id !== id),
+      },
     })
   }
 
@@ -124,9 +142,22 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
       visible: true,
       orden: secciones.length,
       contenido: {
-        titulo: '', subtitulo: '', descripcion: '', textoBoton: '', enlaceBoton: '',
-        imagenUrl: '', elementos: [], productosIds: [], diapositivas: [], columnasPie: [],
-        logoUrl: '', copyright: '', aliados: [], pilares: [], menu: [], cuerpoHtml: '',
+        titulo: '',
+        subtitulo: '',
+        descripcion: '',
+        textoBoton: '',
+        enlaceBoton: '',
+        imagenUrl: '',
+        elementos: [],
+        productosIds: [],
+        diapositivas: [],
+        columnasPie: [],
+        logoUrl: '',
+        copyright: '',
+        aliados: [],
+        pilares: [],
+        menu: [],
+        cuerpoHtml: '',
         autoplay: tipo === 'principal' || tipo === 'franja' || tipo === 'productos',
         autoplayVelocidad: 5000,
         htmlId: '',
@@ -186,20 +217,57 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     if (seleccionadaId === id) setSeleccionadaId(null)
   }
 
-  const guardar = () => {
-    setAlerta({ type: 'success', message: 'Cambios guardados (simulacion). El backend persistira los datos cuando este conectado.' })
+  const guardar = async () => {
+    try {
+      const datosGuardar: DatosMarketplace = {
+        ...marketplace,
+        secciones,
+      }
+
+      await marketplaceService.update(marketplace.id, datosGuardar)
+      setAlerta({ type: 'success', message: 'Cambios guardados correctamente.' })
+    } catch {
+      setAlerta({ type: 'info', message: 'Error al guardar. Verifica la conexion con el backend.' })
+    }
+
     setTimeout(() => setAlerta(null), 4000)
   }
 
   return {
-    marketplace, secciones, seleccionadaId, seleccionada, pestana, pestanaProp, alerta, mostrarMenuAgregar,
-    gradienteActivo, gradienteInicio, gradienteFin, gradienteDireccion,
-    setMarketplace, setSeleccionadaId, setPestana, setPestanaProp, setAlerta, setMostrarMenuAgregar,
-    setGradienteActivo, setGradienteInicio, setGradienteFin, setGradienteDireccion,
+    marketplace,
+    secciones,
+    seleccionadaId,
+    seleccionada,
+    pestana,
+    pestanaProp,
+    alerta,
+    mostrarMenuAgregar,
+    gradienteActivo,
+    gradienteInicio,
+    gradienteFin,
+    gradienteDireccion,
+    setMarketplace,
+    setSeleccionadaId,
+    setPestana,
+    setPestanaProp,
+    setAlerta,
+    setMostrarMenuAgregar,
+    setGradienteActivo,
+    setGradienteInicio,
+    setGradienteFin,
+    setGradienteDireccion,
     construirGradiente,
-    actualizarSeccion, actualizarContenido, actualizarEstilo,
-    agregarElemento, actualizarElemento, eliminarElemento,
-    agregarSeccion, toggleVisibilidad, moverSeccion, reordenarSeccion, eliminarSeccion,
+    actualizarSeccion,
+    actualizarContenido,
+    actualizarEstilo,
+    agregarElemento,
+    actualizarElemento,
+    eliminarElemento,
+    agregarSeccion,
+    toggleVisibilidad,
+    moverSeccion,
+    reordenarSeccion,
+    eliminarSeccion,
     guardar,
   }
 }

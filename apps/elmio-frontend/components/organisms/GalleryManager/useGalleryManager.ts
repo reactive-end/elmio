@@ -135,7 +135,8 @@ export function useGalleryManager(): UseGalleryManagerReturn {
 
       setAlert({ type: 'success', message: `${successMessage}${skippedMessage}` })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudieron guardar las imagenes.'
+      const message =
+        error instanceof Error ? error.message : 'No se pudieron guardar las imagenes.'
       setAlert({ type: 'error', message })
     } finally {
       setIsUploading(false)

@@ -13,7 +13,8 @@ interface BannerSectionProps {
  */
 export function BannerSection({ seccion }: BannerSectionProps) {
   const { contenido, estilo } = seccion
-  const imagenDerecha = (contenido as unknown as Record<string, string>).imagenPosicion !== 'izquierda'
+  const imagenDerecha =
+    (contenido as unknown as Record<string, string>).imagenPosicion !== 'izquierda'
 
   return (
     <SectionContainer estilo={estilo}>
@@ -23,26 +24,42 @@ export function BannerSection({ seccion }: BannerSectionProps) {
             <>
               <div className="flex flex-col gap-5" style={{ textAlign: 'left' }}>
                 {contenido.titulo && (
-                  <h2 className="font-bold" style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor }}>
+                  <h2
+                    className="font-bold"
+                    style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor }}
+                  >
                     {contenido.titulo}
                   </h2>
                 )}
                 {contenido.descripcion && (
-                  <p className="max-w-xl" style={{ fontSize: estilo.cuerpoTamano, color: estilo.cuerpoColor }}>
+                  <p
+                    className="max-w-xl"
+                    style={{ fontSize: estilo.cuerpoTamano, color: estilo.cuerpoColor }}
+                  >
                     {contenido.descripcion}
                   </p>
                 )}
                 {contenido.textoBoton && contenido.enlaceBoton && (
-                  <Link href={contenido.enlaceBoton}
+                  <Link
+                    href={contenido.enlaceBoton}
                     className="inline-flex items-center self-start rounded-xl px-6 py-3 font-semibold transition-transform hover:scale-105"
-                    style={{ backgroundColor: estilo.botonColorFondo || '#0f4ece', color: estilo.botonColorTexto || '#fff', borderRadius: estilo.botonRedondez || 12 }}>
+                    style={{
+                      backgroundColor: estilo.botonColorFondo || '#0f4ece',
+                      color: estilo.botonColorTexto || '#fff',
+                      borderRadius: estilo.botonRedondez || 12,
+                    }}
+                  >
                     {contenido.textoBoton}
                   </Link>
                 )}
               </div>
               {contenido.imagenUrl && (
                 <div className="w-full">
-                  <img src={contenido.imagenUrl} alt={contenido.titulo} className="h-40 w-full rounded-2xl bg-white object-contain shadow-sm md:h-72 md:object-cover" />
+                  <img
+                    src={contenido.imagenUrl}
+                    alt={contenido.titulo}
+                    className="h-40 w-full rounded-2xl bg-white object-contain shadow-sm md:h-72 md:object-cover"
+                  />
                 </div>
               )}
             </>
@@ -50,24 +67,40 @@ export function BannerSection({ seccion }: BannerSectionProps) {
             <>
               {contenido.imagenUrl && (
                 <div className="w-full">
-                  <img src={contenido.imagenUrl} alt={contenido.titulo} className="h-40 w-full rounded-2xl bg-white object-contain shadow-sm md:h-72 md:object-cover" />
+                  <img
+                    src={contenido.imagenUrl}
+                    alt={contenido.titulo}
+                    className="h-40 w-full rounded-2xl bg-white object-contain shadow-sm md:h-72 md:object-cover"
+                  />
                 </div>
               )}
               <div className="flex flex-col gap-5" style={{ textAlign: 'left' }}>
                 {contenido.titulo && (
-                  <h2 className="font-bold" style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor }}>
+                  <h2
+                    className="font-bold"
+                    style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor }}
+                  >
                     {contenido.titulo}
                   </h2>
                 )}
                 {contenido.descripcion && (
-                  <p className="max-w-xl" style={{ fontSize: estilo.cuerpoTamano, color: estilo.cuerpoColor }}>
+                  <p
+                    className="max-w-xl"
+                    style={{ fontSize: estilo.cuerpoTamano, color: estilo.cuerpoColor }}
+                  >
                     {contenido.descripcion}
                   </p>
                 )}
                 {contenido.textoBoton && contenido.enlaceBoton && (
-                  <Link href={contenido.enlaceBoton}
+                  <Link
+                    href={contenido.enlaceBoton}
                     className="inline-flex items-center self-start rounded-xl px-6 py-3 font-semibold transition-transform hover:scale-105"
-                    style={{ backgroundColor: estilo.botonColorFondo || '#0f4ece', color: estilo.botonColorTexto || '#fff', borderRadius: estilo.botonRedondez || 12 }}>
+                    style={{
+                      backgroundColor: estilo.botonColorFondo || '#0f4ece',
+                      color: estilo.botonColorTexto || '#fff',
+                      borderRadius: estilo.botonRedondez || 12,
+                    }}
+                  >
                     {contenido.textoBoton}
                   </Link>
                 )}

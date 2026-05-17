@@ -13,12 +13,7 @@ export function PasswordInput({ hasError, className = '', ...props }: PasswordIn
 
   return (
     <div className="relative">
-      <Input
-        type={inputType}
-        hasError={hasError}
-        className={`pr-12 ${className}`}
-        {...props}
-      />
+      <Input type={inputType} hasError={hasError} className={`pr-12 ${className}`} {...props} />
       <button
         type="button"
         onClick={toggleShow}

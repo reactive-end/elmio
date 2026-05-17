@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation'
 import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { formatPhoneDisplay, stripPhoneFormat } from '@/src/utils/phoneFormat'
-import type {
-  CountryCode,
-  OperatorPrefix,
-} from '@/components/molecules/PhoneInput/PhoneInput.d'
+import { authService } from '@/src/services/auth.service'
+import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 
 gsap.registerPlugin(useGSAP)
 
@@ -78,14 +76,25 @@ export function useLoginForm() {
     }
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setAlert(null)
     setIsLoading(true)
 
-    setTimeout(() => {
+    try {
+      if (loginMethod === 'email') {
+        await authService.login(email, password)
+      }
+
       router.push('/dashboard')
-    }, 400)
+    } catch (err) {
+      setAlert({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Error al iniciar sesion.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return {

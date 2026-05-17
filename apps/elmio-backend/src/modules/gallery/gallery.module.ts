@@ -10,12 +10,19 @@ import { LocalGalleryStorageService } from './infrastructure/local-gallery-stora
 import { GalleryController } from './presentation/http/gallery.controller';
 
 function createGalleryStorageProvider(): GalleryStoragePort {
-  const hasInlineCredentials = Boolean(process.env.GCS_CREDENTIALS_JSON?.trim());
-  const hasFileCredentials = Boolean(process.env.GCS_CREDENTIALS_JSON_PATH?.trim());
+  const hasInlineCredentials = Boolean(
+    process.env.GCS_CREDENTIALS_JSON?.trim(),
+  );
+  const hasFileCredentials = Boolean(
+    process.env.GCS_CREDENTIALS_JSON_PATH?.trim(),
+  );
   const hasBucketName = Boolean(process.env.GCS_BUCKET_NAME?.trim());
   const hasDefaultProject = Boolean(process.env.GOOGLE_CLOUD_PROJECT?.trim());
 
-  if (hasBucketName && (hasInlineCredentials || hasFileCredentials || hasDefaultProject)) {
+  if (
+    hasBucketName &&
+    (hasInlineCredentials || hasFileCredentials || hasDefaultProject)
+  ) {
     return new GoogleCloudGalleryStorageService();
   }
 

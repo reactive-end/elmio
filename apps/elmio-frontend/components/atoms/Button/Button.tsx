@@ -18,10 +18,8 @@ export function Button({
     'inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed'
 
   const variants = {
-    primary:
-      'bg-secondary text-white hover:bg-secondary-dark focus:ring-ring shadow-sm',
-    ghost:
-      'border border-secondary text-secondary hover:bg-surface-muted focus:ring-ring',
+    primary: 'bg-secondary text-white hover:bg-secondary-dark focus:ring-ring shadow-sm',
+    ghost: 'border border-secondary text-secondary hover:bg-surface-muted focus:ring-ring',
   }
 
   return (

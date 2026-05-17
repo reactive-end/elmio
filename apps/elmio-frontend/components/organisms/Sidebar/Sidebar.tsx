@@ -11,6 +11,11 @@ import {
   Settings,
   ShoppingBag,
   Store,
+  Building2,
+  Landmark,
+  Users,
+  FileText,
+  DollarSign,
 } from 'lucide-react'
 import { Logo } from '@/components/atoms/Logo/Logo'
 import type { SidebarProps } from './Sidebar.d'
@@ -34,8 +39,37 @@ const NAV: NavGroup[] = [
     key: 'home',
     label: 'Inicio',
     icon: LayoutDashboard,
+    children: [{ key: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }],
+  },
+  {
+    key: 'enterprise',
+    label: 'Empresa',
+    icon: Building2,
     children: [
-      { key: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      {
+        key: 'enterprise-onboarding',
+        label: 'Configuracion',
+        href: '/dashboard/enterprise/onboarding',
+        icon: Landmark,
+      },
+      {
+        key: 'enterprise-account',
+        label: 'Estado de cuenta',
+        href: '/dashboard/enterprise/account-statement',
+        icon: DollarSign,
+      },
+      {
+        key: 'enterprise-collaborators',
+        label: 'Colaboradores',
+        href: '/dashboard/enterprise/collaborators',
+        icon: Users,
+      },
+      {
+        key: 'enterprise-requests',
+        label: 'Solicitudes',
+        href: '/dashboard/enterprise/requests',
+        icon: FileText,
+      },
     ],
   },
   {
@@ -43,7 +77,12 @@ const NAV: NavGroup[] = [
     label: 'Marketplace',
     icon: Store,
     children: [
-      { key: 'marketplaces', label: 'Ver marketplaces', href: '/dashboard/marketplaces', icon: Store },
+      {
+        key: 'marketplaces',
+        label: 'Ver marketplaces',
+        href: '/dashboard/marketplaces',
+        icon: Store,
+      },
     ],
   },
   {
@@ -52,7 +91,12 @@ const NAV: NavGroup[] = [
     icon: Package,
     children: [
       { key: 'products-list', label: 'Ver productos', href: '/dashboard/products', icon: List },
-      { key: 'products-new', label: 'Nuevo producto', href: '/dashboard/products/new', icon: ShoppingBag },
+      {
+        key: 'products-new',
+        label: 'Nuevo producto',
+        href: '/dashboard/products/new',
+        icon: ShoppingBag,
+      },
     ],
   },
   {
@@ -75,21 +119,16 @@ const NAV: NavGroup[] = [
  * Organismo de barra lateral con logo, navegacion colapsable y grupos expandibles.
  * Soporta modo colapsado (solo iconos) y modo expandido (icono + texto).
  */
-export function Sidebar({
-  collapsed,
-  onToggleGroup,
-  isGroupOpen,
-  currentPath,
-}: SidebarProps) {
+export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: SidebarProps) {
   const isActive = (href: string) => {
     if (href === '/dashboard') return currentPath === '/dashboard'
     return currentPath.startsWith(href)
   }
 
-  const isChildActive = (group: NavGroup) =>
-    group.children.some((child) => isActive(child.href))
+  const isChildActive = (group: NavGroup) => group.children.some((child) => isActive(child.href))
 
-  const shouldGroupBeOpen = (key: string) => isGroupOpen(key) || isChildActive(NAV.find((g) => g.key === key)!)
+  const shouldGroupBeOpen = (key: string) =>
+    isGroupOpen(key) || isChildActive(NAV.find((g) => g.key === key)!)
 
   return (
     <div
@@ -106,7 +145,14 @@ export function Sidebar({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <pattern id="sidebar-dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+          <pattern
+            id="sidebar-dots"
+            x="0"
+            y="0"
+            width="32"
+            height="32"
+            patternUnits="userSpaceOnUse"
+          >
             <circle cx="2" cy="2" r="1.5" fill="white" />
           </pattern>
         </defs>

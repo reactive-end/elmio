@@ -56,7 +56,8 @@ export function ColorInput({ label, value, onChange, disabled = false }: ColorIn
               esTransparente
                 ? {
                     backgroundColor: '#ffffff',
-                    backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)',
+                    backgroundImage:
+                      'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)',
                     backgroundPosition: '0 0, 4px 4px',
                     backgroundSize: '8px 8px',
                   }
@@ -77,15 +78,15 @@ export function ColorInput({ label, value, onChange, disabled = false }: ColorIn
             type="button"
             onClick={handleTransparente}
             className={`text-[10px] font-medium rounded-lg px-2 py-1.5 transition-colors flex-shrink-0 ${
-              esTransparente ? 'bg-gray-200 text-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              esTransparente
+                ? 'bg-gray-200 text-gray-700'
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
             }`}
           >
             Sin fondo
           </button>
         </div>
       </div>
-
-
     </div>
   )
 }

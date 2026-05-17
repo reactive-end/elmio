@@ -53,11 +53,7 @@ export function GradientBuilder({
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-medium text-gray-400">Direccion</label>
-            <Select
-              value={direccion}
-              onChange={onDireccionChange}
-              options={DIRECCIONES}
-            />
+            <Select value={direccion} onChange={onDireccionChange} options={DIRECCIONES} />
           </div>
         </div>
       )}

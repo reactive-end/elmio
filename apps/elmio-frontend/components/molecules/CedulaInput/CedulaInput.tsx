@@ -15,8 +15,15 @@ import type { CedulaInputProps, CedulaValue } from './CedulaInput.d'
  * Ambos elementos ocupan el ancho completo y comparten los estilos del sistema.
  */
 export default function CedulaInput({ value, onChange, placeholder }: CedulaInputProps) {
-  const { letter, displayDigits, rawDigits, inputRef, letterOptions, handleLetterChange, handleDigitsChange } =
-    useCedulaInput(value)
+  const {
+    letter,
+    displayDigits,
+    rawDigits,
+    inputRef,
+    letterOptions,
+    handleLetterChange,
+    handleDigitsChange,
+  } = useCedulaInput(value)
 
   /** Ref estable a onChange para romper el ciclo de dependencias en el efecto. */
   const onChangeRef = useRef(onChange)

@@ -17,6 +17,7 @@ import { GetGalleryImageFileUseCase } from '../../application/get-gallery-image-
 import { ListGalleryImagesUseCase } from '../../application/list-gallery-images.use-case';
 import { UploadGalleryImagesUseCase } from '../../application/upload-gallery-images.use-case';
 import { GalleryQueryDto } from './dto/gallery-query.dto';
+import type { ArchivoSubido } from '../../domain/gallery-image';
 
 interface GalleryImageResponseDto {
   id: string;
@@ -64,9 +65,7 @@ export class GalleryController {
     return query.tenant.trim().toLowerCase();
   }
 
-  private toResponseDto(
-    image: GalleryDomainImage,
-  ): GalleryImageResponseDto {
+  private toResponseDto(image: GalleryDomainImage): GalleryImageResponseDto {
     return {
       ...image,
       previewUrl: `/api/gallery/${image.id}/file?tenant=${image.tenantDirectory}`,
@@ -100,7 +99,7 @@ export class GalleryController {
   @Post('upload')
   async uploadGalleryImages(
     @Query() query: GalleryQueryDto,
-    @UploadedFiles() files: Express.Multer.File[] | undefined,
+    @UploadedFiles() files: ArchivoSubido[] | undefined,
   ): Promise<GalleryImageResponseDto[]> {
     const tenantDirectory = this.resolveTenantDirectory(query);
     const uploadedImages = await this.uploadGalleryImagesUseCase.execute({
@@ -144,10 +143,8 @@ export class GalleryController {
     @Res() response: Response,
   ): Promise<void> {
     const tenantDirectory = this.resolveTenantDirectory(query);
-    const { image, absolutePath, publicUrl } = await this.getGalleryImageFileUseCase.execute(
-      tenantDirectory,
-      imageId,
-    );
+    const { image, absolutePath, publicUrl } =
+      await this.getGalleryImageFileUseCase.execute(tenantDirectory, imageId);
 
     if (publicUrl) {
       response.redirect(publicUrl);
@@ -155,7 +152,9 @@ export class GalleryController {
     }
 
     if (!absolutePath) {
-      throw new BadRequestException('No se pudo resolver el origen del archivo solicitado.');
+      throw new BadRequestException(
+        'No se pudo resolver el origen del archivo solicitado.',
+      );
     }
 
     response.type(image.mimeType);

@@ -1,15 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import {
-  Eye,
-  FolderTree,
-  ImageIcon,
-  Search,
-  Trash2,
-  Upload,
-  X,
-} from 'lucide-react'
+import { Eye, FolderTree, ImageIcon, Search, Trash2, Upload, X } from 'lucide-react'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Button } from '@/components/atoms/Button/Button'
 import { Input } from '@/components/atoms/Input/Input'
@@ -145,7 +137,12 @@ export function GalleryManager({ className = '' }: GalleryManagerProps) {
             <ImageIcon className="h-4 w-4" strokeWidth={1.5} />
             Cargar una imagen
           </Button>
-          <Button type="button" onClick={openBulkUpload} disabled={isUploading} isLoading={isUploading}>
+          <Button
+            type="button"
+            onClick={openBulkUpload}
+            disabled={isUploading}
+            isLoading={isUploading}
+          >
             <Upload className="h-4 w-4" strokeWidth={1.5} />
             Carga masiva
           </Button>
@@ -162,22 +159,32 @@ export function GalleryManager({ className = '' }: GalleryManagerProps) {
         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-body">Biblioteca del tenant {tenantDirectory}</p>
+              <p className="text-sm font-semibold text-body">
+                Biblioteca del tenant {tenantDirectory}
+              </p>
               <p className="mt-1 text-sm leading-6 text-gray-500">
-                Gestiona las imagenes activas del administrador y reutilizalas dentro del marketplace.
+                Gestiona las imagenes activas del administrador y reutilizalas dentro del
+                marketplace.
               </p>
             </div>
             <div className="rounded-2xl bg-surface-muted px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">Imagenes</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                Imagenes
+              </p>
               <p className="mt-1 text-2xl font-semibold text-body">{images.length}</p>
             </div>
           </div>
         </div>
 
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
-          <label className="mb-2 block text-sm font-medium text-body-secondary">Buscar en la galeria</label>
+          <label className="mb-2 block text-sm font-medium text-body-secondary">
+            Buscar en la galeria
+          </label>
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" strokeWidth={1.5} />
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              strokeWidth={1.5}
+            />
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -214,7 +221,9 @@ export function GalleryManager({ className = '' }: GalleryManagerProps) {
         <div className="flex min-h-[320px] items-center justify-center rounded-3xl border border-gray-100 bg-white shadow-sm">
           <div className="text-center">
             <p className="text-sm font-medium text-body">Cargando galeria...</p>
-            <p className="mt-1 text-sm text-gray-400">Consultando imagenes registradas en el servidor.</p>
+            <p className="mt-1 text-sm text-gray-400">
+              Consultando imagenes registradas en el servidor.
+            </p>
           </div>
         </div>
       ) : filteredImages.length === 0 ? (
@@ -275,25 +284,37 @@ export function GalleryManager({ className = '' }: GalleryManagerProps) {
 
               <dl className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50/80 p-5">
                 <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Directorio</dt>
-                  <dd className="mt-1 text-sm font-medium text-body">{selectedImage.tenantDirectory}</dd>
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                    Directorio
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-body">
+                    {selectedImage.tenantDirectory}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Ruta</dt>
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                    Ruta
+                  </dt>
                   <dd className="mt-1 break-all text-sm text-body">{selectedImage.storagePath}</dd>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Peso</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                      Peso
+                    </dt>
                     <dd className="mt-1 text-sm text-body">{formatFileSize(selectedImage.size)}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Formato</dt>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                      Formato
+                    </dt>
                     <dd className="mt-1 text-sm text-body">{selectedImage.mimeType}</dd>
                   </div>
                 </div>
                 <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Fecha de carga</dt>
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                    Fecha de carga
+                  </dt>
                   <dd className="mt-1 text-sm text-body">{formatDate(selectedImage.createdAt)}</dd>
                 </div>
               </dl>

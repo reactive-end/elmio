@@ -62,7 +62,12 @@ export function ImagePicker({
             </p>
           </div>
 
-          <Button type="button" variant="ghost" onClick={() => void openPicker()} className="px-4 py-2 text-xs">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => void openPicker()}
+            className="px-4 py-2 text-xs"
+          >
             Buscar imagen
           </Button>
         </div>
@@ -90,7 +95,10 @@ export function ImagePicker({
 
             <div className="border-b border-gray-100 px-6 py-4">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" strokeWidth={1.5} />
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  strokeWidth={1.5}
+                />
                 <Input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}

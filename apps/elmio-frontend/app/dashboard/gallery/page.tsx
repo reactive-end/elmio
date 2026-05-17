@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { DashboardTemplate } from '@/components/templates/DashboardTemplate/DashboardTemplate'
 import { GalleryManager } from '@/components/organisms/GalleryManager/GalleryManager'
 
 export const metadata: Metadata = {
@@ -13,10 +12,8 @@ export const metadata: Metadata = {
  */
 export default function GalleryPage() {
   return (
-    <DashboardTemplate>
-      <div className="mx-auto w-full max-w-7xl">
-        <GalleryManager />
-      </div>
-    </DashboardTemplate>
+    <div className="mx-auto w-full max-w-7xl">
+      <GalleryManager />
+    </div>
   )
 }

@@ -92,10 +92,7 @@ export async function uploadGalleryImages(
  * @param imageId Identificador interno de la imagen.
  * @returns Promesa resuelta cuando el backend confirma la eliminacion.
  */
-export async function deleteGalleryImage(
-  tenantDirectory: string,
-  imageId: string,
-): Promise<void> {
+export async function deleteGalleryImage(tenantDirectory: string, imageId: string): Promise<void> {
   const response = await fetch(buildGalleryEndpoint(`/${imageId}`, tenantDirectory), {
     method: 'DELETE',
   })

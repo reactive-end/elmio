@@ -21,7 +21,10 @@ export class DeleteGalleryImageUseCase {
    * @returns `void` cuando la eliminacion se completa.
    */
   async execute(tenantDirectory: string, imageId: string): Promise<void> {
-    const wasDeleted = await this.galleryStoragePort.delete(tenantDirectory, imageId);
+    const wasDeleted = await this.galleryStoragePort.delete(
+      tenantDirectory,
+      imageId,
+    );
 
     if (!wasDeleted) {
       throw new NotFoundException('La imagen solicitada no existe.');

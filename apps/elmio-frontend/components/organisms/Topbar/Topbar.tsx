@@ -22,7 +22,14 @@ export function Topbar({ onToggleSidebar, sidebarCollapsed }: TopbarProps) {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <pattern id="topbar-dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+          <pattern
+            id="topbar-dots"
+            x="0"
+            y="0"
+            width="32"
+            height="32"
+            patternUnits="userSpaceOnUse"
+          >
             <circle cx="2" cy="2" r="1.5" fill="white" />
           </pattern>
         </defs>

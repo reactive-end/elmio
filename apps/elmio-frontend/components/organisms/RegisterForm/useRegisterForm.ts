@@ -5,11 +5,13 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { useRouter } from 'next/navigation'
 import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
+import { authService } from '@/src/services/auth.service'
 import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 
 gsap.registerPlugin(useGSAP)
 
-export type RegisterStep = 1 | 2 | 3
+export type AccountRole = 'CLIENT' | 'COMPANY'
+export type RegisterStep = 0 | 1 | 2 | 3
 
 interface UserFields {
   first_name: string
@@ -60,6 +62,7 @@ const DEFAULT_COUNTRY: CountryCode = {
 
 export interface UseRegisterFormReturn {
   step: RegisterStep
+  accountRole: AccountRole | null
   userFields: UserFields
   personalFields: PersonalFields
   employmentFields: EmploymentFields
@@ -77,22 +80,26 @@ export interface UseRegisterFormReturn {
   updateUserField: (field: keyof UserFields, value: string) => void
   updatePersonalField: (field: keyof PersonalFields, value: string) => void
   updateEmploymentField: (field: keyof EmploymentFields, value: string) => void
+  selectRole: (role: AccountRole) => void
   handleNext: () => void
   handleBack: () => void
   handleSubmit: (e: FormEvent) => void
 }
 
 /**
- * Hook que encapsula la logica del formulario de registro en 3 pasos:
- * 1. Cuenta — datos basicos, cedula, telefono, contrasena.
- * 2. Personal — fecha de nacimiento, genero, direccion, ocupacion.
- * 3. Laboral — tipo de empleo, ingresos, vivienda, proposito.
- *
- * Cada paso se valida antes de avanzar. El envio final simula el registro.
+ * Hook que encapsula la logica del formulario de registro.
+ * Paso 0 — Tipo de cuenta: Empresa o Persona Natural.
+ * Persona Natural:
+ *   Paso 1 — Cuenta: datos basicos, cedula, telefono, contrasena.
+ *   Paso 2 — Personal: fecha de nacimiento, genero, direccion, ocupacion.
+ *   Paso 3 — Laboral: tipo de empleo, ingresos, vivienda, proposito.
+ * Empresa:
+ *   Paso 1 — Solo nombre, email y contrasena. Luego redirige a onboarding.
  */
 export function useRegisterForm(): UseRegisterFormReturn {
   const router = useRouter()
-  const [step, setStep] = useState<RegisterStep>(1)
+  const [step, setStep] = useState<RegisterStep>(0)
+  const [accountRole, setAccountRole] = useState<AccountRole | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<AlertState | null>(null)
 
@@ -172,6 +179,12 @@ export function useRegisterForm(): UseRegisterFormReturn {
     setEmploymentFields((prev) => ({ ...prev, [field]: value }))
   }
 
+  const selectRole = (role: AccountRole) => {
+    setAccountRole(role)
+    setStep(1)
+    animateStepTransition(1)
+  }
+
   const validateStep1 = (): boolean => {
     if (!userFields.first_name.trim()) {
       setAlert({ type: 'error', message: 'El nombre es requerido' })
@@ -179,10 +192,6 @@ export function useRegisterForm(): UseRegisterFormReturn {
     }
     if (!userFields.email.trim()) {
       setAlert({ type: 'error', message: 'El correo electronico es requerido' })
-      return false
-    }
-    if (!userFields.document_digits.trim() || userFields.document_digits.length < 7) {
-      setAlert({ type: 'error', message: 'La cedula debe tener al menos 7 digitos' })
       return false
     }
     if (userFields.password.length < 8) {
@@ -193,19 +202,40 @@ export function useRegisterForm(): UseRegisterFormReturn {
       setAlert({ type: 'error', message: 'Las contrasenas no coinciden' })
       return false
     }
+    if (
+      accountRole === 'CLIENT' &&
+      (!userFields.document_digits.trim() || userFields.document_digits.length < 7)
+    ) {
+      setAlert({ type: 'error', message: 'La cedula debe tener al menos 7 digitos' })
+      return false
+    }
     return true
   }
 
   const validateStep2 = (): boolean => {
     const required: (keyof PersonalFields)[] = [
-      'age', 'gender', 'birth_date', 'civil_status', 'height',
-      'weight', 'address', 'occupation', 'country_of_origin', 'country_of_residence',
+      'age',
+      'gender',
+      'birth_date',
+      'civil_status',
+      'height',
+      'weight',
+      'address',
+      'occupation',
+      'country_of_origin',
+      'country_of_residence',
     ]
     const names: Record<keyof PersonalFields, string> = {
-      age: 'Edad', gender: 'Genero', birth_date: 'Fecha de nacimiento',
-      civil_status: 'Estado civil', height: 'Estatura', weight: 'Peso',
-      address: 'Direccion', occupation: 'Ocupacion',
-      country_of_origin: 'Pais de origen', country_of_residence: 'Pais de residencia',
+      age: 'Edad',
+      gender: 'Genero',
+      birth_date: 'Fecha de nacimiento',
+      civil_status: 'Estado civil',
+      height: 'Estatura',
+      weight: 'Peso',
+      address: 'Direccion',
+      occupation: 'Ocupacion',
+      country_of_origin: 'Pais de origen',
+      country_of_residence: 'Pais de residencia',
     }
     for (const field of required) {
       if (!personalFields[field].trim()) {
@@ -218,13 +248,20 @@ export function useRegisterForm(): UseRegisterFormReturn {
 
   const validateStep3 = (): boolean => {
     const required: (keyof EmploymentFields)[] = [
-      'employment_type', 'employment_sector', 'monthly_income', 'residence_type',
+      'employment_type',
+      'employment_sector',
+      'monthly_income',
+      'residence_type',
     ]
     const names: Record<keyof EmploymentFields, string> = {
-      employment_type: 'Tipo de empleo', employment_sector: 'Sector de empleo',
-      monthly_income: 'Ingreso mensual', residence_type: 'Tipo de vivienda',
-      is_residence_owned: 'Vivienda propia', family_dependents: 'Dependientes familiares',
-      employer_company_name: 'Nombre de empresa', time_in_company_months: 'Tiempo en la empresa',
+      employment_type: 'Tipo de empleo',
+      employment_sector: 'Sector de empleo',
+      monthly_income: 'Ingreso mensual',
+      residence_type: 'Tipo de vivienda',
+      is_residence_owned: 'Vivienda propia',
+      family_dependents: 'Dependientes familiares',
+      employer_company_name: 'Nombre de empresa',
+      time_in_company_months: 'Tiempo en la empresa',
       loan_purpose: 'Proposito',
     }
     for (const field of required) {
@@ -239,21 +276,80 @@ export function useRegisterForm(): UseRegisterFormReturn {
   const handleNext = () => {
     setAlert(null)
     if (step === 1 && validateStep1()) {
-      setStep(2); animateStepTransition(1)
+      if (accountRole === 'COMPANY') {
+        // Company only needs step 1 (name, email, password)
+        return
+      }
+      setStep(2)
+      animateStepTransition(1)
     } else if (step === 2 && validateStep2()) {
-      setStep(3); animateStepTransition(1)
+      setStep(3)
+      animateStepTransition(1)
     }
   }
 
   const handleBack = () => {
     setAlert(null)
-    if (step === 2) { setStep(1); animateStepTransition(-1) }
-    if (step === 3) { setStep(2); animateStepTransition(-1) }
+    if (step === 1) {
+      setStep(0)
+      setAccountRole(null)
+      animateStepTransition(-1)
+    }
+    if (step === 2) {
+      setStep(1)
+      animateStepTransition(-1)
+    }
+    if (step === 3) {
+      setStep(2)
+      animateStepTransition(-1)
+    }
+  }
+
+  const doRegister = async () => {
+    if (!accountRole) return
+
+    try {
+      setIsLoading(true)
+      setAlert(null)
+
+      await authService.register({
+        name: `${userFields.first_name} ${userFields.last_name}`.trim(),
+        email: userFields.email,
+        password: userFields.password,
+        role: accountRole,
+        owner: 'default',
+      })
+
+      setAlert({
+        type: 'success',
+        message: 'Registro exitoso. Redirigiendo al inicio de sesion...',
+      })
+
+      setTimeout(() => {
+        if (accountRole === 'COMPANY') {
+          router.push('/login')
+        } else {
+          router.push('/login')
+        }
+      }, 2000)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error al registrar usuario.'
+      setAlert({ type: 'error', message: msg })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     setAlert(null)
+
+    if (accountRole === 'COMPANY') {
+      if (validateStep1()) {
+        void doRegister()
+      }
+      return
+    }
 
     if (step < 3) {
       handleNext()
@@ -262,18 +358,12 @@ export function useRegisterForm(): UseRegisterFormReturn {
 
     if (!validateStep3()) return
 
-    setIsLoading(true)
-
-    // Simulacion de registro (sin backend)
-    setTimeout(() => {
-      setIsLoading(false)
-      setAlert({ type: 'success', message: 'Registro exitoso. Redirigiendo al inicio de sesion...' })
-      setTimeout(() => router.push('/login'), 2000)
-    }, 1200)
+    void doRegister()
   }
 
   return {
     step,
+    accountRole,
     userFields,
     personalFields,
     employmentFields,
@@ -291,6 +381,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
     updateUserField,
     updatePersonalField,
     updateEmploymentField,
+    selectRole,
     handleNext,
     handleBack,
     handleSubmit,

@@ -1,9 +1,6 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { GalleryImage } from '../domain/gallery-image';
+import type { ArchivoSubido } from '../domain/gallery-image';
 import {
   GALLERY_STORAGE_PORT,
   type GalleryStoragePort,
@@ -11,7 +8,7 @@ import {
 
 interface UploadGalleryImageInput {
   tenantDirectory: string;
-  files: Express.Multer.File[];
+  files: ArchivoSubido[];
 }
 
 /**

@@ -45,12 +45,9 @@ export interface GalleryStoragePort {
   resolveFile(
     tenantDirectory: string,
     imageId: string,
-  ): Promise<
-    | {
-        image: GalleryImage;
-        absolutePath?: string;
-        publicUrl?: string;
-      }
-    | null
-  >;
+  ): Promise<{
+    image: GalleryImage;
+    absolutePath?: string;
+    publicUrl?: string;
+  } | null>;
 }
