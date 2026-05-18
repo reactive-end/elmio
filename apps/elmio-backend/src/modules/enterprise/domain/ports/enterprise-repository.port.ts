@@ -1,10 +1,10 @@
 import type {
   Enterprise,
-  Collaborator,
   LoanRequest,
   Transaction,
   PlatformConfig,
 } from '../enterprise';
+import type { PersonProfile } from '../person-profile';
 
 export const ENTERPRISE_REPOSITORY_PORT = Symbol('ENTERPRISE_REPOSITORY_PORT');
 
@@ -42,28 +42,28 @@ export interface EnterpriseRepositoryPort {
    * @param enterpriseId ID de la empresa.
    * @returns Lista de colaboradores.
    */
-  findCollaboratorsByEnterprise(enterpriseId: string): Promise<Collaborator[]>;
+  findCollaboratorsByEnterprise(enterpriseId: string): Promise<PersonProfile[]>;
 
   /**
    * Busca un colaborador por su ID.
    * @param id ID del colaborador.
    * @returns Colaborador o null.
    */
-  findCollaboratorById(id: string): Promise<Collaborator | null>;
+  findCollaboratorById(id: string): Promise<PersonProfile | null>;
 
   /**
    * Crea o actualiza un colaborador.
    * @param collaborator Datos del colaborador.
    * @returns Colaborador guardado.
    */
-  saveCollaborator(collaborator: Collaborator): Promise<Collaborator>;
+  saveCollaborator(collaborator: PersonProfile): Promise<PersonProfile>;
 
   /**
    * Crea multiples colaboradores a la vez.
    * @param collaborators Lista de colaboradores.
    * @returns Colaboradores creados.
    */
-  saveCollaborators(collaborators: Collaborator[]): Promise<Collaborator[]>;
+  saveCollaborators(collaborators: PersonProfile[]): Promise<PersonProfile[]>;
 
   // --- Loan Requests ---
 

@@ -1,29 +1,42 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import type { DomiciliationData, Enterprise } from '../domain/enterprise';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import type {
+  Enterprise,
+  SocialMediaLinks,
+  Shareholder,
+  BankAccount,
+} from '../domain/enterprise';
 import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../domain/ports/enterprise-repository.port';
 
-interface SaveDomiciliationInput {
-  bank: string;
-  accountType: 'checking' | 'savings';
-  accountNumber: string;
-  holderName: string;
-  holderId: string;
-  debitAuthorized: boolean;
+/**
+ * Input parcial para actualizar datos de la empresa.
+ */
+interface UpdateEnterpriseInput {
+  website?: string;
+  socialMedia?: SocialMediaLinks;
+  headquartersLocation?: string;
+  taxIdPhoto?: string;
+  constitutiveActPhoto?: string;
+  lastAssemblyPhoto?: string;
+  serviceReceiptPhoto?: string;
+  bankStatementsPhotos?: string[];
+  bankReferencePhotos?: string[];
+  legalRepDocumentId?: string;
+  legalRepDocumentPhoto?: string;
+  accountManagerDocumentId?: string;
+  accountManagerDocumentPhoto?: string;
+  shareholderCount?: number;
+  shareholders?: Shareholder[];
+  bankAccounts?: BankAccount[];
 }
 
 /**
- * Guarda los datos de domiciliacion bancaria de la empresa.
+ * Actualiza datos parciales de la empresa (documentos, accionistas, cuentas, etc.).
  */
 @Injectable()
-export class SaveDomiciliationUseCase {
+export class UpdateEnterpriseUseCase {
   constructor(
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly repository: EnterpriseRepositoryPort,
@@ -31,7 +44,7 @@ export class SaveDomiciliationUseCase {
 
   async execute(
     enterpriseId: string,
-    input: SaveDomiciliationInput,
+    input: UpdateEnterpriseInput,
   ): Promise<Enterprise> {
     const enterprise = await this.repository.findEnterpriseById(enterpriseId);
 
@@ -39,21 +52,39 @@ export class SaveDomiciliationUseCase {
       throw new NotFoundException('Empresa no encontrada.');
     }
 
-    if (!input.debitAuthorized) {
-      throw new BadRequestException('Debe autorizar el debito inmediato.');
-    }
-
-    const domiciliation: DomiciliationData = {
-      bank: input.bank.trim(),
-      accountType: input.accountType,
-      accountNumber: input.accountNumber.trim(),
-      holderName: input.holderName.trim(),
-      holderId: input.holderId.trim(),
-      debitAuthorized: true,
-      authorizationDate: new Date().toISOString(),
-    };
-
-    enterprise.domiciliation = domiciliation;
+    // Merge only provided fields
+    if (input.website !== undefined) enterprise.website = input.website;
+    if (input.socialMedia !== undefined)
+      enterprise.socialMedia = input.socialMedia;
+    if (input.headquartersLocation !== undefined)
+      enterprise.headquartersLocation = input.headquartersLocation;
+    if (input.taxIdPhoto !== undefined)
+      enterprise.taxIdPhoto = input.taxIdPhoto;
+    if (input.constitutiveActPhoto !== undefined)
+      enterprise.constitutiveActPhoto = input.constitutiveActPhoto;
+    if (input.lastAssemblyPhoto !== undefined)
+      enterprise.lastAssemblyPhoto = input.lastAssemblyPhoto;
+    if (input.serviceReceiptPhoto !== undefined)
+      enterprise.serviceReceiptPhoto = input.serviceReceiptPhoto;
+    if (input.bankStatementsPhotos !== undefined)
+      enterprise.bankStatementsPhotos = input.bankStatementsPhotos;
+    if (input.bankReferencePhotos !== undefined)
+      enterprise.bankReferencePhotos = input.bankReferencePhotos;
+    if (input.legalRepDocumentId !== undefined)
+      enterprise.legalRepDocumentId = input.legalRepDocumentId;
+    if (input.legalRepDocumentPhoto !== undefined)
+      enterprise.legalRepDocumentPhoto = input.legalRepDocumentPhoto;
+    if (input.accountManagerDocumentId !== undefined)
+      enterprise.accountManagerDocumentId = input.accountManagerDocumentId;
+    if (input.accountManagerDocumentPhoto !== undefined)
+      enterprise.accountManagerDocumentPhoto =
+        input.accountManagerDocumentPhoto;
+    if (input.shareholderCount !== undefined)
+      enterprise.shareholderCount = input.shareholderCount;
+    if (input.shareholders !== undefined)
+      enterprise.shareholders = input.shareholders;
+    if (input.bankAccounts !== undefined)
+      enterprise.bankAccounts = input.bankAccounts;
 
     return this.repository.saveEnterprise(enterprise);
   }

@@ -4,7 +4,7 @@ import {
   GetOrCreateEnterpriseUseCase,
   GetEnterpriseUseCase,
 } from './application/get-enterprise.use-case';
-import { SaveDomiciliationUseCase } from './application/save-domiciliation.use-case';
+import { UpdateEnterpriseUseCase } from './application/save-domiciliation.use-case';
 import { CompleteOnboardingUseCase } from './application/complete-onboarding.use-case';
 import { ManageCollaboratorsUseCase } from './application/manage-collaborators.use-case';
 import { ManageLoanRequestsUseCase } from './application/manage-loan-requests.use-case';
@@ -23,7 +23,7 @@ import { EnterpriseController } from './presentation/http/enterprise.controller'
   providers: [
     GetOrCreateEnterpriseUseCase,
     GetEnterpriseUseCase,
-    SaveDomiciliationUseCase,
+    UpdateEnterpriseUseCase,
     CompleteOnboardingUseCase,
     ManageCollaboratorsUseCase,
     ManageLoanRequestsUseCase,

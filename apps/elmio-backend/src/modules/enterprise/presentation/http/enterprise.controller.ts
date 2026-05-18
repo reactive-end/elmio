@@ -15,7 +15,7 @@ import {
   GetOrCreateEnterpriseUseCase,
   GetEnterpriseUseCase,
 } from '../../application/get-enterprise.use-case';
-import { SaveDomiciliationUseCase } from '../../application/save-domiciliation.use-case';
+import { UpdateEnterpriseUseCase } from '../../application/save-domiciliation.use-case';
 import { CompleteOnboardingUseCase } from '../../application/complete-onboarding.use-case';
 import { ManageCollaboratorsUseCase } from '../../application/manage-collaborators.use-case';
 import { ManageLoanRequestsUseCase } from '../../application/manage-loan-requests.use-case';
@@ -23,7 +23,7 @@ import { GetAccountStatementUseCase } from '../../application/get-account-statem
 import type { LoanRequest } from '../../domain/enterprise';
 import {
   CreateEnterpriseDto,
-  SaveDomiciliationDto,
+  UpdateEnterpriseDto,
   CreateCollaboratorDto,
   BulkUploadCollaboratorsDto,
   ResolveLoanRequestDto,
@@ -39,7 +39,7 @@ export class EnterpriseController {
   constructor(
     private readonly getOrCreate: GetOrCreateEnterpriseUseCase,
     private readonly getEnterprise: GetEnterpriseUseCase,
-    private readonly saveDomiciliation: SaveDomiciliationUseCase,
+    private readonly updateEnterprise: UpdateEnterpriseUseCase,
     private readonly completeOnboarding: CompleteOnboardingUseCase,
     private readonly manageCollaborators: ManageCollaboratorsUseCase,
     private readonly manageRequests: ManageLoanRequestsUseCase,
@@ -48,7 +48,7 @@ export class EnterpriseController {
 
   // --- Enterprise ---
 
-  /** POST /api/enterprises - Obtiene o crea la empresa del usuario. */
+  /** POST /api/enterprises - Crea la empresa del usuario. */
   @Post()
   async create(@Req() req: Request, @Body() body: CreateEnterpriseDto) {
     return this.getOrCreate.execute(
@@ -64,15 +64,10 @@ export class EnterpriseController {
     return this.getEnterprise.execute(req.session!.userId);
   }
 
-  // --- Domiciliation & Onboarding ---
-
-  /** PATCH /api/enterprises/:id/domiciliation - Guarda datos de domiciliacion. */
-  @Patch(':id/domiciliation')
-  async domiciliation(
-    @Param('id') id: string,
-    @Body() body: SaveDomiciliationDto,
-  ) {
-    return this.saveDomiciliation.execute(id, body);
+  /** PATCH /api/enterprises/:id - Actualiza datos de la empresa. */
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() body: UpdateEnterpriseDto) {
+    return this.updateEnterprise.execute(id, body);
   }
 
   /** PATCH /api/enterprises/:id/complete-onboarding - Finaliza el onboarding. */

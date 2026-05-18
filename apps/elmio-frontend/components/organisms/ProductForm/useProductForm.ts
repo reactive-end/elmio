@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   productService,

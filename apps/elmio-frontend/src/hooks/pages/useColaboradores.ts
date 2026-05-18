@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   enterpriseService,
   type Enterprise,
-  type Collaborator,
+  type PersonProfile,
   type CollaboratorInput,
 } from '@/src/services/empresa.service'
 
 interface UseCollaboratorsReturn {
   enterprise: Enterprise | null
-  collaborators: Collaborator[]
+  collaborators: PersonProfile[]
   loading: boolean
   error: string | null
   successMsg: string | null
@@ -31,7 +31,7 @@ interface UseCollaboratorsReturn {
  */
 export function useCollaborators(): UseCollaboratorsReturn {
   const [enterprise, setEnterprise] = useState<Enterprise | null>(null)
-  const [collaborators, setCollaborators] = useState<Collaborator[]>([])
+  const [collaborators, setCollaborators] = useState<PersonProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)

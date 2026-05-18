@@ -1,19 +1,11 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { Collaborator } from '../domain/enterprise';
+import type { PersonProfile } from '../domain/person-profile';
 import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../domain/ports/enterprise-repository.port';
-
-interface CollaboratorInput {
-  name: string;
-  lastName: string;
-  documentId: string;
-  email: string;
-  phone: string;
-  baseSalary: number;
-}
+import type { CreateCollaboratorDto } from '../presentation/http/dto/enterprise.dto';
 
 /**
  * Gestiona la creacion individual y masiva de colaboradores.
@@ -33,26 +25,13 @@ export class ManageCollaboratorsUseCase {
    */
   async createOne(
     enterpriseId: string,
-    input: CollaboratorInput,
-  ): Promise<Collaborator> {
+    input: CreateCollaboratorDto,
+  ): Promise<PersonProfile> {
     const enterprise = await this.repository.findEnterpriseById(enterpriseId);
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
-    const collaborator: Collaborator = {
-      id: randomUUID(),
-      enterpriseId,
-      userId: '',
-      name: input.name.trim(),
-      lastName: input.lastName.trim(),
-      documentId: input.documentId.trim(),
-      email: input.email.trim().toLowerCase(),
-      phone: input.phone.trim(),
-      baseSalary: input.baseSalary,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    };
-
-    return this.repository.saveCollaborator(collaborator);
+    const profile = this.buildProfile(enterpriseId, input);
+    return this.repository.saveCollaborator(profile);
   }
 
   /**
@@ -63,27 +42,16 @@ export class ManageCollaboratorsUseCase {
    */
   async createBulk(
     enterpriseId: string,
-    inputs: CollaboratorInput[],
-  ): Promise<Collaborator[]> {
+    inputs: CreateCollaboratorDto[],
+  ): Promise<PersonProfile[]> {
     const enterprise = await this.repository.findEnterpriseById(enterpriseId);
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
-    const now = new Date().toISOString();
-    const collaborators: Collaborator[] = inputs.map((input) => ({
-      id: randomUUID(),
-      enterpriseId,
-      userId: '',
-      name: input.name.trim(),
-      lastName: input.lastName.trim(),
-      documentId: input.documentId.trim(),
-      email: input.email.trim().toLowerCase(),
-      phone: input.phone.trim(),
-      baseSalary: input.baseSalary,
-      status: 'active' as const,
-      createdAt: now,
-    }));
+    const profiles: PersonProfile[] = inputs.map((input) =>
+      this.buildProfile(enterpriseId, input),
+    );
 
-    return this.repository.saveCollaborators(collaborators);
+    return this.repository.saveCollaborators(profiles);
   }
 
   /**
@@ -94,8 +62,10 @@ export class ManageCollaboratorsUseCase {
    */
   async update(
     collaboratorId: string,
-    updates: Partial<CollaboratorInput & { status: Collaborator['status'] }>,
-  ): Promise<Collaborator> {
+    updates: Partial<
+      CreateCollaboratorDto & { status: PersonProfile['status'] }
+    >,
+  ): Promise<PersonProfile> {
     const collaborator =
       await this.repository.findCollaboratorById(collaboratorId);
     if (!collaborator)
@@ -104,13 +74,33 @@ export class ManageCollaboratorsUseCase {
     if (updates.name !== undefined) collaborator.name = updates.name.trim();
     if (updates.lastName !== undefined)
       collaborator.lastName = updates.lastName.trim();
+    if (updates.documentType !== undefined)
+      collaborator.documentType = updates.documentType;
     if (updates.documentId !== undefined)
       collaborator.documentId = updates.documentId.trim();
     if (updates.email !== undefined)
       collaborator.email = updates.email.trim().toLowerCase();
     if (updates.phone !== undefined) collaborator.phone = updates.phone.trim();
+    if (updates.birthDate !== undefined)
+      collaborator.birthDate = updates.birthDate;
+    if (updates.gender !== undefined) collaborator.gender = updates.gender;
+    if (updates.civilStatus !== undefined)
+      collaborator.civilStatus = updates.civilStatus;
+    if (updates.address !== undefined) collaborator.address = updates.address;
+    if (updates.countryOfOrigin !== undefined)
+      collaborator.countryOfOrigin = updates.countryOfOrigin;
+    if (updates.familyDependents !== undefined)
+      collaborator.familyDependents = updates.familyDependents;
+    if (updates.department !== undefined)
+      collaborator.department = updates.department;
+    if (updates.position !== undefined)
+      collaborator.position = updates.position;
+    if (updates.startDate !== undefined)
+      collaborator.startDate = updates.startDate;
     if (updates.baseSalary !== undefined)
       collaborator.baseSalary = updates.baseSalary;
+    if (updates.maxLoanLimit !== undefined)
+      collaborator.maxLoanLimit = updates.maxLoanLimit;
     if (updates.status !== undefined) collaborator.status = updates.status;
 
     return this.repository.saveCollaborator(collaborator);
@@ -121,7 +111,83 @@ export class ManageCollaboratorsUseCase {
    * @param enterpriseId ID de la empresa.
    * @returns Lista de colaboradores.
    */
-  async list(enterpriseId: string): Promise<Collaborator[]> {
+  async list(enterpriseId: string): Promise<PersonProfile[]> {
     return this.repository.findCollaboratorsByEnterprise(enterpriseId);
+  }
+
+  /**
+   * Construye un PersonProfile completo a partir de los datos obligatorios.
+   */
+  private buildProfile(
+    enterpriseId: string,
+    input: CreateCollaboratorDto,
+  ): PersonProfile {
+    const now = new Date().toISOString();
+    return {
+      id: randomUUID(),
+      userId: '',
+      // Grupo 1: Identidad
+      name: input.name.trim(),
+      lastName: input.lastName.trim(),
+      documentType: input.documentType,
+      documentId: input.documentId.trim(),
+      documentPhoto: '',
+      email: input.email.trim().toLowerCase(),
+      phone: input.phone.trim(),
+      phone2: '',
+      phoneType: '',
+      photo: '',
+      // Grupo 2: Demograficos
+      birthDate: input.birthDate,
+      age: 0,
+      gender: input.gender,
+      civilStatus: input.civilStatus,
+      height: '',
+      weight: '',
+      diseases: '',
+      familyDependents: input.familyDependents,
+      countryOfOrigin: input.countryOfOrigin,
+      countryOfResidence: '',
+      address: input.address,
+      // Grupo 3: Estilo de vida
+      hobbies: '',
+      favoriteFood: '',
+      hasLaptopOrPc: false,
+      operatingSystem: '',
+      vehicleCount: 0,
+      hasDriverLicense: false,
+      // Grupo 4: Empleo
+      enterpriseId,
+      department: input.department,
+      position: input.position,
+      startDate: input.startDate,
+      baseSalary: input.baseSalary,
+      maxLoanLimit: input.maxLoanLimit,
+      employmentType: '',
+      employmentSector: '',
+      timeInCompanyMonths: 0,
+      loanPurpose: '',
+      status: 'active',
+      // Grupo 5: Redes sociales
+      socialMedia1: '',
+      socialMedia2: '',
+      socialMedia3: '',
+      // Grupo 6: Financieros
+      residenceType: '',
+      isResidenceOwned: false,
+      recurringIncome: 0,
+      nationalBank1: '',
+      nationalBank2: '',
+      nationalBank3: '',
+      internationalBank: '',
+      // Grupo 7: Tarjetas
+      creditCard: null,
+      debitCard: null,
+      // Grupo 8: Referencias
+      personalReferences: [],
+      // Metadatos
+      onboardingCompleted: false,
+      createdAt: now,
+    };
   }
 }

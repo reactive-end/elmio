@@ -1,45 +1,98 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Enterprise Domain — Entidades segmentadas por grupo logico de datos.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Sub-entidades embebidas ──────────────────────────────────────────────────
+
 /**
- * Datos de domiciliacion bancaria de la empresa.
+ * Accionista de la empresa.
  */
-export interface DomiciliationData {
-  bank: string;
-  accountType: 'checking' | 'savings';
-  accountNumber: string;
-  holderName: string;
-  holderId: string;
-  debitAuthorized: boolean;
-  authorizationDate: string;
+export interface Shareholder {
+  name: string;
+  lastName: string;
+  documentId: string;
+  documentPhoto: string;
+  phone: string;
+  email: string;
 }
 
 /**
+ * Cuenta bancaria registrada por la empresa (max 3).
+ */
+export interface BankAccount {
+  accountNumber: string;
+  accountType: 'checking' | 'savings';
+  bank: string;
+}
+
+/**
+ * Links de redes sociales de la empresa.
+ */
+export interface SocialMediaLinks {
+  instagram: string;
+  facebook: string;
+  twitter: string;
+  linkedin: string;
+  tiktok: string;
+  other: string;
+}
+
+// ── Entidad principal: Enterprise ────────────────────────────────────────────
+
+/**
  * Entidad principal de empresa.
+ * Segmentada en:
+ *  - Datos Generales
+ *  - Documentos Legales
+ *  - Representante Legal
+ *  - Encargado de Cuenta
+ *  - Accionistas
+ *  - Cuentas Bancarias
  */
 export interface Enterprise {
   id: string;
   userId: string;
+
+  // — Grupo 1: Datos Generales —
   companyName: string;
+  sector: string;
+  employeeCount: number;
+  phone: string;
+  email: string;
   taxId: string;
+  website: string;
+  socialMedia: SocialMediaLinks | null;
+  headquartersLocation: string;
+
+  // — Grupo 2: Documentos Legales (URLs de archivos subidos) —
+  taxIdPhoto: string;
+  constitutiveActPhoto: string;
+  lastAssemblyPhoto: string;
+  serviceReceiptPhoto: string;
+  bankStatementsPhotos: string[];
+  bankReferencePhotos: string[];
+
+  // — Grupo 3: Representante Legal —
+  legalRepDocumentId: string;
+  legalRepDocumentPhoto: string;
+
+  // — Grupo 4: Encargado de la Cuenta —
+  accountManagerDocumentId: string;
+  accountManagerDocumentPhoto: string;
+
+  // — Grupo 5: Accionistas —
+  shareholderCount: number;
+  shareholders: Shareholder[];
+
+  // — Grupo 6: Cuentas Bancarias (max 3) —
+  bankAccounts: BankAccount[];
+
+  // — Metadatos —
   onboardingCompleted: boolean;
-  domiciliation: DomiciliationData | null;
   createdAt: string;
 }
 
-/**
- * Colaborador registrado por una empresa.
- */
-export interface Collaborator {
-  id: string;
-  enterpriseId: string;
-  userId: string;
-  name: string;
-  lastName: string;
-  documentId: string;
-  email: string;
-  phone: string;
-  baseSalary: number;
-  status: 'active' | 'suspended' | 'terminated';
-  createdAt: string;
-}
+// ── Solicitud de prestamo ────────────────────────────────────────────────────
 
 /**
  * Solicitud de prestamo de un colaborador/cliente.
@@ -57,6 +110,8 @@ export interface LoanRequest {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Transaccion y Estado de cuenta ───────────────────────────────────────────
 
 /**
  * Transaccion registrada en el estado de cuenta de la empresa.
@@ -82,6 +137,8 @@ export interface LoanSummary {
   totalPaid: number;
   balance: number;
 }
+
+// ── Configuracion global ─────────────────────────────────────────────────────
 
 /**
  * Configuracion global del admin (comision de servicio).

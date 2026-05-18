@@ -3,16 +3,16 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type {
   Enterprise,
-  Collaborator,
   LoanRequest,
   Transaction,
   PlatformConfig,
 } from '../domain/enterprise';
+import type { PersonProfile } from '../domain/person-profile';
 import type { EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
 
 interface StorageData {
   enterprises: Enterprise[];
-  collaborators: Collaborator[];
+  collaborators: PersonProfile[];
   requests: LoanRequest[];
   transactions: Transaction[];
   platformConfig: PlatformConfig;
@@ -96,17 +96,17 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
 
   async findCollaboratorsByEnterprise(
     enterpriseId: string,
-  ): Promise<Collaborator[]> {
+  ): Promise<PersonProfile[]> {
     const data = await this.read();
     return data.collaborators.filter((c) => c.enterpriseId === enterpriseId);
   }
 
-  async findCollaboratorById(id: string): Promise<Collaborator | null> {
+  async findCollaboratorById(id: string): Promise<PersonProfile | null> {
     const data = await this.read();
     return data.collaborators.find((c) => c.id === id) ?? null;
   }
 
-  async saveCollaborator(collaborator: Collaborator): Promise<Collaborator> {
+  async saveCollaborator(collaborator: PersonProfile): Promise<PersonProfile> {
     const data = await this.read();
     const idx = data.collaborators.findIndex((c) => c.id === collaborator.id);
     if (idx >= 0) {
@@ -119,8 +119,8 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
   }
 
   async saveCollaborators(
-    collaborators: Collaborator[],
-  ): Promise<Collaborator[]> {
+    collaborators: PersonProfile[],
+  ): Promise<PersonProfile[]> {
     const data = await this.read();
     for (const col of collaborators) {
       const idx = data.collaborators.findIndex((c) => c.id === col.id);
