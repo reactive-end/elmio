@@ -7,13 +7,14 @@ import { EditorTopBar } from './EditorTopBar'
 import { SeccionesTab } from './SeccionesTab'
 import { EdicionTab } from './EdicionTab'
 import { VistaPreviaTab } from './VistaPreviaTab'
+import { ConfiguracionGeneralTab } from './ConfiguracionGeneralTab'
 import { AgregarSeccionModal } from './AgregarSeccionModal'
 import { useMarketplaceEditor } from '@/src/hooks/pages/useMarketplaceEditor'
 import { MERCADO_PRUEBA } from '@/src/data/marketplace-mock'
 import { marketplaceService } from '@/src/services/marketplace.service'
-import type { DatosMarketplace, TipoSeccion } from '@/src/utils/editor-types.d'
+import type { DatosMarketplace, TipoSeccion, ConfiguracionWhatsApp } from '@/src/utils/editor-types.d'
 
-type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones'
+type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones' | 'general'
 type PestanaPropiedades = 'contenido' | 'estilos' | 'elementos'
 
 interface EditorShellProps {
@@ -201,6 +202,15 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
             editor.setPestana('edicion')
           }}
           onEliminar={editor.eliminarSeccion}
+        />
+      )}
+
+      {editor.pestana === 'general' && (
+        <ConfiguracionGeneralTab
+          whatsapp={editor.marketplace.whatsapp}
+          onChangeWhatsapp={(ws) =>
+            editor.setMarketplace({ ...editor.marketplace, whatsapp: ws })
+          }
         />
       )}
 

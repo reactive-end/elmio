@@ -11,7 +11,7 @@ import type {
 import { estiloPorDefecto } from '@/src/data/marketplace-mock'
 import { marketplaceService } from '@/src/services/marketplace.service'
 
-type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones'
+type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones' | 'general'
 type PestanaPropiedades = 'contenido' | 'estilos' | 'elementos'
 
 interface AlertaState {

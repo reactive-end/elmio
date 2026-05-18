@@ -23,6 +23,7 @@ export interface User {
   role: UserRole;
   owner: string;
   createdAt: string;
+  requirePasswordChange?: boolean;
 }
 
 /**
@@ -34,4 +35,5 @@ export interface UserSession {
   email: string;
   role: UserRole;
   owner: string;
+  requirePasswordChange?: boolean;
 }

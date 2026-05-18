@@ -27,7 +27,6 @@ const rendererRegistry: Record<string, RendererComponent> = {
   pie: FooterSection,
   cabecera: HeaderSection,
   texto: InfoTextSection,
-  personalizado: InfoTextSection,
 }
 
 interface SectionRendererProps {

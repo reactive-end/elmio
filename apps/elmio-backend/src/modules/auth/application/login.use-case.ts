@@ -62,6 +62,7 @@ export class LoginUseCase {
       email: user.email,
       role: user.role,
       owner: user.owner,
+      requirePasswordChange: user.requirePasswordChange,
     };
 
     tokenStore.set(token, session);

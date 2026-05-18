@@ -10,7 +10,6 @@ export type TipoSeccion =
   | 'texto'
   | 'pie'
   | 'cabecera'
-  | 'personalizado'
 
 export interface EstiloSeccion {
   paddingSuperior: number
@@ -145,6 +144,13 @@ export interface SeccionMarketplace {
   estilo: EstiloSeccion
 }
 
+export interface ConfiguracionWhatsApp {
+  activo: boolean
+  telefono: string
+  mensaje: string
+  textoTooltip: string
+}
+
 export interface DatosMarketplace {
   id: string
   nombre: string
@@ -158,5 +164,6 @@ export interface DatosMarketplace {
     colorSecundario: string
     fuente: string
   }
+  whatsapp?: ConfiguracionWhatsApp
   secciones: SeccionMarketplace[]
 }

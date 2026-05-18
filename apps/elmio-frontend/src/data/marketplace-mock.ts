@@ -12,7 +12,6 @@ export const etiquetaTipo: Record<TipoSeccion, string> = {
   texto: 'Texto',
   pie: 'Pie de pagina',
   cabecera: 'Cabecera',
-  personalizado: 'Personalizado',
 }
 
 export function estiloPorDefecto(tipo: TipoSeccion): EstiloSeccion {

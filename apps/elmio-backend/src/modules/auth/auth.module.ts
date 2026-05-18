@@ -24,6 +24,6 @@ import { AuthController } from './presentation/http/auth.controller';
       useExisting: FileAuthRepositoryService,
     },
   ],
-  exports: [AuthGuard, ValidateSessionUseCase],
+  exports: [AuthGuard, ValidateSessionUseCase, AUTH_REPOSITORY_PORT],
 })
 export class AuthModule {}

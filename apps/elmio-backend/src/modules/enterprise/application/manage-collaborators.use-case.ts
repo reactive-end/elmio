@@ -1,10 +1,16 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { PersonProfile } from '../domain/person-profile';
 import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../domain/ports/enterprise-repository.port';
+import {
+  AUTH_REPOSITORY_PORT,
+  type AuthRepositoryPort,
+} from '../../auth/domain/ports/auth-repository.port';
+import { UserRole, type User } from '../../auth/domain/user';
+import { hashPassword } from '../../auth/helpers';
 import type { CreateCollaboratorDto } from '../presentation/http/dto/enterprise.dto';
 
 /**
@@ -15,6 +21,8 @@ export class ManageCollaboratorsUseCase {
   constructor(
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly repository: EnterpriseRepositoryPort,
+    @Inject(AUTH_REPOSITORY_PORT)
+    private readonly authRepository: AuthRepositoryPort,
   ) {}
 
   /**
@@ -30,7 +38,29 @@ export class ManageCollaboratorsUseCase {
     const enterprise = await this.repository.findEnterpriseById(enterpriseId);
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
-    const profile = this.buildProfile(enterpriseId, input);
+    // Verificar si el correo ya existe
+    const existingUser = await this.authRepository.findByEmail(input.email.trim().toLowerCase());
+    if (existingUser) {
+      throw new ConflictException(`El correo ${input.email} ya está registrado.`);
+    }
+
+    const userId = randomUUID();
+    const newUser: User = {
+      id: userId,
+      name: `${input.name.trim()} ${input.lastName.trim()}`,
+      email: input.email.trim().toLowerCase(),
+      // Clave inicial: la cédula encriptada
+      passwordHash: hashPassword(input.documentId.trim()),
+      role: UserRole.EMPLOYEE,
+      owner: enterpriseId,
+      createdAt: new Date().toISOString(),
+      // Obligar a cambiar contraseña en el primer inicio de sesión
+      requirePasswordChange: true,
+    };
+
+    await this.authRepository.create(newUser);
+
+    const profile = this.buildProfile(enterpriseId, input, userId);
     return this.repository.saveCollaborator(profile);
   }
 
@@ -47,9 +77,33 @@ export class ManageCollaboratorsUseCase {
     const enterprise = await this.repository.findEnterpriseById(enterpriseId);
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
-    const profiles: PersonProfile[] = inputs.map((input) =>
-      this.buildProfile(enterpriseId, input),
-    );
+    const profiles: PersonProfile[] = [];
+
+    for (const input of inputs) {
+      const email = input.email.trim().toLowerCase();
+      const existingUser = await this.authRepository.findByEmail(email);
+      
+      if (existingUser) {
+        // En carga masiva, si ya existe saltamos o fallamos. Optamos por lanzar error o ignorar?
+        // Vamos a lanzar error por ahora para ser consistentes con la validacion
+        throw new ConflictException(`El correo ${email} ya está registrado.`);
+      }
+
+      const userId = randomUUID();
+      const newUser: User = {
+        id: userId,
+        name: `${input.name.trim()} ${input.lastName.trim()}`,
+        email,
+        passwordHash: hashPassword(input.documentId.trim()),
+        role: UserRole.EMPLOYEE,
+        owner: enterpriseId,
+        createdAt: new Date().toISOString(),
+        requirePasswordChange: true,
+      };
+
+      await this.authRepository.create(newUser);
+      profiles.push(this.buildProfile(enterpriseId, input, userId));
+    }
 
     return this.repository.saveCollaborators(profiles);
   }
@@ -121,11 +175,12 @@ export class ManageCollaboratorsUseCase {
   private buildProfile(
     enterpriseId: string,
     input: CreateCollaboratorDto,
+    userId: string,
   ): PersonProfile {
     const now = new Date().toISOString();
     return {
       id: randomUUID(),
-      userId: '',
+      userId: userId,
       // Grupo 1: Identidad
       name: input.name.trim(),
       lastName: input.lastName.trim(),

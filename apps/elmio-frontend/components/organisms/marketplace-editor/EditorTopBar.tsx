@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 
-type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones'
+type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones' | 'general'
 
 interface EditorTopBarProps {
   nombre: string
@@ -49,6 +49,7 @@ export function EditorTopBar({
       <div className="flex items-center gap-2">
         <div className="flex bg-gray-100 rounded-xl p-0.5">
           {[
+            { id: 'general' as PestanaEditor, label: 'General' },
             { id: 'secciones' as PestanaEditor, label: 'Secciones' },
             { id: 'edicion' as PestanaEditor, label: 'Edicion' },
             { id: 'vista-previa' as PestanaEditor, label: 'Vista previa' },
