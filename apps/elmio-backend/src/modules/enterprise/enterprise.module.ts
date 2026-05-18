@@ -9,9 +9,11 @@ import { CompleteOnboardingUseCase } from './application/complete-onboarding.use
 import { ManageCollaboratorsUseCase } from './application/manage-collaborators.use-case';
 import { ManageLoanRequestsUseCase } from './application/manage-loan-requests.use-case';
 import { GetAccountStatementUseCase } from './application/get-account-statement.use-case';
+import { ManageProfileUseCase } from './application/manage-profile.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
 import { FileEnterpriseRepositoryService } from './infrastructure/file-enterprise-repository.service';
 import { EnterpriseController } from './presentation/http/enterprise.controller';
+import { ProfileController } from './presentation/http/profile.controller';
 
 /**
  * Modulo empresarial: onboarding, colaboradores, solicitudes y estado de cuenta.
@@ -19,7 +21,7 @@ import { EnterpriseController } from './presentation/http/enterprise.controller'
  */
 @Module({
   imports: [AuthModule],
-  controllers: [EnterpriseController],
+  controllers: [EnterpriseController, ProfileController],
   providers: [
     GetOrCreateEnterpriseUseCase,
     GetEnterpriseUseCase,
@@ -28,6 +30,7 @@ import { EnterpriseController } from './presentation/http/enterprise.controller'
     ManageCollaboratorsUseCase,
     ManageLoanRequestsUseCase,
     GetAccountStatementUseCase,
+    ManageProfileUseCase,
     FileEnterpriseRepositoryService,
     {
       provide: ENTERPRISE_REPOSITORY_PORT,

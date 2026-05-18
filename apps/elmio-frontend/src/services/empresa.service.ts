@@ -220,6 +220,18 @@ export interface CollaboratorInput {
  * Datos opcionales del onboarding de persona natural/colaborador.
  */
 export interface UpdatePersonProfileInput {
+  name?: string
+  lastName?: string
+  documentType?: string
+  documentId?: string
+  email?: string
+  phone?: string
+  birthDate?: string
+  gender?: string
+  civilStatus?: string
+  address?: string
+  countryOfOrigin?: string
+  familyDependents?: number
   documentPhoto?: string
   phone2?: string
   phoneType?: string

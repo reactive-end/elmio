@@ -52,6 +52,13 @@ export interface EnterpriseRepositoryPort {
   findCollaboratorById(id: string): Promise<PersonProfile | null>;
 
   /**
+   * Busca un perfil de persona por su ID de usuario.
+   * @param userId ID del usuario.
+   * @returns Perfil o null.
+   */
+  findProfileByUserId(userId: string): Promise<PersonProfile | null>;
+
+  /**
    * Crea o actualiza un colaborador.
    * @param collaborator Datos del colaborador.
    * @returns Colaborador guardado.

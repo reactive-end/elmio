@@ -312,24 +312,61 @@ export function useRegisterForm(): UseRegisterFormReturn {
       setIsLoading(true)
       setAlert(null)
 
+      const fullName = `${userFields.first_name} ${userFields.last_name}`.trim()
+
       await authService.register({
-        name: `${userFields.first_name} ${userFields.last_name}`.trim(),
+        name: fullName,
         email: userFields.email,
         password: userFields.password,
         role: accountRole,
         owner: 'default',
       })
 
+      if (accountRole === 'CLIENT') {
+        // Autologuear para poder guardar el perfil
+        await authService.login(userFields.email, userFields.password)
+        
+        const { enterpriseService } = await import('@/src/services/empresa.service')
+        
+        await enterpriseService.updateMyProfile({
+          name: userFields.first_name,
+          lastName: userFields.last_name,
+          documentType: userFields.document_letter,
+          documentId: userFields.document_digits,
+          email: userFields.email,
+          phone: `${countryCode.dial}${operatorPrefix}${phoneDisplay.replace(/\D/g, '')}`,
+          age: parseInt(personalFields.age) || 0,
+          gender: personalFields.gender,
+          birthDate: personalFields.birth_date,
+          civilStatus: personalFields.civil_status,
+          height: personalFields.height,
+          weight: personalFields.weight,
+          address: personalFields.address,
+          countryOfOrigin: personalFields.country_of_origin,
+          countryOfResidence: personalFields.country_of_residence,
+          employmentType: employmentFields.employment_type,
+          employmentSector: employmentFields.employment_sector,
+          recurringIncome: parseFloat(employmentFields.monthly_income) || 0,
+          residenceType: employmentFields.residence_type,
+          isResidenceOwned: employmentFields.is_residence_owned === 'true',
+          familyDependents: parseInt(employmentFields.family_dependents) || 0,
+          timeInCompanyMonths: parseInt(employmentFields.time_in_company_months) || 0,
+          loanPurpose: employmentFields.loan_purpose,
+        })
+        
+        await enterpriseService.completeProfileOnboarding()
+      }
+
       setAlert({
         type: 'success',
-        message: 'Registro exitoso. Redirigiendo al inicio de sesion...',
+        message: 'Registro exitoso. Redirigiendo...',
       })
 
       setTimeout(() => {
         if (accountRole === 'COMPANY') {
           router.push('/login')
         } else {
-          router.push('/login')
+          router.push('/dashboard')
         }
       }, 2000)
     } catch (e) {

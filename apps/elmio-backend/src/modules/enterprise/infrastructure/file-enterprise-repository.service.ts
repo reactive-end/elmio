@@ -106,6 +106,11 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     return data.collaborators.find((c) => c.id === id) ?? null;
   }
 
+  async findProfileByUserId(userId: string): Promise<PersonProfile | null> {
+    const data = await this.read();
+    return data.collaborators.find((c) => c.userId === userId) ?? null;
+  }
+
   async saveCollaborator(collaborator: PersonProfile): Promise<PersonProfile> {
     const data = await this.read();
     const idx = data.collaborators.findIndex((c) => c.id === collaborator.id);

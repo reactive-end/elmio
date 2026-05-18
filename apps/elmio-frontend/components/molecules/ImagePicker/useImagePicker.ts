@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { listGalleryImages, type GalleryServiceImage } from '@/services/gallery/gallery.service'
+import { listGalleryImages, type GalleryServiceImage } from '@/src/services/gallery.service'
 import type { UseImagePickerReturn } from './ImagePicker.d'
 
 const DEFAULT_TENANT_DIRECTORY = 'elmio'

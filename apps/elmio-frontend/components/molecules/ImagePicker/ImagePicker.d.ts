@@ -1,4 +1,4 @@
-import type { GalleryServiceImage } from '@/services/gallery/gallery.service'
+import type { GalleryServiceImage } from '@/src/services/gallery.service'
 
 export interface ImagePickerProps {
   label: string

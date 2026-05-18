@@ -13,7 +13,7 @@ import {
   deleteGalleryImage,
   listGalleryImages,
   uploadGalleryImages,
-} from '@/services/gallery/gallery.service'
+} from '@/src/services/gallery.service'
 import type {
   GalleryAlertState,
   GalleryImageItem,
