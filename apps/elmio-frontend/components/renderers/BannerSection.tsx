@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import { SectionContainer } from './SectionContainer'
 import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
 
@@ -40,7 +41,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                   </p>
                 )}
                 {contenido.textoBoton && contenido.enlaceBoton && (
-                  <Link
+                  <ActionableLink
                     href={contenido.enlaceBoton}
                     className="inline-flex items-center self-start rounded-xl px-6 py-3 font-semibold transition-transform hover:scale-105"
                     style={{
@@ -50,7 +51,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                     }}
                   >
                     {contenido.textoBoton}
-                  </Link>
+                  </ActionableLink>
                 )}
               </div>
               {contenido.imagenUrl && (
@@ -92,7 +93,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                   </p>
                 )}
                 {contenido.textoBoton && contenido.enlaceBoton && (
-                  <Link
+                  <ActionableLink
                     href={contenido.enlaceBoton}
                     className="inline-flex items-center self-start rounded-xl px-6 py-3 font-semibold transition-transform hover:scale-105"
                     style={{
@@ -102,7 +103,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                     }}
                   >
                     {contenido.textoBoton}
-                  </Link>
+                  </ActionableLink>
                 )}
               </div>
             </>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import { SectionContainer } from './SectionContainer'
 import type { SeccionMarketplace, Diapositiva } from '@/src/utils/editor-types.d'
 
@@ -86,8 +87,11 @@ export function HeroSection({ seccion }: HeroSectionProps) {
         </div>
 
         <div
-          className="relative z-10 flex w-full max-w-4xl flex-col px-8 py-16"
-          style={{ alignItems: 'center', textAlign: 'center' }}
+          className={`relative z-10 flex w-full flex-col px-8 py-16 ${
+            estilo.layoutPrincipal === 'dividido' 
+              ? 'max-w-7xl items-start text-left bg-gradient-to-r from-black/60 to-transparent h-full justify-center w-full' 
+              : 'max-w-4xl items-center text-center'
+          }`}
         >
           {slideActual.titulo && (
             <h1
@@ -114,7 +118,7 @@ export function HeroSection({ seccion }: HeroSectionProps) {
             </p>
           )}
           {slideActual.textoBoton && slideActual.enlaceBoton && (
-            <Link
+            <ActionableLink
               href={slideActual.enlaceBoton}
               className="inline-flex items-center rounded-xl px-6 py-3 font-semibold shadow-lg transition-transform hover:scale-105"
               style={{
@@ -124,7 +128,7 @@ export function HeroSection({ seccion }: HeroSectionProps) {
               }}
             >
               {slideActual.textoBoton}
-            </Link>
+            </ActionableLink>
           )}
         </div>
 

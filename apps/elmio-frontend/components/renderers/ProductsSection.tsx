@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import { SectionContainer } from './SectionContainer'
 import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
 
@@ -157,7 +158,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                     )}
                     <div className="mt-auto pt-3">
                       {producto.enlaceBoton ? (
-                        <Link
+                        <ActionableLink
                           href={producto.enlaceBoton}
                           className="block w-full rounded-xl py-2 text-center text-sm font-medium transition-colors"
                           style={{
@@ -167,7 +168,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                           }}
                         >
                           {producto.textoBoton || 'Ver detalle'}
-                        </Link>
+                        </ActionableLink>
                       ) : (
                         <button
                           type="button"
@@ -191,7 +192,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
 
         {contenido.textoBoton && contenido.enlaceBoton && (
           <div className="mt-10 text-center">
-            <Link
+            <ActionableLink
               href={contenido.enlaceBoton}
               className="inline-flex items-center rounded-xl px-6 py-3 font-semibold shadow transition-transform hover:scale-105"
               style={{
@@ -201,7 +202,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               }}
             >
               {contenido.textoBoton}
-            </Link>
+            </ActionableLink>
           </div>
         )}
       </div>

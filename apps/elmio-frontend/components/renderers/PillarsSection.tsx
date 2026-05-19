@@ -1,6 +1,7 @@
 'use client'
 
 import { SectionContainer } from './SectionContainer'
+import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import type { SeccionMarketplace, PilarItem } from '@/src/utils/editor-types.d'
 
 interface PillarsSectionProps {
@@ -12,8 +13,12 @@ interface PillarsSectionProps {
  */
 export function PillarsSection({ seccion }: PillarsSectionProps) {
   const { contenido, estilo } = seccion
-  const pilares = (contenido.pilares ?? []) as PilarItem[]
-  if (pilares.length === 0) return null
+  const items = seccion.tipo === 'caracteristicas' 
+    ? (contenido.elementos ?? []) 
+    : (contenido.pilares ?? [])
+  if (items.length === 0) return null
+
+  const isZigzag = estilo.layoutPilares === 'zigzag'
 
   return (
     <SectionContainer estilo={estilo}>
@@ -34,23 +39,29 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
           </div>
         )}
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {pilares.map((pilar, idx) => (
+        <div className={isZigzag ? "flex flex-col gap-12" : "grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}>
+          {items.map((item: any, idx) => (
             <div
-              key={pilar.id ?? idx}
-              className="flex flex-col items-center rounded-2xl bg-gray-50 p-6 text-center transition-all hover:shadow-md"
+              key={item.id ?? idx}
+              className={`flex rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md ${
+                isZigzag 
+                  ? `flex-col sm:flex-row items-center text-left ${idx % 2 !== 0 ? 'sm:flex-row-reverse' : ''} gap-8` 
+                  : 'flex-col items-center text-center'
+              }`}
             >
-              {pilar.icono ? (
-                <img
-                  src={pilar.icono}
-                  alt={pilar.titulo}
-                  className="mb-4 h-12 w-12 object-contain"
-                />
+              {item.icono ? (
+                <div className={isZigzag ? "w-1/3 shrink-0" : ""}>
+                  <img
+                    src={item.icono}
+                    alt={item.titulo}
+                    className={`mb-4 object-contain ${isZigzag ? 'h-32 w-full object-center' : 'h-12 w-12'}`}
+                  />
+                </div>
               ) : (
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/20 text-secondary">
+                <div className={`mb-4 flex items-center justify-center rounded-full bg-secondary/20 text-secondary shrink-0 ${isZigzag ? 'h-24 w-24' : 'h-12 w-12'}`}>
                   <svg
-                    width="24"
-                    height="24"
+                    width={isZigzag ? "48" : "24"}
+                    height={isZigzag ? "48" : "24"}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -62,28 +73,32 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
                   </svg>
                 </div>
               )}
-              <h3
-                className="mb-2 font-semibold"
-                style={{ color: estilo.tituloColor, fontSize: 18 }}
-              >
-                {pilar.titulo}
-              </h3>
-              <p className="text-sm" style={{ color: estilo.cuerpoColor }}>
-                {pilar.texto}
-              </p>
-              {pilar.textoBoton && (
-                <button
-                  type="button"
-                  className="mt-4 rounded-xl px-5 py-2 text-sm font-semibold transition-colors"
-                  style={{
-                    backgroundColor: estilo.botonColorFondo || '#0f4ece',
-                    color: estilo.botonColorTexto || '#fff',
-                    borderRadius: estilo.botonRedondez || 12,
-                  }}
+              <div className="flex flex-col flex-1">
+                <h3
+                  className="mb-2 font-semibold"
+                  style={{ color: estilo.tituloColor, fontSize: 18 }}
                 >
-                  {pilar.textoBoton}
-                </button>
-              )}
+                  {item.titulo}
+                </h3>
+                <p className="text-sm" style={{ color: estilo.cuerpoColor }}>
+                  {item.texto || item.descripcion}
+                </p>
+                {item.textoBoton && item.enlaceBoton && (
+                  <div className={isZigzag ? "mt-4 text-left" : "mt-4"}>
+                    <ActionableLink
+                      href={item.enlaceBoton}
+                      className="inline-block rounded-xl px-5 py-2 text-sm font-semibold transition-colors"
+                      style={{
+                        backgroundColor: estilo.botonColorFondo || '#0f4ece',
+                        color: estilo.botonColorTexto || '#fff',
+                        borderRadius: estilo.botonRedondez || 12,
+                      }}
+                    >
+                      {item.textoBoton}
+                    </ActionableLink>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>

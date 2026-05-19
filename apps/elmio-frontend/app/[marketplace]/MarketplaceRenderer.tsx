@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { MarketplaceTemplate } from '@/components/renderers/MarketplaceTemplate'
 import { marketplaceService } from '@/src/services/marketplace.service'
+import { MarketplaceActionProvider } from '@/src/providers/MarketplaceActionProvider'
 import type { DatosMarketplace } from '@/src/utils/editor-types.d'
 
 interface MarketplaceRendererProps {
@@ -82,8 +83,10 @@ export function MarketplaceRenderer({ marketplaceSlug }: MarketplaceRendererProp
   if (!datos) return null
 
   return (
-    <main>
-      <MarketplaceTemplate datos={datos} />
-    </main>
+    <MarketplaceActionProvider>
+      <main>
+        <MarketplaceTemplate datos={datos} />
+      </main>
+    </MarketplaceActionProvider>
   )
 }

@@ -105,8 +105,11 @@ export function SectionPropertiesPanel({
             id: 'elementos' as PestanaPropiedades,
             icon: LayoutGrid,
             label: `Elementos (${seccion.contenido.elementos.length})`,
+            hide: ['productos', 'pie', 'cabecera', 'texto', 'franja', 'banner', 'principal', 'doble-banner'].includes(seccion.tipo)
           },
-        ].map((tab) => (
+        ]
+        .filter(tab => !tab.hide)
+        .map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -148,9 +151,10 @@ export function SectionPropertiesPanel({
         />
       )}
 
-      {pestanaProp === 'elementos' && (
+      {pestanaProp === 'elementos' && !['productos', 'pie', 'cabecera', 'texto', 'franja', 'banner', 'principal', 'doble-banner'].includes(seccion.tipo) && (
         <ElementosList
           elementos={seccion.contenido.elementos}
+          limiteElementos={seccion.tipo === 'pilares' ? 4 : seccion.tipo === 'aliados' ? 15 : undefined}
           onAgregar={agregarElemento}
           onActualizar={actualizarElemento}
           onEliminar={eliminarElemento}

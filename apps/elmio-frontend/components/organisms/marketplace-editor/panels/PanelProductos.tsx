@@ -83,16 +83,29 @@ export function PanelProductos({ seccion, actualizarSeccion }: PanelProductosPro
         />
       )}
       <FormGroup label="Productos del carrusel">
-        <SelectorProductos
-          seleccionados={seccion.contenido.productosIds}
-          onToggle={(productoId) => {
-            const productoSeleccionado = seccion.contenido.productosIds.includes(productoId)
-            const productosIds = productoSeleccionado
-              ? seccion.contenido.productosIds.filter((id) => id !== productoId)
-              : [...seccion.contenido.productosIds, productoId]
-            actualizarSeccion(seccion.id, { contenido: { ...seccion.contenido, productosIds } })
-          }}
-        />
+        <div className="mb-4">
+          <SwitchField
+            label="Auto-poblar (Mostrar los últimos productos dinámicamente)"
+            checked={seccion.contenido.autoPoblarProductos ?? false}
+            onChange={(v) =>
+              actualizarSeccion(seccion.id, {
+                contenido: { ...seccion.contenido, autoPoblarProductos: v },
+              })
+            }
+          />
+        </div>
+        {!(seccion.contenido.autoPoblarProductos ?? false) && (
+          <SelectorProductos
+            seleccionados={seccion.contenido.productosIds}
+            onToggle={(productoId) => {
+              const productoSeleccionado = seccion.contenido.productosIds.includes(productoId)
+              const productosIds = productoSeleccionado
+                ? seccion.contenido.productosIds.filter((id) => id !== productoId)
+                : [...seccion.contenido.productosIds, productoId]
+              actualizarSeccion(seccion.id, { contenido: { ...seccion.contenido, productosIds } })
+            }}
+          />
+        )}
       </FormGroup>
     </div>
   )

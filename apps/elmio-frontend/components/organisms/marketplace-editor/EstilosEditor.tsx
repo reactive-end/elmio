@@ -284,6 +284,46 @@ export function EstilosEditor({
           min={0}
           max={100}
         />
+        {seccion.tipo === 'principal' && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium text-gray-400">Estructura del Hero</label>
+            <Select
+              value={seccion.estilo.layoutPrincipal || 'centro'}
+              onChange={(v) => actualizarEstilo('layoutPrincipal', v)}
+              options={[
+                { value: 'centro', label: 'Minimalista Centrado' },
+                { value: 'dividido', label: 'Corporativo Dividido' },
+              ]}
+            />
+          </div>
+        )}
+        {seccion.tipo === 'doble-banner' && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium text-gray-400">Proporción de Banners</label>
+            <Select
+              value={seccion.estilo.proporcionColumnas || '50/50'}
+              onChange={(v) => actualizarEstilo('proporcionColumnas', v)}
+              options={[
+                { value: '50/50', label: '50/50 Simétrico' },
+                { value: '60/40', label: '60/40 Destaque Izquierdo' },
+                { value: '30/70', label: '30/70 Destaque Derecho' },
+              ]}
+            />
+          </div>
+        )}
+        {seccion.tipo === 'pilares' && (
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium text-gray-400">Disposición</label>
+            <Select
+              value={seccion.estilo.layoutPilares || 'grid'}
+              onChange={(v) => actualizarEstilo('layoutPilares', v)}
+              options={[
+                { value: 'grid', label: 'Cuadrícula Clásica' },
+                { value: 'zigzag', label: 'Zigzag (Izquierda-Derecha)' },
+              ]}
+            />
+          </div>
+        )}
       </CardGroup>
 
       <CardGroup title="Tipografia" Icon={CaseSensitive}>

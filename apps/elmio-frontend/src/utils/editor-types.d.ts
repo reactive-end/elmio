@@ -49,6 +49,10 @@ export interface EstiloSeccion {
   carruselAuto: boolean
   /** Velocidad del carrusel en segundos */
   carruselVelocidad: number
+  /** Layouts opcionales */
+  layoutPilares?: 'grid' | 'zigzag'
+  proporcionColumnas?: '50/50' | '60/40' | '30/70'
+  layoutPrincipal?: 'centro' | 'dividido'
 }
 
 export interface ElementoSeccion {
@@ -111,6 +115,8 @@ export interface ContenidoSeccion {
   imagenUrl: string
   /** IDs de productos referenciados (para carrusel de productos) */
   productosIds: string[]
+  /** Poblar los productos automaticamente en base a los ultimos agregados */
+  autoPoblarProductos?: boolean
   elementos: ElementoSeccion[]
   diapositivas: Diapositiva[]
   columnasPie: ColumnaPie[]

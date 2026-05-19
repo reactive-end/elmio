@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import { SectionContainer } from './SectionContainer'
 import type { SeccionMarketplace, ElementoSeccion } from '@/src/utils/editor-types.d'
 
@@ -20,7 +21,11 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
   return (
     <SectionContainer estilo={estilo}>
       <div className="container mx-auto px-4">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className={`grid gap-6 ${
+          estilo.proporcionColumnas === '60/40' ? 'md:grid-cols-[3fr_2fr]' :
+          estilo.proporcionColumnas === '30/70' ? 'md:grid-cols-[3fr_7fr]' :
+          'md:grid-cols-2'
+        }`}>
           {banners.map((banner, idx) => (
             <div
               key={banner.id ?? idx}
@@ -45,7 +50,7 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
                   <p className="mt-2 text-sm opacity-90">{banner.descripcion}</p>
                 )}
                 {banner.textoBoton && banner.enlaceBoton && (
-                  <Link
+                  <ActionableLink
                     href={banner.enlaceBoton}
                     className="mt-4 inline-flex items-center self-start rounded-xl px-5 py-2 font-semibold transition-transform hover:scale-105"
                     style={{
@@ -55,7 +60,7 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
                     }}
                   >
                     {banner.textoBoton}
-                  </Link>
+                  </ActionableLink>
                 )}
               </div>
             </div>

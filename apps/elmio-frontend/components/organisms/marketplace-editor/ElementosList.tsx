@@ -7,6 +7,7 @@ import type { ElementoSeccion } from '@/src/utils/editor-types.d'
 
 interface ElementosListProps {
   elementos: ElementoSeccion[]
+  limiteElementos?: number
   onAgregar: () => void
   onActualizar: (id: string, campo: string, valor: string) => void
   onEliminar: (id: string) => void
@@ -18,23 +19,28 @@ interface ElementosListProps {
  */
 export function ElementosList({
   elementos,
+  limiteElementos,
   onAgregar,
   onActualizar,
   onEliminar,
 }: ElementosListProps) {
+  const puedeAgregar = limiteElementos === undefined || elementos.length < limiteElementos;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-400 uppercase">
-          {elementos.length} elementos
+          {elementos.length} {limiteElementos ? `/ ${limiteElementos}` : ''} elementos
         </span>
-        <button
-          type="button"
-          onClick={onAgregar}
-          className="text-xs text-secondary hover:text-secondary-dark font-medium"
-        >
-          + Agregar elemento
-        </button>
+        {puedeAgregar && (
+          <button
+            type="button"
+            onClick={onAgregar}
+            className="text-xs text-secondary hover:text-secondary-dark font-medium"
+          >
+            + Agregar elemento
+          </button>
+        )}
       </div>
       {elementos.map((elem, idx) => (
         <div key={elem.id} className="border border-gray-100 rounded-xl p-3 flex flex-col gap-2">
