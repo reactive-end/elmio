@@ -101,8 +101,10 @@ export class MarketplaceController {
   async update(
     @Param('id') id: string,
     @Body() body: UpdateMarketplaceDto,
+    @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
-    return this.updateMarketplaceUseCase.execute(id, body);
+    const isAdmin = session.role === 'ADMIN';
+    return this.updateMarketplaceUseCase.execute(id, body as any, isAdmin);
   }
 
   /**

@@ -463,4 +463,28 @@ export const enterpriseService = {
     if (!res.ok) throw new Error('Error al listar transacciones.')
     return (await res.json()) as Transaction[]
   },
+
+  async uploadDocument(
+    enterpriseId: string,
+    file: File,
+  ): Promise<{ url: string; fileName: string }> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch(`${API_BASE}/enterprises/${enterpriseId}/documentos`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        ...authService.getAuthHeaders(),
+      },
+    })
+
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al subir el documento.')
+    }
+
+    return (await res.json()) as { url: string; fileName: string }
+  },
 }
+

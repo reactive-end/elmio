@@ -83,14 +83,23 @@ export function useLoginForm() {
 
     try {
       if (loginMethod === 'email') {
+        if (!email.trim()) {
+          throw new Error('El correo electrónico es obligatorio.')
+        }
         await authService.login(email, password)
+      } else {
+        if (rawDigits.length < 7) {
+          throw new Error('El número de teléfono debe tener 7 dígitos.')
+        }
+        const fullPhone = `${countryCode.dial}${operatorPrefix}${rawDigits}`
+        await authService.login(fullPhone, password)
       }
 
       router.push('/dashboard')
     } catch (err) {
       setAlert({
         type: 'error',
-        message: err instanceof Error ? err.message : 'Error al iniciar sesion.',
+        message: err instanceof Error ? err.message : 'Error al iniciar sesión.',
       })
     } finally {
       setIsLoading(false)

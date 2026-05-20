@@ -10,6 +10,8 @@ import {
   Heading3,
   Columns2,
   CaseSensitive,
+  Sparkles,
+  Layers,
 } from 'lucide-react'
 import { CardGroup } from '@/components/molecules/CardGroup/CardGroup'
 import { PixelInput } from '@/components/molecules/PixelInput/PixelInput'
@@ -103,6 +105,20 @@ export function EstilosEditor({
             max={100}
           />
         </div>
+        <div className="flex flex-col gap-1 mt-2">
+          <label className="text-[10px] font-medium text-gray-400">Patrón de fondo decorativo</label>
+          <Select
+            value={seccion.estilo.patronFondo || 'ninguno'}
+            onChange={(v) => actualizarEstilo('patronFondo', v)}
+            options={[
+              { value: 'ninguno', label: 'Ninguno' },
+              { value: 'puntos', label: 'Rejilla de Puntos (Dots)' },
+              { value: 'cuadricula', label: 'Cuadrícula Técnica (Grid)' },
+              { value: 'diagonal', label: 'Líneas Diagonales (Sutil)' },
+              { value: 'malla', label: 'Efecto de Malla Fluida (Glow)' },
+            ]}
+          />
+        </div>
       </CardGroup>
 
       <CardGroup title="Espaciado interno" Icon={Ruler}>
@@ -180,6 +196,75 @@ export function EstilosEditor({
           onChange={(v) => actualizarEstilo('colorBorde', v)}
         />
       </CardGroup>
+
+      <CardGroup title="Botones de la sección" Icon={Sparkles}>
+        <div className="grid grid-cols-2 gap-2">
+          <ColorInput
+            label="Color de fondo"
+            value={seccion.estilo.botonColorFondo || '#0f4ece'}
+            onChange={(v) => actualizarEstilo('botonColorFondo', v)}
+          />
+          <ColorInput
+            label="Color de texto"
+            value={seccion.estilo.botonColorTexto || '#ffffff'}
+            onChange={(v) => actualizarEstilo('botonColorTexto', v)}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <PixelInput
+            label="Redondez (Radio)"
+            value={seccion.estilo.botonRedondez ?? 12}
+            onChange={(v) => actualizarEstilo('botonRedondez', v)}
+            min={0}
+            max={50}
+          />
+          <PixelInput
+            label="Grosor del borde"
+            value={seccion.estilo.botonAnchoBorde ?? 0}
+            onChange={(v) => actualizarEstilo('botonAnchoBorde', v)}
+            min={0}
+            max={10}
+          />
+        </div>
+        <ColorInput
+          label="Color del borde"
+          value={seccion.estilo.botonColorBorde || seccion.estilo.botonColorFondo || '#0f4ece'}
+          onChange={(v) => actualizarEstilo('botonColorBorde', v)}
+        />
+      </CardGroup>
+
+      {['caracteristicas', 'productos', 'doble-banner', 'pilares'].includes(seccion.tipo) && (
+        <CardGroup title="Tarjetas y Elementos" Icon={Layers}>
+          <div className="grid grid-cols-2 gap-2">
+            <ColorInput
+              label="Color de fondo"
+              value={seccion.estilo.tarjetaColorFondo || '#ffffff'}
+              onChange={(v) => actualizarEstilo('tarjetaColorFondo', v)}
+            />
+            <ColorInput
+              label="Color de borde"
+              value={seccion.estilo.tarjetaColorBorde || '#f3f4f6'}
+              onChange={(v) => actualizarEstilo('tarjetaColorBorde', v)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <PixelInput
+              label="Redondez (Radio)"
+              value={seccion.estilo.tarjetaRadioBorde ?? 16}
+              onChange={(v) => actualizarEstilo('tarjetaRadioBorde', v)}
+              min={0}
+              max={60}
+            />
+            <PixelInput
+              label="Grosor del borde"
+              value={seccion.estilo.tarjetaAnchoBorde ?? 1}
+              onChange={(v) => actualizarEstilo('tarjetaAnchoBorde', v)}
+              min={0}
+              max={10}
+            />
+          </div>
+        </CardGroup>
+      )}
 
       <CardGroup title="Titulo principal" Icon={Heading1}>
         <div className="grid grid-cols-2 gap-2">
@@ -286,7 +371,7 @@ export function EstilosEditor({
         />
         {seccion.tipo === 'principal' && (
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-medium text-gray-400">Estructura del Hero</label>
+            <label className="text-[10px] font-medium text-gray-400">Diseño de la Portada</label>
             <Select
               value={seccion.estilo.layoutPrincipal || 'centro'}
               onChange={(v) => actualizarEstilo('layoutPrincipal', v)}

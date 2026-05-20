@@ -91,11 +91,18 @@ export default function ProductsPage() {
             Gestiona el catalogo de productos ({products.length} registrados)
           </p>
         </div>
-        <Link href="/dashboard/products/new">
-          <Button>
-            <Plus className="w-4 h-4" strokeWidth={1.5} /> Nuevo producto
-          </Button>
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/dashboard/products/categories">
+            <Button variant="ghost">
+              Gestionar Categorías
+            </Button>
+          </Link>
+          <Link href="/dashboard/products/new">
+            <Button>
+              <Plus className="w-4 h-4" strokeWidth={1.5} /> Nuevo producto
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {error && (

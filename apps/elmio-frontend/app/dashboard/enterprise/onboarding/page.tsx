@@ -1,6 +1,6 @@
 'use client'
 
-import { Building2, FileText, UserCheck, Users, Landmark, Upload, ChevronRight, Check, SkipForward, Plus, Trash2 } from 'lucide-react'
+import { Building2, FileText, UserCheck, Users, Landmark, Upload, ChevronRight, Check, SkipForward, Plus, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Input } from '@/components/atoms/Input/Input'
 import { Select } from '@/components/atoms/Select/Select'
@@ -93,13 +93,84 @@ export default function OnboardingEnterprisePage() {
           {ob.step === 'legal-docs' && (
             <form onSubmit={(e) => { e.preventDefault(); void ob.submitLegalDocs() }} className="flex flex-col gap-5">
               <SectionHeader title="Documentos legales" subtitle="Sube los documentos requeridos para la verificacion." />
-              <FormField label="Foto del RIF vigente" required><Input type="file" accept="image/*,.pdf" onChange={() => ob.setLegalDocs({ ...ob.legalDocs, taxIdPhoto: 'uploaded' })} /></FormField>
-              <FormField label="Foto del Acta Constitutiva" required><Input type="file" accept="image/*,.pdf" onChange={() => ob.setLegalDocs({ ...ob.legalDocs, constitutiveActPhoto: 'uploaded' })} /></FormField>
-              <FormField label="Foto de la ultima Asamblea" required><Input type="file" accept="image/*,.pdf" onChange={() => ob.setLegalDocs({ ...ob.legalDocs, lastAssemblyPhoto: 'uploaded' })} /></FormField>
-              <FormField label="Foto de Recibo de servicio" required><Input type="file" accept="image/*,.pdf" onChange={() => ob.setLegalDocs({ ...ob.legalDocs, serviceReceiptPhoto: 'uploaded' })} /></FormField>
-              <FormField label="Estado de cuenta de los ultimos 3 meses" required><Input type="file" accept="image/*,.pdf" multiple onChange={() => ob.setLegalDocs({ ...ob.legalDocs, bankStatementsPhotos: ['uploaded'] })} /></FormField>
-              <FormField label="Referencia Bancaria" required><Input type="file" accept="image/*,.pdf" multiple onChange={() => ob.setLegalDocs({ ...ob.legalDocs, bankReferencePhotos: ['uploaded'] })} /></FormField>
-              <Button type="submit" isLoading={ob.loading} fullWidth className="mt-2">Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} /></Button>
+              <FileUploader
+                label="Foto del RIF vigente"
+                required
+                url={ob.legalDocs.taxIdPhoto}
+                uploading={!!ob.uploading.taxIdPhoto}
+                onUpload={(files) => {
+                  const file = files[0]
+                  if (file) void ob.uploadDocFile(file, 'taxIdPhoto')
+                }}
+                onClear={() => ob.setLegalDocs({ ...ob.legalDocs, taxIdPhoto: '' })}
+              />
+              <FileUploader
+                label="Foto del Acta Constitutiva"
+                required
+                url={ob.legalDocs.constitutiveActPhoto}
+                uploading={!!ob.uploading.constitutiveActPhoto}
+                onUpload={(files) => {
+                  const file = files[0]
+                  if (file) void ob.uploadDocFile(file, 'constitutiveActPhoto')
+                }}
+                onClear={() => ob.setLegalDocs({ ...ob.legalDocs, constitutiveActPhoto: '' })}
+              />
+              <FileUploader
+                label="Foto de la ultima Asamblea"
+                required
+                url={ob.legalDocs.lastAssemblyPhoto}
+                uploading={!!ob.uploading.lastAssemblyPhoto}
+                onUpload={(files) => {
+                  const file = files[0]
+                  if (file) void ob.uploadDocFile(file, 'lastAssemblyPhoto')
+                }}
+                onClear={() => ob.setLegalDocs({ ...ob.legalDocs, lastAssemblyPhoto: '' })}
+              />
+              <FileUploader
+                label="Foto de Recibo de servicio"
+                required
+                url={ob.legalDocs.serviceReceiptPhoto}
+                uploading={!!ob.uploading.serviceReceiptPhoto}
+                onUpload={(files) => {
+                  const file = files[0]
+                  if (file) void ob.uploadDocFile(file, 'serviceReceiptPhoto')
+                }}
+                onClear={() => ob.setLegalDocs({ ...ob.legalDocs, serviceReceiptPhoto: '' })}
+              />
+              <FileUploader
+                label="Estado de cuenta de los ultimos 3 meses"
+                required
+                multiple
+                url={ob.legalDocs.bankStatementsPhotos}
+                uploading={!!ob.uploading.bankStatementsPhotos}
+                onUpload={(files) => void ob.uploadMultipleDocs(files, 'bankStatementsPhotos')}
+                onClear={() => ob.setLegalDocs({ ...ob.legalDocs, bankStatementsPhotos: [] })}
+              />
+              <FileUploader
+                label="Referencia Bancaria"
+                required
+                multiple
+                url={ob.legalDocs.bankReferencePhotos}
+                uploading={!!ob.uploading.bankReferencePhotos}
+                onUpload={(files) => void ob.uploadMultipleDocs(files, 'bankReferencePhotos')}
+                onClear={() => ob.setLegalDocs({ ...ob.legalDocs, bankReferencePhotos: [] })}
+              />
+              <Button
+                type="submit"
+                isLoading={ob.loading}
+                disabled={
+                  !ob.legalDocs.taxIdPhoto ||
+                  !ob.legalDocs.constitutiveActPhoto ||
+                  !ob.legalDocs.lastAssemblyPhoto ||
+                  !ob.legalDocs.serviceReceiptPhoto ||
+                  ob.legalDocs.bankStatementsPhotos.length === 0 ||
+                  ob.legalDocs.bankReferencePhotos.length === 0
+                }
+                fullWidth
+                className="mt-2"
+              >
+                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
+              </Button>
             </form>
           )}
 
@@ -108,12 +179,46 @@ export default function OnboardingEnterprisePage() {
             <form onSubmit={(e) => { e.preventDefault(); void ob.submitLegalRep() }} className="flex flex-col gap-5">
               <SectionHeader title="Representante Legal" subtitle="Datos del representante legal y encargado de cuenta." />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Cedula del Representante Legal" required><Input placeholder="V12345678" value={ob.legalRep.legalRepDocumentId} onChange={(e) => ob.setLegalRep({ ...ob.legalRep, legalRepDocumentId: e.target.value })} required /></FormField>
-                <FormField label="Foto cedula Rep. Legal" required><Input type="file" accept="image/*,.pdf" onChange={() => ob.setLegalRep({ ...ob.legalRep, legalRepDocumentPhoto: 'uploaded' })} /></FormField>
+                <FormField label="Cedula del Representante Legal" required>
+                  <Input
+                    placeholder="V12345678"
+                    value={ob.legalRep.legalRepDocumentId}
+                    onChange={(e) => ob.setLegalRep({ ...ob.legalRep, legalRepDocumentId: e.target.value })}
+                    required
+                  />
+                </FormField>
+                <FileUploader
+                  label="Foto cedula Rep. Legal"
+                  required
+                  url={ob.legalRep.legalRepDocumentPhoto}
+                  uploading={!!ob.uploading.legalRepDocumentPhoto}
+                  onUpload={(files) => {
+                    const file = files[0]
+                    if (file) void ob.uploadLegalRepFile(file, 'legalRepDocumentPhoto')
+                  }}
+                  onClear={() => ob.setLegalRep({ ...ob.legalRep, legalRepDocumentPhoto: '' })}
+                />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Cedula del Encargado de Cuenta" required><Input placeholder="V12345678" value={ob.legalRep.accountManagerDocumentId} onChange={(e) => ob.setLegalRep({ ...ob.legalRep, accountManagerDocumentId: e.target.value })} required /></FormField>
-                <FormField label="Foto cedula Encargado" required><Input type="file" accept="image/*,.pdf" onChange={() => ob.setLegalRep({ ...ob.legalRep, accountManagerDocumentPhoto: 'uploaded' })} /></FormField>
+                <FormField label="Cedula del Encargado de Cuenta" required>
+                  <Input
+                    placeholder="V12345678"
+                    value={ob.legalRep.accountManagerDocumentId}
+                    onChange={(e) => ob.setLegalRep({ ...ob.legalRep, accountManagerDocumentId: e.target.value })}
+                    required
+                  />
+                </FormField>
+                <FileUploader
+                  label="Foto cedula Encargado"
+                  required
+                  url={ob.legalRep.accountManagerDocumentPhoto}
+                  uploading={!!ob.uploading.accountManagerDocumentPhoto}
+                  onUpload={(files) => {
+                    const file = files[0]
+                    if (file) void ob.uploadLegalRepFile(file, 'accountManagerDocumentPhoto')
+                  }}
+                  onClear={() => ob.setLegalRep({ ...ob.legalRep, accountManagerDocumentPhoto: '' })}
+                />
               </div>
               <hr className="border-gray-100" />
               <p className="text-sm font-medium text-body-muted">Presencia digital (opcional)</p>
@@ -129,7 +234,20 @@ export default function OnboardingEnterprisePage() {
                 <FormField label="LinkedIn"><Input placeholder="linkedin.com/company/miempresa" value={ob.legalRep.socialMediaLinkedin} onChange={(e) => ob.setLegalRep({ ...ob.legalRep, socialMediaLinkedin: e.target.value })} /></FormField>
                 <FormField label="TikTok"><Input placeholder="@miempresa" value={ob.legalRep.socialMediaTiktok} onChange={(e) => ob.setLegalRep({ ...ob.legalRep, socialMediaTiktok: e.target.value })} /></FormField>
               </div>
-              <Button type="submit" isLoading={ob.loading} fullWidth className="mt-2">Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} /></Button>
+              <Button
+                type="submit"
+                isLoading={ob.loading}
+                disabled={
+                  !ob.legalRep.legalRepDocumentId ||
+                  !ob.legalRep.legalRepDocumentPhoto ||
+                  !ob.legalRep.accountManagerDocumentId ||
+                  !ob.legalRep.accountManagerDocumentPhoto
+                }
+                fullWidth
+                className="mt-2"
+              >
+                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
+              </Button>
             </form>
           )}
 
@@ -147,13 +265,28 @@ export default function OnboardingEnterprisePage() {
                 }} />
               </FormField>
               {ob.shareholders.map((sh, idx) => (
-                <ShareholderFields key={idx} index={idx} shareholder={sh} onChange={(updated) => {
-                  const copy = [...ob.shareholders]
-                  copy[idx] = updated
-                  ob.setShareholders(copy)
-                }} />
+                <ShareholderFields
+                  key={idx}
+                  index={idx}
+                  shareholder={sh}
+                  uploading={!!ob.uploading.shareholders?.[idx]}
+                  onUploadPhoto={(file) => void ob.uploadShareholderFile(file, idx)}
+                  onChange={(updated) => {
+                    const copy = [...ob.shareholders]
+                    copy[idx] = updated
+                    ob.setShareholders(copy)
+                  }}
+                />
               ))}
-              <Button type="submit" isLoading={ob.loading} fullWidth className="mt-2">Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} /></Button>
+              <Button
+                type="submit"
+                isLoading={ob.loading}
+                disabled={ob.shareholders.slice(0, ob.shareholderCount).some(sh => !sh.name || !sh.lastName || !sh.documentId || !sh.documentPhoto || !sh.phone || !sh.email)}
+                fullWidth
+                className="mt-2"
+              >
+                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
+              </Button>
             </form>
           )}
 
@@ -195,17 +328,22 @@ export default function OnboardingEnterprisePage() {
   )
 }
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="mb-2">
-      <h2 className="text-lg font-semibold text-body">{title}</h2>
-      <p className="text-sm text-body-muted mt-0.5">{subtitle}</p>
-    </div>
-  )
+interface ShareholderFieldsProps {
+  index: number
+  shareholder: Shareholder
+  uploading: boolean
+  onUploadPhoto: (file: File) => void
+  onChange: (s: Shareholder) => void
 }
 
-function ShareholderFields({ index, shareholder, onChange }: { index: number; shareholder: Shareholder; onChange: (s: Shareholder) => void }) {
-  const upd = (field: keyof Shareholder, value: string) => onChange({ ...shareholder, [field]: value })
+function ShareholderFields({
+  index,
+  shareholder,
+  uploading,
+  onUploadPhoto,
+  onChange,
+}: ShareholderFieldsProps) {
+  const upd = (field: keyof Shareholder, value: any) => onChange({ ...shareholder, [field]: value })
   return (
     <div className="p-4 border border-gray-100 rounded-xl space-y-3">
       <p className="text-sm font-medium text-body">Accionista {index + 1}</p>
@@ -215,7 +353,17 @@ function ShareholderFields({ index, shareholder, onChange }: { index: number; sh
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField label="Cedula" required><Input placeholder="V12345678" value={shareholder.documentId} onChange={(e) => upd('documentId', e.target.value)} required /></FormField>
-        <FormField label="Foto cedula" required><Input type="file" accept="image/*,.pdf" onChange={() => upd('documentPhoto', 'uploaded')} /></FormField>
+        <FileUploader
+          label="Foto cedula"
+          required
+          url={shareholder.documentPhoto}
+          uploading={uploading}
+          onUpload={(files) => {
+            const file = files[0]
+            if (file) void onUploadPhoto(file)
+          }}
+          onClear={() => upd('documentPhoto', '')}
+        />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormField label="Telefono" required><Input placeholder="04141234567" value={shareholder.phone} onChange={(e) => upd('phone', e.target.value)} required /></FormField>
@@ -293,3 +441,108 @@ function PayrollStep({ loading, payrollItems, setPayrollItems, submitPayroll, sk
     </div>
   )
 }
+
+function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="mb-2">
+      <h2 className="text-lg font-semibold text-body">{title}</h2>
+      <p className="text-sm text-body-muted mt-0.5">{subtitle}</p>
+    </div>
+  )
+}
+
+interface FileUploaderProps {
+  label: string
+  required?: boolean
+  accept?: string
+  multiple?: boolean
+  url: string | string[]
+  uploading: boolean
+  onUpload: (files: FileList) => void
+  onClear: () => void
+}
+
+function FileUploader({
+  label,
+  required = false,
+  accept = 'image/*,.pdf',
+  multiple = false,
+  url,
+  uploading,
+  onUpload,
+  onClear
+}: FileUploaderProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const hasValue = multiple 
+    ? Array.isArray(url) && url.length > 0 
+    : typeof url === 'string' && url.length > 0
+
+  return (
+    <FormField label={label} required={required}>
+      <div className="relative mt-1">
+        {uploading ? (
+          <div className="flex items-center gap-3 p-4 border border-secondary bg-secondary/5 rounded-xl animate-pulse">
+            <Loader2 className="w-5 h-5 text-secondary animate-spin" />
+            <span className="text-sm font-medium text-secondary">Subiendo archivo...</span>
+          </div>
+        ) : hasValue ? (
+          <div className="flex items-center justify-between p-4 border border-green-200 bg-green-50/50 rounded-xl">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-semibold text-green-800">
+                  {multiple ? 'Documentos cargados' : 'Documento cargado con éxito'}
+                </span>
+                <span className="text-xs text-body-muted truncate max-w-[250px] sm:max-w-[400px]">
+                  {multiple 
+                    ? `${(url as string[]).length} archivo(s)` 
+                    : (url as string).split('/').pop()
+                  }
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-xs font-medium text-red-500 hover:text-red-700 hover:underline shrink-0 px-2 py-1"
+            >
+              Reemplazar
+            </button>
+          </div>
+        ) : (
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-3 p-4 border border-dashed border-gray-200 hover:border-secondary/40 hover:bg-gray-50/50 rounded-xl cursor-pointer transition-all duration-200"
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={accept}
+              multiple={multiple}
+              className="hidden"
+              onChange={(e) => {
+                const files = e.target.files
+                if (files && files.length > 0) {
+                  onUpload(files)
+                }
+              }}
+            />
+            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+              <Upload className="w-4 h-4 text-body-muted" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-body-secondary">
+                <span className="text-secondary font-semibold">Seleccionar archivo</span> o arrastrar aquí
+              </span>
+              <span className="text-xs text-body-muted">PNG, JPG, JPEG o PDF</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </FormField>
+  )
+}
+

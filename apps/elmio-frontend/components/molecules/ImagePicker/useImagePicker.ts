@@ -3,23 +3,28 @@
 import { useMemo, useState } from 'react'
 import { listGalleryImages, type GalleryServiceImage } from '@/src/services/gallery.service'
 import type { UseImagePickerReturn } from './ImagePicker.d'
+import { useMarketplaceEditorContext } from '@/components/organisms/marketplace-editor/MarketplaceEditorContext'
 
 const DEFAULT_TENANT_DIRECTORY = 'elmio'
 
 /**
  * Hook que administra la busqueda y carga de imagenes del picker conectado a la galeria.
  * @param selectedUrl URL actualmente seleccionada en el campo del editor.
- * @param tenantDirectory Directorio del tenant actual.
+ * @param tenantDirectory Directorio del tenant actual (opcional).
  * @returns Estado y acciones para abrir el picker y filtrar resultados.
  */
 export function useImagePicker(
   selectedUrl: string,
-  tenantDirectory = DEFAULT_TENANT_DIRECTORY,
+  tenantDirectory?: string,
 ): UseImagePickerReturn {
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [images, setImages] = useState<GalleryServiceImage[]>([])
+
+  const editorContext = useMarketplaceEditorContext()
+  const activeTenantDirectory =
+    tenantDirectory || editorContext?.tenantDirectory || DEFAULT_TENANT_DIRECTORY
 
   const filteredImages = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
@@ -47,7 +52,7 @@ export function useImagePicker(
     setIsLoading(true)
 
     try {
-      const nextImages = await listGalleryImages(tenantDirectory)
+      const nextImages = await listGalleryImages(activeTenantDirectory)
       setImages(nextImages)
     } finally {
       setIsLoading(false)
@@ -66,3 +71,4 @@ export function useImagePicker(
     closePicker: () => setIsOpen(false),
   }
 }
+

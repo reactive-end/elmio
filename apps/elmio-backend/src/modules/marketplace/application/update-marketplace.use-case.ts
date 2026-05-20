@@ -23,13 +23,37 @@ export class UpdateMarketplaceUseCase {
    * @returns Marketplace actualizado.
    * @throws NotFoundException si el marketplace no existe.
    */
-  async execute(id: string, marketplace: Marketplace): Promise<Marketplace> {
+  async execute(
+    id: string,
+    marketplace: Marketplace,
+    isAdmin = false,
+  ): Promise<Marketplace> {
     const existente = await this.repository.findById(id);
 
     if (!existente) {
       throw new NotFoundException(`Marketplace con id "${id}" no encontrado.`);
     }
 
-    return this.repository.update(id, marketplace);
+    const updatedMarketplace = { ...marketplace };
+    if (isAdmin) {
+      updatedMarketplace.owner = existente.owner;
+    }
+
+    // Si esta configuracion se marca como activa, desactivar otras del mismo slug
+    if (updatedMarketplace.active) {
+      const todos = await this.repository.list();
+      const otrosMismosSlug = todos.filter(
+        (m) =>
+          m.slug.toLowerCase() === existente.slug.toLowerCase() &&
+          m.id !== id &&
+          m.active,
+      );
+      for (const otro of otrosMismosSlug) {
+        otro.active = false;
+        await this.repository.update(otro.id, otro);
+      }
+    }
+
+    return this.repository.update(id, updatedMarketplace);
   }
 }

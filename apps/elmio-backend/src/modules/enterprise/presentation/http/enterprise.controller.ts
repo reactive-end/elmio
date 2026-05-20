@@ -1,15 +1,22 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Inject,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Request, Response } from 'express';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import {
   GetOrCreateEnterpriseUseCase,
@@ -28,6 +35,12 @@ import {
   BulkUploadCollaboratorsDto,
   ResolveLoanRequestDto,
 } from './dto/enterprise.dto';
+import {
+  ENTERPRISE_REPOSITORY_PORT,
+  type EnterpriseRepositoryPort,
+} from '../../domain/ports/enterprise-repository.port';
+import { DocumentStorageService } from '../../infrastructure/document-storage.service';
+import type { ArchivoSubido } from '../../../gallery/domain/gallery-image';
 
 /**
  * Controlador HTTP del modulo empresarial.
@@ -44,6 +57,9 @@ export class EnterpriseController {
     private readonly manageCollaborators: ManageCollaboratorsUseCase,
     private readonly manageRequests: ManageLoanRequestsUseCase,
     private readonly getAccountStatement: GetAccountStatementUseCase,
+    @Inject(ENTERPRISE_REPOSITORY_PORT)
+    private readonly enterpriseRepository: EnterpriseRepositoryPort,
+    private readonly documentStorage: DocumentStorageService,
   ) {}
 
   // --- Enterprise ---
@@ -146,5 +162,56 @@ export class EnterpriseController {
   @Get(':id/transactions')
   async listTransactions(@Param('id') id: string) {
     return this.getAccountStatement.getTransactions(id);
+  }
+
+  // --- Onboarding Documents ---
+
+  /**
+   * POST /api/enterprises/:id/documentos - Sube un archivo de onboarding para la empresa.
+   * Guarda el archivo en enterprise/[taxId]/documentos/[fileName].
+   */
+  @Post(':id/documentos')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDocument(
+    @Param('id') id: string,
+    @UploadedFile() file: ArchivoSubido | undefined,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Debes enviar un archivo.');
+    }
+
+    const enterprise = await this.enterpriseRepository.findEnterpriseById(id);
+    if (!enterprise) {
+      throw new NotFoundException('Empresa no encontrada.');
+    }
+
+    const fileName = await this.documentStorage.save(
+      enterprise.taxId,
+      file.originalname,
+      file.buffer,
+      file.mimetype,
+    );
+
+    const url = `/api/enterprises/documentos/file/${enterprise.taxId}/${fileName}`;
+    return { url, fileName };
+  }
+
+  /**
+   * GET /api/enterprises/documentos/file/:taxId/:fileName - Sirve un documento de onboarding subido.
+   * Requiere autenticacion por seguridad de datos.
+   */
+  @Get('documentos/file/:taxId/:fileName')
+  async getDocumentFile(
+    @Param('taxId') taxId: string,
+    @Param('fileName') fileName: string,
+    @Res() res: Response,
+  ) {
+    const doc = await this.documentStorage.getDocument(taxId, fileName);
+    if (!doc) {
+      throw new NotFoundException('Documento no encontrado.');
+    }
+
+    res.type(doc.mimeType);
+    res.send(doc.buffer);
   }
 }

@@ -29,8 +29,15 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
           {banners.map((banner, idx) => (
             <div
               key={banner.id ?? idx}
-              className="group relative overflow-hidden rounded-2xl"
-              style={{ minHeight: 280 }}
+              className="group relative overflow-hidden"
+              style={{
+                minHeight: 280,
+                backgroundColor: estilo.tarjetaColorFondo || 'transparent',
+                borderRadius: estilo.tarjetaRadioBorde !== undefined ? estilo.tarjetaRadioBorde : 16,
+                borderWidth: estilo.tarjetaAnchoBorde !== undefined ? estilo.tarjetaAnchoBorde : 0,
+                borderColor: estilo.tarjetaColorBorde || 'transparent',
+                borderStyle: (estilo.tarjetaAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
+              }}
             >
               {banner.imagenUrl ? (
                 <img
@@ -52,11 +59,14 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
                 {banner.textoBoton && banner.enlaceBoton && (
                   <ActionableLink
                     href={banner.enlaceBoton}
-                    className="mt-4 inline-flex items-center self-start rounded-xl px-5 py-2 font-semibold transition-transform hover:scale-105"
+                    className="mt-4 inline-flex items-center self-start px-5 py-2 font-semibold transition-transform hover:scale-105"
                     style={{
                       backgroundColor: estilo.botonColorFondo || '#fff',
                       color: estilo.botonColorTexto || '#111827',
-                      borderRadius: estilo.botonRedondez || 12,
+                      borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                      borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                      borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#fff',
+                      borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                     }}
                   >
                     {banner.textoBoton}

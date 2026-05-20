@@ -1,72 +1,36 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rm, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { GalleryImage } from '../domain/gallery-image';
 import type {
   GalleryStoragePort,
   SaveGalleryImageInput,
 } from '../domain/ports/gallery-storage.port';
-
-interface GalleryMetadataFile {
-  images: GalleryImage[];
-}
+import { GalleryImageEntity } from './entities/gallery-image.entity';
 
 /**
- * Implementacion local del almacenamiento de galeria usando disco y metadata JSON.
- * Esta estrategia se podra reemplazar por Google Cloud Storage manteniendo el puerto estable.
+ * Implementacion local del almacenamiento de galeria usando disco y PostgreSQL para metadata.
  */
 @Injectable()
 export class LocalGalleryStorageService implements GalleryStoragePort {
   private readonly storageRoot = resolve(process.cwd(), 'storage', 'gallery');
-  private readonly metadataFileName = 'gallery.metadata.json';
+
+  constructor(
+    @InjectRepository(GalleryImageEntity)
+    private readonly galleryRepository: Repository<GalleryImageEntity>,
+  ) {}
 
   private getTenantDirectoryPath(tenantDirectory: string): string {
     return join(this.storageRoot, tenantDirectory);
-  }
-
-  private getMetadataFilePath(tenantDirectory: string): string {
-    return join(
-      this.getTenantDirectoryPath(tenantDirectory),
-      this.metadataFileName,
-    );
   }
 
   private async ensureTenantDirectory(tenantDirectory: string): Promise<void> {
     await mkdir(this.getTenantDirectoryPath(tenantDirectory), {
       recursive: true,
     });
-  }
-
-  private async readMetadata(
-    tenantDirectory: string,
-  ): Promise<GalleryMetadataFile> {
-    await this.ensureTenantDirectory(tenantDirectory);
-
-    try {
-      const raw = await readFile(
-        this.getMetadataFilePath(tenantDirectory),
-        'utf8',
-      );
-      const parsed = JSON.parse(raw) as GalleryMetadataFile;
-
-      return { images: parsed.images ?? [] };
-    } catch {
-      return { images: [] };
-    }
-  }
-
-  private async writeMetadata(
-    tenantDirectory: string,
-    metadata: GalleryMetadataFile,
-  ): Promise<void> {
-    await this.ensureTenantDirectory(tenantDirectory);
-
-    await writeFile(
-      this.getMetadataFilePath(tenantDirectory),
-      JSON.stringify(metadata, null, 2),
-      'utf8',
-    );
   }
 
   private buildStoredFileName(originalName: string): string {
@@ -91,20 +55,30 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
   }
 
   /**
-   * Lista las imagenes de un tenant ordenadas por fecha descendente.
+   * Lista las imagenes de un tenant ordenadas por fecha descendente desde la DB.
    * @param tenantDirectory Directorio reservado para el tenant.
    * @returns Imagenes disponibles para exposicion HTTP.
    */
   async listByTenant(tenantDirectory: string): Promise<GalleryImage[]> {
-    const metadata = await this.readMetadata(tenantDirectory);
+    const entities = await this.galleryRepository.find({
+      where: { tenantDirectory },
+      order: { createdAt: 'DESC' },
+    });
 
-    return metadata.images.toSorted((left, right) =>
-      right.createdAt.localeCompare(left.createdAt),
-    );
+    return entities.map((entity) => ({
+      id: entity.id,
+      tenantDirectory: entity.tenantDirectory,
+      name: entity.name,
+      mimeType: entity.mimeType,
+      size: entity.size,
+      storagePath: entity.storagePath,
+      fileName: entity.fileName,
+      createdAt: entity.createdAt,
+    }));
   }
 
   /**
-   * Persiste un archivo localmente y actualiza el indice JSON del tenant.
+   * Persiste un archivo localmente y actualiza el indice relacional en PostgreSQL.
    * @param input Archivo y metadata del recurso recibido.
    * @returns Imagen almacenada con identificador y ruta final.
    */
@@ -123,38 +97,51 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
       createdAt: new Date().toISOString(),
     };
 
+    // 1. Guardar archivo físico en el disco
     await writeFile(
       join(this.getTenantDirectoryPath(input.tenantDirectory), fileName),
       input.buffer,
     );
 
-    const metadata = await this.readMetadata(input.tenantDirectory);
-    metadata.images.unshift(image);
-    await this.writeMetadata(input.tenantDirectory, metadata);
+    // 2. Guardar metadata en la base de datos relacional
+    const entity = this.galleryRepository.create({
+      id: image.id,
+      tenantDirectory: image.tenantDirectory,
+      name: image.name,
+      mimeType: image.mimeType,
+      size: image.size,
+      storagePath: image.storagePath,
+      fileName: image.fileName,
+      createdAt: image.createdAt,
+    });
+
+    await this.galleryRepository.save(entity);
 
     return image;
   }
 
   /**
-   * Elimina archivo fisico y metadata de una imagen del tenant.
+   * Elimina archivo fisico y metadata en PostgreSQL.
    * @param tenantDirectory Directorio reservado para el tenant.
    * @param imageId Identificador interno del recurso.
    * @returns `true` si la imagen existia y fue removida.
    */
   async delete(tenantDirectory: string, imageId: string): Promise<boolean> {
-    const metadata = await this.readMetadata(tenantDirectory);
-    const image = metadata.images.find((item) => item.id === imageId);
+    const entity = await this.galleryRepository.findOne({
+      where: { id: imageId, tenantDirectory },
+    });
 
-    if (!image) {
+    if (!entity) {
       return false;
     }
 
-    metadata.images = metadata.images.filter((item) => item.id !== imageId);
-    await this.writeMetadata(tenantDirectory, metadata);
+    // 1. Eliminar de la base de datos
+    await this.galleryRepository.remove(entity);
 
+    // 2. Eliminar del sistema de archivos
     const absolutePath = join(
       this.getTenantDirectoryPath(tenantDirectory),
-      image.fileName,
+      entity.fileName,
     );
 
     try {
@@ -180,16 +167,28 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
     absolutePath?: string;
     publicUrl?: string;
   } | null> {
-    const metadata = await this.readMetadata(tenantDirectory);
-    const image = metadata.images.find((item) => item.id === imageId);
+    const entity = await this.galleryRepository.findOne({
+      where: { id: imageId, tenantDirectory },
+    });
 
-    if (!image) {
+    if (!entity) {
       return null;
     }
 
+    const image: GalleryImage = {
+      id: entity.id,
+      tenantDirectory: entity.tenantDirectory,
+      name: entity.name,
+      mimeType: entity.mimeType,
+      size: entity.size,
+      storagePath: entity.storagePath,
+      fileName: entity.fileName,
+      createdAt: entity.createdAt,
+    };
+
     const absolutePath = join(
       this.getTenantDirectoryPath(tenantDirectory),
-      image.fileName,
+      entity.fileName,
     );
 
     try {
@@ -200,3 +199,4 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
     }
   }
 }
+

@@ -12,13 +12,13 @@ interface PanelPrincipalProps {
 }
 
 /**
- * Panel de contenido para seccion tipo principal (hero).
+ * Panel de contenido para seccion tipo principal (portada).
  * Permite editar diapositivas, autoplay y anclaje HTML.
  */
 export function PanelPrincipal({ seccion, actualizarSeccion }: PanelPrincipalProps) {
   return (
     <div className="flex flex-col gap-4">
-      <FormGroup label="Diapositivas del hero">
+      <FormGroup label="Diapositivas de la Portada">
         <EditorDiapositivas
           diapositivas={seccion.contenido.diapositivas ?? []}
           onChange={(d) =>
@@ -51,7 +51,7 @@ export function PanelPrincipal({ seccion, actualizarSeccion }: PanelPrincipalPro
         onChange={(v) =>
           actualizarSeccion(seccion.id, { contenido: { ...seccion.contenido, htmlId: v } })
         }
-        placeholder="hero"
+        placeholder="portada"
       />
     </div>
   )

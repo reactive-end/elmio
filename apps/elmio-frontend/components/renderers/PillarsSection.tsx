@@ -43,11 +43,18 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
           {items.map((item: any, idx) => (
             <div
               key={item.id ?? idx}
-              className={`flex rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md ${
+              className={`flex p-6 transition-all hover:shadow-md ${
                 isZigzag 
                   ? `flex-col sm:flex-row items-center text-left ${idx % 2 !== 0 ? 'sm:flex-row-reverse' : ''} gap-8` 
                   : 'flex-col items-center text-center'
               }`}
+              style={{
+                backgroundColor: estilo.tarjetaColorFondo || '#f9fafb',
+                borderRadius: estilo.tarjetaRadioBorde !== undefined ? estilo.tarjetaRadioBorde : 16,
+                borderWidth: estilo.tarjetaAnchoBorde !== undefined ? estilo.tarjetaAnchoBorde : 0,
+                borderColor: estilo.tarjetaColorBorde || 'transparent',
+                borderStyle: (estilo.tarjetaAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
+              }}
             >
               {item.icono ? (
                 <div className={isZigzag ? "w-1/3 shrink-0" : ""}>
@@ -87,11 +94,14 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
                   <div className={isZigzag ? "mt-4 text-left" : "mt-4"}>
                     <ActionableLink
                       href={item.enlaceBoton}
-                      className="inline-block rounded-xl px-5 py-2 text-sm font-semibold transition-colors"
+                      className="inline-block px-5 py-2 text-sm font-semibold transition-colors"
                       style={{
                         backgroundColor: estilo.botonColorFondo || '#0f4ece',
                         color: estilo.botonColorTexto || '#fff',
-                        borderRadius: estilo.botonRedondez || 12,
+                        borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                        borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                        borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                        borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                       }}
                     >
                       {item.textoBoton}

@@ -32,7 +32,16 @@ export const marketplaceService = {
       throw new Error(`Error al listar marketplaces: ${response.statusText}`)
     }
 
-    return response.json() as Promise<MarketplaceListItem[]>
+    const rawList = (await response.json()) as any[]
+    return rawList.map((item) => ({
+      id: item.id,
+      nombre: item.name ?? item.nombre ?? '',
+      slug: item.slug ?? '',
+      descripcion: item.description ?? item.descripcion ?? '',
+      activo: typeof item.active === 'boolean' ? item.active : (item.activo ?? false),
+      propietario: item.owner ?? item.propietario ?? '',
+      logo: item.logo ?? '',
+    }))
   },
 
   /**
@@ -82,10 +91,17 @@ export const marketplaceService = {
     propietario?: string
     logo?: string
   }): Promise<DatosMarketplace> {
+    const backendData = {
+      name: data.nombre,
+      slug: data.slug,
+      description: data.descripcion ?? '',
+      owner: data.propietario ?? '',
+      logo: data.logo ?? '',
+    }
     const response = await fetch(`${API_BASE}/marketplaces`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authService.getAuthHeaders() },
-      body: JSON.stringify(data),
+      body: JSON.stringify(backendData),
     })
 
     if (!response.ok) {

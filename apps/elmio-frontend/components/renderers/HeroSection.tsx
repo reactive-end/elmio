@@ -120,11 +120,14 @@ export function HeroSection({ seccion }: HeroSectionProps) {
           {slideActual.textoBoton && slideActual.enlaceBoton && (
             <ActionableLink
               href={slideActual.enlaceBoton}
-              className="inline-flex items-center rounded-xl px-6 py-3 font-semibold shadow-lg transition-transform hover:scale-105"
+              className="inline-flex items-center px-6 py-3 font-semibold shadow-lg transition-transform hover:scale-105"
               style={{
                 backgroundColor: estilo.botonColorFondo || '#0f4ece',
                 color: estilo.botonColorTexto || '#fff',
-                borderRadius: estilo.botonRedondez || 12,
+                borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
               }}
             >
               {slideActual.textoBoton}

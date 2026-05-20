@@ -120,8 +120,15 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {productos.map((producto) => (
                 <div
                   key={producto.id}
-                  className="shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
-                  style={{ width: anchoTarjeta }}
+                  className="shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md"
+                  style={{
+                    width: anchoTarjeta,
+                    backgroundColor: estilo.tarjetaColorFondo || '#ffffff',
+                    borderRadius: estilo.tarjetaRadioBorde !== undefined ? estilo.tarjetaRadioBorde : 16,
+                    borderWidth: estilo.tarjetaAnchoBorde !== undefined ? estilo.tarjetaAnchoBorde : 1,
+                    borderColor: estilo.tarjetaColorBorde || '#f3f4f6',
+                    borderStyle: (estilo.tarjetaAnchoBorde ?? 1) > 0 ? 'solid' : 'none',
+                  }}
                 >
                   <div
                     className="relative h-32 bg-gray-100"
@@ -142,8 +149,8 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                   <div className="p-4">
                     {producto.enlaceUrl && (
                       <span
-                        className="mb-2 inline-block rounded-full bg-secondary/10 px-2.5 py-1 text-[10px] font-semibold text-secondary"
-                        style={{ borderRadius: estilo.botonRedondez || 8 }}
+                        className="mb-2 inline-block bg-secondary/10 px-2.5 py-1 text-[10px] font-semibold text-secondary"
+                        style={{ borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 8 }}
                       >
                         {producto.enlaceUrl}
                       </span>
@@ -160,11 +167,14 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       {producto.enlaceBoton ? (
                         <ActionableLink
                           href={producto.enlaceBoton}
-                          className="block w-full rounded-xl py-2 text-center text-sm font-medium transition-colors"
+                          className="block w-full py-2 text-center text-sm font-medium transition-colors"
                           style={{
                             backgroundColor: estilo.botonColorFondo || '#0f4ece',
                             color: estilo.botonColorTexto || '#fff',
-                            borderRadius: estilo.botonRedondez || 12,
+                            borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                            borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                            borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                            borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                           }}
                         >
                           {producto.textoBoton || 'Ver detalle'}
@@ -172,11 +182,14 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       ) : (
                         <button
                           type="button"
-                          className="block w-full rounded-xl py-2 text-center text-sm font-medium transition-colors"
+                          className="block w-full py-2 text-center text-sm font-medium transition-colors"
                           style={{
                             backgroundColor: estilo.botonColorFondo || '#0f4ece',
                             color: estilo.botonColorTexto || '#fff',
-                            borderRadius: estilo.botonRedondez || 12,
+                            borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                            borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                            borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                            borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                           }}
                         >
                           {producto.textoBoton || 'Ver detalle'}
@@ -194,11 +207,14 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           <div className="mt-10 text-center">
             <ActionableLink
               href={contenido.enlaceBoton}
-              className="inline-flex items-center rounded-xl px-6 py-3 font-semibold shadow transition-transform hover:scale-105"
+              className="inline-flex items-center px-6 py-3 font-semibold shadow transition-transform hover:scale-105"
               style={{
                 backgroundColor: estilo.botonColorFondo || '#0f4ece',
                 color: estilo.botonColorTexto || '#fff',
-                borderRadius: estilo.botonRedondez || 12,
+                borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
               }}
             >
               {contenido.textoBoton}

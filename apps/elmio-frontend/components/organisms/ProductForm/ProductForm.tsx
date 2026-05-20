@@ -91,11 +91,15 @@ export function ProductForm() {
                 />
               </FormField>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Categoria">
-                  <Input
+                <FormField label="Categoría">
+                  <Select
                     value={f.category}
-                    onChange={(e) => f.setCategory(e.target.value)}
-                    placeholder="Ej: Seguros"
+                    onChange={(v) => f.setCategory(v)}
+                    placeholder={f.categories.length === 0 ? "Sin categorías activas" : "Selecciona una categoría"}
+                    options={f.categories.map((c) => ({
+                      value: c.name,
+                      label: c.name,
+                    }))}
                   />
                 </FormField>
                 <FormField label="Etiquetas">

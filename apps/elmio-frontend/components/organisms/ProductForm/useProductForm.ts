@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   productService,
@@ -11,6 +11,7 @@ import {
   type WindowActionType,
   type CreateProductInput,
 } from '@/src/services/product.service'
+import { categoryService, type Categoria } from '@/src/services/category.service'
 
 interface PriceListDraft {
   id: string
@@ -59,7 +60,24 @@ export function useProductForm() {
   const [description, setDescription] = useState('')
   const [type, setType] = useState<ProductType>('PRODUCT')
   const [category, setCategory] = useState('')
+  const [categories, setCategories] = useState<Categoria[]>([])
   const [tags, setTags] = useState('')
+
+  // Cargar categorias activas
+  useEffect(() => {
+    categoryService.list()
+      .then((data) => {
+        const activeCategories = data.filter((c) => c.active)
+        setCategories(activeCategories)
+        // Seleccionar la primera por defecto si existe
+        if (activeCategories.length > 0) {
+          setCategory(activeCategories[0].name)
+        }
+      })
+      .catch((err) => {
+        console.error('Error al cargar categorias:', err)
+      })
+  }, [])
 
   // Step 2: Inventory
   const [currentStock, setCurrentStock] = useState(0)
@@ -260,6 +278,7 @@ export function useProductForm() {
     setType,
     category,
     setCategory,
+    categories,
     tags,
     setTags,
     currentStock,

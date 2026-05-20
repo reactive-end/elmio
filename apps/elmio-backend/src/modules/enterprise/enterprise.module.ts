@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import {
   GetOrCreateEnterpriseUseCase,
@@ -11,7 +12,13 @@ import { ManageLoanRequestsUseCase } from './application/manage-loan-requests.us
 import { GetAccountStatementUseCase } from './application/get-account-statement.use-case';
 import { ManageProfileUseCase } from './application/manage-profile.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
-import { FileEnterpriseRepositoryService } from './infrastructure/file-enterprise-repository.service';
+import { DbEnterpriseRepositoryService } from './infrastructure/db-enterprise-repository.service';
+import { DocumentStorageService } from './infrastructure/document-storage.service';
+import { EnterpriseEntity } from './infrastructure/entities/enterprise.entity';
+import { PersonProfileEntity } from './infrastructure/entities/person-profile.entity';
+import { LoanRequestEntity } from './infrastructure/entities/loan-request.entity';
+import { TransactionEntity } from './infrastructure/entities/transaction.entity';
+import { PlatformConfigEntity } from './infrastructure/entities/platform-config.entity';
 import { EnterpriseController } from './presentation/http/enterprise.controller';
 import { ProfileController } from './presentation/http/profile.controller';
 
@@ -20,7 +27,16 @@ import { ProfileController } from './presentation/http/profile.controller';
  * Importa AuthModule para reutilizar AuthGuard y ValidateSessionUseCase.
  */
 @Module({
-  imports: [AuthModule],
+  imports: [
+    AuthModule,
+    TypeOrmModule.forFeature([
+      EnterpriseEntity,
+      PersonProfileEntity,
+      LoanRequestEntity,
+      TransactionEntity,
+      PlatformConfigEntity,
+    ]),
+  ],
   controllers: [EnterpriseController, ProfileController],
   providers: [
     GetOrCreateEnterpriseUseCase,
@@ -31,11 +47,15 @@ import { ProfileController } from './presentation/http/profile.controller';
     ManageLoanRequestsUseCase,
     GetAccountStatementUseCase,
     ManageProfileUseCase,
-    FileEnterpriseRepositoryService,
+    DbEnterpriseRepositoryService,
+    DocumentStorageService,
     {
       provide: ENTERPRISE_REPOSITORY_PORT,
-      useExisting: FileEnterpriseRepositoryService,
+      useClass: DbEnterpriseRepositoryService,
     },
   ],
+  exports: [DocumentStorageService],
 })
 export class EnterpriseModule {}
+
+

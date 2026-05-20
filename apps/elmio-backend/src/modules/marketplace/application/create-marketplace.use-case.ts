@@ -40,12 +40,17 @@ export class CreateMarketplaceUseCase {
       throw new BadRequestException('El slug del marketplace es obligatorio.');
     }
 
-    const existing = await this.repository.findBySlug(
-      input.slug.trim().toLowerCase(),
+    const todos = await this.repository.list();
+    const slugInUseByOther = todos.find(
+      (m) =>
+        m.slug.toLowerCase() === input.slug.trim().toLowerCase() &&
+        m.owner !== input.owner,
     );
 
-    if (existing) {
-      throw new BadRequestException(`El slug "${input.slug}" ya esta en uso.`);
+    if (slugInUseByOther) {
+      throw new BadRequestException(
+        `El slug "${input.slug}" ya está en uso por otro negocio.`,
+      );
     }
 
     const marketplace: Marketplace = {

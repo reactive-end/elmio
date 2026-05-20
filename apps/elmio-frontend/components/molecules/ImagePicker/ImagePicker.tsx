@@ -15,7 +15,7 @@ export function ImagePicker({
   label,
   value,
   onChange,
-  tenantDirectory = 'elmio',
+  tenantDirectory,
 }: ImagePickerProps) {
   const {
     search,
@@ -27,6 +27,7 @@ export function ImagePicker({
     openPicker,
     closePicker,
   } = useImagePicker(value, tenantDirectory)
+
 
   return (
     <div className="flex flex-col gap-2">

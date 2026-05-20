@@ -43,11 +43,14 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                 {contenido.textoBoton && contenido.enlaceBoton && (
                   <ActionableLink
                     href={contenido.enlaceBoton}
-                    className="inline-flex items-center self-start rounded-xl px-6 py-3 font-semibold transition-transform hover:scale-105"
+                    className="inline-flex items-center self-start px-6 py-3 font-semibold transition-transform hover:scale-105"
                     style={{
                       backgroundColor: estilo.botonColorFondo || '#0f4ece',
                       color: estilo.botonColorTexto || '#fff',
-                      borderRadius: estilo.botonRedondez || 12,
+                      borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                      borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                      borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                      borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                     }}
                   >
                     {contenido.textoBoton}
@@ -95,11 +98,14 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                 {contenido.textoBoton && contenido.enlaceBoton && (
                   <ActionableLink
                     href={contenido.enlaceBoton}
-                    className="inline-flex items-center self-start rounded-xl px-6 py-3 font-semibold transition-transform hover:scale-105"
+                    className="inline-flex items-center self-start px-6 py-3 font-semibold transition-transform hover:scale-105"
                     style={{
                       backgroundColor: estilo.botonColorFondo || '#0f4ece',
                       color: estilo.botonColorTexto || '#fff',
-                      borderRadius: estilo.botonRedondez || 12,
+                      borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                      borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                      borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                      borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                     }}
                   >
                     {contenido.textoBoton}

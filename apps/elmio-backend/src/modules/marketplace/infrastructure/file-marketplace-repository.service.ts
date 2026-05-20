@@ -70,16 +70,13 @@ export class FileMarketplaceRepositoryService implements MarketplaceRepositoryPo
     return metadata.marketplaces.find((m) => m.id === id) ?? null;
   }
 
-  /**
-   * Busca un marketplace por su slug unico.
-   * @param slug Slug del marketplace.
-   * @returns Marketplace o null si no existe.
-   */
   async findBySlug(slug: string): Promise<Marketplace | null> {
     const metadata = await this.readMetadata();
-    return (
-      metadata.marketplaces.find((m) => m.slug === slug.toLowerCase()) ?? null
+    const matches = metadata.marketplaces.filter(
+      (m) => m.slug === slug.toLowerCase(),
     );
+    if (matches.length === 0) return null;
+    return matches.find((m) => m.active) ?? matches[0];
   }
 
   /**

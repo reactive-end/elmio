@@ -48,12 +48,50 @@ export class FileAuthRepositoryService implements AuthRepositoryPort {
 
   /**
    * Busca un usuario por su email.
-   * @param email Email del usuario.
+   * @param email Email o telefono del usuario.
    * @returns Usuario o null si no existe.
    */
   async findByEmail(email: string): Promise<User | null> {
+    let resolvedEmail = email.trim().toLowerCase();
+
+    // Si no contiene '@', asumimos que es un telefono
+    if (!resolvedEmail.includes('@')) {
+      const cleanInputPhone = resolvedEmail.replace(/\D/g, '');
+      if (cleanInputPhone.length > 0) {
+        try {
+          const enterpriseFilePath = join(process.cwd(), 'storage', 'enterprise', 'enterprise.metadata.json');
+          const raw = await readFile(enterpriseFilePath, 'utf8');
+          const parsed = JSON.parse(raw);
+
+          const enterprises = parsed.enterprises ?? [];
+          const collaborators = parsed.collaborators ?? [];
+
+          // Buscar en enterprises
+          const matchedEnterprise = enterprises.find((e: any) => {
+            const cleanPhone = (e.phone ?? '').replace(/\D/g, '');
+            return cleanPhone === cleanInputPhone;
+          });
+
+          if (matchedEnterprise) {
+            resolvedEmail = matchedEnterprise.email.toLowerCase();
+          } else {
+            // Buscar en collaborators
+            const matchedCollaborator = collaborators.find((c: any) => {
+              const cleanPhone = (c.phone ?? '').replace(/\D/g, '');
+              return cleanPhone === cleanInputPhone;
+            });
+            if (matchedCollaborator) {
+              resolvedEmail = matchedCollaborator.email.toLowerCase();
+            }
+          }
+        } catch {
+          // Silenciar errores de lectura de archivo
+        }
+      }
+    }
+
     const metadata = await this.readMetadata();
-    return metadata.users.find((u) => u.email === email.toLowerCase()) ?? null;
+    return metadata.users.find((u) => u.email === resolvedEmail) ?? null;
   }
 
   /**

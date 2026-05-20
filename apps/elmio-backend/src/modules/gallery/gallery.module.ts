@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '../auth/auth.module';
 import type { GalleryStoragePort } from './domain/ports/gallery-storage.port';
 import { DeleteGalleryImageUseCase } from './application/delete-gallery-image.use-case';
 import { GetGalleryImageFileUseCase } from './application/get-gallery-image-file.use-case';
@@ -7,32 +9,17 @@ import { UploadGalleryImagesUseCase } from './application/upload-gallery-images.
 import { GALLERY_STORAGE_PORT } from './domain/ports/gallery-storage.port';
 import { GoogleCloudGalleryStorageService } from './infrastructure/google-cloud-gallery-storage.service';
 import { LocalGalleryStorageService } from './infrastructure/local-gallery-storage.service';
+import { GalleryImageEntity } from './infrastructure/entities/gallery-image.entity';
 import { GalleryController } from './presentation/http/gallery.controller';
-
-function createGalleryStorageProvider(): GalleryStoragePort {
-  const hasInlineCredentials = Boolean(
-    process.env.GCS_CREDENTIALS_JSON?.trim(),
-  );
-  const hasFileCredentials = Boolean(
-    process.env.GCS_CREDENTIALS_JSON_PATH?.trim(),
-  );
-  const hasBucketName = Boolean(process.env.GCS_BUCKET_NAME?.trim());
-  const hasDefaultProject = Boolean(process.env.GOOGLE_CLOUD_PROJECT?.trim());
-
-  if (
-    hasBucketName &&
-    (hasInlineCredentials || hasFileCredentials || hasDefaultProject)
-  ) {
-    return new GoogleCloudGalleryStorageService();
-  }
-
-  return new LocalGalleryStorageService();
-}
 
 /**
  * Modulo que agrupa la feature de galeria de imagenes del dashboard.
  */
 @Module({
+  imports: [
+    AuthModule,
+    TypeOrmModule.forFeature([GalleryImageEntity]),
+  ],
   controllers: [GalleryController],
   providers: [
     ListGalleryImagesUseCase,
@@ -43,8 +30,31 @@ function createGalleryStorageProvider(): GalleryStoragePort {
     GoogleCloudGalleryStorageService,
     {
       provide: GALLERY_STORAGE_PORT,
-      useFactory: createGalleryStorageProvider,
+      useFactory: (
+        localService: LocalGalleryStorageService,
+        gcsService: GoogleCloudGalleryStorageService,
+      ): GalleryStoragePort => {
+        const hasInlineCredentials = Boolean(
+          process.env.GCS_CREDENTIALS_JSON?.trim(),
+        );
+        const hasFileCredentials = Boolean(
+          process.env.GCS_CREDENTIALS_JSON_PATH?.trim(),
+        );
+        const hasBucketName = Boolean(process.env.GCS_BUCKET_NAME?.trim());
+        const hasDefaultProject = Boolean(process.env.GOOGLE_CLOUD_PROJECT?.trim());
+
+        if (
+          hasBucketName &&
+          (hasInlineCredentials || hasFileCredentials || hasDefaultProject)
+        ) {
+          return gcsService;
+        }
+
+        return localService;
+      },
+      inject: [LocalGalleryStorageService, GoogleCloudGalleryStorageService],
     },
   ],
 })
 export class GalleryModule {}
+

@@ -12,6 +12,8 @@ import { AgregarSeccionModal } from './AgregarSeccionModal'
 import { useMarketplaceEditor } from '@/src/hooks/pages/useMarketplaceEditor'
 import { MERCADO_PRUEBA } from '@/src/data/marketplace-mock'
 import { marketplaceService } from '@/src/services/marketplace.service'
+import { authService } from '@/src/services/auth.service'
+import { ShieldAlert } from 'lucide-react'
 import type { DatosMarketplace, TipoSeccion, ConfiguracionWhatsApp } from '@/src/utils/editor-types.d'
 
 type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones' | 'general'
@@ -71,12 +73,15 @@ export function EditorShell({ id }: EditorShellProps) {
   return <EditorInterno datosIniciales={datosIniciales ?? MERCADO_PRUEBA} />
 }
 
+import { MarketplaceEditorProvider } from './MarketplaceEditorContext'
+
 interface EditorInternoProps {
   datosIniciales: DatosMarketplace
 }
 
 function EditorInterno({ datosIniciales }: EditorInternoProps) {
   const editor = useMarketplaceEditor(datosIniciales)
+  const [session, setSession] = useState<any>(null)
   const [seccionArrastradaId, setSeccionArrastradaId] = useState<string | null>(null)
   const [objetivoArrastre, setObjetivoArrastre] = useState<{
     id: string
@@ -84,6 +89,10 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
   } | null>(null)
   const [modalAgregarAbierto, setModalAgregarAbierto] = useState(false)
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoSeccion>('principal')
+
+  useEffect(() => {
+    setSession(authService.getSession())
+  }, [])
 
   const abrirModalAgregar = () => {
     setTipoSeleccionado('principal')
@@ -115,112 +124,130 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [editor])
 
+  const esAdminGlobalAjeno = 
+    session?.role === 'ADMIN' && 
+    editor.marketplace.propietario && 
+    editor.marketplace.propietario !== session?.owner
+
+  const tenantDirectory = editor.marketplace.propietario || 'elmio'
+
   return (
-    <div className="h-[calc(100dvh-8rem)] flex flex-col">
-      <EditorTopBar
-        nombre={editor.marketplace.nombre}
-        slug={editor.marketplace.slug}
-        pestana={editor.pestana as PestanaEditor}
-        onNombreChange={(v) => editor.setMarketplace({ ...editor.marketplace, nombre: v })}
-        onPestanaChange={(p) => editor.setPestana(p as PestanaEditor)}
-        onGuardar={editor.guardar}
-      />
+    <MarketplaceEditorProvider tenantDirectory={tenantDirectory}>
+      <div className="h-[calc(100dvh-8rem)] flex flex-col">
+        {esAdminGlobalAjeno && (
+          <div className="bg-amber-50 border-b border-amber-200 px-6 py-2 flex items-center gap-3 text-amber-800 text-xs font-semibold animate-fade-in flex-shrink-0">
+            <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 animate-pulse" />
+            <span>
+              Editando en modo <strong>Administrador Global:</strong> Los cambios no afectarán la propiedad original del aliado (<code>{editor.marketplace.propietario}</code>).
+            </span>
+          </div>
+        )}
 
-      {editor.alerta && (
-        <div className="mb-4 flex-shrink-0">
-          <Alert
-            type={editor.alerta.type}
-            message={editor.alerta.message}
-            onDismiss={() => editor.setAlerta(null)}
+        <EditorTopBar
+          nombre={editor.marketplace.nombre}
+          slug={editor.marketplace.slug}
+          pestana={editor.pestana as PestanaEditor}
+          onNombreChange={(v) => editor.setMarketplace({ ...editor.marketplace, nombre: v })}
+          onPestanaChange={(p) => editor.setPestana(p as PestanaEditor)}
+          onGuardar={editor.guardar}
+        />
+
+        {editor.alerta && (
+          <div className="mb-4 flex-shrink-0">
+            <Alert
+               type={editor.alerta.type}
+               message={editor.alerta.message}
+               onDismiss={() => editor.setAlerta(null)}
+            />
+          </div>
+        )}
+
+        {editor.pestana === 'vista-previa' && (
+          <VistaPreviaTab
+            secciones={editor.secciones}
+            seleccionadaId={editor.seleccionadaId}
+            onSeccionClick={(id) => {
+              editor.setSeleccionadaId(id)
+              editor.setPestana('edicion')
+            }}
           />
-        </div>
-      )}
+        )}
 
-      {editor.pestana === 'vista-previa' && (
-        <VistaPreviaTab
-          secciones={editor.secciones}
-          seleccionadaId={editor.seleccionadaId}
-          onSeccionClick={(id) => {
-            editor.setSeleccionadaId(id)
-            editor.setPestana('edicion')
-          }}
+        {editor.pestana === 'edicion' && (
+          <EdicionTab
+            secciones={editor.secciones}
+            seleccionada={editor.seleccionada}
+            seleccionadaId={editor.seleccionadaId}
+            pestanaProp={editor.pestanaProp as PestanaPropiedades}
+            fuente={editor.marketplace.tema.fuente}
+            gradienteActivo={editor.gradienteActivo}
+            gradienteInicio={editor.gradienteInicio}
+            gradienteFin={editor.gradienteFin}
+            gradienteDireccion={editor.gradienteDireccion}
+            onSelectSeccion={(sId) => editor.setSeleccionadaId(sId)}
+            onAgregarClick={abrirModalAgregar}
+            actualizarSeccion={editor.actualizarSeccion}
+            actualizarContenido={editor.actualizarContenido}
+            actualizarEstilo={(campo, valor) =>
+              editor.actualizarEstilo(campo, valor as string | number)
+            }
+            setPestanaProp={(p) => editor.setPestanaProp(p as PestanaPropiedades)}
+            agregarElemento={editor.agregarElemento}
+            actualizarElemento={editor.actualizarElemento}
+            eliminarElemento={editor.eliminarElemento}
+            onGradienteActivoChange={editor.setGradienteActivo}
+            onGradienteInicioChange={editor.setGradienteInicio}
+            onGradienteFinChange={editor.setGradienteFin}
+            onGradienteDireccionChange={editor.setGradienteDireccion}
+            onFuenteChange={(f) =>
+              editor.setMarketplace({
+                ...editor.marketplace,
+                tema: { ...editor.marketplace.tema, fuente: f },
+              })
+            }
+          />
+        )}
+
+        {editor.pestana === 'secciones' && (
+          <SeccionesTab
+            secciones={editor.secciones}
+            seccionArrastradaId={seccionArrastradaId}
+            objetivoArrastre={objetivoArrastre}
+            onAgregarClick={abrirModalAgregar}
+            onDragStart={setSeccionArrastradaId}
+            onDragEnd={() => {
+              setSeccionArrastradaId(null)
+              setObjetivoArrastre(null)
+            }}
+            onDragOver={(seccionId, posicion) => setObjetivoArrastre({ id: seccionId, posicion })}
+            onDragLeave={() => setObjetivoArrastre(null)}
+            onDrop={handleDrop}
+            onVisibilidad={editor.toggleVisibilidad}
+            onEditar={(sId) => {
+              editor.setSeleccionadaId(sId)
+              editor.setPestana('edicion')
+            }}
+            onEliminar={editor.eliminarSeccion}
+          />
+        )}
+
+        {editor.pestana === 'general' && (
+          <ConfiguracionGeneralTab
+            whatsapp={editor.marketplace.whatsapp}
+            onChangeWhatsapp={(ws) =>
+              editor.setMarketplace({ ...editor.marketplace, whatsapp: ws })
+            }
+          />
+        )}
+
+        <AgregarSeccionModal
+          abierto={modalAgregarAbierto}
+          tipoSeleccionado={tipoSeleccionado}
+          onTipoChange={setTipoSeleccionado}
+          onConfirmar={confirmarAgregarSeccion}
+          onCancelar={() => setModalAgregarAbierto(false)}
         />
-      )}
-
-      {editor.pestana === 'edicion' && (
-        <EdicionTab
-          secciones={editor.secciones}
-          seleccionada={editor.seleccionada}
-          seleccionadaId={editor.seleccionadaId}
-          pestanaProp={editor.pestanaProp as PestanaPropiedades}
-          fuente={editor.marketplace.tema.fuente}
-          gradienteActivo={editor.gradienteActivo}
-          gradienteInicio={editor.gradienteInicio}
-          gradienteFin={editor.gradienteFin}
-          gradienteDireccion={editor.gradienteDireccion}
-          onSelectSeccion={(sId) => editor.setSeleccionadaId(sId)}
-          onAgregarClick={abrirModalAgregar}
-          actualizarSeccion={editor.actualizarSeccion}
-          actualizarContenido={editor.actualizarContenido}
-          actualizarEstilo={(campo, valor) =>
-            editor.actualizarEstilo(campo, valor as string | number)
-          }
-          setPestanaProp={(p) => editor.setPestanaProp(p as PestanaPropiedades)}
-          agregarElemento={editor.agregarElemento}
-          actualizarElemento={editor.actualizarElemento}
-          eliminarElemento={editor.eliminarElemento}
-          onGradienteActivoChange={editor.setGradienteActivo}
-          onGradienteInicioChange={editor.setGradienteInicio}
-          onGradienteFinChange={editor.setGradienteFin}
-          onGradienteDireccionChange={editor.setGradienteDireccion}
-          onFuenteChange={(f) =>
-            editor.setMarketplace({
-              ...editor.marketplace,
-              tema: { ...editor.marketplace.tema, fuente: f },
-            })
-          }
-        />
-      )}
-
-      {editor.pestana === 'secciones' && (
-        <SeccionesTab
-          secciones={editor.secciones}
-          seccionArrastradaId={seccionArrastradaId}
-          objetivoArrastre={objetivoArrastre}
-          onAgregarClick={abrirModalAgregar}
-          onDragStart={setSeccionArrastradaId}
-          onDragEnd={() => {
-            setSeccionArrastradaId(null)
-            setObjetivoArrastre(null)
-          }}
-          onDragOver={(seccionId, posicion) => setObjetivoArrastre({ id: seccionId, posicion })}
-          onDragLeave={() => setObjetivoArrastre(null)}
-          onDrop={handleDrop}
-          onVisibilidad={editor.toggleVisibilidad}
-          onEditar={(sId) => {
-            editor.setSeleccionadaId(sId)
-            editor.setPestana('edicion')
-          }}
-          onEliminar={editor.eliminarSeccion}
-        />
-      )}
-
-      {editor.pestana === 'general' && (
-        <ConfiguracionGeneralTab
-          whatsapp={editor.marketplace.whatsapp}
-          onChangeWhatsapp={(ws) =>
-            editor.setMarketplace({ ...editor.marketplace, whatsapp: ws })
-          }
-        />
-      )}
-
-      <AgregarSeccionModal
-        abierto={modalAgregarAbierto}
-        tipoSeleccionado={tipoSeleccionado}
-        onTipoChange={setTipoSeleccionado}
-        onConfirmar={confirmarAgregarSeccion}
-        onCancelar={() => setModalAgregarAbierto(false)}
-      />
-    </div>
+      </div>
+    </MarketplaceEditorProvider>
   )
 }

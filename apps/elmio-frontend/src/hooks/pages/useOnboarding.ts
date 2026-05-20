@@ -19,6 +19,18 @@ type OnboardingStep =
   | 'bank-accounts'
   | 'payroll'
 
+export interface UploadingStates {
+  taxIdPhoto?: boolean
+  constitutiveActPhoto?: boolean
+  lastAssemblyPhoto?: boolean
+  serviceReceiptPhoto?: boolean
+  bankStatementsPhotos?: boolean
+  bankReferencePhotos?: boolean
+  legalRepDocumentPhoto?: boolean
+  accountManagerDocumentPhoto?: boolean
+  shareholders?: Record<number, boolean>
+}
+
 interface UseOnboardingReturn {
   step: OnboardingStep
   enterprise: Enterprise | null
@@ -57,6 +69,13 @@ interface UseOnboardingReturn {
   setPayrollItems: (items: CollaboratorInput[]) => void
   submitPayroll: () => Promise<void>
   skipPayroll: () => Promise<void>
+
+  // Subida de archivos interactivos
+  uploading: UploadingStates
+  uploadDocFile: (file: File, field: keyof LegalDocsForm) => Promise<void>
+  uploadMultipleDocs: (files: FileList, field: 'bankStatementsPhotos' | 'bankReferencePhotos') => Promise<void>
+  uploadLegalRepFile: (file: File, field: 'legalRepDocumentPhoto' | 'accountManagerDocumentPhoto') => Promise<void>
+  uploadShareholderFile: (file: File, index: number) => Promise<void>
 }
 
 interface LegalDocsForm {
@@ -268,6 +287,87 @@ export function useOnboarding(): UseOnboardingReturn {
     })
   }, [enterprise, withLoading])
 
+  const [uploading, setUploading] = useState<UploadingStates>({})
+
+  const uploadDocFile = useCallback(async (file: File, field: keyof LegalDocsForm) => {
+    if (!enterprise) return
+    try {
+      setUploading(prev => ({ ...prev, [field]: true }))
+      setError(null)
+      const res = await enterpriseService.uploadDocument(enterprise.id, file)
+      setLegalDocs(prev => ({
+        ...prev,
+        [field]: res.url as any // cast in case field types vary, but they are strings
+      }))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir documento')
+    } finally {
+      setUploading(prev => ({ ...prev, [field]: false }))
+    }
+  }, [enterprise])
+
+  const uploadMultipleDocs = useCallback(async (files: FileList, field: 'bankStatementsPhotos' | 'bankReferencePhotos') => {
+    if (!enterprise) return
+    try {
+      setUploading(prev => ({ ...prev, [field]: true }))
+      setError(null)
+      const uploadPromises = Array.from(files).map(file => enterpriseService.uploadDocument(enterprise.id, file))
+      const results = await Promise.all(uploadPromises)
+      const urls = results.map(r => r.url)
+      setLegalDocs(prev => ({
+        ...prev,
+        [field]: [...(prev[field] as string[]), ...urls]
+      }))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir documentos')
+    } finally {
+      setUploading(prev => ({ ...prev, [field]: false }))
+    }
+  }, [enterprise])
+
+  const uploadLegalRepFile = useCallback(async (file: File, field: 'legalRepDocumentPhoto' | 'accountManagerDocumentPhoto') => {
+    if (!enterprise) return
+    try {
+      setUploading(prev => ({ ...prev, [field]: true }))
+      setError(null)
+      const res = await enterpriseService.uploadDocument(enterprise.id, file)
+      setLegalRep(prev => ({
+        ...prev,
+        [field]: res.url
+      }))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir foto de cedula')
+    } finally {
+      setUploading(prev => ({ ...prev, [field]: false }))
+    }
+  }, [enterprise])
+
+  const uploadShareholderFile = useCallback(async (file: File, index: number) => {
+    if (!enterprise) return
+    try {
+      setUploading(prev => ({
+        ...prev,
+        shareholders: { ...(prev.shareholders || {}), [index]: true }
+      }))
+      setError(null)
+      const res = await enterpriseService.uploadDocument(enterprise.id, file)
+      setShareholders(prev => {
+        const copy = [...prev]
+        if (copy[index]) {
+          copy[index] = { ...copy[index], documentPhoto: res.url }
+        }
+        return copy
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir cedula de accionista')
+    } finally {
+      setUploading(prev => ({
+        ...prev,
+        shareholders: { ...(prev.shareholders || {}), [index]: false }
+      }))
+    }
+  }, [enterprise])
+
   return {
     step,
     enterprise,
@@ -294,5 +394,10 @@ export function useOnboarding(): UseOnboardingReturn {
     setPayrollItems,
     submitPayroll,
     skipPayroll,
+    uploading,
+    uploadDocFile,
+    uploadMultipleDocs,
+    uploadLegalRepFile,
+    uploadShareholderFile,
   }
 }

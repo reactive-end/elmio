@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { ListMarketplacesUseCase } from './application/list-marketplaces.use-case';
 import { GetMarketplaceBySlugUseCase } from './application/get-marketplace-by-slug.use-case';
@@ -7,7 +8,8 @@ import { CreateMarketplaceUseCase } from './application/create-marketplace.use-c
 import { UpdateMarketplaceUseCase } from './application/update-marketplace.use-case';
 import { DeleteMarketplaceUseCase } from './application/delete-marketplace.use-case';
 import { MARKETPLACE_REPOSITORY_PORT } from './domain/ports/marketplace-repository.port';
-import { FileMarketplaceRepositoryService } from './infrastructure/file-marketplace-repository.service';
+import { DbMarketplaceRepositoryService } from './infrastructure/db-marketplace-repository.service';
+import { MarketplaceEntity } from './infrastructure/entities/marketplace.entity';
 import { MarketplaceController } from './presentation/http/marketplace.controller';
 
 /**
@@ -15,7 +17,10 @@ import { MarketplaceController } from './presentation/http/marketplace.controlle
  * Sigue arquitectura hexagonal: domain, application, infrastructure, presentation.
  */
 @Module({
-  imports: [AuthModule],
+  imports: [
+    AuthModule,
+    TypeOrmModule.forFeature([MarketplaceEntity]),
+  ],
   controllers: [MarketplaceController],
   providers: [
     ListMarketplacesUseCase,
@@ -24,11 +29,12 @@ import { MarketplaceController } from './presentation/http/marketplace.controlle
     CreateMarketplaceUseCase,
     UpdateMarketplaceUseCase,
     DeleteMarketplaceUseCase,
-    FileMarketplaceRepositoryService,
+    DbMarketplaceRepositoryService,
     {
       provide: MARKETPLACE_REPOSITORY_PORT,
-      useExisting: FileMarketplaceRepositoryService,
+      useClass: DbMarketplaceRepositoryService,
     },
   ],
 })
 export class MarketplaceModule {}
+

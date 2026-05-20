@@ -53,6 +53,20 @@ export interface EstiloSeccion {
   layoutPilares?: 'grid' | 'zigzag'
   proporcionColumnas?: '50/50' | '60/40' | '30/70'
   layoutPrincipal?: 'centro' | 'dividido'
+  /** Patrón visual de fondo superpuesto */
+  patronFondo?: 'ninguno' | 'puntos' | 'cuadricula' | 'diagonal' | 'malla'
+  /** Ancho del borde del botón */
+  botonAnchoBorde?: number
+  /** Color del borde del botón */
+  botonColorBorde?: string
+  /** Fondo de las tarjetas/elementos de la sección */
+  tarjetaColorFondo?: string
+  /** Redondez de las tarjetas/elementos de la sección */
+  tarjetaRadioBorde?: number
+  /** Grosor del borde de las tarjetas/elementos de la sección */
+  tarjetaAnchoBorde?: number
+  /** Color del borde de las tarjetas/elementos de la sección */
+  tarjetaColorBorde?: string
 }
 
 export interface ElementoSeccion {
