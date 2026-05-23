@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { MarketplaceRenderer } from '../../[marketplace]/MarketplaceRenderer'
+import { MarketplaceRenderer } from '@/components/renderers/MarketplaceRenderer'
 
 interface AllyMarketplacePageProps {
   params: Promise<{ allySlug: string }>
