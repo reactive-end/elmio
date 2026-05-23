@@ -26,4 +26,19 @@ export interface AuthRepositoryPort {
    * @returns Usuario creado.
    */
   create(user: User): Promise<User>;
+
+  /**
+   * Busca todos los usuarios asociados a un mismo email.
+   * @param email Email de los usuarios.
+   * @returns Lista de usuarios correspondientes.
+   */
+  findAllByEmail(email: string): Promise<User[]>;
+
+  /**
+   * Actualiza el hash de password de un usuario.
+   * @param userId ID del usuario.
+   * @param passwordHash Nuevo hash de password.
+   * @returns Usuario actualizado.
+   */
+  updatePassword(userId: string, passwordHash: string): Promise<User>;
 }

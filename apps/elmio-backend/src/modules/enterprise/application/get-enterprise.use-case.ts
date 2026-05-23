@@ -20,6 +20,10 @@ export class GetOrCreateEnterpriseUseCase {
     userId: string,
     companyName: string,
     taxId: string,
+    sector: string,
+    employeeCount: number,
+    phone: string,
+    email: string,
   ): Promise<Enterprise> {
     const existing = await this.repository.findEnterpriseByUserId(userId);
     if (existing) return existing;
@@ -28,10 +32,10 @@ export class GetOrCreateEnterpriseUseCase {
       id: randomUUID(),
       userId,
       companyName: companyName.trim(),
-      sector: '',
-      employeeCount: 0,
-      phone: '',
-      email: '',
+      sector: sector.trim(),
+      employeeCount,
+      phone: phone.trim(),
+      email: email.trim(),
       taxId: taxId.trim(),
       website: '',
       socialMedia: null,

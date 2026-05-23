@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   NotFoundException,
@@ -12,10 +13,12 @@ import {
   Req,
   Res,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import {
@@ -27,6 +30,8 @@ import { CompleteOnboardingUseCase } from '../../application/complete-onboarding
 import { ManageCollaboratorsUseCase } from '../../application/manage-collaborators.use-case';
 import { ManageLoanRequestsUseCase } from '../../application/manage-loan-requests.use-case';
 import { GetAccountStatementUseCase } from '../../application/get-account-statement.use-case';
+import { CreateTransactionUseCase } from '../../application/create-transaction.use-case';
+import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
 import {
   CreateEnterpriseDto,
@@ -34,6 +39,9 @@ import {
   CreateCollaboratorDto,
   BulkUploadCollaboratorsDto,
   ResolveLoanRequestDto,
+  CreateTransactionDto,
+  CreateContractDto,
+  UpdateContractDto,
 } from './dto/enterprise.dto';
 import {
   ENTERPRISE_REPOSITORY_PORT,
@@ -57,6 +65,8 @@ export class EnterpriseController {
     private readonly manageCollaborators: ManageCollaboratorsUseCase,
     private readonly manageRequests: ManageLoanRequestsUseCase,
     private readonly getAccountStatement: GetAccountStatementUseCase,
+    private readonly createTransactionUseCase: CreateTransactionUseCase,
+    private readonly manageContracts: ManageContractsUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
     private readonly documentStorage: DocumentStorageService,
@@ -71,6 +81,10 @@ export class EnterpriseController {
       req.session!.userId,
       body.companyName,
       body.taxId,
+      body.sector,
+      body.employeeCount,
+      body.phone,
+      body.email,
     );
   }
 
@@ -130,6 +144,53 @@ export class EnterpriseController {
     return this.manageCollaborators.update(collabId, body);
   }
 
+  // --- Contracts ---
+
+  /** GET /api/enterprises/:id/contracts - Lista contratos de la empresa. */
+  @Get(':id/contracts')
+  async listContracts(@Param('id') id: string) {
+    return this.manageContracts.list(id);
+  }
+
+  /** POST /api/enterprises/:id/contracts - Crea un contrato con archivos. */
+  @Post(':id/contracts')
+  @UseInterceptors(FilesInterceptor('files'))
+  async createContract(
+    @Param('id') id: string,
+    @Body() body: CreateContractDto,
+    @UploadedFiles() files: ArchivoSubido[] | undefined,
+  ) {
+    return this.manageContracts.create(id, body.name, files ?? []);
+  }
+
+  /** PATCH /api/enterprises/:id/contracts/:contractId - Edita nombre y/o agrega archivos. */
+  @Patch(':id/contracts/:contractId')
+  @UseInterceptors(FilesInterceptor('files'))
+  async updateContract(
+    @Param('contractId') contractId: string,
+    @Body() body: UpdateContractDto,
+    @UploadedFiles() files: ArchivoSubido[] | undefined,
+  ) {
+    return this.manageContracts.update(contractId, body.name, files ?? []);
+  }
+
+  /** DELETE /api/enterprises/:id/contracts/:contractId - Elimina un contrato. */
+  @Delete(':id/contracts/:contractId')
+  async deleteContract(@Param('contractId') contractId: string) {
+    await this.manageContracts.remove(contractId);
+    return { success: true } as const;
+  }
+
+  /** DELETE /api/enterprises/:id/contracts/:contractId/files/:fileId - Elimina un archivo del contrato. */
+  @Delete(':id/contracts/:contractId/files/:fileId')
+  async deleteContractFile(
+    @Param('contractId') contractId: string,
+    @Param('fileId') fileId: string,
+  ) {
+    await this.manageContracts.removeFile(contractId, fileId);
+    return { success: true } as const;
+  }
+
   // --- Loan Requests ---
 
   /** GET /api/enterprises/:id/requests - Lista solicitudes. */
@@ -162,6 +223,15 @@ export class EnterpriseController {
   @Get(':id/transactions')
   async listTransactions(@Param('id') id: string) {
     return this.getAccountStatement.getTransactions(id);
+  }
+
+  /** POST /api/enterprises/:id/transactions - Registra un movimiento. */
+  @Post(':id/transactions')
+  async createTransaction(
+    @Param('id') id: string,
+    @Body() body: CreateTransactionDto,
+  ) {
+    return this.createTransactionUseCase.execute(id, body);
   }
 
   // --- Onboarding Documents ---
@@ -209,6 +279,24 @@ export class EnterpriseController {
     const doc = await this.documentStorage.getDocument(taxId, fileName);
     if (!doc) {
       throw new NotFoundException('Documento no encontrado.');
+    }
+
+    res.type(doc.mimeType);
+    res.send(doc.buffer);
+  }
+
+  /**
+   * GET /api/enterprises/contracts/file/:taxId/:fileName - Sirve un archivo de contrato.
+   */
+  @Get('contracts/file/:taxId/:fileName')
+  async getContractFile(
+    @Param('taxId') taxId: string,
+    @Param('fileName') fileName: string,
+    @Res() res: Response,
+  ) {
+    const doc = await this.documentStorage.getDocument(taxId, fileName, 'contracts');
+    if (!doc) {
+      throw new NotFoundException('Archivo de contrato no encontrado.');
     }
 
     res.type(doc.mimeType);

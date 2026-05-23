@@ -18,7 +18,7 @@ declare global {
 }
 
 /**
- * Guard NestJS que extrae y valida el token de sesion del header Authorization.
+ * Guard NestJS que extrae y valida el token JWT del header Authorization.
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -29,10 +29,10 @@ export class AuthGuard implements CanActivate {
   /**
    * Extrae el token del header y valida la sesion.
    * @param context Contexto de ejecucion de NestJS.
-   * @returns true si la sesion es valida.
+   * @returns Promise<true> si la sesion es valida.
    * @throws UnauthorizedException si no hay token o es invalido.
    */
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const header = request.headers.authorization;
 
@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const token = header.slice(7);
-    const session = this.validateSessionUseCase.execute(token);
+    const session = await this.validateSessionUseCase.execute(token);
 
     request.session = session;
 

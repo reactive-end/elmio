@@ -38,12 +38,6 @@ export class ManageCollaboratorsUseCase {
     const enterprise = await this.repository.findEnterpriseById(enterpriseId);
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
-    // Verificar si el correo ya existe
-    const existingUser = await this.authRepository.findByEmail(input.email.trim().toLowerCase());
-    if (existingUser) {
-      throw new ConflictException(`El correo ${input.email} ya está registrado.`);
-    }
-
     const userId = randomUUID();
     const newUser: User = {
       id: userId,
@@ -81,13 +75,6 @@ export class ManageCollaboratorsUseCase {
 
     for (const input of inputs) {
       const email = input.email.trim().toLowerCase();
-      const existingUser = await this.authRepository.findByEmail(email);
-      
-      if (existingUser) {
-        // En carga masiva, si ya existe saltamos o fallamos. Optamos por lanzar error o ignorar?
-        // Vamos a lanzar error por ahora para ser consistentes con la validacion
-        throw new ConflictException(`El correo ${email} ya está registrado.`);
-      }
 
       const userId = randomUUID();
       const newUser: User = {

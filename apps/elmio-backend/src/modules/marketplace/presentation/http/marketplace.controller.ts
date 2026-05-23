@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Body,
   Controller,
   Delete,
@@ -83,6 +84,12 @@ export class MarketplaceController {
     @Body() body: CreateMarketplaceDto,
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
+    if (session.role === 'COMPANY') {
+      throw new ForbiddenException(
+        'Las empresas no pueden gestionar marketplaces desde el dashboard.',
+      );
+    }
+
     return this.createMarketplaceUseCase.execute({
       ...body,
       owner: body.owner || session.owner,
@@ -103,6 +110,12 @@ export class MarketplaceController {
     @Body() body: UpdateMarketplaceDto,
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
+    if (session.role === 'COMPANY') {
+      throw new ForbiddenException(
+        'Las empresas no pueden gestionar marketplaces desde el dashboard.',
+      );
+    }
+
     const isAdmin = session.role === 'ADMIN';
     return this.updateMarketplaceUseCase.execute(id, body as any, isAdmin);
   }
@@ -114,7 +127,16 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<{ success: true }> {
+  async delete(
+    @Param('id') id: string,
+    @CurrentUser() session: UserSession,
+  ): Promise<{ success: true }> {
+    if (session.role === 'COMPANY') {
+      throw new ForbiddenException(
+        'Las empresas no pueden gestionar marketplaces desde el dashboard.',
+      );
+    }
+
     await this.deleteMarketplaceUseCase.execute(id);
     return { success: true };
   }

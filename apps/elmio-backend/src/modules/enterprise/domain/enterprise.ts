@@ -119,10 +119,41 @@ export interface LoanRequest {
 export interface Transaction {
   id: string;
   enterpriseId: string;
+  collaboratorId: string | null;
+  kind: 'payment' | 'charge';
   concept: string;
   amount: number;
   status: 'paid' | 'pending' | 'failed';
   date: string;
+}
+
+/**
+ * Contrato asociado a una empresa.
+ */
+export interface Contract {
+  id: string;
+  enterpriseId: string;
+  name: string;
+  createdAt: string;
+}
+
+/**
+ * Archivo perteneciente a un contrato.
+ */
+export interface ContractFile {
+  id: string;
+  contractId: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  createdAt: string;
+}
+
+/**
+ * Contrato enriquecido con sus archivos.
+ */
+export interface ContractWithFiles extends Contract {
+  files: ContractFile[];
 }
 
 /**

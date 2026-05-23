@@ -9,6 +9,9 @@ import {
   TrendingUp,
   Filter,
   Percent,
+  Package,
+  Shield,
+  Users,
 } from 'lucide-react'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
@@ -37,8 +40,17 @@ const FILTERS: { value: Transaction['status'] | 'all'; label: string }[] = [
 ]
 
 export default function AccountStatementPage() {
-  const { loading, error, loanSummary, filtroEstado, setFiltroEstado, transactionsFiltradas } =
-    useAccountStatement()
+  const {
+    loading,
+    error,
+    loanSummary,
+    benefitedCollaboratorsCount,
+    productBenefitsSummary,
+    insuranceBenefitsSummary,
+    filtroEstado,
+    setFiltroEstado,
+    transactionsFiltradas,
+  } = useAccountStatement()
 
   if (loading)
     return (
@@ -61,27 +73,59 @@ export default function AccountStatementPage() {
       <div>
         <h1 className="text-xl font-bold text-body">Estado de cuenta</h1>
         <p className="text-sm text-body-muted mt-0.5">
-          Resumen de deuda por prestamos de colaboradores.
+          Resumen de deuda por beneficios en efectivo de colaboradores.
         </p>
       </div>
 
       {loanSummary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <KpiCard
             icon={TrendingUp}
             iconBg="bg-blue-50"
             iconColor="text-blue-600"
-            label="Prestamos activos"
-            value={String(loanSummary.totalLoans)}
-            sub={`Total: ${fmt(loanSummary.totalLoanAmount)}`}
+            label="Beneficios en Efectivo"
+            value={fmt(loanSummary.totalLoanAmount)}
+            sub={`${loanSummary.totalLoans} beneficios`}
+          />
+          <KpiCard
+            icon={Package}
+            iconBg="bg-cyan-50"
+            iconColor="text-cyan-700"
+            label="Beneficios de Productos"
+            value={fmt(productBenefitsSummary.totalAmount)}
+            sub={`${productBenefitsSummary.totalCount} compras registradas`}
+          />
+          <KpiCard
+            icon={Shield}
+            iconBg="bg-emerald-50"
+            iconColor="text-emerald-700"
+            label="Beneficios de Seguro"
+            value={fmt(insuranceBenefitsSummary.totalAmount)}
+            sub={`${insuranceBenefitsSummary.totalCount} beneficios registrados`}
           />
           <KpiCard
             icon={Percent}
             iconBg="bg-purple-50"
             iconColor="text-purple-600"
-            label="Comision ElMio"
+            label="Gastos Administrativos (Beneficios en Efectivo)"
             value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.serviceFeePercent}% sobre prestamos`}
+            sub={`${loanSummary.serviceFeePercent}% sobre intereses`}
+          />
+          <KpiCard
+            icon={Percent}
+            iconBg="bg-purple-50"
+            iconColor="text-purple-600"
+            label="Gastos Administrativos (Beneficios de Productos)"
+            value={fmt(loanSummary.serviceFeeAmount)}
+            sub={`${loanSummary.serviceFeePercent}% sobre intereses`}
+          />
+          <KpiCard
+            icon={Percent}
+            iconBg="bg-purple-50"
+            iconColor="text-purple-600"
+            label="Gastos Administrativos (Beneficios de Seguro)"
+            value={fmt(loanSummary.serviceFeeAmount)}
+            sub={`${loanSummary.serviceFeePercent}% sobre intereses`}
           />
           <KpiCard
             icon={CheckCircle2}
@@ -96,7 +140,15 @@ export default function AccountStatementPage() {
             iconColor="text-amber-600"
             label="Saldo pendiente"
             value={fmt(loanSummary.balance)}
-            sub={`Deuda total: ${fmt(loanSummary.totalDebt)}`}
+            sub={`Total pagado: ${fmt(loanSummary.totalPaid)}`}
+          />
+          <KpiCard
+            icon={Users}
+            iconBg="bg-rose-50"
+            iconColor="text-rose-700"
+            label="Colaboradores beneficiados"
+            value={String(benefitedCollaboratorsCount)}
+            sub="Con beneficios aprobados"
           />
         </div>
       )}

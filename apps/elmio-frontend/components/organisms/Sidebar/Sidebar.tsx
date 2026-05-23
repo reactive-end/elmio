@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { authService } from '@/src/services/auth.service'
 import {
   ChevronDown,
   ChevronRight,
@@ -16,8 +18,10 @@ import {
   Users,
   FileText,
   DollarSign,
+  LogOut,
 } from 'lucide-react'
 import { Logo } from '@/components/atoms/Logo/Logo'
+import { useRouter } from 'next/navigation'
 import type { SidebarProps } from './Sidebar.d'
 
 interface NavChild {
@@ -32,6 +36,34 @@ interface NavGroup {
   label: string
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
   children: NavChild[]
+}
+
+function getVisibleChildren(group: NavGroup, role: string | null): NavChild[] {
+  if (group.key !== 'shop') return group.children
+
+  if (role === 'COMPANY') {
+    return [
+      {
+        key: 'dashboard-shop-company',
+        label: 'Ver productos',
+        href: '/dashboard/enterprise/shop',
+        icon: ShoppingBag,
+      },
+    ]
+  }
+
+  if (role === 'EMPLOYEE') {
+    return [
+      {
+        key: 'dashboard-shop-employee',
+        label: 'Ver productos',
+        href: '/dashboard/collaborator/shop',
+        icon: ShoppingBag,
+      },
+    ]
+  }
+
+  return group.children
 }
 
 const NAV: NavGroup[] = [
@@ -70,6 +102,12 @@ const NAV: NavGroup[] = [
         href: '/dashboard/enterprise/requests',
         icon: FileText,
       },
+      {
+        key: 'enterprise-contracts',
+        label: 'Contratos',
+        href: '/dashboard/enterprise/contracts',
+        icon: FileText,
+      },
     ],
   },
   {
@@ -100,6 +138,38 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    key: 'employee',
+    label: 'Colaborador',
+    icon: Users,
+    children: [
+      {
+        key: 'employee-account',
+        label: 'Estado de cuenta',
+        href: '/dashboard/collaborator/account-statement',
+        icon: DollarSign,
+      },
+      {
+        key: 'employee-requests',
+        label: 'Solicitudes',
+        href: '/dashboard/collaborator/requests',
+        icon: FileText,
+      },
+    ],
+  },
+  {
+    key: 'shop',
+    label: 'Marketplace',
+    icon: ShoppingBag,
+    children: [
+      {
+        key: 'dashboard-shop',
+        label: 'Ver productos',
+        href: '/dashboard/collaborator/shop',
+        icon: ShoppingBag,
+      },
+    ],
+  },
+  {
     key: 'gallery',
     label: 'Galeria',
     icon: Images,
@@ -120,6 +190,21 @@ const NAV: NavGroup[] = [
  * Soporta modo colapsado (solo iconos) y modo expandido (icono + texto).
  */
 export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: SidebarProps) {
+  const [role, setRole] = useState<string | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    const session = authService.getSession()
+    if (session) {
+      setRole(session.role)
+    }
+  }, [])
+
+  const handleLogout = () => {
+    authService.clearToken()
+    router.push('/login')
+  }
+
   const isActive = (href: string) => {
     if (href === '/dashboard') return currentPath === '/dashboard'
     return currentPath.startsWith(href)
@@ -176,8 +261,42 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
       {/* Navigation */}
       <nav className="relative z-10 flex-1 overflow-y-auto py-4 px-2">
-        {NAV.map((group) => {
-          if (group.children.length === 0) return null
+        {NAV.filter((group) => {
+          // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN)
+          if (group.key === 'enterprise' && role === 'ADMIN') {
+            return false
+          }
+
+          if (group.key === 'enterprise' && role === 'EMPLOYEE') {
+            return false
+          }
+
+          // Ocultar Marketplace y Productos de gestion para colaboradores y empresas.
+          if (
+            (group.key === 'marketplace' || group.key === 'products') &&
+            (role === 'EMPLOYEE' || role === 'COMPANY')
+          ) {
+            return false
+          }
+
+          // Ocultar Galeria para colaboradores y empresas.
+          if (group.key === 'gallery' && (role === 'EMPLOYEE' || role === 'COMPANY')) {
+            return false
+          }
+
+          // La tienda general aplica a empresas y colaboradores.
+          if (group.key === 'shop' && role !== 'COMPANY' && role !== 'EMPLOYEE') {
+            return false
+          }
+
+          if (group.key === 'employee' && role !== 'EMPLOYEE') {
+            return false
+          }
+
+          return true
+        }).map((group) => {
+          const visibleChildren = getVisibleChildren(group, role)
+          if (visibleChildren.length === 0) return null
 
           const open = shouldGroupBeOpen(group.key)
 
@@ -206,7 +325,7 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
               {!collapsed && open && (
                 <div className="ml-4 mt-0.5 border-l border-white/15 pl-3 flex flex-col gap-0.5">
-                  {group.children.map((child) => (
+                  {visibleChildren.map((child) => (
                     <Link
                       key={child.key}
                       href={child.href}
@@ -225,6 +344,21 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
             </div>
           )
         })}
+
+        {/* Botón de Cerrar Sesión Premium */}
+        <div className="mt-1">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/60 hover:bg-white/10 hover:text-white ${
+              collapsed ? 'justify-center' : ''
+            }`}
+            title={collapsed ? 'Cerrar sesión' : undefined}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+            {!collapsed && <span className="flex-1 text-left">Cerrar sesión</span>}
+          </button>
+        </div>
       </nav>
     </div>
   )

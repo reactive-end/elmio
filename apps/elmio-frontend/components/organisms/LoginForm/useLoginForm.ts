@@ -11,6 +11,8 @@ import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneIn
 gsap.registerPlugin(useGSAP)
 
 type LoginMethod = 'phone' | 'email'
+type LoginStage = 'identifier' | 'password'
+type SelectorStage = 'profiles' | 'password'
 
 interface AlertState {
   type: 'error' | 'success' | 'warning' | 'info'
@@ -31,6 +33,7 @@ const DEFAULT_COUNTRY: CountryCode = {
 export function useLoginForm() {
   const router = useRouter()
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone')
+  const [stage, setStage] = useState<LoginStage>('identifier')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY)
@@ -38,6 +41,18 @@ export function useLoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<AlertState | null>(null)
   const [rawDigits, setRawDigits] = useState('')
+
+  // Estados para manejo de múltiples perfiles
+  const [profiles, setProfiles] = useState<
+    Array<{ userId: string; name: string; role: 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT' }>
+  >([])
+  const [showSelector, setShowSelector] = useState(false)
+  const [selectorStage, setSelectorStage] = useState<SelectorStage>('profiles')
+  const [selectedProfile, setSelectedProfile] = useState<{
+    userId: string
+    name: string
+    role: 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT'
+  } | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -65,7 +80,13 @@ export function useLoginForm() {
   const switchTab = (method: LoginMethod) => {
     if (method === loginMethod) return
     setLoginMethod(method)
+    setStage('identifier')
     setAlert(null)
+    setPassword('')
+    setProfiles([])
+    setSelectorStage('profiles')
+    setSelectedProfile(null)
+    setShowSelector(false)
     if (contentRef.current) {
       const direction = method === 'email' ? 1 : -1
       gsap.fromTo(
@@ -82,19 +103,41 @@ export function useLoginForm() {
     setIsLoading(true)
 
     try {
+      const loginVal =
+        loginMethod === 'email' ? email.trim() : `${countryCode.dial}${operatorPrefix}${rawDigits}`
+
       if (loginMethod === 'email') {
         if (!email.trim()) {
           throw new Error('El correo electrónico es obligatorio.')
         }
-        await authService.login(email, password)
-      } else {
-        if (rawDigits.length < 7) {
-          throw new Error('El número de teléfono debe tener 7 dígitos.')
-        }
-        const fullPhone = `${countryCode.dial}${operatorPrefix}${rawDigits}`
-        await authService.login(fullPhone, password)
+      } else if (rawDigits.length < 7) {
+        throw new Error('El número de teléfono debe tener 7 dígitos.')
       }
 
+      if (stage === 'identifier') {
+        const res = await authService.discoverProfiles(loginVal)
+
+        if (res.profiles.length > 1) {
+          setProfiles(res.profiles)
+          setSelectedProfile(null)
+          setPassword('')
+          setSelectorStage('profiles')
+          setShowSelector(true)
+          return
+        }
+
+        if (res.profiles.length === 1) {
+          setSelectedProfile(res.profiles[0])
+          setStage('password')
+          return
+        }
+      }
+
+      if (!password.trim()) {
+        throw new Error('La contrasena es obligatoria.')
+      }
+
+      await authService.login(loginVal, password, selectedProfile?.userId)
       router.push('/dashboard')
     } catch (err) {
       setAlert({
@@ -106,8 +149,77 @@ export function useLoginForm() {
     }
   }
 
+  const handleSelectProfile = (userId: string) => {
+    const profile = profiles.find((item) => item.userId === userId) ?? null
+    if (!profile) return
+
+    setSelectedProfile(profile)
+    setSelectorStage('password')
+    setAlert(null)
+    setPassword('')
+  }
+
+  const handleSelectorPasswordSubmit = async () => {
+    setAlert(null)
+    setIsLoading(true)
+
+    try {
+      const loginVal =
+        loginMethod === 'email' ? email.trim() : `${countryCode.dial}${operatorPrefix}${rawDigits}`
+
+      if (!selectedProfile) {
+        throw new Error('Selecciona un perfil para continuar.')
+      }
+
+      if (!password.trim()) {
+        throw new Error('La contrasena es obligatoria.')
+      }
+
+      await authService.login(loginVal, password, selectedProfile.userId)
+      setShowSelector(false)
+      router.push('/dashboard')
+    } catch (err) {
+      setAlert({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Error al iniciar sesión.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSelectorBack = () => {
+    if (selectorStage === 'password') {
+      setSelectorStage('profiles')
+      setSelectedProfile(null)
+      setPassword('')
+      setAlert(null)
+      return
+    }
+
+    setShowSelector(false)
+    setSelectedProfile(null)
+    setPassword('')
+    setAlert(null)
+  }
+
+  const handleBackToIdentifier = () => {
+    setStage('identifier')
+    setSelectedProfile(null)
+    setProfiles([])
+    setSelectorStage('profiles')
+    setPassword('')
+    setAlert(null)
+  }
+
+  const identifierLabel =
+    loginMethod === 'email' ? email : `${countryCode.dial}${operatorPrefix}${rawDigits}`
+
   return {
     loginMethod,
+    stage,
+    selectedProfile,
+    identifierLabel,
     email,
     phoneDisplay,
     password,
@@ -115,6 +227,9 @@ export function useLoginForm() {
     operatorPrefix,
     isLoading,
     alert,
+    profiles,
+    showSelector,
+    selectorStage,
     containerRef,
     contentRef,
     tabIndicatorRef,
@@ -123,8 +238,13 @@ export function useLoginForm() {
     setCountryCode,
     setOperatorPrefix,
     setAlert,
+    setShowSelector,
     handlePhoneChange,
     handleSubmit,
+    handleSelectProfile,
+    handleSelectorPasswordSubmit,
+    handleSelectorBack,
+    handleBackToIdentifier,
     switchTab,
   }
 }

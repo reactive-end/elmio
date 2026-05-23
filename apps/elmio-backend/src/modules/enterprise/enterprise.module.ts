@@ -10,6 +10,8 @@ import { CompleteOnboardingUseCase } from './application/complete-onboarding.use
 import { ManageCollaboratorsUseCase } from './application/manage-collaborators.use-case';
 import { ManageLoanRequestsUseCase } from './application/manage-loan-requests.use-case';
 import { GetAccountStatementUseCase } from './application/get-account-statement.use-case';
+import { CreateTransactionUseCase } from './application/create-transaction.use-case';
+import { ManageContractsUseCase } from './application/manage-contracts.use-case';
 import { ManageProfileUseCase } from './application/manage-profile.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
 import { DbEnterpriseRepositoryService } from './infrastructure/db-enterprise-repository.service';
@@ -19,6 +21,8 @@ import { PersonProfileEntity } from './infrastructure/entities/person-profile.en
 import { LoanRequestEntity } from './infrastructure/entities/loan-request.entity';
 import { TransactionEntity } from './infrastructure/entities/transaction.entity';
 import { PlatformConfigEntity } from './infrastructure/entities/platform-config.entity';
+import { ContractEntity } from './infrastructure/entities/contract.entity';
+import { ContractFileEntity } from './infrastructure/entities/contract-file.entity';
 import { EnterpriseController } from './presentation/http/enterprise.controller';
 import { ProfileController } from './presentation/http/profile.controller';
 
@@ -35,6 +39,8 @@ import { ProfileController } from './presentation/http/profile.controller';
       LoanRequestEntity,
       TransactionEntity,
       PlatformConfigEntity,
+      ContractEntity,
+      ContractFileEntity,
     ]),
   ],
   controllers: [EnterpriseController, ProfileController],
@@ -46,6 +52,8 @@ import { ProfileController } from './presentation/http/profile.controller';
     ManageCollaboratorsUseCase,
     ManageLoanRequestsUseCase,
     GetAccountStatementUseCase,
+    CreateTransactionUseCase,
+    ManageContractsUseCase,
     ManageProfileUseCase,
     DbEnterpriseRepositoryService,
     DocumentStorageService,
@@ -57,5 +65,3 @@ import { ProfileController } from './presentation/http/profile.controller';
   exports: [DocumentStorageService],
 })
 export class EnterpriseModule {}
-
-

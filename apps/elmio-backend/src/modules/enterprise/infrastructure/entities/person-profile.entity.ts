@@ -35,7 +35,7 @@ export class PersonProfileEntity {
   @Column({ type: 'text' })
   documentPhoto!: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: 'varchar', length: 255 })
   email!: string;
 
   @Column({ type: 'varchar', length: 50 })

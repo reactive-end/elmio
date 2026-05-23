@@ -2,15 +2,27 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
 type UserRole = 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT'
 
-interface AuthToken {
+export interface AuthToken {
   token: string
   user: {
     userId: string
     email: string
     role: UserRole
     owner: string
+    requirePasswordChange?: boolean
   }
 }
+
+export interface MultipleProfilesResponse {
+  multipleProfiles?: true
+  profiles: Array<{
+    userId: string
+    name: string
+    role: UserRole
+  }>
+}
+
+export type LoginResult = AuthToken | MultipleProfilesResponse
 
 const TOKEN_KEY = 'elmio-auth-token'
 
@@ -20,25 +32,52 @@ const TOKEN_KEY = 'elmio-auth-token'
  */
 export const authService = {
   /**
+   * Resuelve los perfiles disponibles para un correo o telefono.
+   * POST /api/auth/discover-profiles
+   * @param identifier Correo o telefono.
+   */
+  async discoverProfiles(identifier: string): Promise<MultipleProfilesResponse> {
+    const response = await fetch(`${API_BASE}/auth/discover-profiles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier }),
+    })
+
+    const data = (await response.json().catch(() => ({}))) as MultipleProfilesResponse & {
+      message?: string
+    }
+
+    if (!response.ok) {
+      throw new Error(data.message ?? 'No se encontraron perfiles asociados.')
+    }
+
+    return data
+  },
+
+  /**
    * Inicia sesion con email y password.
    * POST /api/auth/login
    * @param email Email del usuario.
    * @param password Password del usuario.
+   * @param userId ID del usuario opcional para desempate de perfiles.
    * @returns Token de sesion y datos del usuario.
    */
-  async login(email: string, password: string): Promise<AuthToken> {
+  async login(email: string, password: string, userId?: string): Promise<LoginResult> {
     const response = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, userId }),
     })
 
     if (!response.ok) {
-      throw new Error('Credenciales invalidas.')
+      const error = (await response.json().catch(() => ({}))) as { message?: string }
+      throw new Error(error.message ?? 'Credenciales invalidas.')
     }
 
-    const data = (await response.json()) as AuthToken
-    this.setToken(data)
+    const data = (await response.json()) as LoginResult
+    if ('token' in data && data.token) {
+      this.setToken(data as AuthToken)
+    }
 
     return data
   },
@@ -123,6 +162,33 @@ export const authService = {
       return { Authorization: `Bearer ${parsed.token}` }
     } catch {
       return {}
+    }
+  },
+
+  /**
+   * Cambia la contrasena del usuario autenticado.
+   * PATCH /api/auth/change-password
+   * @param currentPassword Contrasena actual.
+   * @param newPassword Nueva contrasena.
+   */
+  async changePassword(newPassword: string, currentPassword?: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/auth/change-password`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.getAuthHeaders(),
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+
+    const data = (await res.json().catch(() => ({}))) as AuthToken & { message?: string }
+
+    if (!res.ok) {
+      throw new Error(data.message ?? 'Error al cambiar contrasena.')
+    }
+
+    if (data.token) {
+      this.setToken(data)
     }
   },
 }

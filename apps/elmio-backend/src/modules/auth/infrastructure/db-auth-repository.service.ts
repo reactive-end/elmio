@@ -56,19 +56,22 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
       if (cleanInputPhone.length > 0) {
         try {
           // Buscamos en empresas usando query directo para evitar acoplamientos circulares de modulo
-          const enterprises: Array<{ email: string }> = await this.dataSource.query(
-            `SELECT email FROM enterprises WHERE regexp_replace(phone, '\\D', '', 'g') = $1 LIMIT 1`,
-            [cleanInputPhone],
-          );
+          // Comparamos usando los últimos 10 dígitos para máxima flexibilidad de formatos de entrada (+58, 0, etc.)
+          const enterprises: Array<{ email: string }> =
+            await this.dataSource.query(
+              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
+              [cleanInputPhone],
+            );
 
           if (enterprises && enterprises.length > 0) {
             resolvedEmail = enterprises[0].email.toLowerCase();
           } else {
             // Buscamos en perfiles de persona (colaboradores/clientes)
-            const profiles: Array<{ email: string }> = await this.dataSource.query(
-              `SELECT email FROM person_profiles WHERE regexp_replace(phone, '\\D', '', 'g') = $1 LIMIT 1`,
-              [cleanInputPhone],
-            );
+            const profiles: Array<{ email: string }> =
+              await this.dataSource.query(
+                `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
+                [cleanInputPhone],
+              );
             if (profiles && profiles.length > 0) {
               resolvedEmail = profiles[0].email.toLowerCase();
             }
@@ -79,7 +82,9 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
       }
     }
 
-    const userEntity = await this.repo.findOne({ where: { email: resolvedEmail } });
+    const userEntity = await this.repo.findOne({
+      where: { email: resolvedEmail },
+    });
     return userEntity ? this.toDomain(userEntity) : null;
   }
 
@@ -92,5 +97,57 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
     const entity = this.toPersistence(user);
     await this.repo.save(entity);
     return user;
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<User> {
+    const entity = await this.repo.findOne({ where: { id: userId } });
+    if (!entity) {
+      throw new Error('Usuario no encontrado.');
+    }
+    entity.passwordHash = passwordHash;
+    entity.requirePasswordChange = false;
+    await this.repo.save(entity);
+    return this.toDomain(entity);
+  }
+
+  /**
+   * Busca todos los usuarios asociados a un mismo email o teléfono.
+   */
+  async findAllByEmail(email: string): Promise<User[]> {
+    let resolvedEmail = email.trim().toLowerCase();
+
+    // Si no contiene '@', asumimos que es un teléfono
+    if (!resolvedEmail.includes('@')) {
+      const cleanInputPhone = resolvedEmail.replace(/\D/g, '');
+      if (cleanInputPhone.length > 0) {
+        try {
+          const enterprises: Array<{ email: string }> =
+            await this.dataSource.query(
+              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10)`,
+              [cleanInputPhone],
+            );
+
+          if (enterprises && enterprises.length > 0) {
+            resolvedEmail = enterprises[0].email.toLowerCase();
+          } else {
+            const profiles: Array<{ email: string }> =
+              await this.dataSource.query(
+                `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10)`,
+                [cleanInputPhone],
+              );
+            if (profiles && profiles.length > 0) {
+              resolvedEmail = profiles[0].email.toLowerCase();
+            }
+          }
+        } catch {
+          // Ignoramos silenciosamente si falla la query
+        }
+      }
+    }
+
+    const userEntities = await this.repo.find({
+      where: { email: resolvedEmail },
+    });
+    return userEntities.map((entity) => this.toDomain(entity));
   }
 }

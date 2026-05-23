@@ -14,6 +14,12 @@ import {
  * Input parcial para actualizar datos de la empresa.
  */
 interface UpdateEnterpriseInput {
+  companyName?: string;
+  sector?: string;
+  employeeCount?: number;
+  phone?: string;
+  email?: string;
+  taxId?: string;
   website?: string;
   socialMedia?: SocialMediaLinks;
   headquartersLocation?: string;
@@ -53,6 +59,14 @@ export class UpdateEnterpriseUseCase {
     }
 
     // Merge only provided fields
+    if (input.companyName !== undefined)
+      enterprise.companyName = input.companyName;
+    if (input.sector !== undefined) enterprise.sector = input.sector;
+    if (input.employeeCount !== undefined)
+      enterprise.employeeCount = input.employeeCount;
+    if (input.phone !== undefined) enterprise.phone = input.phone;
+    if (input.email !== undefined) enterprise.email = input.email;
+    if (input.taxId !== undefined) enterprise.taxId = input.taxId;
     if (input.website !== undefined) enterprise.website = input.website;
     if (input.socialMedia !== undefined)
       enterprise.socialMedia = input.socialMedia;

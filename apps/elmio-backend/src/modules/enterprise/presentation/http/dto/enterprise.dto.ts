@@ -26,7 +26,15 @@ export class CreateEnterpriseDto {
  * DTO para actualizar datos completos de empresa (pasos posteriores).
  */
 export class UpdateEnterpriseDto {
-  // Datos generales opcionales
+  // Grupo 1: Datos generales opcionales
+  companyName?: string;
+  sector?: string;
+  employeeCount?: number;
+  phone?: string;
+  email?: string;
+  taxId?: string;
+
+  // Datos complementarios opcionales
   website?: string;
   socialMedia?: SocialMediaLinks;
   headquartersLocation?: string;
@@ -155,4 +163,28 @@ export class UpdatePersonProfileDto {
 export class ResolveLoanRequestDto {
   status!: 'approved' | 'denied';
   denialReason?: string;
+}
+
+/**
+ * DTO para registrar una transaccion en el estado de cuenta.
+ */
+export class CreateTransactionDto {
+  kind?: 'payment' | 'charge';
+  concept!: string;
+  amount!: number;
+  status?: 'paid' | 'pending' | 'failed';
+}
+
+/**
+ * DTO para crear un contrato empresarial.
+ */
+export class CreateContractDto {
+  name!: string;
+}
+
+/**
+ * DTO para editar un contrato empresarial.
+ */
+export class UpdateContractDto {
+  name?: string;
 }

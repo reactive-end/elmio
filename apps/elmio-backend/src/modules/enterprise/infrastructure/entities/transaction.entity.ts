@@ -8,6 +8,12 @@ export class TransactionEntity {
   @Column({ type: 'uuid' })
   enterpriseId!: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  collaboratorId!: string | null;
+
+  @Column({ type: 'varchar', length: 50, default: 'payment' })
+  kind!: 'payment' | 'charge';
+
   @Column({ type: 'text' })
   concept!: string;
 

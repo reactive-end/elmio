@@ -16,7 +16,12 @@ interface UseCollaboratorsReturn {
   successMsg: string | null
   showModal: boolean
   setShowModal: (v: boolean) => void
+  showEditModal: boolean
+  setShowEditModal: (v: boolean) => void
+  editingCollaborator: PersonProfile | null
+  startEditing: (collaborator: PersonProfile) => void
   createCollaborator: (data: CollaboratorInput) => Promise<void>
+  updateCollaborator: (collaboratorId: string, data: CollaboratorInput) => Promise<void>
   bulkUpload: (items: CollaboratorInput[]) => Promise<void>
   toggleStatus: (
     collaboratorId: string,
@@ -36,6 +41,8 @@ export function useCollaborators(): UseCollaboratorsReturn {
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingCollaborator, setEditingCollaborator] = useState<PersonProfile | null>(null)
 
   const clearSuccess = () => {
     setTimeout(() => setSuccessMsg(null), 3000)
@@ -93,6 +100,28 @@ export function useCollaborators(): UseCollaboratorsReturn {
     }
   }
 
+  const startEditing = (collaborator: PersonProfile) => {
+    setEditingCollaborator(collaborator)
+    setShowEditModal(true)
+    setError(null)
+  }
+
+  const updateCollaborator = async (collaboratorId: string, data: CollaboratorInput) => {
+    if (!enterprise) return
+    try {
+      setError(null)
+      await enterpriseService.updateCollaborator(enterprise.id, collaboratorId, data)
+      setSuccessMsg('Colaborador actualizado exitosamente.')
+      clearSuccess()
+      setShowEditModal(false)
+      setEditingCollaborator(null)
+      await loadData()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error al actualizar colaborador.'
+      setError(msg)
+    }
+  }
+
   const toggleStatus = async (
     collaboratorId: string,
     newStatus: 'active' | 'suspended' | 'terminated',
@@ -120,7 +149,12 @@ export function useCollaborators(): UseCollaboratorsReturn {
     successMsg,
     showModal,
     setShowModal,
+    showEditModal,
+    setShowEditModal,
+    editingCollaborator,
+    startEditing,
     createCollaborator,
+    updateCollaborator,
     bulkUpload,
     toggleStatus,
     refresh: loadData,

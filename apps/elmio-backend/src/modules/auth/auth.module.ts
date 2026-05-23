@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoginUseCase } from './application/login.use-case';
+import { DiscoverProfilesUseCase } from './application/discover-profiles.use-case';
 import { RegisterUseCase } from './application/register.use-case';
+import { ChangePasswordUseCase } from './application/change-password.use-case';
 import { ValidateSessionUseCase } from './application/validate-session.use-case';
 import { AUTH_REPOSITORY_PORT } from './domain/ports/auth-repository.port';
 import { DbAuthRepositoryService } from './infrastructure/db-auth-repository.service';
@@ -15,11 +19,26 @@ import { AuthController } from './presentation/http/auth.controller';
  * Provee login, registro, validacion de sesion y guard para endpoints protegidos.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>(
+          'JWT_SECRET',
+          'supersecrettokenkeyforjwt',
+        ),
+        signOptions: { expiresIn: '24h' },
+      }),
+    }),
+  ],
   controllers: [AuthController],
   providers: [
     LoginUseCase,
+    DiscoverProfilesUseCase,
     RegisterUseCase,
+    ChangePasswordUseCase,
     ValidateSessionUseCase,
     DbAuthRepositoryService,
     AuthSeedService,
@@ -29,8 +48,11 @@ import { AuthController } from './presentation/http/auth.controller';
       useClass: DbAuthRepositoryService,
     },
   ],
-  exports: [AuthGuard, ValidateSessionUseCase, AUTH_REPOSITORY_PORT, TypeOrmModule],
+  exports: [
+    AuthGuard,
+    ValidateSessionUseCase,
+    AUTH_REPOSITORY_PORT,
+    TypeOrmModule,
+  ],
 })
 export class AuthModule {}
-
-

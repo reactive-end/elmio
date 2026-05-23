@@ -6,6 +6,8 @@ import type {
   LoanRequest,
   Transaction,
   PlatformConfig,
+  Contract,
+  ContractFile,
 } from '../domain/enterprise';
 import type { PersonProfile } from '../domain/person-profile';
 import type { EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
@@ -14,6 +16,8 @@ import { PersonProfileEntity } from './entities/person-profile.entity';
 import { LoanRequestEntity } from './entities/loan-request.entity';
 import { TransactionEntity } from './entities/transaction.entity';
 import { PlatformConfigEntity } from './entities/platform-config.entity';
+import { ContractEntity } from './entities/contract.entity';
+import { ContractFileEntity } from './entities/contract-file.entity';
 
 const DEFAULT_CONFIG: PlatformConfig = { serviceFeePercent: 5 };
 
@@ -30,6 +34,10 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     private readonly transactionRepo: Repository<TransactionEntity>,
     @InjectRepository(PlatformConfigEntity)
     private readonly configRepo: Repository<PlatformConfigEntity>,
+    @InjectRepository(ContractEntity)
+    private readonly contractRepo: Repository<ContractEntity>,
+    @InjectRepository(ContractFileEntity)
+    private readonly contractFileRepo: Repository<ContractFileEntity>,
   ) {}
 
   // --- Mapeadores de Enterprise ---
@@ -254,6 +262,8 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return {
       id: entity.id,
       enterpriseId: entity.enterpriseId,
+      collaboratorId: entity.collaboratorId ?? null,
+      kind: entity.kind ?? 'payment',
       concept: entity.concept,
       amount: entity.amount,
       status: entity.status,
@@ -265,10 +275,53 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     const entity = new TransactionEntity();
     entity.id = domain.id;
     entity.enterpriseId = domain.enterpriseId;
+    entity.collaboratorId = domain.collaboratorId;
+    entity.kind = domain.kind;
     entity.concept = domain.concept;
     entity.amount = domain.amount;
     entity.status = domain.status;
     entity.date = domain.date;
+    return entity;
+  }
+
+  // --- Mapeadores de Contract ---
+  private contractToDomain(entity: ContractEntity): Contract {
+    return {
+      id: entity.id,
+      enterpriseId: entity.enterpriseId,
+      name: entity.name,
+      createdAt: entity.createdAt,
+    };
+  }
+
+  private contractToPersistence(domain: Contract): ContractEntity {
+    const entity = new ContractEntity();
+    entity.id = domain.id;
+    entity.enterpriseId = domain.enterpriseId;
+    entity.name = domain.name;
+    entity.createdAt = domain.createdAt;
+    return entity;
+  }
+
+  private contractFileToDomain(entity: ContractFileEntity): ContractFile {
+    return {
+      id: entity.id,
+      contractId: entity.contractId,
+      fileName: entity.fileName,
+      originalName: entity.originalName,
+      mimeType: entity.mimeType,
+      createdAt: entity.createdAt,
+    };
+  }
+
+  private contractFileToPersistence(domain: ContractFile): ContractFileEntity {
+    const entity = new ContractFileEntity();
+    entity.id = domain.id;
+    entity.contractId = domain.contractId;
+    entity.fileName = domain.fileName;
+    entity.originalName = domain.originalName;
+    entity.mimeType = domain.mimeType;
+    entity.createdAt = domain.createdAt;
     return entity;
   }
 
@@ -294,7 +347,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
 
   // --- Collaborators (PersonProfile) ---
 
-  async findCollaboratorsByEnterprise(enterpriseId: string): Promise<PersonProfile[]> {
+  async findCollaboratorsByEnterprise(
+    enterpriseId: string,
+  ): Promise<PersonProfile[]> {
     const entities = await this.profileRepo.find({ where: { enterpriseId } });
     return entities.map((entity) => this.profileToDomain(entity));
   }
@@ -315,7 +370,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return collaborator;
   }
 
-  async saveCollaborators(collaborators: PersonProfile[]): Promise<PersonProfile[]> {
+  async saveCollaborators(
+    collaborators: PersonProfile[],
+  ): Promise<PersonProfile[]> {
     const entities = collaborators.map((c) => this.profileToPersistence(c));
     await this.profileRepo.save(entities);
     return collaborators;
@@ -327,7 +384,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     enterpriseId: string,
     status?: LoanRequest['status'],
   ): Promise<LoanRequest[]> {
-    const query: { enterpriseId: string; status?: LoanRequest['status'] } = { enterpriseId };
+    const query: { enterpriseId: string; status?: LoanRequest['status'] } = {
+      enterpriseId,
+    };
     if (status) {
       query.status = status;
     }
@@ -340,16 +399,91 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return entity ? this.requestToDomain(entity) : null;
   }
 
+  async findRequestsByCollaborator(
+    collaboratorId: string,
+    status?: LoanRequest['status'],
+  ): Promise<LoanRequest[]> {
+    const query: { collaboratorId: string; status?: LoanRequest['status'] } = {
+      collaboratorId,
+    };
+    if (status) {
+      query.status = status;
+    }
+    const entities = await this.requestRepo.find({ where: query });
+    return entities.map((entity) => this.requestToDomain(entity));
+  }
+
   async saveRequest(request: LoanRequest): Promise<LoanRequest> {
     const entity = this.requestToPersistence(request);
     await this.requestRepo.save(entity);
     return request;
   }
 
+  // --- Contracts ---
+
+  async findContractsByEnterprise(enterpriseId: string): Promise<Contract[]> {
+    const entities = await this.contractRepo.find({
+      where: { enterpriseId },
+      order: { createdAt: 'DESC' },
+    });
+    return entities.map((entity) => this.contractToDomain(entity));
+  }
+
+  async findContractById(id: string): Promise<Contract | null> {
+    const entity = await this.contractRepo.findOne({ where: { id } });
+    return entity ? this.contractToDomain(entity) : null;
+  }
+
+  async saveContract(contract: Contract): Promise<Contract> {
+    const entity = this.contractToPersistence(contract);
+    await this.contractRepo.save(entity);
+    return contract;
+  }
+
+  async deleteContract(id: string): Promise<void> {
+    await this.contractRepo.delete({ id });
+  }
+
+  async findContractFilesByContract(contractId: string): Promise<ContractFile[]> {
+    const entities = await this.contractFileRepo.find({
+      where: { contractId },
+      order: { createdAt: 'DESC' },
+    });
+    return entities.map((entity) => this.contractFileToDomain(entity));
+  }
+
+  async findContractFileById(id: string): Promise<ContractFile | null> {
+    const entity = await this.contractFileRepo.findOne({ where: { id } });
+    return entity ? this.contractFileToDomain(entity) : null;
+  }
+
+  async saveContractFiles(files: ContractFile[]): Promise<ContractFile[]> {
+    const entities = files.map((file) => this.contractFileToPersistence(file));
+    await this.contractFileRepo.save(entities);
+    return files;
+  }
+
+  async deleteContractFile(id: string): Promise<void> {
+    await this.contractFileRepo.delete({ id });
+  }
+
   // --- Transactions ---
 
-  async findTransactionsByEnterprise(enterpriseId: string): Promise<Transaction[]> {
-    const entities = await this.transactionRepo.find({ where: { enterpriseId } });
+  async findTransactionsByEnterprise(
+    enterpriseId: string,
+  ): Promise<Transaction[]> {
+    const entities = await this.transactionRepo.find({
+      where: { enterpriseId },
+    });
+    return entities.map((entity) => this.transactionToDomain(entity));
+  }
+
+  async findTransactionsByCollaborator(
+    collaboratorId: string,
+  ): Promise<Transaction[]> {
+    const entities = await this.transactionRepo.find({
+      where: { collaboratorId },
+    });
     return entities.map((entity) => this.transactionToDomain(entity));
   }
 
@@ -362,7 +496,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
   // --- Platform Config ---
 
   async getPlatformConfig(): Promise<PlatformConfig> {
-    const entity = await this.configRepo.findOne({ where: { id: 'global_config' } });
+    const entity = await this.configRepo.findOne({
+      where: { id: 'global_config' },
+    });
     if (!entity) {
       return { ...DEFAULT_CONFIG };
     }

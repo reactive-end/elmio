@@ -1,7 +1,7 @@
 import { Storage, type StorageOptions } from '@google-cloud/storage';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 @Injectable()
@@ -56,12 +56,12 @@ export class DocumentStorageService {
     return this.storageClient.bucket(this.bucketName);
   }
 
-  private getLocalPath(taxId: string): string {
-    return join(this.storageRoot, taxId, 'documentos');
+  private getLocalPath(taxId: string, folder = 'documentos'): string {
+    return join(this.storageRoot, taxId, folder);
   }
 
-  private async ensureLocalDirectory(taxId: string): Promise<void> {
-    await mkdir(this.getLocalPath(taxId), { recursive: true });
+  private async ensureLocalDirectory(taxId: string, folder = 'documentos'): Promise<void> {
+    await mkdir(this.getLocalPath(taxId, folder), { recursive: true });
   }
 
   /**
@@ -73,6 +73,7 @@ export class DocumentStorageService {
     originalName: string,
     buffer: Buffer,
     mimeType: string,
+    folder = 'documentos',
   ): Promise<string> {
     const cleanTaxId = taxId.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
     const extension = originalName.includes('.')
@@ -82,7 +83,7 @@ export class DocumentStorageService {
 
     if (this.isGcsEnabled()) {
       // Guardar en Google Cloud Storage
-      const objectKey = `enterprise/${cleanTaxId}/documentos/${uniqueName}`;
+      const objectKey = `enterprise/${cleanTaxId}/${folder}/${uniqueName}`;
       await this.getBucket()
         .file(objectKey)
         .save(buffer, {
@@ -94,8 +95,8 @@ export class DocumentStorageService {
         });
     } else {
       // Guardar localmente
-      await this.ensureLocalDirectory(cleanTaxId);
-      const filePath = join(this.getLocalPath(cleanTaxId), uniqueName);
+      await this.ensureLocalDirectory(cleanTaxId, folder);
+      const filePath = join(this.getLocalPath(cleanTaxId, folder), uniqueName);
       await writeFile(filePath, buffer);
     }
 
@@ -108,12 +109,13 @@ export class DocumentStorageService {
   async getDocument(
     taxId: string,
     fileName: string,
+    folder = 'documentos',
   ): Promise<{ buffer: Buffer; mimeType: string } | null> {
     const cleanTaxId = taxId.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
     const cleanFileName = fileName.trim();
 
     if (this.isGcsEnabled()) {
-      const objectKey = `enterprise/${cleanTaxId}/documentos/${cleanFileName}`;
+      const objectKey = `enterprise/${cleanTaxId}/${folder}/${cleanFileName}`;
       const file = this.getBucket().file(objectKey);
 
       try {
@@ -129,12 +131,10 @@ export class DocumentStorageService {
         return null;
       }
     } else {
-      const filePath = join(this.getLocalPath(cleanTaxId), cleanFileName);
+      const filePath = join(this.getLocalPath(cleanTaxId, folder), cleanFileName);
       try {
         await stat(filePath);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const fs = require('node:fs/promises');
-        const buffer = await fs.readFile(filePath);
+        const buffer = await readFile(filePath);
 
         // Intentar inferir un tipo MIME básico o usar binario
         let mimeType = 'application/octet-stream';
@@ -146,6 +146,35 @@ export class DocumentStorageService {
       } catch {
         return null;
       }
+    }
+  }
+
+  /**
+   * Elimina un documento guardado de GCS o del disco local.
+   */
+  async deleteDocument(
+    taxId: string,
+    fileName: string,
+    folder = 'documentos',
+  ): Promise<void> {
+    const cleanTaxId = taxId.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
+    const cleanFileName = fileName.trim();
+
+    if (this.isGcsEnabled()) {
+      const objectKey = `enterprise/${cleanTaxId}/${folder}/${cleanFileName}`;
+      try {
+        await this.getBucket().file(objectKey).delete({ ignoreNotFound: true });
+      } catch {
+        return;
+      }
+      return;
+    }
+
+    const filePath = join(this.getLocalPath(cleanTaxId, folder), cleanFileName);
+    try {
+      await rm(filePath, { force: true });
+    } catch {
+      return;
     }
   }
 }

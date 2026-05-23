@@ -59,7 +59,12 @@ export class FileAuthRepositoryService implements AuthRepositoryPort {
       const cleanInputPhone = resolvedEmail.replace(/\D/g, '');
       if (cleanInputPhone.length > 0) {
         try {
-          const enterpriseFilePath = join(process.cwd(), 'storage', 'enterprise', 'enterprise.metadata.json');
+          const enterpriseFilePath = join(
+            process.cwd(),
+            'storage',
+            'enterprise',
+            'enterprise.metadata.json',
+          );
           const raw = await readFile(enterpriseFilePath, 'utf8');
           const parsed = JSON.parse(raw);
 
@@ -115,5 +120,69 @@ export class FileAuthRepositoryService implements AuthRepositoryPort {
     await this.writeMetadata(metadata);
 
     return user;
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<User> {
+    const metadata = await this.readMetadata();
+    const index = metadata.users.findIndex((u) => u.id === userId);
+    if (index === -1) {
+      throw new Error('Usuario no encontrado.');
+    }
+    metadata.users[index] = {
+      ...metadata.users[index],
+      passwordHash,
+      requirePasswordChange: false,
+    };
+    await this.writeMetadata(metadata);
+    return metadata.users[index];
+  }
+
+  /**
+   * Busca todos los usuarios asociados a un mismo email o teléfono.
+   */
+  async findAllByEmail(email: string): Promise<User[]> {
+    let resolvedEmail = email.trim().toLowerCase();
+
+    // Si no contiene '@', asumimos que es un telefono
+    if (!resolvedEmail.includes('@')) {
+      const cleanInputPhone = resolvedEmail.replace(/\D/g, '');
+      if (cleanInputPhone.length > 0) {
+        try {
+          const enterpriseFilePath = join(
+            process.cwd(),
+            'storage',
+            'enterprise',
+            'enterprise.metadata.json',
+          );
+          const raw = await readFile(enterpriseFilePath, 'utf8');
+          const parsed = JSON.parse(raw);
+
+          const enterprises = parsed.enterprises ?? [];
+          const collaborators = parsed.collaborators ?? [];
+
+          const matchedEnterprise = enterprises.find((e: any) => {
+            const cleanPhone = (e.phone ?? '').replace(/\D/g, '');
+            return cleanPhone === cleanInputPhone;
+          });
+
+          if (matchedEnterprise) {
+            resolvedEmail = matchedEnterprise.email.toLowerCase();
+          } else {
+            const matchedCollaborator = collaborators.find((c: any) => {
+              const cleanPhone = (c.phone ?? '').replace(/\D/g, '');
+              return cleanPhone === cleanInputPhone;
+            });
+            if (matchedCollaborator) {
+              resolvedEmail = matchedCollaborator.email.toLowerCase();
+            }
+          }
+        } catch {
+          // Silenciar errores
+        }
+      }
+    }
+
+    const metadata = await this.readMetadata();
+    return metadata.users.filter((u) => u.email === resolvedEmail);
   }
 }

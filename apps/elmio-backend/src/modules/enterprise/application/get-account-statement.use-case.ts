@@ -38,9 +38,14 @@ export class GetAccountStatementUseCase {
     const serviceFeePercent = config.serviceFeePercent;
     const serviceFeeAmount =
       Math.round(totalLoanAmount * (serviceFeePercent / 100) * 100) / 100;
-    const totalDebt = totalLoanAmount + serviceFeeAmount;
+    const totalCharges = transactions
+      .filter(
+        (t) => (t.kind ?? 'payment') === 'charge' && t.status !== 'failed',
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalDebt = totalLoanAmount + serviceFeeAmount + totalCharges;
     const totalPaid = transactions
-      .filter((t) => t.status === 'paid')
+      .filter((t) => t.status === 'paid' && (t.kind ?? 'payment') === 'payment')
       .reduce((sum, t) => sum + t.amount, 0);
     const balance = totalDebt - totalPaid;
 
@@ -62,5 +67,62 @@ export class GetAccountStatementUseCase {
    */
   async getTransactions(enterpriseId: string): Promise<Transaction[]> {
     return this.repository.findTransactionsByEnterprise(enterpriseId);
+  }
+
+  /**
+   * Calcula el resumen de deuda de un colaborador.
+   * @param collaboratorId ID del colaborador.
+   * @returns Resumen con totales, comision y saldo del colaborador.
+   */
+  async getCollaboratorSummary(collaboratorId: string): Promise<LoanSummary> {
+    const collaborator =
+      await this.repository.findCollaboratorById(collaboratorId);
+    if (!collaborator)
+      throw new NotFoundException('Colaborador no encontrado.');
+
+    const requests = await this.repository.findRequestsByCollaborator(
+      collaboratorId,
+      'approved',
+    );
+    const transactions =
+      await this.repository.findTransactionsByCollaborator(collaboratorId);
+    const config = await this.repository.getPlatformConfig();
+
+    const totalLoans = requests.length;
+    const totalLoanAmount = requests.reduce((sum, r) => sum + r.amount, 0);
+    const serviceFeePercent = config.serviceFeePercent;
+    const serviceFeeAmount =
+      Math.round(totalLoanAmount * (serviceFeePercent / 100) * 100) / 100;
+    const totalCharges = transactions
+      .filter(
+        (t) => (t.kind ?? 'payment') === 'charge' && t.status !== 'failed',
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalDebt = totalLoanAmount + serviceFeeAmount + totalCharges;
+    const totalPaid = transactions
+      .filter((t) => t.status === 'paid' && (t.kind ?? 'payment') === 'payment')
+      .reduce((sum, t) => sum + t.amount, 0);
+    const balance = totalDebt - totalPaid;
+
+    return {
+      totalLoans,
+      totalLoanAmount,
+      serviceFeePercent,
+      serviceFeeAmount,
+      totalDebt,
+      totalPaid,
+      balance,
+    };
+  }
+
+  /**
+   * Lista las transacciones de un colaborador.
+   * @param collaboratorId ID del colaborador.
+   * @returns Lista de movimientos del colaborador.
+   */
+  async getCollaboratorTransactions(
+    collaboratorId: string,
+  ): Promise<Transaction[]> {
+    return this.repository.findTransactionsByCollaborator(collaboratorId);
   }
 }

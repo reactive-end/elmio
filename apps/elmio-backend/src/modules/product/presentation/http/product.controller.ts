@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Body,
   Controller,
   Delete,
@@ -9,6 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
+import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
+import type { UserSession } from '../../../auth/domain/user';
 import { CreateProductUseCase } from '../../application/create-product.use-case';
 import { UpdateProductUseCase } from '../../application/update-product.use-case';
 import {
@@ -50,7 +53,16 @@ export class ProductController {
   /** POST /api/products - Crea un nuevo producto. */
   @UseGuards(AuthGuard)
   @Post()
-  async create(@Body() body: CreateProductDto): Promise<Product> {
+  async create(
+    @Body() body: CreateProductDto,
+    @CurrentUser() session: UserSession,
+  ): Promise<Product> {
+    if (session.role === 'COMPANY') {
+      throw new ForbiddenException(
+        'Las empresas no pueden crear productos desde el dashboard.',
+      );
+    }
+
     return this.createProduct.execute(body);
   }
 
@@ -60,14 +72,30 @@ export class ProductController {
   async update(
     @Param('id') id: string,
     @Body() body: UpdateProductDto,
+    @CurrentUser() session: UserSession,
   ): Promise<Product> {
+    if (session.role === 'COMPANY') {
+      throw new ForbiddenException(
+        'Las empresas no pueden gestionar productos desde el dashboard.',
+      );
+    }
+
     return this.updateProduct.execute(id, body);
   }
 
   /** DELETE /api/products/:id - Elimina un producto. */
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<{ success: true }> {
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() session: UserSession,
+  ): Promise<{ success: true }> {
+    if (session.role === 'COMPANY') {
+      throw new ForbiddenException(
+        'Las empresas no pueden eliminar productos desde el dashboard.',
+      );
+    }
+
     await this.deleteProduct.execute(id);
     return { success: true };
   }

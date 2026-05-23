@@ -28,7 +28,7 @@ const STATUS_BADGE: Record<
 
 const TYPE_LABELS: Record<LoanRequest['type'], string> = {
   advance: 'Adelanto',
-  loan: 'Prestamo',
+  loan: 'Beneficio en Efectivo',
   permission: 'Permiso',
   other: 'Otro',
 }
@@ -71,7 +71,7 @@ export default function LoanRequestsPage() {
       <div>
         <h1 className="text-xl font-bold text-body">Solicitudes</h1>
         <p className="text-sm text-body-muted mt-0.5">
-          Gestiona las solicitudes de prestamo de tus colaboradores.
+          Gestiona las solicitudes de beneficio en efectivo de tus colaboradores.
         </p>
       </div>
 

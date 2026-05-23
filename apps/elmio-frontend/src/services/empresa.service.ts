@@ -17,6 +17,7 @@ export interface BankAccount {
   accountNumber: string
   accountType: 'checking' | 'savings'
   bank: string
+  phone?: string
 }
 
 export interface SocialMediaLinks {
@@ -175,6 +176,12 @@ export interface CreateEnterpriseInput {
 }
 
 export interface UpdateEnterpriseInput {
+  companyName?: string
+  sector?: string
+  employeeCount?: number
+  phone?: string
+  email?: string
+  taxId?: string
   website?: string
   socialMedia?: SocialMediaLinks
   headquartersLocation?: string
@@ -283,10 +290,20 @@ export interface LoanRequest {
 export interface Transaction {
   id: string
   enterpriseId: string
+  collaboratorId?: string | null
+  kind: 'payment' | 'charge'
   concept: string
   amount: number
   status: 'paid' | 'pending' | 'failed'
   date: string
+}
+
+export interface CreateTransactionInput {
+  collaboratorId?: string | null
+  kind?: 'payment' | 'charge'
+  concept: string
+  amount: number
+  status?: 'paid' | 'pending' | 'failed'
 }
 
 export interface LoanSummary {
@@ -297,6 +314,23 @@ export interface LoanSummary {
   totalDebt: number
   totalPaid: number
   balance: number
+}
+
+export interface ContractFile {
+  id: string
+  contractId: string
+  fileName: string
+  originalName: string
+  mimeType: string
+  createdAt: string
+}
+
+export interface Contract {
+  id: string
+  enterpriseId: string
+  name: string
+  createdAt: string
+  files: ContractFile[]
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -331,13 +365,14 @@ export const enterpriseService = {
   async getMe(): Promise<Enterprise> {
     const res = await authedFetch('/enterprises/me')
     if (!res.ok) throw new Error('No se encontro empresa.')
-    return (await res.json()) as Enterprise
+    const text = await res.text()
+    if (!text || text.trim() === '' || text.trim() === 'null') {
+      throw new Error('No se encontró ninguna configuración de empresa asociada a tu cuenta.')
+    }
+    return JSON.parse(text) as Enterprise
   },
 
-  async updateEnterprise(
-    enterpriseId: string,
-    data: UpdateEnterpriseInput,
-  ): Promise<Enterprise> {
+  async updateEnterprise(enterpriseId: string, data: UpdateEnterpriseInput): Promise<Enterprise> {
     const res = await authedFetch(`/enterprises/${enterpriseId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -450,6 +485,13 @@ export const enterpriseService = {
     return (await res.json()) as LoanRequest
   },
 
+  async listMyRequests(status?: 'pending' | 'approved' | 'denied'): Promise<LoanRequest[]> {
+    const query = status ? `?status=${status}` : ''
+    const res = await authedFetch(`/profile/me/requests${query}`)
+    if (!res.ok) throw new Error('Error al listar tus solicitudes.')
+    return (await res.json()) as LoanRequest[]
+  },
+
   // --- Account Statement ---
 
   async getLoanSummary(enterpriseId: string): Promise<LoanSummary> {
@@ -462,6 +504,129 @@ export const enterpriseService = {
     const res = await authedFetch(`/enterprises/${enterpriseId}/transactions`)
     if (!res.ok) throw new Error('Error al listar transacciones.')
     return (await res.json()) as Transaction[]
+  },
+
+  async getMyLoanSummary(): Promise<LoanSummary> {
+    const res = await authedFetch('/profile/me/account-statement')
+    if (!res.ok) throw new Error('Error al obtener tu estado de cuenta.')
+    return (await res.json()) as LoanSummary
+  },
+
+  async listMyTransactions(): Promise<Transaction[]> {
+    const res = await authedFetch('/profile/me/transactions')
+    if (!res.ok) throw new Error('Error al listar tus movimientos.')
+    return (await res.json()) as Transaction[]
+  },
+
+  async createTransaction(
+    enterpriseId: string,
+    data: CreateTransactionInput,
+  ): Promise<Transaction> {
+    const res = await authedFetch(`/enterprises/${enterpriseId}/transactions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+
+    if (!res.ok) {
+      const error = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(error.message ?? 'Error al registrar movimiento.')
+    }
+
+    return (await res.json()) as Transaction
+  },
+
+  async createMyTransaction(data: CreateTransactionInput): Promise<Transaction> {
+    const res = await authedFetch('/profile/me/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+
+    if (!res.ok) {
+      const error = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(error.message ?? 'Error al registrar tu movimiento.')
+    }
+
+    return (await res.json()) as Transaction
+  },
+
+  async listContracts(enterpriseId: string): Promise<Contract[]> {
+    const res = await authedFetch(`/enterprises/${enterpriseId}/contracts`)
+    if (!res.ok) throw new Error('Error al listar contratos.')
+    return (await res.json()) as Contract[]
+  },
+
+  async createContract(enterpriseId: string, name: string, files: File[]): Promise<Contract> {
+    const formData = new FormData()
+    formData.append('name', name)
+    for (const file of files) {
+      formData.append('files', file)
+    }
+
+    const res = await fetch(`${API_BASE}/enterprises/${enterpriseId}/contracts`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        ...authService.getAuthHeaders(),
+      },
+    })
+
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al crear contrato.')
+    }
+
+    return (await res.json()) as Contract
+  },
+
+  async updateContract(
+    enterpriseId: string,
+    contractId: string,
+    data: { name?: string; files?: File[] },
+  ): Promise<Contract> {
+    const formData = new FormData()
+    if (typeof data.name === 'string') {
+      formData.append('name', data.name)
+    }
+    for (const file of data.files ?? []) {
+      formData.append('files', file)
+    }
+
+    const res = await fetch(`${API_BASE}/enterprises/${enterpriseId}/contracts/${contractId}`, {
+      method: 'PATCH',
+      body: formData,
+      headers: {
+        ...authService.getAuthHeaders(),
+      },
+    })
+
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al actualizar contrato.')
+    }
+
+    return (await res.json()) as Contract
+  },
+
+  async removeContract(enterpriseId: string, contractId: string): Promise<void> {
+    const res = await authedFetch(`/enterprises/${enterpriseId}/contracts/${contractId}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Error al eliminar contrato.')
+  },
+
+  async removeContractFile(
+    enterpriseId: string,
+    contractId: string,
+    fileId: string,
+  ): Promise<void> {
+    const res = await authedFetch(`/enterprises/${enterpriseId}/contracts/${contractId}/files/${fileId}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Error al eliminar archivo del contrato.')
+  },
+
+  getContractDownloadUrl(taxId: string, fileName: string): string {
+    return `${API_BASE}/enterprises/contracts/file/${encodeURIComponent(taxId)}/${encodeURIComponent(fileName)}`
   },
 
   async uploadDocument(
@@ -487,4 +652,3 @@ export const enterpriseService = {
     return (await res.json()) as { url: string; fileName: string }
   },
 }
-

@@ -34,6 +34,19 @@ export class ManageLoanRequestsUseCase {
   }
 
   /**
+   * Lista solicitudes de un colaborador.
+   * @param collaboratorId ID del colaborador.
+   * @param status Filtro por estado (opcional).
+   * @returns Lista de solicitudes del colaborador.
+   */
+  async listByCollaborator(
+    collaboratorId: string,
+    status?: LoanRequest['status'],
+  ): Promise<LoanRequest[]> {
+    return this.repository.findRequestsByCollaborator(collaboratorId, status);
+  }
+
+  /**
    * Aprueba o deniega una solicitud.
    * @param requestId ID de la solicitud.
    * @param decision Aprobada o denegada.
