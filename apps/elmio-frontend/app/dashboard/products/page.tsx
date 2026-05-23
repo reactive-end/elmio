@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { Plus, Pencil, Search, Trash2, Package, ToggleLeft, ToggleRight } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
-import { productService, type Product } from '@/src/services/product.service'
+import { useProducts } from '@/src/hooks/pages/useProducts'
+import type { Product } from '@/src/services/product.service'
 
 const TYPE_LABELS: Record<string, string> = {
   PRODUCT: 'Producto',
@@ -16,71 +16,37 @@ const TYPE_LABELS: Record<string, string> = {
   LOAN: 'Prestamo',
 }
 
+/**
+ * Página de visualización y administración del catálogo de productos del dashboard.
+ * Consume la lógica encapsulada en el hook useProducts y renderiza una interfaz interactiva premium.
+ */
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const {
+    products,
+    search,
+    setSearch,
+    loading,
+    error,
+    successMsg,
+    handleDelete,
+    toggleActive,
+    filtered,
+    resolveCategoryName,
+  } = useProducts()
 
-  const loadProducts = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await productService.list()
-      setProducts(data)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al cargar productos.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void loadProducts()
-  }, [loadProducts])
-
-  const handleDelete = async (id: string) => {
-    try {
-      await productService.remove(id)
-      setSuccessMsg('Producto eliminado.')
-      setTimeout(() => setSuccessMsg(null), 3000)
-      await loadProducts()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al eliminar.')
-    }
-  }
-
-  const toggleActive = async (product: Product) => {
-    try {
-      await productService.update(product.id, { active: !product.active })
-      setSuccessMsg(`Producto ${product.active ? 'desactivado' : 'activado'}.`)
-      setTimeout(() => setSuccessMsg(null), 3000)
-      await loadProducts()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al cambiar estado.')
-    }
-  }
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return products
-    return products.filter(
-      (p) => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term),
-    )
-  }, [search, products])
-
-  if (loading)
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
         <Spinner size="lg" />
       </div>
     )
+  }
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(n)
-  const getMainPrice = (p: Product) => (p.priceLists.length > 0 ? fmt(p.priceLists[0].amount) : '—')
+  
+  const getMainPrice = (p: Product) => 
+    p.priceLists.length > 0 ? fmt(p.priceLists[0].amount) : '—'
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -197,7 +163,9 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-500">{p.category || '—'}</span>
+                      <span className="text-sm text-gray-500">
+                        {resolveCategoryName(p.category)}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-medium bg-gray-100 text-gray-500 rounded-md px-2 py-0.5 uppercase">

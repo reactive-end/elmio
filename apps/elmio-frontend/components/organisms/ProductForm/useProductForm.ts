@@ -71,7 +71,7 @@ export function useProductForm() {
         setCategories(activeCategories)
         // Seleccionar la primera por defecto si existe
         if (activeCategories.length > 0) {
-          setCategory(activeCategories[0].name)
+          setCategory(activeCategories[0].id)
         }
       })
       .catch((err) => {

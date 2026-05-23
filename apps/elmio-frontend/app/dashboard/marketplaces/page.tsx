@@ -1,149 +1,40 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Pencil, ExternalLink, Search, CheckCircle, ShieldAlert, Trash2, X } from 'lucide-react'
+import { Plus, Pencil, ExternalLink, Search, ShieldAlert, Trash2, X } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
-import { marketplaceService } from '@/src/services/marketplace.service'
-import { authService } from '@/src/services/auth.service'
-
-interface Marketplace {
-  id: string
-  nombre: string
-  slug: string
-  propietario: string
-  activo: boolean
-  descripcion: string
-}
+import { useMarketplaces } from '@/src/hooks/pages/useMarketplaces'
 
 /**
  * Página de listado y gestión multiversión de marketplaces.
  * Permite a aliados y administradores gestionar múltiples configuraciones,
  * activar versiones para rotación rápida y proteger configuraciones con seguridad visual premium.
+ * Consume la lógica de negocio desacoplada del hook useMarketplaces.
  */
 export default function MarketplacesPage() {
-  const [search, setSearch] = useState('')
-  const [marketplaces, setMarketplaces] = useState<Marketplace[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [session, setSession] = useState<any>(null)
-  
-  // Estados para el Modal de Creación
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [nuevoNombre, setNuevoNombre] = useState('')
-  const [nuevoSlug, setNuevoSlug] = useState('')
-  const [nuevaDesc, setNuevaDesc] = useState('')
-  const [nuevoPropietario, setNuevoPropietario] = useState('')
-  const [errorModal, setErrorModal] = useState('')
-  const [guardando, setGuardando] = useState(false)
-
-  const cargarMarketplaces = async () => {
-    try {
-      setCargando(true)
-      const data = await marketplaceService.list()
-      const userSession = authService.getSession()
-      setSession(userSession)
-
-      // Si no es ADMIN, filtrar los marketplaces que pertenezcan a su propietario
-      if (userSession && userSession.role !== 'ADMIN') {
-        const filtrados = data.filter((m) => m.propietario === userSession.owner)
-        setMarketplaces(filtrados)
-      } else {
-        setMarketplaces(data)
-      }
-    } catch {
-      setMarketplaces([])
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  useEffect(() => {
-    void cargarMarketplaces()
-  }, [])
-
-  // Activar una versión específica del marketplace para rotarla
-  const activarMarketplace = async (id: string) => {
-    try {
-      setCargando(true)
-      const config = await marketplaceService.getById(id)
-      config.activo = true
-      // Guardar cambios en el backend (el backend desactivará los otros marketplaces con el mismo slug)
-      await marketplaceService.update(id, config)
-      await cargarMarketplaces()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al activar la configuración.')
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  // Eliminar una versión inactiva
-  const eliminarMarketplace = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta versión de configuración?')) return
-    try {
-      setCargando(true)
-      await marketplaceService.delete(id)
-      await cargarMarketplaces()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al eliminar.')
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  // Crear una nueva configuración
-  const handleCrear = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorModal('')
-
-    if (!nuevoNombre.trim()) {
-      setErrorModal('El nombre de la configuración es obligatorio.')
-      return
-    }
-    if (!nuevoSlug.trim()) {
-      setErrorModal('El slug es obligatorio.')
-      return
-    }
-
-    try {
-      setGuardando(true)
-      // Si no es ADMIN, asigna automáticamente su owner actual
-      const propietarioFinal = session?.role === 'ADMIN' 
-        ? nuevoPropietario.trim() 
-        : (session?.owner || '')
-
-      await marketplaceService.create({
-        nombre: nuevoNombre.trim(),
-        slug: nuevoSlug.trim().toLowerCase(),
-        descripcion: nuevaDesc.trim(),
-        propietario: propietarioFinal,
-      })
-
-      // Limpiar y cerrar modal
-      setNuevoNombre('')
-      setNuevoSlug('')
-      setNuevaDesc('')
-      setNuevoPropietario('')
-      setModalAbierto(false)
-      
-      // Recargar lista
-      await cargarMarketplaces()
-    } catch (err) {
-      setErrorModal(err instanceof Error ? err.message : 'Error al crear la configuración.')
-    } finally {
-      setGuardando(false)
-    }
-  }
-
-  const filtered = marketplaces.filter(
-    (m) =>
-      m.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      m.slug.toLowerCase().includes(search.toLowerCase()) ||
-      m.propietario.toLowerCase().includes(search.toLowerCase()),
-  )
-
-  const esAdmin = session?.role === 'ADMIN'
+  const {
+    search,
+    setSearch,
+    cargando,
+    modalAbierto,
+    setModalAbierto,
+    nuevoNombre,
+    setNuevoNombre,
+    nuevoSlug,
+    setNuevoSlug,
+    nuevaDesc,
+    setNuevaDesc,
+    nuevoPropietario,
+    setNuevoPropietario,
+    errorModal,
+    guardando,
+    activarMarketplace,
+    eliminarMarketplace,
+    handleCrear,
+    filtered,
+    esAdmin,
+  } = useMarketplaces()
 
   return (
     <div className="max-w-5xl mx-auto">

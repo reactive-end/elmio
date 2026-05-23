@@ -97,7 +97,7 @@ export function ProductForm() {
                     onChange={(v) => f.setCategory(v)}
                     placeholder={f.categories.length === 0 ? "Sin categorías activas" : "Selecciona una categoría"}
                     options={f.categories.map((c) => ({
-                      value: c.name,
+                      value: c.id,
                       label: c.name,
                     }))}
                   />

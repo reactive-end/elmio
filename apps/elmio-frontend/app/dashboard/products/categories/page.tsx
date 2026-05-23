@@ -1,127 +1,39 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus, Pencil, Trash2, Search, ArrowLeft, Loader2, Check, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
-import { categoryService, type Categoria } from '@/src/services/category.service'
+import { useCategories } from '@/src/hooks/pages/useCategories'
 
 /**
  * Pagina de gestion de categorias de productos.
  * Permite crear, listar, editar y eliminar categorias con una UX sumamente limpia y premium.
+ * Consume la logica de negocio desacoplada del hook useCategories.
  */
 export default function CategoriasPage() {
-  const [search, setSearch] = useState('')
-  const [categorias, setCategorias] = useState<Categoria[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
-
-  // Estados de los modales
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Categoria | null>(null)
-  
-  // Campos del formulario
-  const [formName, setFormName] = useState('')
-  const [formDescription, setFormDescription] = useState('')
-  const [formActive, setFormActive] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const cargarCategorias = async () => {
-    setCargando(true)
-    setErrorMsg(null)
-    try {
-      const data = await categoryService.list()
-      setCategorias(data)
-    } catch (err) {
-      setErrorMsg('Error al conectar con el servidor de categorías.')
-      setCategorias([])
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  useEffect(() => {
-    void cargarCategorias()
-  }, [])
-
-  const openCrearModal = () => {
-    setEditingCategory(null)
-    setFormName('')
-    setFormDescription('')
-    setFormActive(true)
-    setErrorMsg(null)
-    setIsModalOpen(true)
-  }
-
-  const openEditarModal = (cat: Categoria) => {
-    setEditingCategory(cat)
-    setFormName(cat.name)
-    setFormDescription(cat.description)
-    setFormActive(cat.active)
-    setErrorMsg(null)
-    setIsModalOpen(true)
-  }
-
-  const handleEliminar = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta categoría?')) return
-    setErrorMsg(null)
-    setSuccessMsg(null)
-    try {
-      await categoryService.delete(id)
-      setSuccessMsg('Categoría eliminada exitosamente.')
-      void cargarCategorias()
-      setTimeout(() => setSuccessMsg(null), 3000)
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Error al eliminar la categoría.')
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formName.trim()) {
-      setErrorMsg('El nombre es obligatorio.')
-      return
-    }
-
-    setIsSubmitting(true)
-    setErrorMsg(null)
-    try {
-      if (editingCategory) {
-        // Modificar
-        await categoryService.update(editingCategory.id, {
-          name: formName.trim(),
-          description: formDescription.trim(),
-          active: formActive,
-        })
-        setSuccessMsg('Categoría actualizada exitosamente.')
-      } else {
-        // Crear
-        await categoryService.create({
-          name: formName.trim(),
-          description: formDescription.trim(),
-          active: formActive,
-        })
-        setSuccessMsg('Categoría creada exitosamente.')
-      }
-
-      setIsModalOpen(false)
-      void cargarCategorias()
-      setTimeout(() => setSuccessMsg(null), 3000)
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Error al procesar la solicitud.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const filtered = categorias.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.description.toLowerCase().includes(search.toLowerCase()) ||
-      c.slug.toLowerCase().includes(search.toLowerCase()),
-  )
+  const {
+    search,
+    setSearch,
+    cargando,
+    errorMsg,
+    successMsg,
+    isModalOpen,
+    setIsModalOpen,
+    editingCategory,
+    formName,
+    setFormName,
+    formDescription,
+    setFormDescription,
+    formActive,
+    setFormActive,
+    isSubmitting,
+    openCrearModal,
+    openEditarModal,
+    handleEliminar,
+    handleSubmit,
+    filtered,
+  } = useCategories()
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -244,7 +156,7 @@ export default function CategoriasPage() {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleEliminar(c.id)}
+                          onClick={() => void handleEliminar(c.id)}
                           className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                           title="Eliminar"
                         >
@@ -281,7 +193,7 @@ export default function CategoriasPage() {
                 Cerrar
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={(e) => void handleSubmit(e)} className="p-6 space-y-4">
               {errorMsg && (
                 <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-800 px-4 py-2.5 rounded-xl text-sm">
                   <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0" />
