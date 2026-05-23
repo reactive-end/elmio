@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Pencil, Trash2, Search, ArrowLeft, Loader2, Check, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 import { useCategories } from '@/src/hooks/pages/useCategories'
+import { authService } from '@/src/services/auth.service'
 
 /**
  * Pagina de gestion de categorias de productos.
@@ -12,6 +15,7 @@ import { useCategories } from '@/src/hooks/pages/useCategories'
  * Consume la logica de negocio desacoplada del hook useCategories.
  */
 export default function CategoriasPage() {
+  const router = useRouter()
   const {
     search,
     setSearch,
@@ -35,6 +39,13 @@ export default function CategoriasPage() {
     filtered,
   } = useCategories()
 
+  useEffect(() => {
+    const session = authService.getSession()
+    if (session?.role === 'COMPANY') {
+      router.replace('/dashboard/enterprise/shop')
+    }
+  }, [router])
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Boton volver y Header */}
@@ -49,7 +60,9 @@ export default function CategoriasPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Categorías de Productos</h1>
-            <p className="text-sm text-gray-500">Agrupa y organiza tus productos en el marketplace</p>
+            <p className="text-sm text-gray-500">
+              Agrupa y organiza tus productos en el marketplace
+            </p>
           </div>
           <Button onClick={openCrearModal} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
@@ -117,10 +130,7 @@ export default function CategoriasPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="hover:bg-gray-50/50 transition-colors"
-                  >
+                  <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <span className="text-sm font-semibold text-gray-900">{c.name}</span>
                     </td>
@@ -200,7 +210,7 @@ export default function CategoriasPage() {
                   <span>{errorMsg}</span>
                 </div>
               )}
-              
+
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">
                   Nombre de la categoría *
@@ -236,7 +246,10 @@ export default function CategoriasPage() {
                   disabled={isSubmitting}
                   className="w-4 h-4 accent-secondary rounded focus:ring-secondary"
                 />
-                <label htmlFor="categoryActive" className="text-sm text-gray-700 font-medium select-none cursor-pointer">
+                <label
+                  htmlFor="categoryActive"
+                  className="text-sm text-gray-700 font-medium select-none cursor-pointer"
+                >
                   Categoría activa (visible en el marketplace)
                 </label>
               </div>

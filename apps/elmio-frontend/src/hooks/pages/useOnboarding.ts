@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   enterpriseService,
   type Enterprise,
@@ -79,10 +79,10 @@ interface UseOnboardingReturn {
 }
 
 interface LegalDocsForm {
-  taxIdPhoto: string
-  constitutiveActPhoto: string
-  lastAssemblyPhoto: string
-  serviceReceiptPhoto: string
+  taxIdPhoto: string[]
+  constitutiveActPhoto: string[]
+  lastAssemblyPhoto: string[]
+  serviceReceiptPhoto: string[]
   bankStatementsPhotos: string[]
   bankReferencePhotos: string[]
 }
@@ -115,6 +115,7 @@ const EMPTY_BANK_ACCOUNT: BankAccount = {
   accountNumber: '',
   accountType: 'checking',
   bank: '',
+  phone: '',
 }
 
 /**
@@ -142,10 +143,10 @@ export function useOnboarding(): UseOnboardingReturn {
   })
 
   const [legalDocs, setLegalDocs] = useState<LegalDocsForm>({
-    taxIdPhoto: '',
-    constitutiveActPhoto: '',
-    lastAssemblyPhoto: '',
-    serviceReceiptPhoto: '',
+    taxIdPhoto: [],
+    constitutiveActPhoto: [],
+    lastAssemblyPhoto: [],
+    serviceReceiptPhoto: [],
     bankStatementsPhotos: [],
     bankReferencePhotos: [],
   })
@@ -172,6 +173,74 @@ export function useOnboarding(): UseOnboardingReturn {
 
   const [payrollItems, setPayrollItems] = useState<CollaboratorInput[]>([])
 
+  const fetchEnterprise = useCallback(async () => {
+    try {
+      setLoading(true)
+      const emp = await enterpriseService.getMe()
+      if (emp) {
+        setEnterprise(emp)
+        setCompanyData({
+          companyName: emp.companyName || '',
+          sector: emp.sector || '',
+          employeeCount: emp.employeeCount || 0,
+          phone: emp.phone || '',
+          email: emp.email || '',
+          taxId: emp.taxId || '',
+        })
+        // Si la empresa ya existe y tiene datos de documentos, etc., podríamos rellenarlos,
+        // pero principalmente prerellenar los datos generales de empresa.
+        if (emp.taxIdPhoto || emp.constitutiveActPhoto || emp.lastAssemblyPhoto || emp.serviceReceiptPhoto || emp.bankStatementsPhotos?.length > 0 || emp.bankReferencePhotos?.length > 0) {
+          setLegalDocs({
+            taxIdPhoto: emp.taxIdPhoto ? emp.taxIdPhoto.split(',').filter(Boolean) : [],
+            constitutiveActPhoto: emp.constitutiveActPhoto ? emp.constitutiveActPhoto.split(',').filter(Boolean) : [],
+            lastAssemblyPhoto: emp.lastAssemblyPhoto ? emp.lastAssemblyPhoto.split(',').filter(Boolean) : [],
+            serviceReceiptPhoto: emp.serviceReceiptPhoto ? emp.serviceReceiptPhoto.split(',').filter(Boolean) : [],
+            bankStatementsPhotos: emp.bankStatementsPhotos || [],
+            bankReferencePhotos: emp.bankReferencePhotos || [],
+          })
+        }
+        if (emp.legalRepDocumentId) {
+          setLegalRep({
+            legalRepDocumentId: emp.legalRepDocumentId || '',
+            legalRepDocumentPhoto: emp.legalRepDocumentPhoto || '',
+            accountManagerDocumentId: emp.accountManagerDocumentId || '',
+            accountManagerDocumentPhoto: emp.accountManagerDocumentPhoto || '',
+            website: emp.website || '',
+            headquartersLocation: emp.headquartersLocation || '',
+            socialMediaInstagram: emp.socialMedia?.instagram || '',
+            socialMediaFacebook: emp.socialMedia?.facebook || '',
+            socialMediaTwitter: emp.socialMedia?.twitter || '',
+            socialMediaLinkedin: emp.socialMedia?.linkedin || '',
+            socialMediaTiktok: emp.socialMedia?.tiktok || '',
+            socialMediaOther: emp.socialMedia?.other || '',
+          })
+        }
+        if (emp.shareholders && emp.shareholders.length > 0) {
+          setShareholders(emp.shareholders)
+          setShareholderCount(emp.shareholderCount || emp.shareholders.length)
+        }
+        if (emp.bankAccounts && emp.bankAccounts.length > 0) {
+          setBankAccounts(emp.bankAccounts)
+        }
+      }
+    } catch (e) {
+      // Ignorar si no existe la empresa aún, o manejar según el flujo
+      console.warn('No se pudo precargar la empresa:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const [initialized, setInitialized] = useState(false)
+
+  const init = useCallback(async () => {
+    if (initialized) return
+    setInitialized(true)
+    await fetchEnterprise()
+  }, [initialized, fetchEnterprise])
+
+
+  
   const withLoading = useCallback(
     async (fn: () => Promise<void>) => {
       try {
@@ -207,10 +276,10 @@ export function useOnboarding(): UseOnboardingReturn {
     if (!enterprise) return
     await withLoading(async () => {
       const updated = await enterpriseService.updateEnterprise(enterprise.id, {
-        taxIdPhoto: legalDocs.taxIdPhoto,
-        constitutiveActPhoto: legalDocs.constitutiveActPhoto,
-        lastAssemblyPhoto: legalDocs.lastAssemblyPhoto,
-        serviceReceiptPhoto: legalDocs.serviceReceiptPhoto,
+        taxIdPhoto: legalDocs.taxIdPhoto.join(','),
+        constitutiveActPhoto: legalDocs.constitutiveActPhoto.join(','),
+        lastAssemblyPhoto: legalDocs.lastAssemblyPhoto.join(','),
+        serviceReceiptPhoto: legalDocs.serviceReceiptPhoto.join(','),
         bankStatementsPhotos: legalDocs.bankStatementsPhotos,
         bankReferencePhotos: legalDocs.bankReferencePhotos,
       })
@@ -247,9 +316,13 @@ export function useOnboarding(): UseOnboardingReturn {
   const submitShareholders = useCallback(async () => {
     if (!enterprise) return
     await withLoading(async () => {
+      const validShareholders = shareholders
+        .slice(0, shareholderCount)
+        .filter((sh) => sh.name.trim() || sh.lastName.trim() || sh.documentId.trim() || sh.phone.trim() || sh.email.trim())
+      
       const updated = await enterpriseService.updateEnterprise(enterprise.id, {
-        shareholderCount,
-        shareholders: shareholders.slice(0, shareholderCount),
+        shareholderCount: validShareholders.length,
+        shareholders: validShareholders,
       })
       setEnterprise(updated)
       setStep('bank-accounts')
@@ -259,7 +332,7 @@ export function useOnboarding(): UseOnboardingReturn {
   const submitBankAccounts = useCallback(async () => {
     if (!enterprise) return
     await withLoading(async () => {
-      const validAccounts = bankAccounts.filter((a) => a.accountNumber.trim() && a.bank.trim())
+      const validAccounts = bankAccounts.filter((a) => a.accountNumber.trim() && a.bank.trim() && a.phone?.trim())
       const updated = await enterpriseService.updateEnterprise(enterprise.id, {
         bankAccounts: validAccounts,
       })
@@ -297,7 +370,7 @@ export function useOnboarding(): UseOnboardingReturn {
       const res = await enterpriseService.uploadDocument(enterprise.id, file)
       setLegalDocs(prev => ({
         ...prev,
-        [field]: res.url as any // cast in case field types vary, but they are strings
+        [field]: [...(prev[field] as string[]), res.url]
       }))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al subir documento')
@@ -367,6 +440,10 @@ export function useOnboarding(): UseOnboardingReturn {
       }))
     }
   }, [enterprise])
+
+  useEffect(() => {
+    void init()
+  }, [init])
 
   return {
     step,

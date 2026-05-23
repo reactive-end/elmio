@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { authService } from './auth.service'
 
 const galleryImageSchema = z.object({
   id: z.string(),
@@ -42,6 +43,9 @@ export async function listGalleryImages(tenantDirectory: string): Promise<Galler
   const response = await fetch(buildGalleryEndpoint('', tenantDirectory), {
     method: 'GET',
     cache: 'no-store',
+    headers: {
+      ...authService.getAuthHeaders(),
+    },
   })
 
   if (!response.ok) {
@@ -73,6 +77,9 @@ export async function uploadGalleryImages(
   const response = await fetch(buildGalleryEndpoint('/upload', tenantDirectory), {
     method: 'POST',
     body: formData,
+    headers: {
+      ...authService.getAuthHeaders(),
+    },
   })
 
   if (!response.ok) {
@@ -95,6 +102,9 @@ export async function uploadGalleryImages(
 export async function deleteGalleryImage(tenantDirectory: string, imageId: string): Promise<void> {
   const response = await fetch(buildGalleryEndpoint(`/${imageId}`, tenantDirectory), {
     method: 'DELETE',
+    headers: {
+      ...authService.getAuthHeaders(),
+    },
   })
 
   if (!response.ok) {

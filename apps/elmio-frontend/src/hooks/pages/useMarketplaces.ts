@@ -21,14 +21,13 @@ export function useMarketplaces() {
   const [search, setSearch] = useState('')
   const [marketplaces, setMarketplaces] = useState<Marketplace[]>([])
   const [cargando, setCargando] = useState(true)
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<ReturnType<typeof authService.getSession>>(null)
 
   // Estados para el Modal de Creación
   const [modalAbierto, setModalAbierto] = useState(false)
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoSlug, setNuevoSlug] = useState('')
   const [nuevaDesc, setNuevaDesc] = useState('')
-  const [nuevoPropietario, setNuevoPropietario] = useState('')
   const [errorModal, setErrorModal] = useState('')
   const [guardando, setGuardando] = useState(false)
 
@@ -39,14 +38,25 @@ export function useMarketplaces() {
       const userSession = authService.getSession()
       setSession(userSession)
 
-      // Si no es ADMIN, filtrar los marketplaces que pertenezcan a su propietario
+      console.log('useMarketplaces: Sesión obtenida:', userSession)
+      console.log('useMarketplaces: Marketplaces devueltos por la API:', data)
+
+      // Si no es ADMIN, filtrar los marketplaces que pertenezcan a su propietario y no sean 'system'
       if (userSession && userSession.role !== 'ADMIN') {
-        const filtrados = data.filter((m) => m.propietario === userSession.owner)
+        const filtrados = data.filter(
+          (m) =>
+            m.propietario === userSession.owner &&
+            m.propietario !== '' &&
+            m.propietario !== 'system'
+        )
+        console.log('useMarketplaces: Aliado - Marketplaces filtrados para la vista:', filtrados)
         setMarketplaces(filtrados)
       } else {
+        console.log('useMarketplaces: Admin - Mostrando todos los marketplaces sin filtro')
         setMarketplaces(data)
       }
-    } catch {
+    } catch (err) {
+      console.error('Error al cargar marketplaces:', err)
       setMarketplaces([])
     } finally {
       setCargando(false)
@@ -103,10 +113,8 @@ export function useMarketplaces() {
 
     try {
       setGuardando(true)
-      // Si no es ADMIN, asigna automáticamente su owner actual
-      const propietarioFinal = session?.role === 'ADMIN' 
-        ? nuevoPropietario.trim() 
-        : (session?.owner || '')
+      // Asignar automáticamente a través del backend/sesión del creador
+      const propietarioFinal = session?.owner || ''
 
       await marketplaceService.create({
         nombre: nuevoNombre.trim(),
@@ -119,7 +127,6 @@ export function useMarketplaces() {
       setNuevoNombre('')
       setNuevoSlug('')
       setNuevaDesc('')
-      setNuevoPropietario('')
       setModalAbierto(false)
       
       // Recargar lista
@@ -132,11 +139,12 @@ export function useMarketplaces() {
   }
 
   const filtered = useMemo(() => {
+    const s = search.toLowerCase()
     return marketplaces.filter(
       (m) =>
-        m.nombre.toLowerCase().includes(search.toLowerCase()) ||
-        m.slug.toLowerCase().includes(search.toLowerCase()) ||
-        m.propietario.toLowerCase().includes(search.toLowerCase()),
+        (m.nombre || '').toLowerCase().includes(s) ||
+        (m.slug || '').toLowerCase().includes(s) ||
+        (m.propietario || '').toLowerCase().includes(s),
     )
   }, [search, marketplaces])
 
@@ -158,8 +166,6 @@ export function useMarketplaces() {
     setNuevoSlug,
     nuevaDesc,
     setNuevaDesc,
-    nuevoPropietario,
-    setNuevoPropietario,
     errorModal,
     setErrorModal,
     guardando,

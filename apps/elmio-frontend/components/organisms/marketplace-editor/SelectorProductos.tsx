@@ -1,6 +1,8 @@
 'use client'
 
-import { ImageIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ImageIcon, Loader2 } from 'lucide-react'
+import { productService } from '@/src/services/product.service'
 
 interface ProductoMarketplace {
   id: string
@@ -13,53 +15,6 @@ interface ProductoMarketplace {
   destinoUrl: string
 }
 
-const productosDisponibles: ProductoMarketplace[] = [
-  {
-    id: 'prod-loan-001',
-    nombre: 'Prestamo Personal',
-    categoria: 'Prestamos',
-    precio: '$500',
-    imagenUrl:
-      'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=900&q=80',
-    accionTipo: 'trigger',
-    accionEtiqueta: 'Simular cuotas',
-    destinoUrl: '',
-  },
-  {
-    id: 'prod-loan-002',
-    nombre: 'Prestamo Vehicular',
-    categoria: 'Prestamos',
-    precio: '$5,000',
-    imagenUrl:
-      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80',
-    accionTipo: 'redirect',
-    accionEtiqueta: 'Ir al flujo vehicular',
-    destinoUrl: '/productos/prestamo-vehicular',
-  },
-  {
-    id: 'prod-ins-001',
-    nombre: 'Seguro de Vida',
-    categoria: 'Seguros',
-    precio: '$50',
-    imagenUrl:
-      'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80',
-    accionTipo: 'trigger',
-    accionEtiqueta: 'Cotizar cobertura',
-    destinoUrl: '',
-  },
-  {
-    id: 'prod-ins-002',
-    nombre: 'Seguro Vehicular',
-    categoria: 'Seguros',
-    precio: '$80',
-    imagenUrl:
-      'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?auto=format&fit=crop&w=900&q=80',
-    accionTipo: 'redirect',
-    accionEtiqueta: 'Abrir landing',
-    destinoUrl: '/productos/seguro-vehicular',
-  },
-]
-
 interface SelectorProductosProps {
   seleccionados: string[]
   onToggle: (productoId: string) => void
@@ -67,12 +22,76 @@ interface SelectorProductosProps {
 
 /**
  * Selector visual de productos para el carrusel de seccion de productos.
- * Muestra una grilla de productos disponibles con toggle de seleccion.
+ * Trae los productos reales del backend.
  */
 export function SelectorProductos({ seleccionados, onToggle }: SelectorProductosProps) {
+  const [productos, setProductos] = useState<ProductoMarketplace[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await productService.list()
+        
+        // Mapear de Product (Backend) a ProductoMarketplace (Frontend)
+        const mapped: ProductoMarketplace[] = data.map((p) => {
+          const firstPrice = p.priceLists?.[0]
+          const precioFormatted = firstPrice 
+            ? `${firstPrice.currency === 'USD' ? '$' : firstPrice.currency}${firstPrice.amount}`
+            : '$0'
+
+          const firstWindow = p.windows?.[0]
+          const accionTipo = firstWindow?.type === 'external-redirect' ? 'redirect' : 'trigger'
+          
+          return {
+            id: p.id,
+            nombre: p.name,
+            categoria: p.category,
+            precio: precioFormatted,
+            imagenUrl: p.images?.[0] || '',
+            accionTipo,
+            accionEtiqueta: firstWindow?.label || 'Ver detalle',
+            destinoUrl: firstWindow?.config?.redirectUrl || '',
+          }
+        })
+        
+        setProductos(mapped)
+      } catch (err) {
+        console.error('Error al cargar productos en el editor:', err)
+        setError('No se pudieron cargar los productos.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    void loadProducts()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 gap-2 text-body-muted">
+        <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+        <p className="text-sm">Cargando productos...</p>
+      </div>
+    )
+  }
+
+  if (error || productos.length === 0) {
+    return (
+      <div className="text-center p-8 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+        <p className="text-sm text-body-muted">
+          {error ?? 'No hay productos registrados en el sistema.'}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {productosDisponibles.map((producto) => {
+      {productos.map((producto) => {
         const activo = seleccionados.includes(producto.id)
 
         return (
@@ -103,7 +122,10 @@ export function SelectorProductos({ seleccionados, onToggle }: SelectorProductos
               </div>
             </div>
             <div className="p-4">
-              <p className="text-sm font-semibold text-body">{producto.nombre}</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-body truncate">{producto.nombre}</p>
+                <span className="text-xs font-semibold text-secondary flex-shrink-0">{producto.precio}</span>
+              </div>
               <div className="mt-3 space-y-1 text-[11px] text-gray-500">
                 <p>
                   {producto.accionTipo === 'redirect'

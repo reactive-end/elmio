@@ -23,6 +23,14 @@ interface UserFields {
   document_digits: string
 }
 
+export interface CompanyFields {
+  companyName: string
+  taxId_letter: string
+  taxId_digits: string
+  sector: string
+  employeeCount: string
+}
+
 interface PersonalFields {
   age: string
   gender: string
@@ -66,6 +74,7 @@ export interface UseRegisterFormReturn {
   userFields: UserFields
   personalFields: PersonalFields
   employmentFields: EmploymentFields
+  companyFields: CompanyFields
   countryCode: CountryCode
   operatorPrefix: OperatorPrefix
   phoneDisplay: string
@@ -80,6 +89,7 @@ export interface UseRegisterFormReturn {
   updateUserField: (field: keyof UserFields, value: string) => void
   updatePersonalField: (field: keyof PersonalFields, value: string) => void
   updateEmploymentField: (field: keyof EmploymentFields, value: string) => void
+  updateCompanyField: (field: keyof CompanyFields, value: string) => void
   selectRole: (role: AccountRole) => void
   handleNext: () => void
   handleBack: () => void
@@ -142,6 +152,14 @@ export function useRegisterForm(): UseRegisterFormReturn {
     loan_purpose: '',
   })
 
+  const [companyFields, setCompanyFields] = useState<CompanyFields>({
+    companyName: '',
+    taxId_letter: 'J',
+    taxId_digits: '',
+    sector: '',
+    employeeCount: '',
+  })
+
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -173,6 +191,10 @@ export function useRegisterForm(): UseRegisterFormReturn {
 
   const updatePersonalField = (field: keyof PersonalFields, value: string) => {
     setPersonalFields((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const updateCompanyField = (field: keyof CompanyFields, value: string) => {
+    setCompanyFields((prev) => ({ ...prev, [field]: value }))
   }
 
   const updateEmploymentField = (field: keyof EmploymentFields, value: string) => {
@@ -207,6 +229,26 @@ export function useRegisterForm(): UseRegisterFormReturn {
       (!userFields.document_digits.trim() || userFields.document_digits.length < 7)
     ) {
       setAlert({ type: 'error', message: 'La cedula debe tener al menos 7 digitos' })
+      return false
+    }
+    return true
+  }
+
+  const validateCompanyStep = (): boolean => {
+    if (!companyFields.companyName.trim()) {
+      setAlert({ type: 'error', message: 'La razon social es requerida' })
+      return false
+    }
+    if (!companyFields.taxId_digits.trim() || companyFields.taxId_digits.length < 7) {
+      setAlert({ type: 'error', message: 'El RIF debe tener al menos 7 digitos' })
+      return false
+    }
+    if (!companyFields.sector) {
+      setAlert({ type: 'error', message: 'El sector es requerido' })
+      return false
+    }
+    if (!companyFields.employeeCount || parseInt(companyFields.employeeCount) < 1) {
+      setAlert({ type: 'error', message: 'El numero de empleados es requerido' })
       return false
     }
     return true
@@ -275,14 +317,15 @@ export function useRegisterForm(): UseRegisterFormReturn {
 
   const handleNext = () => {
     setAlert(null)
-    if (step === 1 && validateStep1()) {
-      if (accountRole === 'COMPANY') {
-        // Company only needs step 1 (name, email, password)
-        return
+    if (step === 1) {
+      if (accountRole === 'COMPANY' && validateCompanyStep()) {
+        setStep(2)
+        animateStepTransition(1)
+      } else if (accountRole === 'CLIENT' && validateStep1()) {
+        setStep(2)
+        animateStepTransition(1)
       }
-      setStep(2)
-      animateStepTransition(1)
-    } else if (step === 2 && validateStep2()) {
+    } else if (step === 2 && accountRole === 'CLIENT' && validateStep2()) {
       setStep(3)
       animateStepTransition(1)
     }
@@ -321,6 +364,25 @@ export function useRegisterForm(): UseRegisterFormReturn {
         role: accountRole,
         owner: 'default',
       })
+
+      if (accountRole === 'COMPANY') {
+        // Autologuear para crear la empresa inmediatamente
+        await authService.login(userFields.email, userFields.password)
+
+        const { enterpriseService } = await import('@/src/services/empresa.service')
+
+        const fullPhone = `${countryCode.dial}${operatorPrefix}${phoneDisplay.replace(/\D/g, '')}`
+        const taxId = `${companyFields.taxId_letter}-${companyFields.taxId_digits}`
+
+        await enterpriseService.create({
+          companyName: companyFields.companyName.trim(),
+          taxId,
+          sector: companyFields.sector,
+          employeeCount: parseInt(companyFields.employeeCount) || 0,
+          phone: fullPhone,
+          email: userFields.email,
+        })
+      }
 
       if (accountRole === 'CLIENT') {
         // Autologuear para poder guardar el perfil
@@ -363,11 +425,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
       })
 
       setTimeout(() => {
-        if (accountRole === 'COMPANY') {
-          router.push('/login')
-        } else {
-          router.push('/dashboard')
-        }
+        router.push('/dashboard')
       }, 2000)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Error al registrar usuario.'
@@ -382,20 +440,26 @@ export function useRegisterForm(): UseRegisterFormReturn {
     setAlert(null)
 
     if (accountRole === 'COMPANY') {
-      if (validateStep1()) {
-        void doRegister()
+      if (step === 1) {
+        handleNext()
+        return
       }
-      return
+      if (step === 2) {
+        if (validateStep1()) {
+          void doRegister()
+        }
+        return
+      }
     }
 
-    if (step < 3) {
-      handleNext()
-      return
+    if (accountRole === 'CLIENT') {
+      if (step < 3) {
+        handleNext()
+        return
+      }
+      if (!validateStep3()) return
+      void doRegister()
     }
-
-    if (!validateStep3()) return
-
-    void doRegister()
   }
 
   return {
@@ -404,6 +468,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
     userFields,
     personalFields,
     employmentFields,
+    companyFields,
     countryCode,
     operatorPrefix,
     phoneDisplay,
@@ -418,6 +483,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
     updateUserField,
     updatePersonalField,
     updateEmploymentField,
+    updateCompanyField,
     selectRole,
     handleNext,
     handleBack,

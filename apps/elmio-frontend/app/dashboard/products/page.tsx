@@ -1,13 +1,16 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { Plus, Pencil, Search, Trash2, Package, ToggleLeft, ToggleRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { useProducts } from '@/src/hooks/pages/useProducts'
 import type { Product } from '@/src/services/product.service'
+import { authService } from '@/src/services/auth.service'
 
 const TYPE_LABELS: Record<string, string> = {
   PRODUCT: 'Producto',
@@ -21,6 +24,7 @@ const TYPE_LABELS: Record<string, string> = {
  * Consume la lógica encapsulada en el hook useProducts y renderiza una interfaz interactiva premium.
  */
 export default function ProductsPage() {
+  const router = useRouter()
   const {
     products,
     search,
@@ -34,6 +38,13 @@ export default function ProductsPage() {
     resolveCategoryName,
   } = useProducts()
 
+  useEffect(() => {
+    const session = authService.getSession()
+    if (session?.role === 'COMPANY') {
+      router.replace('/dashboard/enterprise/shop')
+    }
+  }, [router])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
@@ -44,9 +55,8 @@ export default function ProductsPage() {
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(n)
-  
-  const getMainPrice = (p: Product) => 
-    p.priceLists.length > 0 ? fmt(p.priceLists[0].amount) : '—'
+
+  const getMainPrice = (p: Product) => (p.priceLists.length > 0 ? fmt(p.priceLists[0].amount) : '—')
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -59,9 +69,7 @@ export default function ProductsPage() {
         </div>
         <div className="flex gap-3">
           <Link href="/dashboard/products/categories">
-            <Button variant="ghost">
-              Gestionar Categorías
-            </Button>
+            <Button variant="ghost">Gestionar Categorías</Button>
           </Link>
           <Link href="/dashboard/products/new">
             <Button>

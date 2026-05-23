@@ -21,7 +21,10 @@ const CLIENT_STEPS = [
   { id: 3, title: 'Laboral', icon: Briefcase },
 ]
 
-const COMPANY_STEPS = [{ id: 1, title: 'Datos de acceso', icon: Building2 }]
+const COMPANY_STEPS = [
+  { id: 1, title: 'Datos de empresa', icon: Building2 },
+  { id: 2, title: 'Datos de acceso', icon: User },
+]
 
 /**
  * Organismo que renderiza el formulario de registro.
@@ -36,6 +39,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
     userFields,
     personalFields,
     employmentFields,
+    companyFields,
     countryCode,
     operatorPrefix,
     phoneDisplay,
@@ -50,6 +54,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
     updateUserField,
     updatePersonalField,
     updateEmploymentField,
+    updateCompanyField,
     selectRole,
     handleNext,
     handleBack,
@@ -117,14 +122,11 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
           <form onSubmit={handleSubmit}>
             <div ref={contentRef} className="flex flex-col gap-4">
-              {/* Step 1: Account data */}
-              {step === 1 && (
+              {/* Step 1: Client Account data */}
+              {step === 1 && accountRole === 'CLIENT' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      label={accountRole === 'COMPANY' ? 'Nombre del representante' : 'Nombre'}
-                      required
-                    >
+                    <FormField label="Nombre" required>
                       <Input
                         placeholder="Juan"
                         value={userFields.first_name}
@@ -152,32 +154,157 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                     />
                   </FormField>
 
-                  {accountRole === 'CLIENT' && (
-                    <>
-                      <FormField label="Cedula de identidad" required>
-                        <CedulaInput
-                          value={{
-                            letter: userFields.document_letter as CedulaValue['letter'],
-                            digits: userFields.document_digits,
-                          }}
-                          onChange={(v) => {
-                            updateUserField('document_letter', v.letter)
-                            updateUserField('document_digits', v.digits)
-                          }}
-                        />
-                      </FormField>
-                      <FormField label="Telefono">
-                        <PhoneInput
-                          displayValue={phoneDisplay}
-                          onChange={handlePhoneChange}
-                          countryCode={countryCode}
-                          onCountryCodeChange={setCountryCode}
-                          operatorPrefix={operatorPrefix}
-                          onOperatorPrefixChange={setOperatorPrefix}
-                        />
-                      </FormField>
-                    </>
-                  )}
+                  <FormField label="Cedula de identidad" required>
+                    <CedulaInput
+                      value={{
+                        letter: userFields.document_letter as CedulaValue['letter'],
+                        digits: userFields.document_digits,
+                      }}
+                      onChange={(v) => {
+                        updateUserField('document_letter', v.letter)
+                        updateUserField('document_digits', v.digits)
+                      }}
+                    />
+                  </FormField>
+                  
+                  <FormField label="Telefono">
+                    <PhoneInput
+                      displayValue={phoneDisplay}
+                      onChange={handlePhoneChange}
+                      countryCode={countryCode}
+                      onCountryCodeChange={setCountryCode}
+                      operatorPrefix={operatorPrefix}
+                      onOperatorPrefixChange={setOperatorPrefix}
+                    />
+                  </FormField>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField label="Contrasena" required>
+                      <PasswordInput
+                        placeholder="Minimo 8 caracteres"
+                        value={userFields.password}
+                        onChange={(e) => updateUserField('password', e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </FormField>
+                    <FormField label="Confirmar contrasena" required>
+                      <PasswordInput
+                        placeholder="Repite tu contrasena"
+                        value={userFields.password_confirm}
+                        onChange={(e) => updateUserField('password_confirm', e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </FormField>
+                  </div>
+                </>
+              )}
+
+              {/* Step 1: Company data (COMPANY only) */}
+              {step === 1 && accountRole === 'COMPANY' && (
+                <>
+                  <FormField label="Razon social" required>
+                    <Input
+                      placeholder="Mi Empresa C.A."
+                      value={companyFields.companyName}
+                      onChange={(e) => updateCompanyField('companyName', e.target.value)}
+                    />
+                  </FormField>
+
+                  <FormField label="RIF" required>
+                    <div className="flex gap-2 w-full">
+                      <select
+                        value={companyFields.taxId_letter}
+                        onChange={(e) => updateCompanyField('taxId_letter', e.target.value)}
+                        className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-body transition-all duration-200 outline-none focus:border-border-focus focus:ring-2 focus:ring-ring/20 w-20 flex-shrink-0 appearance-none"
+                      >
+                        <option value="J">J</option>
+                        <option value="G">G</option>
+                        <option value="V">V</option>
+                        <option value="E">E</option>
+                      </select>
+                      <Input
+                        placeholder="12345678-2"
+                        value={companyFields.taxId_digits}
+                        onChange={(e) => updateCompanyField('taxId_digits', e.target.value)}
+                      />
+                    </div>
+                  </FormField>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField label="Sector" required>
+                      <Select
+                        value={companyFields.sector}
+                        onChange={(v) => updateCompanyField('sector', v)}
+                        placeholder="Seleccionar"
+                        options={[
+                          { value: 'Tecnologia', label: 'Tecnologia' },
+                          { value: 'Finanzas', label: 'Finanzas' },
+                          { value: 'Salud', label: 'Salud' },
+                          { value: 'Educacion', label: 'Educacion' },
+                          { value: 'Comercio', label: 'Comercio' },
+                          { value: 'Construccion', label: 'Construccion' },
+                          { value: 'Manufactura', label: 'Manufactura' },
+                          { value: 'Servicios', label: 'Servicios' },
+                          { value: 'Gobierno', label: 'Gobierno' },
+                          { value: 'Otro', label: 'Otro' },
+                        ]}
+                      />
+                    </FormField>
+                    <FormField label="Numero de empleados" required>
+                      <Input
+                        type="number"
+                        placeholder="10"
+                        value={companyFields.employeeCount}
+                        onChange={(e) => updateCompanyField('employeeCount', e.target.value)}
+                        min="1"
+                      />
+                    </FormField>
+                  </div>
+
+                  <FormField label="Telefono de la empresa">
+                    <PhoneInput
+                      displayValue={phoneDisplay}
+                      onChange={handlePhoneChange}
+                      countryCode={countryCode}
+                      onCountryCodeChange={setCountryCode}
+                      operatorPrefix={operatorPrefix}
+                      onOperatorPrefixChange={setOperatorPrefix}
+                    />
+                  </FormField>
+                </>
+              )}
+
+              {/* Step 2: Access data (COMPANY only) */}
+              {step === 2 && accountRole === 'COMPANY' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField label="Nombre del representante" required>
+                      <Input
+                        placeholder="Juan"
+                        value={userFields.first_name}
+                        onChange={(e) => updateUserField('first_name', e.target.value)}
+                        autoComplete="given-name"
+                      />
+                    </FormField>
+                    <FormField label="Apellido">
+                      <Input
+                        placeholder="Perez"
+                        value={userFields.last_name}
+                        onChange={(e) => updateUserField('last_name', e.target.value)}
+                        autoComplete="family-name"
+                      />
+                    </FormField>
+                  </div>
+
+                  <FormField label="Correo electronico" required>
+                    <Input
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      value={userFields.email}
+                      onChange={(e) => updateUserField('email', e.target.value)}
+                      autoComplete="email"
+                    />
+                  </FormField>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField label="Contrasena" required>
@@ -431,7 +558,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 <Button type="button" variant="ghost" fullWidth onClick={handleBack}>
                   Anterior
                 </Button>
-                {accountRole === 'COMPANY' || step === 3 ? (
+                {(accountRole === 'COMPANY' && step === 2) || step === 3 ? (
                   <Button type="submit" fullWidth isLoading={isLoading}>
                     {isLoading ? 'Registrando...' : 'Crear cuenta'}
                   </Button>

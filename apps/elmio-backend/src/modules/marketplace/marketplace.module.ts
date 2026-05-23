@@ -11,6 +11,7 @@ import { MARKETPLACE_REPOSITORY_PORT } from './domain/ports/marketplace-reposito
 import { DbMarketplaceRepositoryService } from './infrastructure/db-marketplace-repository.service';
 import { MarketplaceEntity } from './infrastructure/entities/marketplace.entity';
 import { MarketplaceController } from './presentation/http/marketplace.controller';
+import { MarketplaceSeedService } from './infrastructure/marketplace-seed.service';
 
 /**
  * Modulo que agrupa la feature de configuracion de marketplaces.
@@ -30,6 +31,7 @@ import { MarketplaceController } from './presentation/http/marketplace.controlle
     UpdateMarketplaceUseCase,
     DeleteMarketplaceUseCase,
     DbMarketplaceRepositoryService,
+    MarketplaceSeedService,
     {
       provide: MARKETPLACE_REPOSITORY_PORT,
       useClass: DbMarketplaceRepositoryService,

@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { Plus, Pencil, ExternalLink, Search, ShieldAlert, Trash2, X } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 import { useMarketplaces } from '@/src/hooks/pages/useMarketplaces'
+import { authService } from '@/src/services/auth.service'
+import { useRouter } from 'next/navigation'
 
 /**
  * Página de listado y gestión multiversión de marketplaces.
@@ -13,6 +16,7 @@ import { useMarketplaces } from '@/src/hooks/pages/useMarketplaces'
  * Consume la lógica de negocio desacoplada del hook useMarketplaces.
  */
 export default function MarketplacesPage() {
+  const router = useRouter()
   const {
     search,
     setSearch,
@@ -25,8 +29,6 @@ export default function MarketplacesPage() {
     setNuevoSlug,
     nuevaDesc,
     setNuevaDesc,
-    nuevoPropietario,
-    setNuevoPropietario,
     errorModal,
     guardando,
     activarMarketplace,
@@ -36,6 +38,13 @@ export default function MarketplacesPage() {
     esAdmin,
   } = useMarketplaces()
 
+  useEffect(() => {
+    const session = authService.getSession()
+    if (session?.role === 'COMPANY') {
+      router.replace('/dashboard/enterprise/shop')
+    }
+  }, [router])
+
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
@@ -43,8 +52,8 @@ export default function MarketplacesPage() {
         <div>
           <h1 className="text-2xl font-semibold text-body mb-1">Configuración de Marketplaces</h1>
           <p className="text-sm text-gray-500">
-            {esAdmin 
-              ? 'Administra las configuraciones principales y de todos los aliados' 
+            {esAdmin
+              ? 'Administra las configuraciones principales y de todos los aliados'
               : 'Administra tus múltiples configuraciones y rota la versión activa'}
           </p>
         </div>
@@ -100,7 +109,7 @@ export default function MarketplacesPage() {
               </thead>
               <tbody>
                 {filtered.map((m) => {
-                  const publicUrl = m.propietario ? `/marketplace/${m.slug}` : `/${m.slug}`;
+                  const publicUrl = m.propietario ? `/marketplace/${m.slug}` : `/${m.slug}`
                   return (
                     <tr
                       key={m.id}
@@ -110,7 +119,9 @@ export default function MarketplacesPage() {
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-body">{m.nombre}</span>
                           {m.descripcion && (
-                            <span className="text-xs text-gray-400 line-clamp-1">{m.descripcion}</span>
+                            <span className="text-xs text-gray-400 line-clamp-1">
+                              {m.descripcion}
+                            </span>
                           )}
                         </div>
                       </td>
@@ -151,7 +162,10 @@ export default function MarketplacesPage() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {esAdmin && m.propietario && (
-                            <div className="flex items-center gap-1 text-amber-500 mr-2" title="Advertencia: Editando como Admin">
+                            <div
+                              className="flex items-center gap-1 text-amber-500 mr-2"
+                              title="Advertencia: Editando como Admin"
+                            >
                               <ShieldAlert className="w-4 h-4" />
                             </div>
                           )}
@@ -182,7 +196,7 @@ export default function MarketplacesPage() {
                         </div>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             </table>
@@ -202,14 +216,14 @@ export default function MarketplacesPage() {
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full border border-gray-100 overflow-hidden animate-scale-up">
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <h2 className="text-lg font-semibold text-body">Crear Nueva Configuración</h2>
-              <button 
+              <button
                 onClick={() => setModalAbierto(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-5 h-5" strokeWidth={1.5} />
               </button>
             </div>
-            
+
             <form onSubmit={(e) => void handleCrear(e)} className="p-6 flex flex-col gap-4">
               {errorModal && (
                 <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded-lg">
@@ -256,26 +270,10 @@ export default function MarketplacesPage() {
                 />
               </div>
 
-              {esAdmin && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    ID Propietario (Aliado) - Opcional
-                  </label>
-                  <Input
-                    placeholder="Dejar vacío para Empresa Principal"
-                    value={nuevoPropietario}
-                    onChange={(e) => setNuevoPropietario(e.target.value)}
-                  />
-                  <p className="text-[10px] text-gray-400 italic">
-                    Como Administrador Global, puedes asignar esta configuración a un aliado ingresando su identificador.
-                  </p>
-                </div>
-              )}
-
               <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   onClick={() => setModalAbierto(false)}
                   disabled={guardando}
                 >
