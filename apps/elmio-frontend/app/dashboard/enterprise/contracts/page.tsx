@@ -1,27 +1,92 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Download, FileText, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { FileText, Plus, Files, FolderArchive } from 'lucide-react'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Button } from '@/components/atoms/Button/Button'
-import { Input } from '@/components/atoms/Input/Input'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
-import { FormField } from '@/components/molecules/FormField/FormField'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 import { useContracts } from '@/src/hooks/pages/useContracts'
-import { enterpriseService } from '@/src/services/empresa.service'
+import { ContractModal } from './components/ContractModal'
+import { ContractTable } from './components/ContractTable'
+import type { Contract } from '@/src/services/empresa.service'
 
 /**
- * Pantalla de contratos empresariales con soporte de multiples archivos por contrato.
- * Permite crear, renombrar, agregar archivos, descargar y eliminar contratos o archivos.
+ * Pantalla de contratos empresariales optimizada y adaptada a tabla.
+ * Permite gestionar contratos y archivos asociados con una interfaz limpia de Modal y Tabla Expandible.
  * @returns Vista CRUD de contratos para la empresa autenticada.
  */
 export default function EnterpriseContractsPage() {
-  const { enterprise, contracts, loading, submitting, error, successMsg, createContract, updateContract, removeContract, removeContractFile } = useContracts()
-  const [newName, setNewName] = useState('')
-  const [newFiles, setNewFiles] = useState<File[]>([])
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editingName, setEditingName] = useState('')
-  const [editingFiles, setEditingFiles] = useState<File[]>([])
+  const {
+    enterprise,
+    contracts,
+    loading,
+    submitting,
+    error,
+    successMsg,
+    createContract,
+    updateContract,
+    removeContract,
+    removeContractFile,
+  } = useContracts()
+
+  // Estados para controlar el modal de creación y edición
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
+
+  // Estados para el modal de confirmación SweetAlert
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'contract' | 'file' | null>(null)
+  const [contractIdToDelete, setContractIdToDelete] = useState<string | null>(null)
+  const [fileIdToDelete, setFileIdToDelete] = useState<string | null>(null)
+  const [borrando, setBorrando] = useState(false)
+
+  const openDeleteContractConfirm = (contractId: string) => {
+    setConfirmAction('contract')
+    setContractIdToDelete(contractId)
+    setFileIdToDelete(null)
+    setIsConfirmOpen(true)
+  }
+
+  const openDeleteFileConfirm = (contractId: string, fileId: string) => {
+    setConfirmAction('file')
+    setContractIdToDelete(contractId)
+    setFileIdToDelete(fileId)
+    setIsConfirmOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!contractIdToDelete) return
+    try {
+      setBorrando(true)
+      if (confirmAction === 'contract') {
+        await removeContract(contractIdToDelete)
+      } else if (confirmAction === 'file' && fileIdToDelete) {
+        await removeContractFile(contractIdToDelete, fileIdToDelete)
+        
+        // Si el modal de edición del contrato está abierto y se está borrando un archivo del selectedContract, 
+        // actualizamos reactivamente la lista de archivos visibles en el modal también
+        if (selectedContract && selectedContract.id === contractIdToDelete) {
+          setSelectedContract((prev) => {
+            if (!prev) return null
+            return {
+              ...prev,
+              files: prev.files.filter((f) => f.id !== fileIdToDelete),
+            }
+          })
+        }
+      }
+      setIsConfirmOpen(false)
+      setContractIdToDelete(null)
+      setFileIdToDelete(null)
+      setConfirmAction(null)
+    } catch {
+      // Los errores ya los maneja el hook useContracts
+    } finally {
+      setBorrando(false)
+    }
+  }
 
   const totalFiles = useMemo(
     () => contracts.reduce((sum, contract) => sum + contract.files.length, 0),
@@ -36,234 +101,136 @@ export default function EnterpriseContractsPage() {
     )
   }
 
-  const resetCreateForm = () => {
-    setNewName('')
-    setNewFiles([])
+  const openCreateModal = () => {
+    setModalMode('create')
+    setSelectedContract(null)
+    setIsModalOpen(true)
   }
 
-  const startEditing = (contractId: string, name: string) => {
-    setEditingId(contractId)
-    setEditingName(name)
-    setEditingFiles([])
+  const openEditModal = (contract: Contract) => {
+    setModalMode('edit')
+    setSelectedContract(contract)
+    setIsModalOpen(true)
   }
 
-  const cancelEditing = () => {
-    setEditingId(null)
-    setEditingName('')
-    setEditingFiles([])
+  const handleModalSubmit = async (name: string, files: File[]) => {
+    try {
+      if (modalMode === 'create') {
+        await createContract(name, files)
+      } else if (modalMode === 'edit' && selectedContract) {
+        await updateContract(selectedContract.id, {
+          name,
+          files: files.length > 0 ? files : undefined,
+        })
+      }
+      setIsModalOpen(false)
+      setSelectedContract(null)
+    } catch {
+      // Los errores ya los maneja el hook useContracts y los guarda en 'error'
+    }
   }
 
-  const handleCreate = async () => {
-    await createContract(newName, newFiles)
-    resetCreateForm()
-  }
-
-  const handleUpdate = async (contractId: string) => {
-    await updateContract(contractId, {
-      name: editingName,
-      files: editingFiles,
-    })
-    cancelEditing()
+  const handleRemoveExistingFile = (fileId: string) => {
+    if (!selectedContract) return
+    openDeleteFileConfirm(selectedContract.id, fileId)
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      {/* Fila 1: Título principal y Botón "+ Nuevo Contrato" alineados */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-50 pb-5">
         <div>
-          <h1 className="text-xl font-bold text-body">Contratos</h1>
-          <p className="text-sm text-body-muted">
-            Gestiona contratos empresariales, agrega multiples archivos y manten su documentacion organizada.
+          <h1 className="text-2xl font-bold text-body tracking-tight">Contratos</h1>
+          <p className="text-sm text-body-muted mt-1">
+            Gestiona contratos empresariales, agrega múltiples archivos y mantén su documentación organizada.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:flex">
-          <div className="rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm shadow-black/3">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-body-muted">Contratos</p>
-            <p className="mt-1 text-xl font-bold text-body">{contracts.length}</p>
+        
+        <Button onClick={openCreateModal} className="shadow-lg shadow-secondary/15 shrink-0 self-start sm:self-auto">
+          <Plus className="h-4.5 w-4.5 mr-1.5" strokeWidth={2} /> Nuevo contrato
+        </Button>
+      </div>
+
+      {/* Fila 2: Tarjetas de estadísticas (Cards) independientes con diseño premium */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {/* Card Contratos */}
+        <div className="flex items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-4.5 shadow-sm shadow-black/3 transition-all duration-300 hover:shadow-md">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary/8 text-secondary">
+            <FolderArchive className="h-5.5 w-5.5" strokeWidth={1.5} />
           </div>
-          <div className="rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm shadow-black/3">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-body-muted">Archivos</p>
-            <p className="mt-1 text-xl font-bold text-body">{totalFiles}</p>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-body-muted">Contratos</p>
+            <p className="text-xl font-extrabold text-body leading-none mt-1">{contracts.length}</p>
+          </div>
+        </div>
+
+        {/* Card Archivos */}
+        <div className="flex items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-4.5 shadow-sm shadow-black/3 transition-all duration-300 hover:shadow-md">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-50/50">
+            <Files className="h-5.5 w-5.5" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-body-muted">Archivos</p>
+            <p className="text-xl font-extrabold text-body leading-none mt-1">{totalFiles}</p>
           </div>
         </div>
       </div>
 
+      {/* Alertas */}
       {error && <Alert type="error" message={error} />}
       {successMsg && <Alert type="success" message={successMsg} />}
 
-      <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3">
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
-            <Plus className="h-5 w-5" strokeWidth={1.5} />
+      {/* Listado de Contratos en Tabla Premium Expandible */}
+      {contracts.length === 0 ? (
+        <div className="rounded-2xl border border-gray-100 bg-white p-16 text-center shadow-sm shadow-black/3">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 text-gray-300">
+            <FileText className="h-7 w-7" strokeWidth={1.5} />
           </div>
-          <div>
-            <h2 className="text-base font-semibold text-body">Nuevo contrato</h2>
-            <p className="text-sm text-body-muted">
-              Crea un contrato con un nombre y uno o varios archivos adjuntos.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
-          <FormField label="Nombre del contrato" required>
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Ej: Contrato marco 2026"
-            />
-          </FormField>
-
-          <FormField label="Archivos" required>
-            <label className="flex min-h-11 cursor-pointer items-center justify-between rounded-xl border border-gray-200 px-3 py-2 text-sm text-body transition-all hover:border-border-focus hover:bg-gray-50">
-              <span className="truncate pr-3 text-body-muted">
-                {newFiles.length > 0
-                  ? `${newFiles.length} archivo(s) seleccionado(s)`
-                  : 'Selecciona uno o varios archivos'}
-              </span>
-              <Upload className="h-4 w-4 flex-shrink-0 text-body-muted" strokeWidth={1.5} />
-              <input
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => setNewFiles(Array.from(e.target.files ?? []))}
-              />
-            </label>
-          </FormField>
-
-          <Button onClick={() => void handleCreate()} disabled={submitting}>
-            Crear contrato
+          <h3 className="text-base font-semibold text-body">No hay contratos registrados</h3>
+          <p className="mt-1 text-sm text-body-muted max-w-sm mx-auto">
+            Comienza subiendo tu primer contrato comercial o marco para organizar los documentos de tu empresa.
+          </p>
+          <Button onClick={openCreateModal} variant="ghost" className="mt-5 border border-gray-200">
+            <Plus className="h-4.5 w-4.5 mr-1" strokeWidth={2} /> Crear el primero
           </Button>
         </div>
-      </section>
-
-      {contracts.length === 0 ? (
-        <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center shadow-sm shadow-black/3">
-          <FileText className="mx-auto mb-3 h-10 w-10 text-gray-300" strokeWidth={1.5} />
-          <p className="text-sm font-medium text-body-muted">No hay contratos registrados.</p>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {contracts.map((contract) => {
-            const isEditing = editingId === contract.id
-
-            return (
-              <article
-                key={contract.id}
-                className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3"
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-body-muted">
-                      {enterprise?.companyName ?? 'Empresa'}
-                    </p>
-                    <h2 className="mt-1 text-lg font-semibold text-body">{contract.name}</h2>
-                    <p className="mt-1 text-sm text-body-muted">
-                      {contract.files.length} archivo(s) asociado(s)
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {isEditing ? (
-                      <>
-                        <Button variant="ghost" onClick={cancelEditing} disabled={submitting}>
-                          Cancelar
-                        </Button>
-                        <Button onClick={() => void handleUpdate(contract.id)} disabled={submitting}>
-                          Guardar cambios
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          variant="ghost"
-                          onClick={() => startEditing(contract.id, contract.name)}
-                          disabled={submitting}
-                        >
-                          <Pencil className="h-4 w-4" strokeWidth={1.5} /> Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => void removeContract(contract.id)}
-                          disabled={submitting}
-                        >
-                          <Trash2 className="h-4 w-4" strokeWidth={1.5} /> Eliminar
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {isEditing && (
-                  <div className="mt-5 grid grid-cols-1 gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                    <FormField label="Nombre del contrato" required>
-                      <Input
-                        value={editingName}
-                        onChange={(e) => setEditingName(e.target.value)}
-                        placeholder="Nombre del contrato"
-                      />
-                    </FormField>
-
-                    <FormField label="Agregar mas archivos">
-                      <label className="flex min-h-11 cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-body transition-all hover:border-border-focus hover:bg-gray-50">
-                        <span className="truncate pr-3 text-body-muted">
-                          {editingFiles.length > 0
-                            ? `${editingFiles.length} archivo(s) listo(s) para agregar`
-                            : 'Selecciona mas archivos para este contrato'}
-                        </span>
-                        <Upload className="h-4 w-4 flex-shrink-0 text-body-muted" strokeWidth={1.5} />
-                        <input
-                          type="file"
-                          multiple
-                          className="hidden"
-                          onChange={(e) => setEditingFiles(Array.from(e.target.files ?? []))}
-                        />
-                      </label>
-                    </FormField>
-                  </div>
-                )}
-
-                <div className="mt-5 overflow-hidden rounded-2xl border border-gray-100">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 bg-gray-50 px-4 py-3 text-xs font-medium uppercase tracking-[0.14em] text-body-muted">
-                    <span>Archivo</span>
-                    <span>Descarga</span>
-                    <span>Accion</span>
-                  </div>
-                  {contract.files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-t border-gray-100 px-4 py-3 text-sm"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-body">{file.originalName}</p>
-                        <p className="truncate text-xs text-body-muted">{file.mimeType}</p>
-                      </div>
-
-                      <a
-                        href={enterprise ? enterpriseService.getContractDownloadUrl(enterprise.taxId, file.fileName) : '#'}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-secondary transition-all hover:bg-secondary/5"
-                      >
-                        <Download className="h-4 w-4" strokeWidth={1.5} />
-                        <span className="hidden sm:inline">Descargar</span>
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={() => void removeContractFile(contract.id, file.id)}
-                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-red-600 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={submitting}
-                      >
-                        <Trash2 className="h-4 w-4" strokeWidth={1.5} />
-                        <span className="hidden sm:inline">Eliminar</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            )
-          })}
-        </div>
+        <ContractTable
+          contracts={contracts}
+          enterprise={enterprise}
+          onEdit={openEditModal}
+          onRemove={openDeleteContractConfirm}
+          onRemoveFile={openDeleteFileConfirm}
+          submitting={submitting}
+        />
       )}
+
+      {/* Modal Reutilizable de Creación y Edición */}
+      <ContractModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleModalSubmit}
+        submitting={submitting}
+        initialName={selectedContract?.name ?? ''}
+        existingFiles={selectedContract?.files ?? []}
+        onRemoveExistingFile={handleRemoveExistingFile}
+        enterprise={enterprise}
+        mode={modalMode}
+      />
+
+      {/* Modal de Confirmación de Borrado estilo SweetAlert */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        isLoading={borrando}
+        title={confirmAction === 'contract' ? '¿Eliminar este contrato?' : '¿Eliminar este archivo?'}
+        description={
+          confirmAction === 'contract'
+            ? 'Esta acción no se puede deshacer. Se eliminará el contrato y todos sus archivos asociados de forma permanente.'
+            : 'Esta acción no se puede deshacer. Se eliminará el documento seleccionado del contrato.'
+        }
+      />
     </div>
   )
 }

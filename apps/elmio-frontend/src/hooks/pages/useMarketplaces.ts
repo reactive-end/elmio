@@ -85,13 +85,12 @@ export function useMarketplaces() {
 
   // Eliminar una versión inactiva
   const eliminarMarketplace = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta versión de configuración?')) return
     try {
       setCargando(true)
       await marketplaceService.delete(id)
       await cargarMarketplaces()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al eliminar.')
+      throw err
     } finally {
       setCargando(false)
     }

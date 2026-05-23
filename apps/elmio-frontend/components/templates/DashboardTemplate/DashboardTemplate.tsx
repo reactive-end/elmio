@@ -80,10 +80,19 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
           }
           setLoadingGate(false)
         })
-        .catch(() => {
-          setMustCompleteOnboarding(true)
-          if (pathname !== '/dashboard/enterprise/onboarding') {
-            router.push('/dashboard/enterprise/onboarding')
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : ''
+          // Solo redirigir a onboarding si el error indica explícitamente que la empresa no existe
+          const isNoEnterprise = message.toLowerCase().includes('no se encontr')
+          
+          if (isNoEnterprise) {
+            setMustCompleteOnboarding(true)
+            if (pathname !== '/dashboard/enterprise/onboarding') {
+              router.push('/dashboard/enterprise/onboarding')
+            }
+          } else {
+            // Si es otro error (error de conexión, de sesión, 500, etc.), NO asumimos onboarding incompleto
+            setMustCompleteOnboarding(false)
           }
           setLoadingGate(false)
         })

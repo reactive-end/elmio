@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Pencil, ExternalLink, Search, ShieldAlert, Trash2, X } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 import { useMarketplaces } from '@/src/hooks/pages/useMarketplaces'
 import { authService } from '@/src/services/auth.service'
 import { useRouter } from 'next/navigation'
@@ -37,6 +38,33 @@ export default function MarketplacesPage() {
     filtered,
     esAdmin,
   } = useMarketplaces()
+
+  // Estados locales para el modal de confirmación SweetAlert
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(null)
+  const [borrando, setBorrando] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const openDeleteConfirm = (id: string) => {
+    setSelectedIdToDelete(id)
+    setDeleteError(null)
+    setIsConfirmOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedIdToDelete) return
+    try {
+      setBorrando(true)
+      setDeleteError(null)
+      await eliminarMarketplace(selectedIdToDelete)
+      setIsConfirmOpen(false)
+      setSelectedIdToDelete(null)
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Error al eliminar el marketplace.')
+    } finally {
+      setBorrando(false)
+    }
+  }
 
   useEffect(() => {
     const session = authService.getSession()
@@ -186,7 +214,7 @@ export default function MarketplacesPage() {
                           </Link>
                           {!m.activo && (
                             <button
-                              onClick={() => void eliminarMarketplace(m.id)}
+                              onClick={() => openDeleteConfirm(m.id)}
                               className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors border border-transparent hover:border-red-100"
                               title="Eliminar esta versión"
                             >
@@ -287,6 +315,20 @@ export default function MarketplacesPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmación de Borrado estilo SweetAlert */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        isLoading={borrando}
+        title="¿Eliminar esta versión?"
+        description={
+          deleteError 
+            ? deleteError 
+            : "Esta acción no se puede deshacer. Se eliminará la configuración de este marketplace de forma permanente."
+        }
+      />
     </div>
   )
 }
