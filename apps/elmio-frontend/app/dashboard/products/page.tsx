@@ -208,7 +208,7 @@ export default function ProductsPage() {
                           )}
                         </button>
                         <Link
-                          href={`/dashboard/products/new`}
+                          href={`/dashboard/products/new?id=${p.id}`}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-secondary hover:bg-secondary/5 transition-colors"
                           title="Editar"
                         >

@@ -47,6 +47,9 @@ export class ProductEntity {
   @Column({ type: 'boolean', default: true })
   active!: boolean;
 
+  @Column({ type: 'boolean', default: true })
+  hasStock!: boolean;
+
   @Column({ type: 'int', default: 0 })
   currentStock!: number;
 
@@ -83,14 +86,26 @@ export class ProductEntity {
   @Column({ type: 'varchar', length: 50 })
   paymentMode!: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  paymentPeriod!: string | null;
+
   @Column({ type: 'int', default: 0 })
   maxQuotas!: number;
+
+  @Column({ type: 'varchar', length: 50, default: 'none' })
+  interestType!: string;
 
   @Column({ type: 'float', default: 0 })
   interestRate!: number;
 
+  @Column({ type: 'float', default: 0 })
+  initialPayment!: number;
+
   @Column({ type: 'boolean', default: false })
   usesThirdPartyPricing!: boolean;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  globalThirdPartyProvider!: string | null;
 
   @Column({
     type: 'text',

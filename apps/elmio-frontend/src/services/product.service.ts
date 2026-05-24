@@ -76,6 +76,7 @@ export interface Product {
   tags: string[]
   images: string[]
   active: boolean
+  hasStock: boolean
   currentStock: number
   minimumStock: number
   hasValidity: boolean
@@ -85,9 +86,13 @@ export interface Product {
   priceLists: PriceList[]
   discounts: DiscountPeriod[]
   paymentMode: PaymentMode
+  paymentPeriod?: string | null
   maxQuotas: number
+  interestType: 'none' | 'percentage' | 'fixed'
   interestRate: number
+  initialPayment: number
   usesThirdPartyPricing: boolean
+  globalThirdPartyProvider: string | null
   windows: ProductWindow[]
   marketplaceId: string | null
   createdAt: string
@@ -102,6 +107,7 @@ export interface CreateProductInput {
   category: string
   tags: string[]
   images: string[]
+  hasStock?: boolean
   currentStock: number
   minimumStock: number
   hasValidity: boolean
@@ -111,12 +117,18 @@ export interface CreateProductInput {
   priceLists: Omit<PriceList, 'id'>[]
   discounts: Omit<DiscountPeriod, 'id'>[]
   paymentMode: PaymentMode
+  paymentPeriod?: string | null
   maxQuotas: number
+  interestType?: 'none' | 'percentage' | 'fixed'
   interestRate: number
+  initialPayment?: number
   usesThirdPartyPricing: boolean
+  globalThirdPartyProvider?: string | null
   windows: Omit<ProductWindow, 'id'>[]
   marketplaceId: string | null
 }
+
+export type UpdateProductInput = Partial<Product> | CreateProductInput
 
 // --- Helpers ---
 
@@ -157,7 +169,7 @@ export const productService = {
     return (await res.json()) as Product
   },
 
-  async update(id: string, data: Partial<Product>): Promise<Product> {
+  async update(id: string, data: UpdateProductInput): Promise<Product> {
     const res = await authedFetch(`/products/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

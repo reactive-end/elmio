@@ -15,4 +15,6 @@ export interface CedulaInputProps {
   onChange?: (value: CedulaValue) => void
   /** Texto del placeholder para el campo numerico. */
   placeholder?: string
+  /** Letras permitidas para este contexto. Si no se define, usa V/E/G. */
+  allowedLetters?: CedulaLetter[]
 }

@@ -124,6 +124,7 @@ export interface Product {
   active: boolean;
 
   /** Inventario */
+  hasStock: boolean;
   currentStock: number;
   minimumStock: number;
   hasValidity: boolean;
@@ -139,9 +140,13 @@ export interface Product {
 
   /** Configuracion de pago */
   paymentMode: PaymentMode;
+  paymentPeriod: string | null;
   maxQuotas: number;
+  interestType: 'none' | 'percentage' | 'fixed';
   interestRate: number;
+  initialPayment: number;
   usesThirdPartyPricing: boolean;
+  globalThirdPartyProvider: string | null;
 
   /** Ventanas/acciones que el producto invoca */
   windows: ProductWindow[];

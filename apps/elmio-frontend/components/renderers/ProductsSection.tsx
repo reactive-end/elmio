@@ -32,19 +32,18 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
         
         if (cancelado) return
 
-        // Filtrar solo productos activos
-        const activeProducts = allProducts.filter((p) => p.active)
+        // Cargar todos los productos (activos e inactivos)
+        const allLoadedProducts = allProducts
         
         let filtered: any[] = []
         const hasSpecificIds = contenido.productosIds && contenido.productosIds.length > 0
-        const isAutoPopulate = contenido.autoPoblarProductos === true
         
         if (hasSpecificIds) {
           // Filtrar por IDs específicos indicados en el editor
-          filtered = activeProducts.filter((p) => contenido.productosIds.includes(p.id))
+          filtered = allLoadedProducts.filter((p) => contenido.productosIds.includes(p.id))
         } else {
-          // Mostrar todos los activos si es auto-poblar o si no hay elementos manuales
-          filtered = activeProducts
+          // Mostrar todos si es auto-poblar o si no hay elementos manuales
+          filtered = allLoadedProducts
         }
 
         // Mapear los productos reales al formato compatible de ElementoSeccion
@@ -59,8 +58,9 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
             descripcion: p.description || '',
             imagenUrl: p.images?.[0] || '',
             enlaceUrl: priceStr, // Usamos la etiqueta para mostrar el precio formateado
-            textoBoton: p.type === 'LOAN' ? 'Solicitar' : 'Comprar',
-            enlaceBoton: `/dashboard/enterprise/shop?product=${p.id}`,
+            textoBoton: !p.active ? 'No disponible' : p.type === 'LOAN' ? 'Solicitar' : 'Comprar',
+            enlaceBoton: p.active ? `/dashboard/enterprise/shop?product=${p.id}` : null,
+            active: p.active,
           }
         })
         
@@ -211,7 +211,9 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {productos.map((producto) => (
                 <div
                   key={producto.id}
-                  className="shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white"
+                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all ${
+                    producto.active === false ? 'opacity-65 bg-gray-50/30' : ''
+                  }`}
                   style={{
                     width: anchoTarjeta,
                     backgroundColor: estilo.tarjetaColorFondo || '#ffffff',
@@ -235,6 +237,11 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       <div className="flex h-full items-center justify-center text-[10px] text-gray-400 font-semibold bg-gray-50 uppercase tracking-wider">
                         Sin imagen
                       </div>
+                    )}
+                    {producto.active === false && (
+                      <span className="absolute top-3 left-3 rounded-full bg-gray-900/85 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm backdrop-blur-sm">
+                        Inactivo
+                      </span>
                     )}
                   </div>
                   <div className="p-4">
@@ -273,17 +280,13 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       ) : (
                         <button
                           type="button"
-                          className="block w-full py-2 text-center text-sm font-medium transition-colors cursor-pointer"
+                          disabled
+                          className="block w-full py-2 text-center text-sm font-medium transition-colors opacity-50 cursor-not-allowed bg-gray-100 text-gray-400 border-none"
                           style={{
-                            backgroundColor: estilo.botonColorFondo || '#0f4ece',
-                            color: estilo.botonColorTexto || '#fff',
                             borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
-                            borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
-                            borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
-                            borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
                           }}
                         >
-                          {producto.textoBoton || 'Ver detalle'}
+                          {producto.textoBoton || 'No disponible'}
                         </button>
                       )}
                     </div>

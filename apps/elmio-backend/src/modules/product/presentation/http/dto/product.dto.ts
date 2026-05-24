@@ -18,6 +18,7 @@ export class CreateProductDto {
   category!: string;
   tags!: string[];
   images!: string[];
+  hasStock?: boolean;
   currentStock!: number;
   minimumStock!: number;
   hasValidity!: boolean;
@@ -27,9 +28,13 @@ export class CreateProductDto {
   priceLists!: Omit<PriceList, 'id'>[];
   discounts!: Omit<DiscountPeriod, 'id'>[];
   paymentMode!: PaymentMode;
+  paymentPeriod?: string | null;
   maxQuotas!: number;
+  interestType?: 'none' | 'percentage' | 'fixed';
   interestRate!: number;
+  initialPayment?: number;
   usesThirdPartyPricing!: boolean;
+  globalThirdPartyProvider?: string | null;
   windows!: Omit<ProductWindow, 'id'>[];
   marketplaceId!: string | null;
 }
@@ -45,6 +50,7 @@ export class UpdateProductDto {
   tags?: string[];
   images?: string[];
   active?: boolean;
+  hasStock?: boolean;
   currentStock?: number;
   minimumStock?: number;
   hasValidity?: boolean;
@@ -54,9 +60,13 @@ export class UpdateProductDto {
   priceLists?: PriceList[];
   discounts?: DiscountPeriod[];
   paymentMode?: PaymentMode;
+  paymentPeriod?: string | null;
   maxQuotas?: number;
+  interestType?: 'none' | 'percentage' | 'fixed';
   interestRate?: number;
+  initialPayment?: number;
   usesThirdPartyPricing?: boolean;
+  globalThirdPartyProvider?: string | null;
   windows?: ProductWindow[];
   marketplaceId?: string | null;
 }

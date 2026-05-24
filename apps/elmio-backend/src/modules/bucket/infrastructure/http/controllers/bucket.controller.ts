@@ -28,7 +28,10 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { BucketService, type MulterFile } from '../../../application/services/bucket.service';
+import {
+  BucketService,
+  type MulterFile,
+} from '../../../application/services/bucket.service';
 import {
   BucketFileResponseDto,
   MoveFolderDto,
@@ -43,7 +46,7 @@ import {
  */
 @ApiTags('Bucket')
 @ApiBearerAuth()
-@Controller('api/v1/bucket')
+@Controller('bucket')
 export class BucketController {
   /**
    * Crea una instancia del controlador
@@ -61,7 +64,8 @@ export class BucketController {
   @Get('files')
   @ApiOperation({
     summary: 'Listar archivos del bucket',
-    description: 'Obtiene todos los archivos del bucket de GCS, opcionalmente filtrados por carpeta',
+    description:
+      'Obtiene todos los archivos del bucket de GCS, opcionalmente filtrados por carpeta',
   })
   @ApiQuery({
     name: 'folder',
@@ -102,9 +106,7 @@ export class BucketController {
     description: 'Lista de carpetas',
     type: [String],
   })
-  async listFolders(
-    @Query('parent') parent?: string,
-  ): Promise<string[]> {
+  async listFolders(@Query('parent') parent?: string): Promise<string[]> {
     return this.bucketService.listFolders(parent);
   }
 
@@ -118,27 +120,35 @@ export class BucketController {
    */
   @Post('upload')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (_req, file, callback) => {
-      const allowedMimes = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'image/svg+xml',
-      ];
-      if (allowedMimes.includes(file.mimetype)) {
-        callback(null, true);
-      } else {
-        callback(new BadRequestException('Solo se permiten archivos de imagen (jpeg, png, gif, webp, svg)'), false);
-      }
-    },
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (_req, file, callback) => {
+        const allowedMimes = [
+          'image/jpeg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+        ];
+        if (allowedMimes.includes(file.mimetype)) {
+          callback(null, true);
+        } else {
+          callback(
+            new BadRequestException(
+              'Solo se permiten archivos de imagen (jpeg, png, gif, webp, svg)',
+            ),
+            false,
+          );
+        }
+      },
+    }),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Subir archivo al bucket',
-    description: 'Sube una imagen al bucket de GCS con un nombre identificador y carpeta destino',
+    description:
+      'Sube una imagen al bucket de GCS con un nombre identificador y carpeta destino',
   })
   @ApiBody({
     description: 'Archivo de imagen con nombre y carpeta destino',
@@ -193,11 +203,10 @@ export class BucketController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Mover carpeta del bucket',
-    description: 'Mueve todos los archivos de una carpeta/prefijo a otro dentro del bucket',
+    description:
+      'Mueve todos los archivos de una carpeta/prefijo a otro dentro del bucket',
   })
-  async moveFolder(
-    @Body() dto: MoveFolderDto,
-  ): Promise<{ moved: number }> {
+  async moveFolder(@Body() dto: MoveFolderDto): Promise<{ moved: number }> {
     return this.bucketService.moveFolder(dto.from, dto.to);
   }
 
@@ -227,9 +236,7 @@ export class BucketController {
     status: HttpStatus.NOT_FOUND,
     description: 'Archivo no encontrado',
   })
-  async deleteFile(
-    @Query('path') path: string,
-  ): Promise<{ deleted: boolean }> {
+  async deleteFile(@Query('path') path: string): Promise<{ deleted: boolean }> {
     if (!path || path.trim().length === 0) {
       throw new BadRequestException('La ruta del archivo es requerida');
     }

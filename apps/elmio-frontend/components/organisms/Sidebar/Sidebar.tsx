@@ -215,6 +215,7 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return currentPath === '/dashboard'
+    if (href === '/dashboard/products') return currentPath === '/dashboard/products'
     return currentPath.startsWith(href)
   }
 

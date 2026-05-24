@@ -25,9 +25,17 @@ import { authService } from '@/src/services/auth.service'
  * @returns Vista de catalogo y modal de compra para empresas.
  */
 export default function EnterpriseShopPage() {
+  const PRODUCT_TYPE_LABELS = {
+    PRODUCT: 'Producto',
+    SERVICE: 'Servicio',
+    KIT: 'Kit',
+    LOAN: 'Prestamo',
+  } as const
+
   const router = useRouter()
   const session = authService.getSession()
   const {
+    categories,
     filteredProducts,
     loading,
     error,
@@ -39,10 +47,11 @@ export default function EnterpriseShopPage() {
     cancelPurchase,
     setPaymentMethod,
     setPaymentReference,
-    setCustomNotes,
     setDocumentName,
     nextPurchaseStep,
     completePurchase,
+    embeddedFormUrl,
+    closeEmbeddedForm,
   } = useEnterpriseShop()
 
   if (loading) {
@@ -55,6 +64,21 @@ export default function EnterpriseShopPage() {
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(n)
+
+  const PAYMENT_MODE_LABELS = {
+    cash: 'Contado',
+    quota: 'Cuotas',
+    mixed: 'Mixto',
+  } as const
+
+  const resolveCategoryName = (categoryIdOrName: string) => {
+    if (!categoryIdOrName) return '—'
+    const found = categories.find((category) => category.id === categoryIdOrName)
+    return found?.name ?? categoryIdOrName
+  }
+
+  const resolvePaymentModeLabel = (paymentMode: keyof typeof PAYMENT_MODE_LABELS) =>
+    PAYMENT_MODE_LABELS[paymentMode] ?? paymentMode
 
   const orderedWindows = purchaseDraft
     ? [...purchaseDraft.product.windows].sort((a, b) => a.order - b.order)
@@ -113,17 +137,24 @@ export default function EnterpriseShopPage() {
             return (
               <article
                 key={product.id}
-                className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3"
+                className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3 transition-all ${
+                  !product.active ? 'opacity-65 bg-gray-50/30' : ''
+                }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="mb-2 flex items-center gap-2">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">
-                        {product.type}
+                        {PRODUCT_TYPE_LABELS[product.type] ?? product.type}
                       </span>
                       {product.windows.length > 0 && (
                         <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700">
                           {product.windows.length} acciones
+                        </span>
+                      )}
+                      {!product.active && (
+                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">
+                          Desactivado
                         </span>
                       )}
                     </div>
@@ -136,26 +167,46 @@ export default function EnterpriseShopPage() {
                     <p className="text-[11px] uppercase tracking-[0.18em] text-body-muted">
                       Precio
                     </p>
-                    <p className="mt-1 text-lg font-bold text-body">{fmt(price)}</p>
+                    {product.usesThirdPartyPricing ? (
+                      <span className="mt-2 inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                        Precio por consulta
+                      </span>
+                    ) : (
+                      <p className="mt-1 text-lg font-bold text-body">{fmt(price)}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2 text-xs text-body-muted">
                   <span className="rounded-lg bg-gray-100 px-2.5 py-1">SKU: {product.sku}</span>
                   <span className="rounded-lg bg-gray-100 px-2.5 py-1">
-                    Categoria: {product.category}
+                    Categoria: {resolveCategoryName(product.category)}
                   </span>
-                  <span className="rounded-lg bg-gray-100 px-2.5 py-1">
-                    Modo de pago: {product.paymentMode}
-                  </span>
+                  {!product.usesThirdPartyPricing && (
+                    <span className="rounded-lg bg-gray-100 px-2.5 py-1">
+                      Modo de pago: {resolvePaymentModeLabel(product.paymentMode)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-5 flex items-center justify-between gap-4">
                   <p className="text-xs text-body-muted">
-                    La compra se cargara a tu estado de cuenta.
+                    {product.active
+                      ? 'La compra se cargara a tu estado de cuenta.'
+                      : 'Este producto no está disponible temporalmente.'}
                   </p>
-                  <Button onClick={() => startPurchase(product)}>
-                    <ShoppingCart className="h-4 w-4" strokeWidth={1.5} /> Comprar
+                  <Button
+                    onClick={() => startPurchase(product)}
+                    disabled={!product.active}
+                    variant={product.active ? 'primary' : 'ghost'}
+                  >
+                    {product.active ? (
+                      <>
+                        <ShoppingCart className="h-4 w-4" strokeWidth={1.5} /> Comprar
+                      </>
+                    ) : (
+                      'No disponible'
+                    )}
                   </Button>
                 </div>
               </article>
@@ -189,9 +240,13 @@ export default function EnterpriseShopPage() {
             <div className="mt-5 rounded-2xl bg-gray-50 px-4 py-3">
               <p className="text-xs text-body-muted">
                 Precio principal:{' '}
-                <span className="font-semibold text-body">
-                  {fmt(purchaseDraft.product.priceLists[0]?.amount ?? 0)}
-                </span>
+                {purchaseDraft.product.usesThirdPartyPricing ? (
+                  <span className="font-semibold text-body">Precio por consulta</span>
+                ) : (
+                  <span className="font-semibold text-body">
+                    {fmt(purchaseDraft.product.priceLists[0]?.amount ?? 0)}
+                  </span>
+                )}
               </p>
             </div>
 
@@ -238,13 +293,11 @@ export default function EnterpriseShopPage() {
                 )}
 
                 {currentWindow.type === 'custom-form' && (
-                  <FormField label="Notas para la compra">
-                    <Input
-                      value={purchaseDraft.customNotes}
-                      onChange={(e) => setCustomNotes(e.target.value)}
-                      placeholder="Indica cualquier detalle adicional para procesar la orden"
-                    />
-                  </FormField>
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-body-secondary">
+                    {session?.role === 'COMPANY'
+                      ? 'Esta accion abrira la consulta de Mercantil dentro de una modal para que completes el proceso sin salir de la compra.'
+                      : 'La consulta personalizada por ahora esta disponible solo para empresas.'}
+                  </div>
                 )}
 
                 {currentWindow.type === 'document-upload' && (
@@ -299,6 +352,38 @@ export default function EnterpriseShopPage() {
                   Continuar
                 </Button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {purchaseDraft && embeddedFormUrl && session?.role === 'COMPANY' && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" />
+          <div className="relative z-10 flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
+                  Consulta embebida
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-body">Mercantil Seguros</h3>
+                <p className="mt-1 text-sm text-body-muted">
+                  Completa el proceso de consulta mercantil dentro de esta ventana para registrar tu
+                  compra.
+                </p>
+              </div>
+              <Button variant="ghost" onClick={closeEmbeddedForm}>
+                Cerrar
+              </Button>
+            </div>
+
+            <div className="flex-1 bg-gray-50">
+              <iframe
+                title="Consulta Mercantil embebida"
+                src={embeddedFormUrl}
+                className="h-full w-full border-0"
+                allow="clipboard-write"
+              />
             </div>
           </div>
         </div>

@@ -49,8 +49,14 @@ function formatCedulaDigits(raw: string): string {
  * @param initial - Valor inicial opcional de la cedula.
  * @returns Estado, manejadores y metadatos necesarios para renderizar el componente.
  */
-export function useCedulaInput(initial?: CedulaValue) {
-  const [letter, setLetter] = useState<CedulaLetter>(initial?.letter ?? 'V')
+export function useCedulaInput(initial?: CedulaValue, allowedLetters?: CedulaLetter[]) {
+  const safeLetterOptions = allowedLetters?.length ? allowedLetters : LETTER_OPTIONS
+  const initialLetter =
+    initial?.letter && safeLetterOptions.includes(initial.letter)
+      ? initial.letter
+      : safeLetterOptions[0]
+
+  const [letter, setLetter] = useState<CedulaLetter>(initialLetter)
   const [displayDigits, setDisplayDigits] = useState(
     initial?.digits ? formatCedulaDigits(initial.digits) : '',
   )
@@ -61,9 +67,13 @@ export function useCedulaInput(initial?: CedulaValue) {
   /** Indica si los digitos actuales cumplen con el largo requerido. */
   const isValid = rawDigits.length >= MIN_DIGITS && rawDigits.length <= MAX_DIGITS
 
-  const handleLetterChange = useCallback((next: CedulaLetter) => {
-    setLetter(next)
-  }, [])
+  const handleLetterChange = useCallback(
+    (next: CedulaLetter) => {
+      if (!safeLetterOptions.includes(next)) return
+      setLetter(next)
+    },
+    [safeLetterOptions],
+  )
 
   /**
    * Procesa el cambio en el campo numerico: limpia caracteres no digitos,
@@ -94,7 +104,7 @@ export function useCedulaInput(initial?: CedulaValue) {
     rawDigits,
     isValid,
     inputRef,
-    letterOptions: LETTER_OPTIONS,
+    letterOptions: safeLetterOptions,
     handleLetterChange,
     handleDigitsChange,
   } as const

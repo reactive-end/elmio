@@ -14,7 +14,12 @@ import type { CedulaInputProps, CedulaValue } from './CedulaInput.d'
  * de digitos ingresados (minimo 7, maximo 9).
  * Ambos elementos ocupan el ancho completo y comparten los estilos del sistema.
  */
-export default function CedulaInput({ value, onChange, placeholder }: CedulaInputProps) {
+export default function CedulaInput({
+  value,
+  onChange,
+  placeholder,
+  allowedLetters,
+}: CedulaInputProps) {
   const {
     letter,
     displayDigits,
@@ -23,7 +28,7 @@ export default function CedulaInput({ value, onChange, placeholder }: CedulaInpu
     letterOptions,
     handleLetterChange,
     handleDigitsChange,
-  } = useCedulaInput(value)
+  } = useCedulaInput(value, allowedLetters)
 
   /** Ref estable a onChange para romper el ciclo de dependencias en el efecto. */
   const onChangeRef = useRef(onChange)

@@ -14,7 +14,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MercantilService, MulterFile } from '../../../application/services/mercantil.service';
+import {
+  MercantilService,
+  MulterFile,
+} from '../../../application/services/mercantil.service';
 import { MercantilStorageService } from '../../../application/services/mercantil-storage.service';
 import { BucketService } from '../../../../bucket/application/services/bucket.service';
 import {
@@ -29,7 +32,7 @@ type FinalizePersistenceBody = {
   dniDocument?: Record<string, unknown>;
 };
 
-@Controller('api/v1/mercantil')
+@Controller('mercantil')
 export class MercantilController {
   private readonly logger = new Logger(MercantilController.name);
   private readonly countryMercantilId: string;
@@ -40,7 +43,8 @@ export class MercantilController {
     private readonly bucketService: BucketService,
     private readonly configService: ConfigService,
   ) {
-    this.countryMercantilId = this.configService.get<string>('COUNTRY_MERCANTIL_ID') || '29';
+    this.countryMercantilId =
+      this.configService.get<string>('COUNTRY_MERCANTIL_ID') || '29';
   }
 
   // Información General
@@ -56,7 +60,9 @@ export class MercantilController {
 
   @Get('countries/:countryId/locations')
   getCountryLocations(@Param('countryId') countryId: string) {
-    return this.mercantilService.get(`/ally-api/countries/${countryId}/locations`);
+    return this.mercantilService.get(
+      `/ally-api/countries/${countryId}/locations`,
+    );
   }
 
   @Get('sales-channels')
@@ -103,7 +109,10 @@ export class MercantilController {
     @Param('clientId') clientId: string,
     @Body() body: Record<string, unknown>,
   ) {
-    return this.mercantilService.put(`/ally-api/clients/${clientId}/complete`, body);
+    return this.mercantilService.put(
+      `/ally-api/clients/${clientId}/complete`,
+      body,
+    );
   }
 
   // Productos Vitales
@@ -117,16 +126,21 @@ export class MercantilController {
     @Query('genderId') genderId?: string,
     @Query('birthDate') birthDate?: string,
   ) {
-    return this.mercantilService.get('/ally-api/products/plans/tentative-client', {
-      countryId: this.countryMercantilId,
-      genderId,
-      birthDate,
-    });
+    return this.mercantilService.get(
+      '/ally-api/products/plans/tentative-client',
+      {
+        countryId: this.countryMercantilId,
+        genderId,
+        birthDate,
+      },
+    );
   }
 
   @Get('products/plans/client/:clientId')
   getClientPlans(@Param('clientId') clientId: string) {
-    return this.mercantilService.get(`/ally-api/products/plans/client/${clientId}`);
+    return this.mercantilService.get(
+      `/ally-api/products/plans/client/${clientId}`,
+    );
   }
 
   @Get('products/:productId/rates')
@@ -142,12 +156,15 @@ export class MercantilController {
     @Query('model') model?: string,
     @Query('version') version?: string,
   ) {
-    return this.mercantilService.get('/ally-api/auto-products/vehicles/vehicle-information', {
-      year,
-      brand,
-      model,
-      version,
-    });
+    return this.mercantilService.get(
+      '/ally-api/auto-products/vehicles/vehicle-information',
+      {
+        year,
+        brand,
+        model,
+        version,
+      },
+    );
   }
 
   @Get('auto-products/vehicles/colors')
@@ -157,7 +174,9 @@ export class MercantilController {
 
   @Get('auto-products/vehicles/locations')
   getVehicleLocations() {
-    return this.mercantilService.get('/ally-api/auto-products/vehicles/locations');
+    return this.mercantilService.get(
+      '/ally-api/auto-products/vehicles/locations',
+    );
   }
 
   @Get('auto-products/plans/client')
@@ -190,7 +209,10 @@ export class MercantilController {
     @Param('shopcartId') shopcartId: string,
     @Body() body: Record<string, unknown>,
   ) {
-    return this.mercantilService.post(`/ally-api/shopcarts/${shopcartId}/products`, body);
+    return this.mercantilService.post(
+      `/ally-api/shopcarts/${shopcartId}/products`,
+      body,
+    );
   }
 
   @Delete('shopcarts/:shopcartId/products/:productId')
@@ -233,7 +255,9 @@ export class MercantilController {
 
   @Get('shopcarts/:shopcartId/summary')
   getShopcartSummary(@Param('shopcartId') shopcartId: string) {
-    return this.mercantilService.get(`/ally-api/shopcarts/${shopcartId}/summary`);
+    return this.mercantilService.get(
+      `/ally-api/shopcarts/${shopcartId}/summary`,
+    );
   }
 
   @Post('shopcarts/:shopcartId/dni')
@@ -265,7 +289,11 @@ export class MercantilController {
 
     const resolvedFileName = fileName?.trim() || `mercantil-dni-${Date.now()}`;
 
-    return this.bucketService.uploadFile(file, resolvedFileName, 'mercantil-dni');
+    return this.bucketService.uploadFile(
+      file,
+      resolvedFileName,
+      'mercantil-dni',
+    );
   }
 
   @Post('shopcarts/:shopcartId/vehicle-property-title')
@@ -275,7 +303,9 @@ export class MercantilController {
     @UploadedFile() file: MulterFile,
   ) {
     if (!file) {
-      throw new BadRequestException('El archivo vehiclePropertyFile es requerido');
+      throw new BadRequestException(
+        'El archivo vehiclePropertyFile es requerido',
+      );
     }
 
     return this.mercantilService.postFile(
@@ -308,7 +338,6 @@ export class MercantilController {
     );
   }
 
-  
   // Pagos
   @Post('payments/notify-external-payment')
   notifyExternalPayment(
@@ -348,12 +377,18 @@ export class MercantilController {
 
   @Post('storage/clients')
   saveClient(@Body() body: Record<string, unknown>) {
-    return this.mercantilStorageService.saveClient(body as unknown as Parameters<MercantilStorageService['saveClient']>[0]);
+    return this.mercantilStorageService.saveClient(
+      body as unknown as Parameters<MercantilStorageService['saveClient']>[0],
+    );
   }
 
   @Post('storage/payment-quotes')
   savePaymentQuotes(@Body() body: Record<string, unknown>) {
-    return this.mercantilStorageService.savePaymentQuotes(body as unknown as Parameters<MercantilStorageService['savePaymentQuotes']>[0]);
+    return this.mercantilStorageService.savePaymentQuotes(
+      body as unknown as Parameters<
+        MercantilStorageService['savePaymentQuotes']
+      >[0],
+    );
   }
 
   @Get('storage/clients')
@@ -368,7 +403,9 @@ export class MercantilController {
 
   @Post('storage/payments')
   savePayment(@Body() body: Record<string, unknown>) {
-    return this.mercantilStorageService.savePayment(body as unknown as Parameters<MercantilStorageService['savePayment']>[0]);
+    return this.mercantilStorageService.savePayment(
+      body as unknown as Parameters<MercantilStorageService['savePayment']>[0],
+    );
   }
 
   @Get('storage/payments')
@@ -426,16 +463,26 @@ export class MercantilController {
     return this.finalizePersistenceForShopcart(shopcartId, body);
   }
 
-  private async emitAndPersist(shopcartId: string, body: Record<string, unknown>): Promise<unknown> {
+  private async emitAndPersist(
+    shopcartId: string,
+    body: Record<string, unknown>,
+  ): Promise<unknown> {
     const startedAt = Date.now();
     const flowMeta = { shopcartId };
 
-    this.logger.log(`[MERCANTIL EMISSION] emission_start ${JSON.stringify(flowMeta)}`);
+    this.logger.log(
+      `[MERCANTIL EMISSION] emission_start ${JSON.stringify(flowMeta)}`,
+    );
 
     let emitResponse: unknown;
     try {
-      emitResponse = await this.mercantilService.post(`/ally-api/shopcarts/${shopcartId}/emit`, body);
-      this.logger.log(`[MERCANTIL EMISSION] emission_upstream_ok ${JSON.stringify(flowMeta)}`);
+      emitResponse = await this.mercantilService.post(
+        `/ally-api/shopcarts/${shopcartId}/emit`,
+        body,
+      );
+      this.logger.log(
+        `[MERCANTIL EMISSION] emission_upstream_ok ${JSON.stringify(flowMeta)}`,
+      );
       await this.safeTrace({
         shopcartId,
         stage: 'emit',
@@ -475,7 +522,12 @@ export class MercantilController {
   private async finalizePersistenceForShopcart(
     shopcartId: string,
     body: FinalizePersistenceBody,
-  ): Promise<{ success: true; clientId: string | null; policiesSaved: number; quotesSaved: number }> {
+  ): Promise<{
+    success: true;
+    clientId: string | null;
+    policiesSaved: number;
+    quotesSaved: number;
+  }> {
     const clientSnapshot = this.asRecord(body.client);
     const dniDocument = this.asRecord(body.dniDocument);
 
@@ -511,10 +563,16 @@ export class MercantilController {
     );
 
     if (!summary) {
-      throw new BadRequestException('No fue posible obtener el resumen del carrito');
+      throw new BadRequestException(
+        'No fue posible obtener el resumen del carrito',
+      );
     }
 
-    const resolvedClient = await this.resolveAndPersistClient(shopcartId, clientSnapshot, dniDocument);
+    const resolvedClient = await this.resolveAndPersistClient(
+      shopcartId,
+      clientSnapshot,
+      dniDocument,
+    );
 
     const vehicleSnapshot = this.asRecord(body.vehicle);
     if (vehicleSnapshot) {
@@ -528,20 +586,30 @@ export class MercantilController {
           modelCode: this.readString(vehicleSnapshot, 'modelCode') ?? '',
           modelName: this.readString(vehicleSnapshot, 'modelName') ?? undefined,
           versionCode: this.readString(vehicleSnapshot, 'versionCode') ?? '',
-          versionName: this.readString(vehicleSnapshot, 'versionName') ?? undefined,
-          vehicleTypeId: this.readString(vehicleSnapshot, 'vehicleTypeId') ?? undefined,
-          commonLocationId: this.readString(vehicleSnapshot, 'commonLocationId') ?? undefined,
-          commonLocationName: this.readString(vehicleSnapshot, 'commonLocationName') ?? undefined,
-          isArmored: this.readBoolean(vehicleSnapshot, 'isArmored') ?? undefined,
+          versionName:
+            this.readString(vehicleSnapshot, 'versionName') ?? undefined,
+          vehicleTypeId:
+            this.readString(vehicleSnapshot, 'vehicleTypeId') ?? undefined,
+          commonLocationId:
+            this.readString(vehicleSnapshot, 'commonLocationId') ?? undefined,
+          commonLocationName:
+            this.readString(vehicleSnapshot, 'commonLocationName') ?? undefined,
+          isArmored:
+            this.readBoolean(vehicleSnapshot, 'isArmored') ?? undefined,
           plate: this.readString(vehicleSnapshot, 'plate') ?? undefined,
           colorId: this.readString(vehicleSnapshot, 'colorId') ?? undefined,
           colorName: this.readString(vehicleSnapshot, 'colorName') ?? undefined,
-          chassisSerial: this.readString(vehicleSnapshot, 'chassisSerial') ?? undefined,
-          engineSerial: this.readString(vehicleSnapshot, 'engineSerial') ?? undefined,
+          chassisSerial:
+            this.readString(vehicleSnapshot, 'chassisSerial') ?? undefined,
+          engineSerial:
+            this.readString(vehicleSnapshot, 'engineSerial') ?? undefined,
           rawData: vehicleSnapshot,
         });
       } catch (vehicleError) {
-        this.logger.error(`Failed to persist vehicle for shopcart ${shopcartId}`, vehicleError instanceof Error ? vehicleError.stack : undefined);
+        this.logger.error(
+          `Failed to persist vehicle for shopcart ${shopcartId}`,
+          vehicleError instanceof Error ? vehicleError.stack : undefined,
+        );
       }
     }
 
@@ -590,10 +658,20 @@ export class MercantilController {
       shopcartId,
     );
 
-    const localClient = await this.mercantilStorageService.getClientByShopcart(shopcartId);
-    const clientId = localClient?.clientId ?? this.extractClientId(summary) ?? this.extractClientId(emissionStatus);
-    const dniType = localClient?.dniType ?? this.extractDniType(summary) ?? this.extractDniType(emissionStatus);
-    const dniNumber = localClient?.dniNumber ?? this.extractDniNumber(summary) ?? this.extractDniNumber(emissionStatus);
+    const localClient =
+      await this.mercantilStorageService.getClientByShopcart(shopcartId);
+    const clientId =
+      localClient?.clientId ??
+      this.extractClientId(summary) ??
+      this.extractClientId(emissionStatus);
+    const dniType =
+      localClient?.dniType ??
+      this.extractDniType(summary) ??
+      this.extractDniType(emissionStatus);
+    const dniNumber =
+      localClient?.dniNumber ??
+      this.extractDniNumber(summary) ??
+      this.extractDniNumber(emissionStatus);
 
     if (localClient) {
       await this.safeTrace({
@@ -634,7 +712,9 @@ export class MercantilController {
 
     const summaryRecord = this.asRecord(summary);
     const summaryPolicies = this.extractPolicies(summaryRecord);
-    const paymentFrequency = this.toPaymentFrequency(this.readString(summaryRecord, 'paymentFrequency'));
+    const paymentFrequency = this.toPaymentFrequency(
+      this.readString(summaryRecord, 'paymentFrequency'),
+    );
 
     if (summaryPolicies.length === 0) {
       await this.safeTrace({
@@ -674,23 +754,29 @@ export class MercantilController {
               dniType: dniType ?? undefined,
               dniNumber: dniNumber ?? undefined,
               policyId,
-              policyNumber: this.readString(policy, 'policyNumber') ?? undefined,
+              policyNumber:
+                this.readString(policy, 'policyNumber') ?? undefined,
               number: this.readString(policy, 'number') ?? undefined,
               entity: this.readString(policy, 'entity') ?? undefined,
               area: this.readString(policy, 'area') ?? undefined,
-              certificateNumber: this.readString(policy, 'certificateNumber') ?? undefined,
+              certificateNumber:
+                this.readString(policy, 'certificateNumber') ?? undefined,
               title: this.readString(policy, 'title') ?? undefined,
               status: this.toPolicyStatus(this.readString(policy, 'status')),
               paymentFrequency: paymentFrequency ?? undefined,
               assuredSum: this.readNumber(policy, 'assuredSum') ?? undefined,
-              quotedAmount: this.readNumber(policy, 'quotedAmount') ?? undefined,
-              annualPremium: this.readNumber(policy, 'annualPremium') ?? undefined,
+              quotedAmount:
+                this.readNumber(policy, 'quotedAmount') ?? undefined,
+              annualPremium:
+                this.readNumber(policy, 'annualPremium') ?? undefined,
               startDate: this.readString(policy, 'startDate') ?? undefined,
               endDate: this.readString(policy, 'endDate') ?? undefined,
               rawData: policy,
             };
           })
-          .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
+          .filter(
+            (entry): entry is NonNullable<typeof entry> => entry !== null,
+          ),
       });
 
       await this.safeTrace({
@@ -737,30 +823,39 @@ export class MercantilController {
       const policyId = this.readString(policy, 'id');
       if (!policyId) continue;
 
-      const quotes = this.extractQuotes(policy).map((quote) => ({
-        quote: this.readString(quote, 'quote') ?? '',
-        agreement: this.readInteger(quote, 'agreement') ?? undefined,
-        receipt: this.readInteger(quote, 'receipt') ?? undefined,
-        receiptStatus: this.toQuoteStatus(this.readString(quote, 'receiptStatus')) ?? undefined,
-        quoteStatus: this.toQuoteStatus(this.readString(quote, 'quoteStatus')) ?? undefined,
-        isNextDuePayment: this.readBoolean(quote, 'isNextDuePayment') ?? false,
-        isPaid: this.readBoolean(quote, 'isPaid') ?? false,
-        amount: this.readNumber(quote, 'amount') ?? undefined,
-        expirationDate: this.readString(quote, 'expirationDate') ?? undefined,
-        rawData: quote,
-      })).filter((quote) => quote.quote.length > 0);
+      const quotes = this.extractQuotes(policy)
+        .map((quote) => ({
+          quote: this.readString(quote, 'quote') ?? '',
+          agreement: this.readInteger(quote, 'agreement') ?? undefined,
+          receipt: this.readInteger(quote, 'receipt') ?? undefined,
+          receiptStatus:
+            this.toQuoteStatus(this.readString(quote, 'receiptStatus')) ??
+            undefined,
+          quoteStatus:
+            this.toQuoteStatus(this.readString(quote, 'quoteStatus')) ??
+            undefined,
+          isNextDuePayment:
+            this.readBoolean(quote, 'isNextDuePayment') ?? false,
+          isPaid: this.readBoolean(quote, 'isPaid') ?? false,
+          amount: this.readNumber(quote, 'amount') ?? undefined,
+          expirationDate: this.readString(quote, 'expirationDate') ?? undefined,
+          rawData: quote,
+        }))
+        .filter((quote) => quote.quote.length > 0);
 
       if (quotes.length === 0) continue;
 
       try {
-        const savedQuotes = await this.mercantilStorageService.savePaymentQuotes({
-          shopcartId,
-          policyId,
-          policyNumber: this.readString(policy, 'number')
-            ?? this.readString(policy, 'policyNumber')
-            ?? undefined,
-          quotes,
-        });
+        const savedQuotes =
+          await this.mercantilStorageService.savePaymentQuotes({
+            shopcartId,
+            policyId,
+            policyNumber:
+              this.readString(policy, 'number') ??
+              this.readString(policy, 'policyNumber') ??
+              undefined,
+            quotes,
+          });
         quoteSavedCount += savedQuotes.length;
       } catch (error) {
         await this.safeTrace({
@@ -800,7 +895,11 @@ export class MercantilController {
     );
   }
 
-  private async safeGetFromMercantil(path: string, stage: 'emit_status' | 'shopcart_summary', shopcartId: string): Promise<unknown> {
+  private async safeGetFromMercantil(
+    path: string,
+    stage: 'emit_status' | 'shopcart_summary',
+    shopcartId: string,
+  ): Promise<unknown> {
     try {
       const data = await this.mercantilService.get(path);
       await this.safeTrace({
@@ -818,7 +917,10 @@ export class MercantilController {
         status: 'failed',
         message: `Consulta ${stage} fallida`,
         response: this.errorToRecord(error),
-        errorCode: stage === 'emit_status' ? 'GET_EMIT_STATUS_FAIL' : 'GET_SHOPCART_SUMMARY_FAIL',
+        errorCode:
+          stage === 'emit_status'
+            ? 'GET_EMIT_STATUS_FAIL'
+            : 'GET_SHOPCART_SUMMARY_FAIL',
         errorStack: error instanceof Error ? error.stack : undefined,
       });
       this.logger.warn(
@@ -828,7 +930,9 @@ export class MercantilController {
     }
   }
 
-  private async safeTrace(dto: Parameters<MercantilStorageService['saveTrace']>[0]): Promise<void> {
+  private async safeTrace(
+    dto: Parameters<MercantilStorageService['saveTrace']>[0],
+  ): Promise<void> {
     try {
       await this.mercantilStorageService.saveTrace(dto);
     } catch (traceError) {
@@ -842,73 +946,115 @@ export class MercantilController {
     }
   }
 
-  private extractPolicies(summary: Record<string, unknown> | null | undefined): Record<string, unknown>[] {
+  private extractPolicies(
+    summary: Record<string, unknown> | null | undefined,
+  ): Record<string, unknown>[] {
     if (!summary) return [];
     const policies = summary.policies;
     if (!Array.isArray(policies)) return [];
-    return policies.filter((policy): policy is Record<string, unknown> => this.asRecord(policy) !== null)
-      .map((policy) => policy as Record<string, unknown>);
+    return policies
+      .filter(
+        (policy): policy is Record<string, unknown> =>
+          this.asRecord(policy) !== null,
+      )
+      .map((policy) => policy);
   }
 
-  private extractQuotes(policy: Record<string, unknown>): Record<string, unknown>[] {
+  private extractQuotes(
+    policy: Record<string, unknown>,
+  ): Record<string, unknown>[] {
     const quotes = policy.paymentQuotes;
     if (!Array.isArray(quotes)) return [];
-    return quotes.filter((quote): quote is Record<string, unknown> => this.asRecord(quote) !== null)
-      .map((quote) => quote as Record<string, unknown>);
+    return quotes
+      .filter(
+        (quote): quote is Record<string, unknown> =>
+          this.asRecord(quote) !== null,
+      )
+      .map((quote) => quote);
   }
 
   private extractClientId(payload: unknown): string | null {
     if (!payload) return null;
     const record = this.asRecord(payload);
     if (!record) return null;
-    return this.readString(record, 'clientId')
-      ?? this.readString(this.asRecord(record.client), 'id')
-      ?? this.readString(this.asRecord(record.client), 'clientId');
+    return (
+      this.readString(record, 'clientId') ??
+      this.readString(this.asRecord(record.client), 'id') ??
+      this.readString(this.asRecord(record.client), 'clientId')
+    );
   }
 
   private extractDniType(payload: unknown): string | null {
     const record = this.asRecord(payload);
     if (!record) return null;
-    return this.readString(record, 'dniType')
-      ?? this.readString(this.asRecord(record.client), 'dniType')
-      ?? this.readString(this.asRecord(record.client), 'documentType')
-      ?? this.readString(this.asRecord(record.client), 'docType');
+    return (
+      this.readString(record, 'dniType') ??
+      this.readString(this.asRecord(record.client), 'dniType') ??
+      this.readString(this.asRecord(record.client), 'documentType') ??
+      this.readString(this.asRecord(record.client), 'docType')
+    );
   }
 
   private extractDniNumber(payload: unknown): string | null {
     const record = this.asRecord(payload);
     if (!record) return null;
-    return this.readString(record, 'dniNumber')
-      ?? this.readString(this.asRecord(record.client), 'dniNumber')
-      ?? this.readString(this.asRecord(record.client), 'documentNumber')
-      ?? this.readString(this.asRecord(record.client), 'docNumber');
+    return (
+      this.readString(record, 'dniNumber') ??
+      this.readString(this.asRecord(record.client), 'dniNumber') ??
+      this.readString(this.asRecord(record.client), 'documentNumber') ??
+      this.readString(this.asRecord(record.client), 'docNumber')
+    );
   }
 
-  private toPolicyStatus(value: string | null): MercantilPolicyStatus | undefined {
+  private toPolicyStatus(
+    value: string | null,
+  ): MercantilPolicyStatus | undefined {
     if (!value) return undefined;
-    if (value === 'active' || value === 'upcoming_payment' || value === 'in_debt' || value === 'finished' || value === 'nullified') {
+    if (
+      value === 'active' ||
+      value === 'upcoming_payment' ||
+      value === 'in_debt' ||
+      value === 'finished' ||
+      value === 'nullified'
+    ) {
       return value;
     }
     return undefined;
   }
 
-  private toQuoteStatus(value: string | null): MercantilQuoteStatus | undefined {
+  private toQuoteStatus(
+    value: string | null,
+  ): MercantilQuoteStatus | undefined {
     if (!value) return undefined;
-    if (value === 'paid' || value === 'upcoming_payment' || value === 'coming_soon') {
+    if (
+      value === 'paid' ||
+      value === 'upcoming_payment' ||
+      value === 'coming_soon'
+    ) {
       return value;
     }
     return undefined;
   }
 
-  private toPaymentFrequency(value: string | null): MercantilPaymentFrequency | undefined {
+  private toPaymentFrequency(
+    value: string | null,
+  ): MercantilPaymentFrequency | undefined {
     if (!value) return undefined;
-    if (value === 'monthly' || value === 'quarterly' || value === 'biannual' || value === 'yearly') {
+    if (
+      value === 'monthly' ||
+      value === 'quarterly' ||
+      value === 'biannual' ||
+      value === 'yearly'
+    ) {
       return value;
     }
     return undefined;
   }
 
-  private readString(obj: Record<string, unknown> | null | undefined, key: string): string | null {
+  private readString(
+    obj: Record<string, unknown> | null | undefined,
+    key: string,
+  ): string | null {
     if (!obj) return null;
     const value = obj[key];
     if (typeof value === 'string' && value.trim().length > 0) return value;
@@ -916,7 +1062,10 @@ export class MercantilController {
     return null;
   }
 
-  private readNumber(obj: Record<string, unknown> | null | undefined, key: string): number | null {
+  private readNumber(
+    obj: Record<string, unknown> | null | undefined,
+    key: string,
+  ): number | null {
     if (!obj) return null;
     const value = obj[key];
     if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -927,13 +1076,19 @@ export class MercantilController {
     return null;
   }
 
-  private readInteger(obj: Record<string, unknown> | null | undefined, key: string): number | null {
+  private readInteger(
+    obj: Record<string, unknown> | null | undefined,
+    key: string,
+  ): number | null {
     const value = this.readNumber(obj, key);
     if (value === null) return null;
     return Number.isInteger(value) ? value : Math.trunc(value);
   }
 
-  private readBoolean(obj: Record<string, unknown> | null | undefined, key: string): boolean | null {
+  private readBoolean(
+    obj: Record<string, unknown> | null | undefined,
+    key: string,
+  ): boolean | null {
     if (!obj) return null;
     const value = obj[key];
     if (typeof value === 'boolean') return value;
@@ -941,7 +1096,8 @@ export class MercantilController {
   }
 
   private asRecord(value: unknown): Record<string, unknown> | undefined {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+      return undefined;
     return value as Record<string, unknown>;
   }
 
@@ -961,21 +1117,25 @@ export class MercantilController {
     clientSnapshot: Record<string, unknown> | null | undefined,
     dniDocument: Record<string, unknown> | null | undefined,
   ) {
-    const existingClient = await this.mercantilStorageService.resolveExistingClient({
-      clientId: this.readString(clientSnapshot, 'clientId') ?? undefined,
-      dniType: this.readString(clientSnapshot, 'dniType') ?? undefined,
-      dniNumber: this.readString(clientSnapshot, 'dniNumber') ?? undefined,
-    });
+    const existingClient =
+      await this.mercantilStorageService.resolveExistingClient({
+        clientId: this.readString(clientSnapshot, 'clientId') ?? undefined,
+        dniType: this.readString(clientSnapshot, 'dniType') ?? undefined,
+        dniNumber: this.readString(clientSnapshot, 'dniNumber') ?? undefined,
+      });
 
-    const resolvedClientId = existingClient?.clientId
-      ?? this.readString(clientSnapshot, 'clientId')
-      ?? null;
-    const resolvedDniType = existingClient?.dniType
-      ?? this.readString(clientSnapshot, 'dniType')
-      ?? null;
-    const resolvedDniNumber = existingClient?.dniNumber
-      ?? this.readString(clientSnapshot, 'dniNumber')
-      ?? null;
+    const resolvedClientId =
+      existingClient?.clientId ??
+      this.readString(clientSnapshot, 'clientId') ??
+      null;
+    const resolvedDniType =
+      existingClient?.dniType ??
+      this.readString(clientSnapshot, 'dniType') ??
+      null;
+    const resolvedDniNumber =
+      existingClient?.dniNumber ??
+      this.readString(clientSnapshot, 'dniNumber') ??
+      null;
 
     if (!clientSnapshot) {
       await this.safeTrace({
@@ -1002,29 +1162,93 @@ export class MercantilController {
     const savedClient = await this.mercantilStorageService.saveClient({
       shopcartId,
       clientId: resolvedClientId ?? undefined,
-      firstName: this.readString(clientSnapshot, 'firstName') ?? existingClient?.firstName ?? '',
-      lastName: this.readString(clientSnapshot, 'lastName') ?? existingClient?.lastName ?? '',
-      email: this.readString(clientSnapshot, 'email') ?? existingClient?.email ?? '',
+      firstName:
+        this.readString(clientSnapshot, 'firstName') ??
+        existingClient?.firstName ??
+        '',
+      lastName:
+        this.readString(clientSnapshot, 'lastName') ??
+        existingClient?.lastName ??
+        '',
+      email:
+        this.readString(clientSnapshot, 'email') ?? existingClient?.email ?? '',
       dniType: resolvedDniType ?? '',
       dniNumber: resolvedDniNumber ?? '',
-      dniVenNationality: this.readString(clientSnapshot, 'dniVenNationality') ?? existingClient?.dniVenNationality ?? undefined,
-      birthDate: this.readString(clientSnapshot, 'birthDate') ?? existingClient?.birthDate ?? '',
-      genderId: this.readString(clientSnapshot, 'genderId') ?? existingClient?.genderId ?? '',
-      countryOfBirthId: this.readString(clientSnapshot, 'countryOfBirthId') ?? existingClient?.countryOfBirthId ?? undefined,
-      civilStateId: this.readString(clientSnapshot, 'civilStateId') ?? existingClient?.civilStateId ?? undefined,
+      dniVenNationality:
+        this.readString(clientSnapshot, 'dniVenNationality') ??
+        existingClient?.dniVenNationality ??
+        undefined,
+      birthDate:
+        this.readString(clientSnapshot, 'birthDate') ??
+        existingClient?.birthDate ??
+        '',
+      genderId:
+        this.readString(clientSnapshot, 'genderId') ??
+        existingClient?.genderId ??
+        '',
+      countryOfBirthId:
+        this.readString(clientSnapshot, 'countryOfBirthId') ??
+        existingClient?.countryOfBirthId ??
+        undefined,
+      civilStateId:
+        this.readString(clientSnapshot, 'civilStateId') ??
+        existingClient?.civilStateId ??
+        undefined,
       phone: {
-        countryId: this.readString(this.asRecord(clientSnapshot.phone), 'countryId') ?? existingClient?.phoneCountryId ?? undefined,
-        areaCode: this.readString(this.asRecord(clientSnapshot.phone), 'areaCode') ?? existingClient?.phoneAreaCode ?? undefined,
-        number: this.readString(this.asRecord(clientSnapshot.phone), 'number') ?? existingClient?.phoneNumber ?? undefined,
+        countryId:
+          this.readString(this.asRecord(clientSnapshot.phone), 'countryId') ??
+          existingClient?.phoneCountryId ??
+          undefined,
+        areaCode:
+          this.readString(this.asRecord(clientSnapshot.phone), 'areaCode') ??
+          existingClient?.phoneAreaCode ??
+          undefined,
+        number:
+          this.readString(this.asRecord(clientSnapshot.phone), 'number') ??
+          existingClient?.phoneNumber ??
+          undefined,
       },
       address: {
-        countryId: this.readString(this.asRecord(clientSnapshot.address), 'countryId') ?? existingClient?.addressCountryId ?? undefined,
-        administrativeAreaId: this.readString(this.asRecord(clientSnapshot.address), 'administrativeAreaId') ?? existingClient?.addressAdministrativeAreaId ?? undefined,
-        subadministrativeAreaId: this.readString(this.asRecord(clientSnapshot.address), 'subadministrativeAreaId') ?? existingClient?.addressSubadministrativeAreaId ?? undefined,
-        localityId: this.readString(this.asRecord(clientSnapshot.address), 'localityId') ?? existingClient?.addressLocalityId ?? undefined,
-        zoneId: this.readString(this.asRecord(clientSnapshot.address), 'zoneId') ?? existingClient?.addressZoneId ?? undefined,
-        postalCode: this.readString(this.asRecord(clientSnapshot.address), 'postalCode') ?? existingClient?.addressPostalCode ?? undefined,
-        address1: this.readString(this.asRecord(clientSnapshot.address), 'address1') ?? existingClient?.addressLine ?? undefined,
+        countryId:
+          this.readString(this.asRecord(clientSnapshot.address), 'countryId') ??
+          existingClient?.addressCountryId ??
+          undefined,
+        administrativeAreaId:
+          this.readString(
+            this.asRecord(clientSnapshot.address),
+            'administrativeAreaId',
+          ) ??
+          existingClient?.addressAdministrativeAreaId ??
+          undefined,
+        subadministrativeAreaId:
+          this.readString(
+            this.asRecord(clientSnapshot.address),
+            'subadministrativeAreaId',
+          ) ??
+          existingClient?.addressSubadministrativeAreaId ??
+          undefined,
+        localityId:
+          this.readString(
+            this.asRecord(clientSnapshot.address),
+            'localityId',
+          ) ??
+          existingClient?.addressLocalityId ??
+          undefined,
+        zoneId:
+          this.readString(this.asRecord(clientSnapshot.address), 'zoneId') ??
+          existingClient?.addressZoneId ??
+          undefined,
+        postalCode:
+          this.readString(
+            this.asRecord(clientSnapshot.address),
+            'postalCode',
+          ) ??
+          existingClient?.addressPostalCode ??
+          undefined,
+        address1:
+          this.readString(this.asRecord(clientSnapshot.address), 'address1') ??
+          existingClient?.addressLine ??
+          undefined,
       },
       rawData,
     });
@@ -1036,7 +1260,9 @@ export class MercantilController {
       dniNumber: savedClient.dniNumber,
       stage: 'persist_client',
       status: 'success',
-      message: existingClient ? 'Cliente existente asociado al carrito' : 'Cliente persistido para el carrito',
+      message: existingClient
+        ? 'Cliente existente asociado al carrito'
+        : 'Cliente persistido para el carrito',
       response: {
         internalId: savedClient.id,
         clientId: savedClient.clientId,
@@ -1055,7 +1281,9 @@ export class MercantilController {
   ): Promise<{ policiesSaved: number; quotesSaved: number }> {
     const summaryRecord = this.asRecord(summary);
     const summaryPolicies = this.extractPolicies(summaryRecord);
-    const paymentFrequency = this.toPaymentFrequency(this.readString(summaryRecord, 'paymentFrequency'));
+    const paymentFrequency = this.toPaymentFrequency(
+      this.readString(summaryRecord, 'paymentFrequency'),
+    );
 
     if (summaryPolicies.length === 0) {
       await this.safeTrace({
@@ -1092,13 +1320,15 @@ export class MercantilController {
             number: this.readString(policy, 'number') ?? undefined,
             entity: this.readString(policy, 'entity') ?? undefined,
             area: this.readString(policy, 'area') ?? undefined,
-            certificateNumber: this.readString(policy, 'certificateNumber') ?? undefined,
+            certificateNumber:
+              this.readString(policy, 'certificateNumber') ?? undefined,
             title: this.readString(policy, 'title') ?? undefined,
             status: this.toPolicyStatus(this.readString(policy, 'status')),
             paymentFrequency: paymentFrequency ?? undefined,
             assuredSum: this.readNumber(policy, 'assuredSum') ?? undefined,
             quotedAmount: this.readNumber(policy, 'quotedAmount') ?? undefined,
-            annualPremium: this.readNumber(policy, 'annualPremium') ?? undefined,
+            annualPremium:
+              this.readNumber(policy, 'annualPremium') ?? undefined,
             startDate: this.readString(policy, 'startDate') ?? undefined,
             endDate: this.readString(policy, 'endDate') ?? undefined,
             rawData: policy,
@@ -1125,27 +1355,35 @@ export class MercantilController {
       const policyId = this.readString(policy, 'id');
       if (!policyId) continue;
 
-      const quotes = this.extractQuotes(policy).map((quote) => ({
-        quote: this.readString(quote, 'quote') ?? '',
-        agreement: this.readInteger(quote, 'agreement') ?? undefined,
-        receipt: this.readInteger(quote, 'receipt') ?? undefined,
-        receiptStatus: this.toQuoteStatus(this.readString(quote, 'receiptStatus')) ?? undefined,
-        quoteStatus: this.toQuoteStatus(this.readString(quote, 'quoteStatus')) ?? undefined,
-        isNextDuePayment: this.readBoolean(quote, 'isNextDuePayment') ?? false,
-        isPaid: this.readBoolean(quote, 'isPaid') ?? false,
-        amount: this.readNumber(quote, 'amount') ?? undefined,
-        expirationDate: this.readString(quote, 'expirationDate') ?? undefined,
-        rawData: quote,
-      })).filter((quote) => quote.quote.length > 0);
+      const quotes = this.extractQuotes(policy)
+        .map((quote) => ({
+          quote: this.readString(quote, 'quote') ?? '',
+          agreement: this.readInteger(quote, 'agreement') ?? undefined,
+          receipt: this.readInteger(quote, 'receipt') ?? undefined,
+          receiptStatus:
+            this.toQuoteStatus(this.readString(quote, 'receiptStatus')) ??
+            undefined,
+          quoteStatus:
+            this.toQuoteStatus(this.readString(quote, 'quoteStatus')) ??
+            undefined,
+          isNextDuePayment:
+            this.readBoolean(quote, 'isNextDuePayment') ?? false,
+          isPaid: this.readBoolean(quote, 'isPaid') ?? false,
+          amount: this.readNumber(quote, 'amount') ?? undefined,
+          expirationDate: this.readString(quote, 'expirationDate') ?? undefined,
+          rawData: quote,
+        }))
+        .filter((quote) => quote.quote.length > 0);
 
       if (quotes.length === 0) continue;
 
       const savedQuotes = await this.mercantilStorageService.savePaymentQuotes({
         shopcartId,
         policyId,
-        policyNumber: this.readString(policy, 'number')
-          ?? this.readString(policy, 'policyNumber')
-          ?? undefined,
+        policyNumber:
+          this.readString(policy, 'number') ??
+          this.readString(policy, 'policyNumber') ??
+          undefined,
         quotes,
       });
       quoteSavedCount += savedQuotes.length;

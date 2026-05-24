@@ -15,4 +15,5 @@ export interface PhoneInputProps {
   operatorPrefix: OperatorPrefix
   onOperatorPrefixChange: (prefix: OperatorPrefix) => void
   hasError?: boolean
+  hideCountrySelector?: boolean
 }

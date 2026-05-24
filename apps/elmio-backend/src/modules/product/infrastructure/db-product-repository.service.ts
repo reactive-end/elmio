@@ -23,6 +23,7 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
       tags: entity.tags,
       images: entity.images,
       active: entity.active,
+      hasStock: entity.hasStock,
       currentStock: entity.currentStock,
       minimumStock: entity.minimumStock,
       hasValidity: entity.hasValidity,
@@ -32,9 +33,13 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
       priceLists: entity.priceLists,
       discounts: entity.discounts,
       paymentMode: entity.paymentMode as PaymentMode,
+      paymentPeriod: entity.paymentPeriod,
       maxQuotas: entity.maxQuotas,
+      interestType: entity.interestType as 'none' | 'percentage' | 'fixed',
       interestRate: entity.interestRate,
+      initialPayment: entity.initialPayment,
       usesThirdPartyPricing: entity.usesThirdPartyPricing,
+      globalThirdPartyProvider: entity.globalThirdPartyProvider,
       windows: entity.windows,
       marketplaceId: entity.marketplaceId,
       createdAt: entity.createdAt,
@@ -53,6 +58,7 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
     entity.tags = domain.tags;
     entity.images = domain.images;
     entity.active = domain.active;
+    entity.hasStock = domain.hasStock;
     entity.currentStock = domain.currentStock;
     entity.minimumStock = domain.minimumStock;
     entity.hasValidity = domain.hasValidity;
@@ -62,9 +68,13 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
     entity.priceLists = domain.priceLists;
     entity.discounts = domain.discounts;
     entity.paymentMode = domain.paymentMode;
+    entity.paymentPeriod = domain.paymentPeriod;
     entity.maxQuotas = domain.maxQuotas;
+    entity.interestType = domain.interestType;
     entity.interestRate = domain.interestRate;
+    entity.initialPayment = domain.initialPayment;
     entity.usesThirdPartyPricing = domain.usesThirdPartyPricing;
+    entity.globalThirdPartyProvider = domain.globalThirdPartyProvider;
     entity.windows = domain.windows;
     entity.marketplaceId = domain.marketplaceId;
     entity.createdAt = domain.createdAt;
@@ -73,7 +83,7 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
   }
 
   async list(): Promise<Product[]> {
-    const entities = await this.repo.find({ where: { active: true } });
+    const entities = await this.repo.find();
     return entities.map((entity) => this.toDomain(entity));
   }
 

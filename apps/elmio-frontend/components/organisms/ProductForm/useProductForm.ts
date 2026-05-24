@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, type FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   productService,
   type ProductType,
@@ -41,6 +41,7 @@ interface WindowDraft {
   paymentMethods: string
   acceptedFileTypes: string
   confirmationMessage: string
+  actionKey: string
 }
 
 interface AlertState {
@@ -48,8 +49,20 @@ interface AlertState {
   message: string
 }
 
+const LAST_STEP = 5
+const MANAGED_PAYMENT_PROVIDERS = new Set([
+  'elmio:mercantil-vida',
+  'elmio:mercantil-accidentes',
+  'elmio:mercantil-funeraria',
+])
+const MAX_WINDOWS = 1
+
 export function useProductForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const productId = searchParams.get('id')
+  const isEdit = Boolean(productId)
+
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<AlertState | null>(null)
@@ -57,15 +70,26 @@ export function useProductForm() {
   // Step 1: Basic
   const [sku, setSku] = useState('')
   const [name, setName] = useState('')
+
+  const generateRandomSku = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = 'PROD-'
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    setSku(result)
+  }
   const [description, setDescription] = useState('')
   const [type, setType] = useState<ProductType>('PRODUCT')
   const [category, setCategory] = useState('')
   const [categories, setCategories] = useState<Categoria[]>([])
-  const [tags, setTags] = useState('')
+  const [tags, setTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
 
   // Cargar categorias activas
   useEffect(() => {
-    categoryService.list()
+    categoryService
+      .list()
       .then((data) => {
         const activeCategories = data.filter((c) => c.active)
         setCategories(activeCategories)
@@ -80,6 +104,7 @@ export function useProductForm() {
   }, [])
 
   // Step 2: Inventory
+  const [hasStock, setHasStock] = useState(true)
   const [currentStock, setCurrentStock] = useState(0)
   const [minimumStock, setMinimumStock] = useState(0)
   const [hasValidity, setHasValidity] = useState(false)
@@ -91,21 +116,125 @@ export function useProductForm() {
   const [images, setImages] = useState<string[]>([])
   const [imageInput, setImageInput] = useState('')
 
-  // Step 4: Prices
+  // Step 4: Prices & Payment
   const [priceLists, setPriceLists] = useState<PriceListDraft[]>([])
   const [discounts, setDiscounts] = useState<DiscountDraft[]>([])
   const [usesThirdParty, setUsesThirdParty] = useState(false)
+  const [globalThirdPartyProvider, setGlobalThirdPartyProvider] = useState('')
 
-  // Step 5: Payment
+  // Step 4: Payment
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('cash')
+  const [paymentPeriod, setPaymentPeriod] = useState<string>('monthly')
   const [maxQuotas, setMaxQuotas] = useState(1)
+  const [interestType, setInterestType] = useState<'none' | 'percentage' | 'fixed'>('none')
   const [interestRate, setInterestRate] = useState(0)
+  const [initialPayment, setInitialPayment] = useState(0)
 
-  // Step 6: Windows
+  const [isSubmitBlocked, setIsSubmitBlocked] = useState(false)
+
+  // Step 5: Windows
   const [windows, setWindows] = useState<WindowDraft[]>([])
 
+  const usesProviderManagedPayment =
+    usesThirdParty && MANAGED_PAYMENT_PROVIDERS.has(globalThirdPartyProvider)
+  const isThirdPartyProviderPending = usesThirdParty && !globalThirdPartyProvider
+
+  // Cargar datos en modo edicion
+  useEffect(() => {
+    if (!productId) return
+
+    async function loadProductData() {
+      try {
+        setIsLoading(true)
+        const product = await productService.getById(productId!)
+
+        setSku(product.sku)
+        setName(product.name)
+        setDescription(product.description || '')
+        setType(product.type)
+        setCategory(product.category || '')
+        setTags(product.tags || [])
+        setHasStock(product.hasStock)
+        setCurrentStock(product.currentStock)
+        setMinimumStock(product.minimumStock)
+        setHasValidity(product.hasValidity)
+        setValidFrom(product.validFrom || '')
+        setValidTo(product.validTo || '')
+        setAttributes(product.attributes || [])
+        setImages(product.images || [])
+
+        setPriceLists(
+          product.priceLists.map((p) => ({
+            id: p.id || crypto.randomUUID(),
+            currency: p.currency,
+            amount: p.amount,
+            source: p.source,
+            thirdPartyProvider: p.thirdPartyProvider || '',
+            thirdPartyRef: p.thirdPartyRef || '',
+          })),
+        )
+
+        setDiscounts(
+          product.discounts.map((d) => ({
+            id: d.id || crypto.randomUUID(),
+            startDate: d.startDate,
+            endDate: d.endDate,
+            percentage: d.percentage,
+            description: d.description,
+          })),
+        )
+
+        setUsesThirdParty(product.usesThirdPartyPricing)
+        setGlobalThirdPartyProvider(product.globalThirdPartyProvider || '')
+        setPaymentMode(product.paymentMode)
+        setPaymentPeriod(product.paymentPeriod || 'monthly')
+        setMaxQuotas(product.maxQuotas)
+        setInterestType(product.interestType)
+        setInterestRate(product.interestRate)
+        setInitialPayment(product.initialPayment)
+
+        setWindows(
+          product.windows.slice(0, MAX_WINDOWS).map((w) => ({
+            id: w.id || crypto.randomUUID(),
+            type: w.type,
+            label: w.label || '',
+            description: w.description || '',
+            order: w.order,
+            required: w.required,
+            redirectUrl: w.config.redirectUrl || '',
+            paymentMethods: w.config.paymentMethods?.join(', ') || '',
+            acceptedFileTypes: w.config.acceptedFileTypes?.join(', ') || '',
+            confirmationMessage: w.config.confirmationMessage || '',
+            actionKey:
+              w.type === 'payment-form'
+                ? w.config.paymentMethods?.[0] || 'pay-cash'
+                : w.type === 'custom-form'
+                  ? w.config.redirectUrl || 'mercantil-query-form'
+                  : w.config.redirectUrl || '',
+          })),
+        )
+      } catch (err) {
+        console.error('Error al cargar datos del producto en edicion:', err)
+        setAlert({ type: 'error', message: 'No se pudo cargar la informacion del producto.' })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadProductData()
+  }, [productId])
+
   // Navigation
-  const handleNext = () => setStep((s) => Math.min(6, s + 1))
+  const handleNext = () => {
+    setStep((s) => {
+      const nextStep = Math.min(LAST_STEP, s + 1)
+      if (nextStep === LAST_STEP) {
+        setIsSubmitBlocked(true)
+        setTimeout(() => setIsSubmitBlocked(false), 400)
+      }
+      return nextStep
+    })
+  }
   const handleBack = () => setStep((s) => Math.max(1, s - 1))
 
   // Attributes
@@ -122,7 +251,22 @@ export function useProductForm() {
       setImageInput('')
     }
   }
+  const addImageFromGallery = (url: string) => {
+    if (url && !images.includes(url)) {
+      setImages((p) => [...p, url])
+    }
+  }
   const remImage = (url: string) => setImages((p) => p.filter((i) => i !== url))
+
+  // Tags
+  const addTag = () => {
+    const trimmed = tagInput.trim()
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags((p) => [...p, trimmed])
+      setTagInput('')
+    }
+  }
+  const remTag = (tag: string) => setTags((p) => p.filter((t) => t !== tag))
 
   // Prices
   const addPrice = () =>
@@ -153,27 +297,32 @@ export function useProductForm() {
 
   // Windows
   const addWindow = () =>
-    setWindows((p) => [
-      ...p,
-      {
-        id: crypto.randomUUID(),
-        type: 'payment-form',
-        label: '',
-        description: '',
-        order: p.length,
-        required: false,
-        redirectUrl: '',
-        paymentMethods: '',
-        acceptedFileTypes: '',
-        confirmationMessage: '',
-      },
-    ])
+    setWindows((p) => {
+      if (p.length >= MAX_WINDOWS) return p
+      return [
+        ...p,
+        {
+          id: crypto.randomUUID(),
+          type: 'payment-form',
+          label: '',
+          description: '',
+          order: p.length,
+          required: false,
+          redirectUrl: '',
+          paymentMethods: '',
+          acceptedFileTypes: '',
+          confirmationMessage: '',
+          actionKey: 'pay-cash',
+        },
+      ]
+    })
   const updWindow = (id: string, field: string, value: string | number | boolean) =>
     setWindows((p) => p.map((w) => (w.id === id ? { ...w, [field]: value } : w)))
   const remWindow = (id: string) => setWindows((p) => p.filter((w) => w.id !== id))
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (step < LAST_STEP) return // Evitar submit accidental al cambiar de pasos
     setAlert(null)
 
     if (!sku.trim()) {
@@ -182,6 +331,10 @@ export function useProductForm() {
     }
     if (!name.trim()) {
       setAlert({ type: 'error', message: 'El nombre es obligatorio.' })
+      return
+    }
+    if (usesThirdParty && !globalThirdPartyProvider.trim()) {
+      setAlert({ type: 'error', message: 'Selecciona un proveedor de precios de terceros.' })
       return
     }
 
@@ -194,69 +347,72 @@ export function useProductForm() {
         description: description.trim(),
         type,
         category: category.trim(),
-        tags: tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
+        tags,
         images,
-        currentStock,
-        minimumStock,
+        currentStock: hasStock ? currentStock : 0,
+        minimumStock: hasStock ? minimumStock : 0,
         hasValidity,
         validFrom: hasValidity ? validFrom : null,
         validTo: hasValidity ? validTo : null,
         attributes,
-        priceLists: priceLists.map((p) => ({
-          currency: p.currency,
-          amount: p.amount,
-          source: p.source,
-          thirdPartyProvider: p.source === 'third-party' ? p.thirdPartyProvider : null,
-          thirdPartyRef: p.source === 'third-party' ? p.thirdPartyRef : null,
-          lastSyncAt: null,
-        })),
-        discounts: discounts.map((d) => ({
-          startDate: d.startDate,
-          endDate: d.endDate,
-          percentage: d.percentage,
-          description: d.description,
-        })),
-        paymentMode,
-        maxQuotas,
-        interestRate,
+        priceLists: usesThirdParty
+          ? []
+          : priceLists.map((p) => ({
+              currency: p.currency,
+              amount: p.amount,
+              source: p.source,
+              thirdPartyProvider: p.source === 'third-party' ? p.thirdPartyProvider : null,
+              thirdPartyRef: p.source === 'third-party' ? p.thirdPartyRef : null,
+              lastSyncAt: null,
+            })),
+        discounts: usesThirdParty
+          ? []
+          : discounts.map((d) => ({
+              startDate: d.startDate,
+              endDate: d.endDate,
+              percentage: d.percentage,
+              description: d.description,
+            })),
+        paymentMode: usesProviderManagedPayment ? 'cash' : paymentMode,
+        paymentPeriod: usesProviderManagedPayment || paymentMode === 'cash' ? null : paymentPeriod,
+        maxQuotas: usesProviderManagedPayment ? 1 : maxQuotas,
+        interestType: usesProviderManagedPayment ? 'none' : interestType,
+        interestRate: usesProviderManagedPayment ? 0 : interestType === 'none' ? 0 : interestRate,
+        initialPayment: usesProviderManagedPayment ? 0 : initialPayment,
         usesThirdPartyPricing: usesThirdParty,
-        windows: windows.map((w) => ({
-          type: w.type,
-          label: w.label,
-          description: w.description,
-          order: w.order,
-          required: w.required,
-          config: {
-            redirectUrl: w.type === 'external-redirect' ? w.redirectUrl : undefined,
-            paymentMethods:
-              w.type === 'payment-form'
-                ? w.paymentMethods
-                    .split(',')
-                    .map((m) => m.trim())
-                    .filter(Boolean)
-                : undefined,
-            acceptedFileTypes:
-              w.type === 'document-upload'
-                ? w.acceptedFileTypes
-                    .split(',')
-                    .map((t) => t.trim())
-                    .filter(Boolean)
-                : undefined,
-            confirmationMessage:
-              w.type === 'confirmation-dialog' ? w.confirmationMessage : undefined,
-          },
-        })),
+        globalThirdPartyProvider: usesThirdParty ? globalThirdPartyProvider : null,
+        windows: windows.slice(0, MAX_WINDOWS).map((w) => {
+          const defaultLabel =
+            w.type === 'payment-form'
+              ? 'Formulario de pago'
+              : w.type === 'custom-form'
+                ? 'Formulario personalizado'
+                : 'Redireccion externa'
+          return {
+            type: w.type,
+            label: defaultLabel,
+            description: 'Accion de compra del producto',
+            order: w.order,
+            required: true,
+            config: {
+              redirectUrl: w.type !== 'payment-form' ? w.actionKey : undefined,
+              paymentMethods: w.type === 'payment-form' ? [w.actionKey] : undefined,
+            },
+          }
+        }),
         marketplaceId: null,
       }
 
-      await productService.create(input)
-      setAlert({ type: 'success', message: 'Producto creado exitosamente.' })
+      if (isEdit) {
+        await productService.update(productId!, input)
+        setAlert({ type: 'success', message: 'Producto actualizado exitosamente.' })
+      } else {
+        await productService.create(input)
+        setAlert({ type: 'success', message: 'Producto creado exitosamente.' })
+      }
       setTimeout(() => router.push('/dashboard/products'), 1500)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al crear producto.'
+      const msg = err instanceof Error ? err.message : 'Error al guardar el producto.'
       setAlert({ type: 'error', message: msg })
     } finally {
       setIsLoading(false)
@@ -270,6 +426,7 @@ export function useProductForm() {
     setAlert,
     sku,
     setSku,
+    generateRandomSku,
     name,
     setName,
     description,
@@ -281,10 +438,16 @@ export function useProductForm() {
     categories,
     tags,
     setTags,
+    tagInput,
+    setTagInput,
+    addTag,
+    remTag,
     currentStock,
     setCurrentStock,
     minimumStock,
     setMinimumStock,
+    hasStock,
+    setHasStock,
     hasValidity,
     setHasValidity,
     validFrom,
@@ -299,6 +462,7 @@ export function useProductForm() {
     imageInput,
     setImageInput,
     addImage,
+    addImageFromGallery,
     remImage,
     priceLists,
     addPrice,
@@ -310,12 +474,23 @@ export function useProductForm() {
     remDiscount,
     usesThirdParty,
     setUsesThirdParty,
+    globalThirdPartyProvider,
+    usesProviderManagedPayment,
+    isThirdPartyProviderPending,
+    setGlobalThirdPartyProvider,
     paymentMode,
     setPaymentMode,
+    paymentPeriod,
+    setPaymentPeriod,
     maxQuotas,
     setMaxQuotas,
+    interestType,
+    setInterestType,
     interestRate,
     setInterestRate,
+    initialPayment,
+    setInitialPayment,
+    isSubmitBlocked,
     windows,
     addWindow,
     updWindow,
@@ -323,5 +498,6 @@ export function useProductForm() {
     handleNext,
     handleBack,
     handleSubmit,
+    isEdit,
   }
 }
