@@ -7,6 +7,9 @@ import { GalleryModule } from './modules/gallery/gallery.module';
 import { HealthModule } from './modules/health/health.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { ProductModule } from './modules/product/product.module';
+import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { PasswordRecoveryModule } from './modules/password-recovery/password-recovery.module';
 
 /**
  * Modulo raiz de la aplicacion NestJS.
@@ -39,6 +42,9 @@ import { ProductModule } from './modules/product/product.module';
     GalleryModule,
     MarketplaceModule,
     ProductModule,
+    WhatsAppModule,
+    NotificationModule,
+    PasswordRecoveryModule,
   ],
 })
 export class AppModule {}

@@ -34,13 +34,19 @@ export class AuthGuard implements CanActivate {
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
+    let token: string | undefined;
     const header = request.headers.authorization;
 
-    if (!header?.startsWith('Bearer ')) {
+    if (header?.startsWith('Bearer ')) {
+      token = header.slice(7);
+    } else if (request.query.token) {
+      token = String(request.query.token);
+    }
+
+    if (!token) {
       throw new UnauthorizedException('Token de autenticacion requerido.');
     }
 
-    const token = header.slice(7);
     const session = await this.validateSessionUseCase.execute(token);
 
     request.session = session;

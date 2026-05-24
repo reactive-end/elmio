@@ -12,10 +12,90 @@ interface ProductsSectionProps {
 
 /**
  * Renderiza la seccion de productos con carrusel horizontal navegable.
+ * Carga dinámicamente los productos activos del backend (auto-poblado o filtrado por ID).
  */
 export function ProductsSection({ seccion }: ProductsSectionProps) {
   const { contenido, estilo } = seccion
-  const productos = contenido.elementos
+  
+  const [listaProductos, setListaProductos] = useState<any[]>([])
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    let cancelado = false
+
+    const cargarProductos = async () => {
+      try {
+        setCargando(true)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'}/products`)
+        if (!res.ok) throw new Error(`Error al listar productos: ${res.status}`)
+        const allProducts = (await res.json()) as { id: string; name: string; description: string; images: string[]; active: boolean; type: string; priceLists: { currency: string; amount: number }[] }[]
+        
+        if (cancelado) return
+
+        // Filtrar solo productos activos
+        const activeProducts = allProducts.filter((p) => p.active)
+        
+        let filtered: any[] = []
+        const hasSpecificIds = contenido.productosIds && contenido.productosIds.length > 0
+        const isAutoPopulate = contenido.autoPoblarProductos === true
+        
+        if (hasSpecificIds) {
+          // Filtrar por IDs específicos indicados en el editor
+          filtered = activeProducts.filter((p) => contenido.productosIds.includes(p.id))
+        } else {
+          // Mostrar todos los activos si es auto-poblar o si no hay elementos manuales
+          filtered = activeProducts
+        }
+
+        // Mapear los productos reales al formato compatible de ElementoSeccion
+        const mapped = filtered.map((p) => {
+          const priceStr = p.priceLists?.[0]
+            ? `${p.priceLists[0].currency} ${Number(p.priceLists[0].amount).toLocaleString()}`
+            : ''
+            
+          return {
+            id: p.id,
+            titulo: p.name,
+            descripcion: p.description || '',
+            imagenUrl: p.images?.[0] || '',
+            enlaceUrl: priceStr, // Usamos la etiqueta para mostrar el precio formateado
+            textoBoton: p.type === 'LOAN' ? 'Solicitar' : 'Comprar',
+            enlaceBoton: `/dashboard/enterprise/shop?product=${p.id}`,
+          }
+        })
+        
+        setListaProductos(mapped)
+      } catch (err) {
+        console.error('Error al cargar productos en ProductsSection:', err)
+        // Fallback a los elementos estáticos en caso de error
+        if (!cancelado) {
+          setListaProductos(contenido.elementos ?? [])
+        }
+      } finally {
+        if (!cancelado) {
+          setCargando(false)
+        }
+      }
+    }
+    
+    // Si tenemos elementos manuales configurados y no es auto-poblar ni específico, usarlos
+    const hasStaticElements = contenido.elementos && contenido.elementos.length > 0
+    const isAutoPopulate = contenido.autoPoblarProductos === true
+    const hasSpecificIds = contenido.productosIds && contenido.productosIds.length > 0
+    
+    if (hasStaticElements && !isAutoPopulate && !hasSpecificIds) {
+      setListaProductos(contenido.elementos)
+      setCargando(false)
+    } else {
+      void cargarProductos()
+    }
+
+    return () => {
+      cancelado = true
+    }
+  }, [contenido.productosIds, contenido.autoPoblarProductos, contenido.elementos])
+
+  const productos = listaProductos
   const autoplay = contenido.autoplay !== false
   const velocidad = contenido.autoplayVelocidad || 5000
 
@@ -41,7 +121,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
   )
 
   useEffect(() => {
-    if (!autoplay || !puedeAvanzar) return
+    if (!autoplay || !puedeAvanzar || cargando) return
     intervalRef.current = setInterval(() => {
       setIndiceActual((prev) => {
         const next = prev >= maxIndice ? 0 : prev + 1
@@ -52,7 +132,18 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [autoplay, puedeAvanzar, maxIndice, velocidad, paso])
+  }, [autoplay, puedeAvanzar, maxIndice, velocidad, paso, cargando])
+
+  if (cargando) {
+    return (
+      <SectionContainer estilo={estilo} id={contenido.htmlId || undefined}>
+        <div className="mx-auto px-4 text-center py-12">
+          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
+          <p className="text-xs text-gray-400 mt-2">Cargando productos...</p>
+        </div>
+      </SectionContainer>
+    )
+  }
 
   if (productos.length === 0) return null
 
@@ -75,7 +166,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                 type="button"
                 onClick={() => desplazarA(indiceActual - 1)}
                 disabled={indiceActual === 0}
-                className="absolute -left-6 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 md:flex"
+                className="absolute -left-6 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 md:flex cursor-pointer"
               >
                 <svg
                   width="24"
@@ -92,7 +183,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                 type="button"
                 onClick={() => desplazarA(indiceActual + 1)}
                 disabled={indiceActual >= maxIndice}
-                className="absolute -right-6 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 md:flex"
+                className="absolute -right-6 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 md:flex cursor-pointer"
               >
                 <svg
                   width="24"
@@ -120,7 +211,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {productos.map((producto) => (
                 <div
                   key={producto.id}
-                  className="shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md"
+                  className="shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white"
                   style={{
                     width: anchoTarjeta,
                     backgroundColor: estilo.tarjetaColorFondo || '#ffffff',
@@ -131,7 +222,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                   }}
                 >
                   <div
-                    className="relative h-32 bg-gray-100"
+                    className="relative h-32 bg-gray-50"
                     style={{ height: estilo.altoImagenProducto || 200 }}
                   >
                     {producto.imagenUrl ? (
@@ -141,7 +232,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-gray-400">
+                      <div className="flex h-full items-center justify-center text-[10px] text-gray-400 font-semibold bg-gray-50 uppercase tracking-wider">
                         Sin imagen
                       </div>
                     )}
@@ -149,7 +240,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                   <div className="p-4">
                     {producto.enlaceUrl && (
                       <span
-                        className="mb-2 inline-block bg-secondary/10 px-2.5 py-1 text-[10px] font-semibold text-secondary"
+                        className="mb-2 inline-block bg-secondary/10 px-2.5 py-1 text-[10px] font-bold text-secondary"
                         style={{ borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 8 }}
                       >
                         {producto.enlaceUrl}
@@ -167,7 +258,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       {producto.enlaceBoton ? (
                         <ActionableLink
                           href={producto.enlaceBoton}
-                          className="block w-full py-2 text-center text-sm font-medium transition-colors"
+                          className="block w-full py-2 text-center text-sm font-medium transition-colors cursor-pointer"
                           style={{
                             backgroundColor: estilo.botonColorFondo || '#0f4ece',
                             color: estilo.botonColorTexto || '#fff',
@@ -182,7 +273,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       ) : (
                         <button
                           type="button"
-                          className="block w-full py-2 text-center text-sm font-medium transition-colors"
+                          className="block w-full py-2 text-center text-sm font-medium transition-colors cursor-pointer"
                           style={{
                             backgroundColor: estilo.botonColorFondo || '#0f4ece',
                             color: estilo.botonColorTexto || '#fff',
@@ -207,7 +298,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           <div className="mt-10 text-center">
             <ActionableLink
               href={contenido.enlaceBoton}
-              className="inline-flex items-center px-6 py-3 font-semibold shadow transition-transform hover:scale-105"
+              className="inline-flex items-center px-6 py-3 font-semibold shadow transition-transform hover:scale-105 cursor-pointer"
               style={{
                 backgroundColor: estilo.botonColorFondo || '#0f4ece',
                 color: estilo.botonColorTexto || '#fff',

@@ -137,6 +137,44 @@ export function useMarketplaces() {
     }
   }
 
+  // Importar un marketplace desde un JSON
+  const importarMarketplace = async (importedData: any) => {
+    try {
+      setCargando(true)
+      const userSession = authService.getSession()
+      await marketplaceService.importMarketplace(importedData, userSession)
+      await cargarMarketplaces()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al importar el marketplace.')
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  // Exportar un marketplace a un JSON descargable
+  const exportarMarketplace = async (id: string) => {
+    try {
+      setCargando(true)
+      const fullConfig = await marketplaceService.getById(id)
+      
+      const dataStr = JSON.stringify(fullConfig, null, 2)
+      const blob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${fullConfig.slug || 'marketplace'}-config.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al exportar el marketplace.')
+    } finally {
+      setCargando(false)
+    }
+  }
+
   const filtered = useMemo(() => {
     const s = search.toLowerCase()
     return marketplaces.filter(
@@ -173,5 +211,7 @@ export function useMarketplaces() {
     handleCrear,
     filtered,
     esAdmin,
+    importarMarketplace,
+    exportarMarketplace,
   }
 }

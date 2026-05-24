@@ -37,14 +37,12 @@ export class ProductController {
   ) {}
 
   /** GET /api/products - Lista todos los productos. */
-  @UseGuards(AuthGuard)
   @Get()
   async list(): Promise<Product[]> {
     return this.listProducts.execute();
   }
 
   /** GET /api/products/:id - Obtiene un producto por ID. */
-  @UseGuards(AuthGuard)
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Product> {
     return this.getProductById.execute(id);

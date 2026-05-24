@@ -6,13 +6,14 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { formatPhoneDisplay, stripPhoneFormat } from '@/src/utils/phoneFormat'
 import { authService } from '@/src/services/auth.service'
+import { recoveryService } from '@/src/services/recovery.service'
 import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 
 gsap.registerPlugin(useGSAP)
 
 type LoginMethod = 'phone' | 'email'
-type LoginStage = 'identifier' | 'password'
-type SelectorStage = 'profiles' | 'password'
+type LoginStage = 'identifier'
+type SelectorStage = 'profiles' | 'password' | 'recovery-otp' | 'recovery-reset'
 
 interface AlertState {
   type: 'error' | 'success' | 'warning' | 'info'
@@ -26,14 +27,23 @@ const DEFAULT_COUNTRY: CountryCode = {
   name: 'Venezuela',
 }
 
+interface ProfileItem {
+  userId: string
+  name: string
+  role: 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT'
+  email: string
+}
+
 /**
- * Hook que encapsula toda la logica del formulario de inicio de sesion:
- * cambio de tabs, validacion, estado de carga y animaciones GSAP.
+ * Hook que encapsula toda la logica del formulario de inicio de sesion,
+ * la modal de seleccion de perfiles, ingreso de contrasena y el flujo
+ * ultra-premium de recuperacion de contrasena via OTP en varios pasos.
  */
 export function useLoginForm() {
   const router = useRouter()
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone')
-  const [stage, setStage] = useState<LoginStage>('identifier')
+  // El stage principal se mantiene siempre en identifier
+  const [stage] = useState<LoginStage>('identifier')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY)
@@ -42,17 +52,18 @@ export function useLoginForm() {
   const [alert, setAlert] = useState<AlertState | null>(null)
   const [rawDigits, setRawDigits] = useState('')
 
-  // Estados para manejo de múltiples perfiles
-  const [profiles, setProfiles] = useState<
-    Array<{ userId: string; name: string; role: 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT' }>
-  >([])
+  // Estados para el selector/modal
+  const [profiles, setProfiles] = useState<ProfileItem[]>([])
   const [showSelector, setShowSelector] = useState(false)
   const [selectorStage, setSelectorStage] = useState<SelectorStage>('profiles')
-  const [selectedProfile, setSelectedProfile] = useState<{
-    userId: string
-    name: string
-    role: 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT'
-  } | null>(null)
+  const [selectedProfile, setSelectedProfile] = useState<ProfileItem | null>(null)
+
+  // Estados para el flujo de recuperacion de contrasena
+  const [otpCode, setOtpCode] = useState('')
+  const [resetToken, setResetToken] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [recoveryChannel, setRecoveryChannel] = useState<'whatsapp' | 'email' | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -80,7 +91,6 @@ export function useLoginForm() {
   const switchTab = (method: LoginMethod) => {
     if (method === loginMethod) return
     setLoginMethod(method)
-    setStage('identifier')
     setAlert(null)
     setPassword('')
     setProfiles([])
@@ -97,6 +107,7 @@ export function useLoginForm() {
     }
   }
 
+  // 1. Envío del Identificador
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setAlert(null)
@@ -114,31 +125,26 @@ export function useLoginForm() {
         throw new Error('El número de teléfono debe tener 7 dígitos.')
       }
 
-      if (stage === 'identifier') {
-        const res = await authService.discoverProfiles(loginVal)
+      // Descubrir perfiles
+      const res = await authService.discoverProfiles(loginVal) as { profiles: ProfileItem[] }
 
-        if (res.profiles.length > 1) {
-          setProfiles(res.profiles)
-          setSelectedProfile(null)
-          setPassword('')
-          setSelectorStage('profiles')
-          setShowSelector(true)
-          return
-        }
-
-        if (res.profiles.length === 1) {
-          setSelectedProfile(res.profiles[0])
-          setStage('password')
-          return
-        }
+      if (res.profiles.length > 1) {
+        setProfiles(res.profiles)
+        setSelectedProfile(null)
+        setPassword('')
+        setSelectorStage('profiles')
+        setShowSelector(true)
+        return
       }
 
-      if (!password.trim()) {
-        throw new Error('La contrasena es obligatoria.')
+      if (res.profiles.length === 1) {
+        setProfiles(res.profiles)
+        setSelectedProfile(res.profiles[0])
+        setPassword('')
+        setSelectorStage('password')
+        setShowSelector(true)
+        return
       }
-
-      await authService.login(loginVal, password, selectedProfile?.userId)
-      router.push('/dashboard')
     } catch (err) {
       setAlert({
         type: 'error',
@@ -149,6 +155,7 @@ export function useLoginForm() {
     }
   }
 
+  // Selección de perfil (Múltiples perfiles)
   const handleSelectProfile = (userId: string) => {
     const profile = profiles.find((item) => item.userId === userId) ?? null
     if (!profile) return
@@ -159,6 +166,7 @@ export function useLoginForm() {
     setPassword('')
   }
 
+  // 2. Envío de Contraseña en la Modal
   const handleSelectorPasswordSubmit = async () => {
     setAlert(null)
     setIsLoading(true)
@@ -172,7 +180,7 @@ export function useLoginForm() {
       }
 
       if (!password.trim()) {
-        throw new Error('La contrasena es obligatoria.')
+        throw new Error('La contraseña es obligatoria.')
       }
 
       await authService.login(loginVal, password, selectedProfile.userId)
@@ -188,26 +196,131 @@ export function useLoginForm() {
     }
   }
 
-  const handleSelectorBack = () => {
-    if (selectorStage === 'password') {
-      setSelectorStage('profiles')
-      setSelectedProfile(null)
+  // 3. Solicitar Código OTP desde la modal
+  const handleRequestRecovery = async () => {
+    if (!selectedProfile) return
+    setAlert(null)
+    setIsLoading(true)
+
+    try {
+      const res = await recoveryService.request(selectedProfile.email)
+      setRecoveryChannel(res.channel)
+      setOtpCode('')
+      setSelectorStage('recovery-otp')
+      setAlert({
+        type: 'success',
+        message: `Se ha enviado un código de recuperación a tu ${
+          res.channel === 'whatsapp' ? 'WhatsApp' : 'Correo electrónico'
+        }.`,
+      })
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Fallo al solicitar código.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 4. Verificar Código OTP en la modal
+  const handleVerifyOtpSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!selectedProfile) return
+    if (otpCode.length < 6) {
+      setAlert({ type: 'error', message: 'El código OTP debe ser de 6 dígitos.' })
+      return
+    }
+
+    setAlert(null)
+    setIsLoading(true)
+
+    try {
+      const res = await recoveryService.verify(selectedProfile.email, otpCode)
+      setResetToken(res.resetToken)
+      setNewPassword('')
+      setConfirmNewPassword('')
+      setSelectorStage('recovery-reset')
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Código incorrecto.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 5. Restablecer contraseña final en la modal
+  const handleResetPasswordSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!newPassword.trim()) {
+      setAlert({ type: 'error', message: 'La nueva contraseña es obligatoria.' })
+      return
+    }
+    if (newPassword.length < 6) {
+      setAlert({ type: 'error', message: 'La contraseña debe tener al menos 6 caracteres.' })
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      setAlert({ type: 'error', message: 'Las contraseñas no coinciden.' })
+      return
+    }
+
+    setAlert(null)
+    setIsLoading(true)
+
+    try {
+      await recoveryService.reset(resetToken, newPassword)
+      
+      // Volver a la modal de contraseña para ingresar con la nueva contrasena
+      setSelectorStage('password')
       setPassword('')
+      setAlert({
+        type: 'success',
+        message: 'Contraseña actualizada correctamente. Ingresa ahora con tu nueva contraseña.',
+      })
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Error al restablecer la contraseña.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Retroceder de paso en la modal
+  const handleSelectorBack = () => {
+    if (selectorStage === 'recovery-otp') {
+      setSelectorStage('password')
       setAlert(null)
+      return
+    }
+
+    if (selectorStage === 'recovery-reset') {
+      setSelectorStage('recovery-otp')
+      setAlert(null)
+      return
+    }
+
+    if (selectorStage === 'password') {
+      if (profiles.length > 1) {
+        setSelectorStage('profiles')
+        setSelectedProfile(null)
+        setPassword('')
+        setAlert(null)
+      } else {
+        setShowSelector(false)
+        setSelectedProfile(null)
+        setPassword('')
+        setAlert(null)
+      }
       return
     }
 
     setShowSelector(false)
     setSelectedProfile(null)
-    setPassword('')
-    setAlert(null)
-  }
-
-  const handleBackToIdentifier = () => {
-    setStage('identifier')
-    setSelectedProfile(null)
-    setProfiles([])
-    setSelectorStage('profiles')
     setPassword('')
     setAlert(null)
   }
@@ -230,6 +343,10 @@ export function useLoginForm() {
     profiles,
     showSelector,
     selectorStage,
+    otpCode,
+    newPassword,
+    confirmNewPassword,
+    recoveryChannel,
     containerRef,
     contentRef,
     tabIndicatorRef,
@@ -239,12 +356,17 @@ export function useLoginForm() {
     setOperatorPrefix,
     setAlert,
     setShowSelector,
+    setOtpCode,
+    setNewPassword,
+    setConfirmNewPassword,
     handlePhoneChange,
     handleSubmit,
     handleSelectProfile,
     handleSelectorPasswordSubmit,
+    handleRequestRecovery,
+    handleVerifyOtpSubmit,
+    handleResetPasswordSubmit,
     handleSelectorBack,
-    handleBackToIdentifier,
     switchTab,
   }
 }

@@ -237,6 +237,10 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
             onChangeWhatsapp={(ws) =>
               editor.setMarketplace({ ...editor.marketplace, whatsapp: ws })
             }
+            carrito={editor.marketplace.carrito}
+            onChangeCarrito={(cart) =>
+              editor.setMarketplace({ ...editor.marketplace, carrito: cart })
+            }
           />
         )}
 

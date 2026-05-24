@@ -1,0 +1,42 @@
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import type { Request } from 'express';
+import type { UserRole } from '../../domain/user';
+import type { UserSession } from '../../domain/user';
+import { ROLES_KEY } from './roles.decorator';
+
+/**
+ * Guard NestJS que verifica si el usuario autenticado posee
+ * alguno de los roles requeridos por el endpoint.
+ * Debe usarse después de AuthGuard para que `request.session` esté disponible.
+ */
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
+  /**
+   * Evalúa si el usuario tiene uno de los roles requeridos.
+   * Si no se definieron roles con el decorador @Roles, permite el acceso.
+   * @param context - Contexto de ejecución de NestJS.
+   * @returns `true` si no hay roles requeridos o el rol del usuario está incluido.
+   */
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const request = context.switchToHttp().getRequest<Request>();
+    const session = request.session as UserSession | undefined;
+
+    if (!session) {
+      return false;
+    }
+
+    return requiredRoles.includes(session.role);
+  }
+}

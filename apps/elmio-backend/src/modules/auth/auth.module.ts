@@ -12,6 +12,7 @@ import { DbAuthRepositoryService } from './infrastructure/db-auth-repository.ser
 import { AuthSeedService } from './infrastructure/auth-seed.service';
 import { UserEntity } from './infrastructure/entities/user.entity';
 import { AuthGuard } from './presentation/guards/auth.guard';
+import { RolesGuard } from './presentation/guards/roles.guard';
 import { AuthController } from './presentation/http/auth.controller';
 
 /**
@@ -43,6 +44,7 @@ import { AuthController } from './presentation/http/auth.controller';
     DbAuthRepositoryService,
     AuthSeedService,
     AuthGuard,
+    RolesGuard,
     {
       provide: AUTH_REPOSITORY_PORT,
       useClass: DbAuthRepositoryService,
@@ -50,9 +52,11 @@ import { AuthController } from './presentation/http/auth.controller';
   ],
   exports: [
     AuthGuard,
+    RolesGuard,
     ValidateSessionUseCase,
     AUTH_REPOSITORY_PORT,
     TypeOrmModule,
+    JwtModule,
   ],
 })
 export class AuthModule {}

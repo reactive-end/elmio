@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, ExternalLink, Search, ShieldAlert, Trash2, X } from 'lucide-react'
+import { Plus, Pencil, ExternalLink, Search, ShieldAlert, Trash2, X, Download, Upload } from 'lucide-react'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
@@ -37,6 +37,8 @@ export default function MarketplacesPage() {
     handleCrear,
     filtered,
     esAdmin,
+    importarMarketplace,
+    exportarMarketplace,
   } = useMarketplaces()
 
   // Estados locales para el modal de confirmación SweetAlert
@@ -85,10 +87,44 @@ export default function MarketplacesPage() {
               : 'Administra tus múltiples configuraciones y rota la versión activa'}
           </p>
         </div>
-        <Button onClick={() => setModalAbierto(true)}>
-          <Plus className="w-4 h-4" strokeWidth={1.5} />
-          Nueva versión / marketplace
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* File Input invisible para importar */}
+          <input
+            type="file"
+            id="import-file-input"
+            accept=".json"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              const reader = new FileReader()
+              reader.onload = async (evt) => {
+                try {
+                  const content = evt.target?.result as string
+                  const json = JSON.parse(content)
+                  await importarMarketplace(json)
+                  alert('¡Marketplace importado con éxito!')
+                } catch (err) {
+                  alert(err instanceof Error ? err.message : 'Error al procesar el archivo JSON.')
+                }
+              }
+              reader.readAsText(file)
+              e.target.value = '' // Reset
+            }}
+            className="hidden"
+          />
+          <Button
+            variant="ghost"
+            onClick={() => document.getElementById('import-file-input')?.click()}
+            className="border border-gray-200"
+          >
+            <Upload className="w-4 h-4" strokeWidth={1.5} />
+            Importar
+          </Button>
+          <Button onClick={() => setModalAbierto(true)}>
+            <Plus className="w-4 h-4" strokeWidth={1.5} />
+            Nueva versión
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -204,6 +240,13 @@ export default function MarketplacesPage() {
                           >
                             <Pencil className="w-4 h-4" strokeWidth={1.5} />
                           </Link>
+                          <button
+                            onClick={() => void exportarMarketplace(m.id)}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-secondary hover:bg-secondary/5 transition-colors border border-transparent hover:border-secondary/20"
+                            title="Exportar Configuración (JSON)"
+                          >
+                            <Download className="w-4 h-4" strokeWidth={1.5} />
+                          </button>
                           <Link
                             href={publicUrl}
                             target="_blank"

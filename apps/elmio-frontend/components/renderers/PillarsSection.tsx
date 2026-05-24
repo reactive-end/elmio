@@ -1,5 +1,6 @@
 'use client'
 
+import * as Icons from 'lucide-react'
 import { SectionContainer } from './SectionContainer'
 import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import type { SeccionMarketplace, PilarItem } from '@/src/utils/editor-types.d'
@@ -20,6 +21,16 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
 
   const isZigzag = estilo.layoutPilares === 'zigzag'
 
+  // Distribución del grid inteligente según el número de elementos
+  const gridColsClass = 
+    items.length === 1 
+      ? "grid-cols-1 max-w-xl mx-auto" 
+      : items.length === 2 
+        ? "sm:grid-cols-2 max-w-3xl mx-auto" 
+        : items.length === 3 
+          ? "sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto" 
+          : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+
   return (
     <SectionContainer estilo={estilo}>
       <div className="container mx-auto px-4">
@@ -39,7 +50,7 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
           </div>
         )}
 
-        <div className={isZigzag ? "flex flex-col gap-12" : "grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}>
+        <div className={isZigzag ? "flex flex-col gap-12" : `grid gap-6 ${gridColsClass}`}>
           {items.map((item: any, idx) => (
             <div
               key={item.id ?? idx}
@@ -58,14 +69,35 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
             >
               {item.icono ? (
                 <div className={isZigzag ? "w-1/3 shrink-0" : ""}>
-                  <img
-                    src={item.icono}
-                    alt={item.titulo}
-                    className={`mb-4 object-contain ${isZigzag ? 'h-32 w-full object-center' : 'h-12 w-12'}`}
-                  />
+                  {(() => {
+                    const LucideIcon = (Icons as any)[item.icono]
+                    if (LucideIcon) {
+                      return (
+                        <LucideIcon
+                          className={`mb-4 text-secondary shrink-0 ${
+                            isZigzag ? 'h-16 w-16 mx-auto sm:mx-0' : 'h-12 w-12 mx-auto'
+                          }`}
+                          strokeWidth={1.5}
+                        />
+                      )
+                    }
+                    return (
+                      <img
+                        src={item.icono}
+                        alt={item.titulo}
+                        className={`mb-4 object-contain ${
+                          isZigzag ? 'h-32 w-full object-center' : 'h-12 w-12 mx-auto'
+                        }`}
+                      />
+                    )
+                  })()}
                 </div>
               ) : (
-                <div className={`mb-4 flex items-center justify-center rounded-full bg-secondary/20 text-secondary shrink-0 ${isZigzag ? 'h-24 w-24' : 'h-12 w-12'}`}>
+                <div
+                  className={`mb-4 flex items-center justify-center rounded-full bg-secondary/20 text-secondary shrink-0 ${
+                    isZigzag ? 'h-24 w-24' : 'h-12 w-12'
+                  }`}
+                >
                   <svg
                     width={isZigzag ? "48" : "24"}
                     height={isZigzag ? "48" : "24"}
@@ -80,7 +112,7 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
                   </svg>
                 </div>
               )}
-              <div className="flex flex-col flex-1">
+              <div className="flex flex-col flex-1 w-full">
                 <h3
                   className="mb-2 font-semibold"
                   style={{ color: estilo.tituloColor, fontSize: 18 }}

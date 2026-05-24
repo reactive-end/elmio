@@ -11,10 +11,21 @@ interface DualBannerSectionProps {
 
 /**
  * Renderiza dos banners lado a lado con imagen, texto y boton por tarjeta.
+ * Soporta de forma defensiva mapeos tanto en español como inglés.
  */
 export function DualBannerSection({ seccion }: DualBannerSectionProps) {
   const { contenido, estilo } = seccion
-  const banners = contenido.elementos.slice(0, 2) as ElementoSeccion[]
+  
+  // Mapear de forma defensiva en caliente para tolerar claves en inglés y español
+  const rawBanners = (contenido.elementos ?? (contenido as any).elements ?? []) as any[]
+  const banners = rawBanners.slice(0, 2).map((b) => ({
+    id: b.id,
+    titulo: b.titulo ?? b.title ?? '',
+    descripcion: b.descripcion ?? b.description ?? '',
+    imagenUrl: b.imagenUrl ?? b.imageUrl ?? '',
+    textoBoton: b.textoBoton ?? b.buttonText ?? '',
+    enlaceBoton: b.enlaceBoton ?? b.buttonLink ?? '',
+  }))
 
   if (banners.length < 2) return null
 

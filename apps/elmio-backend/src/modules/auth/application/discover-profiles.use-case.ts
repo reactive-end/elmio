@@ -10,6 +10,7 @@ export interface DiscoverProfilesOutput {
     userId: string;
     name: string;
     role: UserRole;
+    email: string;
   }>;
 }
 
@@ -45,6 +46,7 @@ export class DiscoverProfilesUseCase {
         userId: user.id,
         name: user.name,
         role: user.role,
+        email: user.email,
       })),
     };
   }

@@ -27,6 +27,7 @@ function mapSectionTypeToFrontend(type: string): TipoSeccion {
     text: 'texto',
     strip: 'franja',
     'dual-banner': 'doble-banner',
+    'double-banner': 'doble-banner',
   }
   return map[type] ?? (type as TipoSeccion)
 }
@@ -175,7 +176,8 @@ function mapToFrontend(item: any): DatosMarketplace {
           id: sub.id,
           label: sub.label ?? '',
           href: sub.href ?? '',
-          descripcion: sub.descripcion ?? sub.descripcion ?? '',
+          descripcion: sub.description ?? sub.descripcion ?? '',
+          icono: sub.icon ?? sub.icono ?? '',
         })),
       })),
     }
@@ -326,6 +328,7 @@ function mapToBackend(frontendItem: DatosMarketplace): any {
           label: sub.label,
           href: sub.href,
           description: sub.descripcion,
+          icon: sub.icono,
         })),
       })),
     }
@@ -395,7 +398,9 @@ export const marketplaceService = {
    * @returns Configuracion completa del marketplace para renderizado publico.
    */
   async getBySlug(slug: string): Promise<DatosMarketplace> {
-    const response = await fetch(`${API_BASE}/marketplaces/slug/${encodeURIComponent(slug)}`)
+    const response = await fetch(`${API_BASE}/marketplaces/slug/${encodeURIComponent(slug)}`, {
+      cache: 'no-store',
+    })
 
     if (!response.ok) {
       throw new Error(`Marketplace "${slug}" no encontrado.`)
@@ -414,6 +419,7 @@ export const marketplaceService = {
   async getById(id: string): Promise<DatosMarketplace> {
     const response = await fetch(`${API_BASE}/marketplaces/${encodeURIComponent(id)}`, {
       headers: { ...authService.getAuthHeaders() },
+      cache: 'no-store',
     })
 
     if (!response.ok) {
@@ -495,5 +501,47 @@ export const marketplaceService = {
     if (!response.ok) {
       throw new Error(`Error al eliminar marketplace: ${response.statusText}`)
     }
+  },
+
+  /**
+   * Importa un marketplace completo a partir de un objeto JSON exportado.
+   * Crea un marketplace básico con el propietario correspondiente y luego guarda la configuración completa.
+   * @param importedData Datos completos importados (en formato frontend o backend).
+   * @param session Sesión del usuario actual.
+   * @returns Datos del marketplace creado e importado.
+   */
+  async importMarketplace(importedData: any, session: any): Promise<DatosMarketplace> {
+    const esAdmin = session?.role === 'ADMIN'
+    const propietario = esAdmin ? 'system' : (session?.userId ?? '')
+
+    // 1. Determinar el formato del JSON importado y mapearlo al estándar frontend
+    let parsed: DatosMarketplace
+    if (importedData.sections || importedData.theme) {
+      parsed = mapToFrontend(importedData)
+    } else {
+      parsed = importedData as DatosMarketplace
+    }
+
+    // 2. Crear la configuración básica
+    const newMarketplace = await this.create({
+      nombre: parsed.nombre ?? 'Marketplace Importado',
+      slug: parsed.slug ?? `import-${Date.now()}`,
+      descripcion: parsed.descripcion ?? '',
+      propietario: propietario,
+      logo: parsed.logo ?? '',
+    })
+
+    // 3. Fusionar con todos los submenús, secciones y estilos y forzar activo = false
+    const fullConfig: DatosMarketplace = {
+      ...parsed,
+      id: newMarketplace.id,
+      nombre: newMarketplace.nombre,
+      slug: newMarketplace.slug,
+      propietario: newMarketplace.propietario,
+      activo: false, // Nunca se toma como activa en la importación inicial
+    }
+
+    // 4. Actualizar con la configuración profunda
+    return await this.update(newMarketplace.id, fullConfig)
   },
 }

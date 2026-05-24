@@ -1,0 +1,648 @@
+{
+  "id": "9610be61-278e-496d-be5c-0eb11252f05a",
+  "name": "Marketplace Default",
+  "isActive": true,
+  "ownerId": null,
+  "sections": [
+    {
+      "id": "main-header",
+      "type": "header",
+      "styles": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#001b36",
+        "accentColor": "#4680f6",
+        "mutedTextColor": "#CBD5E1",
+        "chipBackgroundColor": "#1958e0",
+        "chipTextColor": "#FFFFFF",
+        "headerStyles": {
+          "navBackgroundColor": "#4680f6",
+          "navTextColor": "#001b36",
+          "navHoverTextColor": "#0f4ecf",
+          "navLinkFontSize": "14px",
+          "navPadding": "0.25rem 1rem",
+          "menuWidth": "256px",
+          "menuPadding": "0.5rem",
+          "submenuTextColor": "#0F172A",
+          "submenuHoverTextColor": "#1D4ED8",
+          "topBarLayout": "default",
+          "topBarJustify": "space-between",
+          "topBarAlign": "center",
+          "topBarPadding": "0.75rem 1rem",
+          "searchBarColor": "rgba(255,255,255,0.1)",
+          "searchBarTextColor": "#001b36",
+          "searchBarIconColor": "#FFFFFF",
+          "searchBarBorderColor": "#001b36",
+          "searchBarButtonColor": "#001b36",
+          "searchBarPlaceholderColor": "#001b36",
+          "fontFamily": ""
+        }
+      },
+      "content": {
+        "title": "ElMio Marketplace",
+        "categories": [
+          "Tecnología",
+          "Hogar",
+          "Moda",
+          "Ofertas",
+          "Más vendidos"
+        ],
+        "menu": {
+          "items": [
+            {
+              "id": "categories",
+              "label": "Home",
+              "icon": "grid",
+              "submenus": [
+                {
+                  "id": "tech",
+                  "label": "¿Qué es ElMio?",
+                  "href": "#",
+                  "description": "Visión y Misión"
+                },
+                {
+                  "id": "sub-1771433261433",
+                  "label": "Nuestras Soluciones",
+                  "href": "#",
+                  "description": "Facilitan la vida de las Empresas y sus Empleados"
+                },
+                {
+                  "id": "sub-1772227442745",
+                  "label": "Nuestros Clientes",
+                  "href": "#",
+                  "description": "Empresas, Empleados y Personas Independientes"
+                }
+              ]
+            },
+            {
+              "id": "companies",
+              "label": "Detrás de Elmio",
+              "icon": "building",
+              "submenus": [
+                {
+                  "id": "partners",
+                  "label": "Aliados",
+                  "href": "#",
+                  "description": "Nuestros socios comerciales"
+                },
+                {
+                  "id": "suppliers",
+                  "label": "Proveedores",
+                  "href": "#",
+                  "description": "Catálogo de proveedores"
+                },
+                {
+                  "id": "new-company",
+                  "label": "Nueva Empresa",
+                  "href": "#",
+                  "description": "Registra tu empresa"
+                }
+              ]
+            },
+            {
+              "id": "employees",
+              "label": "Únete",
+              "icon": "users",
+              "submenus": [
+                {
+                  "id": "directory",
+                  "label": "Directorio",
+                  "href": "#",
+                  "description": "Lista de empleados"
+                },
+                {
+                  "id": "benefits",
+                  "label": "Beneficios",
+                  "href": "#",
+                  "description": "Ventajas y descuentos"
+                },
+                {
+                  "id": "training",
+                  "label": "Capacitación",
+                  "href": "#",
+                  "description": "Programas de formación"
+                }
+              ]
+            },
+            {
+              "id": "friends",
+              "label": "Preguntas Frecuentes",
+              "icon": "star",
+              "submenus": [
+                {
+                  "id": "referral",
+                  "label": "Referidos",
+                  "href": "#",
+                  "description": "Invita a tus amigos"
+                },
+                {
+                  "id": "community",
+                  "label": "Comunidad",
+                  "href": "#",
+                  "description": "Únete a la comunidad"
+                },
+                {
+                  "id": "rewards",
+                  "label": "Recompensas",
+                  "href": "#",
+                  "description": "Gana puntos y premios"
+                }
+              ]
+            }
+          ]
+        },
+        "identifyButtonText": "",
+        "cartButtonText": "",
+        "logo": "https://storage.googleapis.com/elmio-img/marketplace/Logo_Oscuro.svg"
+      },
+      "order": 0
+    },
+    {
+      "id": "main-hero",
+      "type": "hero",
+      "styles": {
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#0F172A",
+        "verticalAlign": "center",
+        "horizontalAlign": "center",
+        "contentSpacing": "1rem",
+        "padding": "2rem",
+        "promoBarBackgroundColor": "#878787",
+        "promoBarHeight": "35px",
+        "promoBarLogoSize": "48px",
+        "promoBarTextColor": "#ffffff",
+        "promoBarTextSize": "16px",
+        "promoBarFontFamily": "Georgia"
+      },
+      "content": {
+        "autoplaySpeed": 5000,
+        "slides": [
+          {
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/1980_1080__1_.jpg",
+            "title": "",
+            "subtitle": "",
+            "text": ""
+          },
+          {
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/1980_1080_2.jpg",
+            "title": "",
+            "subtitle": "",
+            "text": ""
+          },
+          {
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/1350_500-1.jpg",
+            "title": "",
+            "subtitle": "",
+            "text": ""
+          }
+        ],
+        "promoBarText": "ELMIO te resuelve",
+        "promoBarUrl": "https://somosrpc.com/",
+        "promoBarLogo": "",
+        "autoplay": true
+      },
+      "order": 1
+    },
+    {
+      "id": "banner-1772018741506",
+      "type": "banner",
+      "styles": {
+        "fontFamily": "WixMadeforText",
+        "contentSpacing": "24px",
+        "paddingTop": "24px",
+        "paddingBottom": "24px",
+        "padding": "2rem 2rem",
+        "backgroundColor": "#ffffff",
+        "textColor": "#2d2d2d",
+        "titleSize": "40px"
+      },
+      "content": {
+        "title": "Tu Plataforma de Confianza",
+        "text": "Somos la Plataforma Worker Tech líder en Venezuela, ofreciendo herramientas que potencian la estabilidad financiera y el bienestar laboral de los Empleados.",
+        "image": "https://storage.googleapis.com/elmio-img/marketplace/800_400.jpg",
+        "buttonText": "",
+        "imagePosition": "left",
+        "slides": []
+      },
+      "order": 2
+    },
+    {
+      "id": "featured-products",
+      "type": "products",
+      "styles": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#0F172A",
+        "accentColor": "#4680f6",
+        "mutedTextColor": "#64748B",
+        "chipBackgroundColor": "#dedede",
+        "chipTextColor": "#2d2d2d",
+        "productImageHeight": "175px",
+        "ratingIcon": "star",
+        "ratingColor": "#ff841f",
+        "useCustomRatingIcons": false,
+        "titleColor": "#001b36",
+        "fontFamily": "Helvetica",
+        "titleGap": "5px",
+        "titleAlign": "left",
+        "buttonBgColor": "#001b36",
+        "paddingTop": "1px",
+        "titleSize": "2rem"
+      },
+      "content": {
+        "title": "Nuestros Productos",
+        "items": [
+          {
+            "id": 1771018594242,
+            "title": "ElMio Resuelve x0.5",
+            "price": "",
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/products/500_500.jpg",
+            "rating": 5,
+            "category": "Prestamo",
+            "isMercantil": false,
+            "requiresLogin": true,
+            "isInstallment": false,
+            "installmentCount": 1,
+            "mercantilInstallments": {
+              "monthly": false,
+              "quarterly": false,
+              "semiannual": false,
+              "annual": false
+            },
+            "consultButtonText": "Consultar"
+          },
+          {
+            "id": 1771018641610,
+            "title": "ElMio Resuelve x1.0",
+            "price": "",
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/products/500_500_2.jpg",
+            "rating": 5,
+            "category": "Prestamo",
+            "isMercantil": false,
+            "requiresLogin": true,
+            "isInstallment": false,
+            "installmentCount": 1,
+            "mercantilInstallments": {
+              "monthly": false,
+              "quarterly": false,
+              "semiannual": false,
+              "annual": false
+            },
+            "consultButtonText": "Consultar"
+          },
+          {
+            "id": 1771018662178,
+            "title": "ElMio Resuelve x1.5",
+            "price": "",
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/products/500_500_3.jpg",
+            "rating": 5,
+            "category": "Prestamo",
+            "isMercantil": false,
+            "requiresLogin": true,
+            "isInstallment": false,
+            "installmentCount": 1,
+            "mercantilInstallments": {
+              "monthly": false,
+              "quarterly": false,
+              "semiannual": false,
+              "annual": false
+            },
+            "consultButtonText": "Consultar"
+          },
+          {
+            "id": 1771018680402,
+            "title": "ElMio Resuelve x2.0",
+            "price": "",
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/products/500_500_4.jpg",
+            "rating": 5,
+            "category": "Prestamo",
+            "isMercantil": false,
+            "requiresLogin": true,
+            "isInstallment": false,
+            "installmentCount": 1,
+            "mercantilInstallments": {
+              "monthly": false,
+              "quarterly": false,
+              "semiannual": false,
+              "annual": false
+            },
+            "consultButtonText": "Consultar"
+          },
+          {
+            "id": 1771021925045,
+            "title": "ElMio Te Presta",
+            "price": "",
+            "image": "https://storage.googleapis.com/elmio-img/marketplace/products/300_200.jpg",
+            "rating": 4,
+            "category": "Prestamo",
+            "isMercantil": false,
+            "requiresLogin": true,
+            "isInstallment": false,
+            "installmentCount": 6,
+            "mercantilInstallments": {
+              "monthly": false,
+              "quarterly": false,
+              "semiannual": false,
+              "annual": false
+            },
+            "consultButtonText": "Consultar"
+          }
+        ],
+        "autoplay": true,
+        "autoplaySpeed": 2000
+      },
+      "order": 3
+    },
+    {
+      "id": "products-1771021961613",
+      "type": "products",
+      "styles": {
+        "ratingIcon": "shield",
+        "backgroundColor": "#ffffff",
+        "titleColor": "#1d2734",
+        "titleAlign": "left",
+        "titleGap": "5px",
+        "buttonBgColor": "#001b36",
+        "productImageHeight": "175px"
+      },
+      "content": {
+        "title": "Mercantil Seguros",
+        "items": [],
+        "autoplay": true,
+        "autoplaySpeed": 4000,
+        "productIds": [
+          "32a02f85-0381-403d-8dc5-3fc6b7cec71e",
+          "aa83951e-4843-4bf9-9060-09e09a31f363"
+        ]
+      },
+      "order": 4
+    },
+    {
+      "id": "dual-banner-1",
+      "type": "dual-banner",
+      "styles": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#1F2937",
+        "padding": "2rem"
+      },
+      "content": {
+        "textPosition": "above",
+        "banner1": {
+          "id": 1,
+          "image": "https://storage.googleapis.com/elmio-img/marketplace/1350_500.png",
+          "title": "",
+          "text": "",
+          "buttonText": "Explorar",
+          "href": "#",
+          "textColor": "#000000",
+          "buttonBorderColor": "#000000",
+          "buttonTextColor": "#000000",
+          "buttonBgColor": "#ffffff",
+          "buttonHoverBgColor": "#e6e6e6",
+          "showButton": false
+        },
+        "banner2": {
+          "id": 2,
+          "image": "https://storage.googleapis.com/elmio-img/marketplace/1350_500-1.png",
+          "title": "",
+          "text": "",
+          "buttonText": "Ver más",
+          "href": "#",
+          "textColor": "#000000",
+          "buttonBorderColor": "#000000",
+          "buttonTextColor": "#000000",
+          "buttonBgColor": "#ffffff",
+          "buttonHoverBgColor": "#e6e6e6",
+          "showButton": false
+        },
+        "autoplay": true
+      },
+      "order": 5
+    },
+    {
+      "id": "pillars-1771976998091",
+      "type": "pillars",
+      "styles": {
+        "paddingTop": "24px",
+        "marginTop": "",
+        "backgroundColor": "#010131",
+        "textColor": "#ffffff",
+        "paddingBottom": "40px",
+        "pillarCardBgColor": "#ffffff",
+        "pillarTitleColor": "#000000",
+        "pillarTextColor": "#000000",
+        "fontFamily": "WixMadeforText"
+      },
+      "content": {
+        "title": "Nuestros Valores",
+        "subtitle": "",
+        "pillars": [
+          {
+            "id": "pilar-1",
+            "icon": "",
+            "title": "Detrás de ElMio",
+            "text": "El equipo de ElMio nació con una misión clara: brindar acceso a soluciones financieras flexibles que mejoren la calidad de vida de trabajadores y empresas. Detrás de esta iniciativa hay un equipo de expertos en tecnología, finanzas y bienestar laboral que creen en el poder de la innovación para transformar el mundo del trabajo."
+          },
+          {
+            "id": "pilar-2",
+            "icon": "",
+            "title": "Visión",
+            "text": "Facilitamos a empresas, colaboradores y trabajadores independientes, el acceso a préstamos y a una amplia variedad de condiciones diferenciadoras flexibles laborales (ConDiFlex). Con ElMio, transformamos el trabajo en una experiencia más justa, flexible y motivadora."
+          },
+          {
+            "id": "pilar-3",
+            "icon": "",
+            "title": "Misión",
+            "text": "Queremos ser la plataforma líder en Worker Tech en Latinoamérica, ofreciendo herramientas que potencien la estabilidad financiera y el bienestar laboral."
+          }
+        ]
+      },
+      "order": 6
+    },
+    {
+      "id": "infotext-1771933003301",
+      "type": "infotext",
+      "styles": {},
+      "content": {
+        "title": "",
+        "subtitle": "",
+        "body": ""
+      },
+      "order": 7
+    },
+    {
+      "id": "dual-banner-1772024238176",
+      "type": "dual-banner",
+      "styles": {
+        "backgroundColor": "#ffffff",
+        "paddingTop": "20px",
+        "paddingBottom": "20px"
+      },
+      "content": {
+        "banner1": {
+          "id": 1,
+          "image": "https://storage.googleapis.com/elmio-img/marketplace/1350_500.jpg",
+          "title": ""
+        },
+        "banner2": {
+          "id": 2,
+          "image": "https://storage.googleapis.com/elmio-img/marketplace/800_400-3.jpg",
+          "title": ""
+        }
+      },
+      "order": 8
+    },
+    {
+      "id": "partners-carousel",
+      "type": "partners",
+      "styles": {
+        "backgroundColor": "#F8FAFC",
+        "textColor": "#0F172A",
+        "accentColor": "#4680f6",
+        "padding": "3rem 0"
+      },
+      "content": {
+        "title": "Nuestros Aliados",
+        "subtitle": "",
+        "partners": [
+          {
+            "id": 1771034310376,
+            "name": "Banco Activo",
+            "logo": "https://storage.googleapis.com/elmio-img/marketplace/partners/activo_banco_universal_3__1_.png",
+            "href": "https://www.bancoactivo.com/"
+          },
+          {
+            "id": 1771034367680,
+            "name": "Banco Activo",
+            "logo": "https://storage.googleapis.com/elmio-img/marketplace/partners/activo_banco_universal_4__1_.png",
+            "href": "https://www.bancoactivo.com/"
+          },
+          {
+            "id": 1771034378800,
+            "name": "Banco Activo",
+            "logo": "https://storage.googleapis.com/elmio-img/marketplace/partners/activo_banco_universal_5__1_.png",
+            "href": "https://www.bancoactivo.com/"
+          },
+          {
+            "id": 1771034392600,
+            "name": "Mercantil Seguros",
+            "logo": "https://storage.googleapis.com/elmio-img/marketplace/partners/Seguros-Mercantil-v2.png",
+            "href": "https://www.mercantilseguros.com/"
+          },
+          {
+            "id": 1771034414400,
+            "name": "RPC",
+            "logo": "https://storage.googleapis.com/elmio-img/marketplace/partners/rpc-logo-01.png",
+            "href": "https://somosrpc.com/"
+          }
+        ],
+        "autoplay": true,
+        "autoplaySpeed": 4000
+      },
+      "order": 9
+    },
+    {
+      "id": "main-footer",
+      "type": "footer",
+      "styles": {
+        "backgroundColor": "#001b36",
+        "textColor": "#E5E7EB",
+        "fontFamily": "",
+        "linkHoverColor": "#0f4ecf"
+      },
+      "content": {
+        "logo": "/logo.png",
+        "logoAlt": "ElMio Marketplace",
+        "description": "Encuentra todos los productos y ofertas en un solo lugar. Tu marketplace de confianza para compras inteligentes.",
+        "showLogo": true,
+        "showDescription": true,
+        "showBottomLinks": true,
+        "columns": [
+          {
+            "title": "Información",
+            "links": [
+              {
+                "label": "Acuerdo de Privacidad",
+                "href": "#"
+              },
+              {
+                "label": "Condiciones de Uso",
+                "href": "#"
+              },
+              {
+                "label": "Ayuda",
+                "href": "#"
+              }
+            ]
+          },
+          {
+            "title": "Contacto",
+            "links": [
+              {
+                "label": "Centro de contacto",
+                "href": "#"
+              },
+              {
+                "label": "Ventas",
+                "href": "#"
+              },
+              {
+                "label": "Soporte",
+                "href": "#"
+              }
+            ]
+          },
+          {
+            "title": "Síguenos",
+            "links": [
+              {
+                "label": "Instagram",
+                "href": "#"
+              },
+              {
+                "label": "Facebook",
+                "href": "#"
+              },
+              {
+                "label": "LinkedIn",
+                "href": "#"
+              },
+              {
+                "label": "Twitter",
+                "href": "#"
+              },
+              {
+                "label": "Youtube",
+                "href": "#"
+              }
+            ]
+          }
+        ],
+        "copyright": "© 2026 ElMio. Todos los derechos reservados.",
+        "bottomLinks": [
+          {
+            "label": "Privacidad",
+            "href": "#"
+          },
+          {
+            "label": "Condiciones",
+            "href": "#"
+          },
+          {
+            "label": "Contacto",
+            "href": "#"
+          }
+        ]
+      },
+      "order": 10
+    }
+  ],
+  "whatsapp": {
+    "enabled": true,
+    "phoneNumber": "584241511705",
+    "message": "Hola, me gustaría obtener más información sobre sus productos",
+    "tooltipText": "¿Necesitas ayuda?"
+  },
+  "cart": {},
+  "login": {},
+  "createdAt": "2026-04-24T18:20:01.380Z",
+  "updatedAt": "2026-05-15T02:17:49.321Z"
+}

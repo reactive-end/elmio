@@ -19,6 +19,7 @@ import {
   FileText,
   DollarSign,
   LogOut,
+  MessageSquare,
 } from 'lucide-react'
 import { Logo } from '@/components/atoms/Logo/Logo'
 import { useRouter } from 'next/navigation'
@@ -181,7 +182,14 @@ const NAV: NavGroup[] = [
     key: 'config',
     label: 'Configuracion',
     icon: Settings,
-    children: [],
+    children: [
+      {
+        key: 'config-whatsapp',
+        label: 'WhatsApp Web',
+        href: '/dashboard/config/whatsapp',
+        icon: MessageSquare,
+      },
+    ],
   },
 ]
 
@@ -290,6 +298,11 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
           }
 
           if (group.key === 'employee' && role !== 'EMPLOYEE') {
+            return false
+          }
+
+          // Ocultar Configuracion para roles que no sean ADMIN
+          if (group.key === 'config' && role !== 'ADMIN') {
             return false
           }
 

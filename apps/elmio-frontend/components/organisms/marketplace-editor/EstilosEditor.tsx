@@ -12,6 +12,10 @@ import {
   CaseSensitive,
   Sparkles,
   Layers,
+  Search,
+  Menu,
+  Megaphone,
+  Star,
 } from 'lucide-react'
 import { CardGroup } from '@/components/molecules/CardGroup/CardGroup'
 import { PixelInput } from '@/components/molecules/PixelInput/PixelInput'
@@ -410,6 +414,255 @@ export function EstilosEditor({
           </div>
         )}
       </CardGroup>
+
+      {/* =======================================================
+          ESTILOS QUIRÚRGICOS POR TIPO DE SECCIÓN (SABOR ANTIGUO)
+          ======================================================= */}
+
+      {/* Cabecera: Configuración de Menú, Submenús y Navbar */}
+      {seccion.tipo === 'cabecera' && (
+        <>
+          <CardGroup title="Estilos de Menú y Navegación" Icon={Menu}>
+            <div className="grid grid-cols-2 gap-2">
+              <ColorInput
+                label="Fondo Navbar"
+                value={seccion.estilo.navBackgroundColor || '#ffffff'}
+                onChange={(v) => actualizarEstilo('navBackgroundColor', v)}
+              />
+              <ColorInput
+                label="Color de Texto"
+                value={seccion.estilo.navTextColor || '#001b36'}
+                onChange={(v) => actualizarEstilo('navTextColor', v)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <ColorInput
+                label="Hover Texto"
+                value={seccion.estilo.navHoverTextColor || '#0f4ecf'}
+                onChange={(v) => actualizarEstilo('navHoverTextColor', v)}
+              />
+              <FontSelect
+                label="Fuente Navbar"
+                value={seccion.estilo.fontFamily || fuente}
+                onChange={(f) => actualizarEstilo('fontFamily', f)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-medium text-gray-400">Disposición</label>
+                <Select
+                  value={seccion.estilo.topBarLayout || 'default'}
+                  onChange={(v) => actualizarEstilo('topBarLayout', v)}
+                  options={[
+                    { value: 'default', label: 'Estándar' },
+                    { value: 'compact', label: 'Compacto' },
+                  ]}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-medium text-gray-400">Justificación</label>
+                <Select
+                  value={seccion.estilo.topBarJustify || 'space-between'}
+                  onChange={(v) => actualizarEstilo('topBarJustify', v)}
+                  options={[
+                    { value: 'space-between', label: 'Separado' },
+                    { value: 'space-around', label: 'Alrededor' },
+                    { value: 'center', label: 'Centrado' },
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-medium text-gray-400">Alineación</label>
+                <Select
+                  value={seccion.estilo.topBarAlign || 'center'}
+                  onChange={(v) => actualizarEstilo('topBarAlign', v)}
+                  options={[
+                    { value: 'center', label: 'Centro' },
+                    { value: 'flex-start', label: 'Inicio' },
+                    { value: 'flex-end', label: 'Fin' },
+                  ]}
+                />
+              </div>
+              <PixelInput
+                label="Tamaño Fuente"
+                value={parseInt(seccion.estilo.navLinkFontSize || '14') || 14}
+                onChange={(v) => actualizarEstilo('navLinkFontSize', `${v}px`)}
+                min={8}
+                max={24}
+              />
+            </div>
+          </CardGroup>
+
+          <CardGroup title="Estilos de Submenú Desplegable" Icon={Layers}>
+            <div className="grid grid-cols-2 gap-2">
+              <PixelInput
+                label="Ancho de Menú"
+                value={parseInt(seccion.estilo.menuWidth || '256') || 256}
+                onChange={(v) => actualizarEstilo('menuWidth', `${v}px`)}
+                min={150}
+                max={400}
+              />
+              <ColorInput
+                label="Color Texto Submenú"
+                value={seccion.estilo.submenuTextColor || '#0F172A'}
+                onChange={(v) => actualizarEstilo('submenuTextColor', v)}
+              />
+            </div>
+            <ColorInput
+              label="Hover Texto Submenú"
+              value={seccion.estilo.submenuHoverTextColor || '#1D4ED8'}
+              onChange={(v) => actualizarEstilo('submenuHoverTextColor', v)}
+            />
+          </CardGroup>
+
+          <CardGroup title="Estilos del Buscador" Icon={Search}>
+            <div className="grid grid-cols-2 gap-2">
+              <ColorInput
+                label="Fondo Buscador"
+                value={seccion.estilo.searchBarColor || 'rgba(0,0,0,0.05)'}
+                onChange={(v) => actualizarEstilo('searchBarColor', v)}
+              />
+              <ColorInput
+                label="Texto Buscador"
+                value={seccion.estilo.searchBarTextColor || '#000000'}
+                onChange={(v) => actualizarEstilo('searchBarTextColor', v)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <ColorInput
+                label="Color de Icono"
+                value={seccion.estilo.searchBarIconColor || '#000000'}
+                onChange={(v) => actualizarEstilo('searchBarIconColor', v)}
+              />
+              <ColorInput
+                label="Color de Borde"
+                value={seccion.estilo.searchBarBorderColor || '#e5e7eb'}
+                onChange={(v) => actualizarEstilo('searchBarBorderColor', v)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <ColorInput
+                label="Fondo Botón Buscar"
+                value={seccion.estilo.searchBarButtonColor || '#000000'}
+                onChange={(v) => actualizarEstilo('searchBarButtonColor', v)}
+              />
+              <ColorInput
+                label="Placeholder"
+                value={seccion.estilo.searchBarPlaceholderColor || '#9ca3af'}
+                onChange={(v) => actualizarEstilo('searchBarPlaceholderColor', v)}
+              />
+            </div>
+          </CardGroup>
+        </>
+      )}
+
+      {/* Hero / Principal: Barra Promocional */}
+      {seccion.tipo === 'principal' && (
+        <CardGroup title="Barra Promocional Superior" Icon={Megaphone}>
+          <div className="grid grid-cols-2 gap-2">
+            <ColorInput
+              label="Fondo Barra"
+              value={seccion.estilo.promoBarBackgroundColor || '#878787'}
+              onChange={(v) => actualizarEstilo('promoBarBackgroundColor', v)}
+            />
+            <ColorInput
+              label="Color de Texto"
+              value={seccion.estilo.promoBarTextColor || '#ffffff'}
+              onChange={(v) => actualizarEstilo('promoBarTextColor', v)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <PixelInput
+              label="Altura (px)"
+              value={parseInt(seccion.estilo.promoBarHeight || '35') || 35}
+              onChange={(v) => actualizarEstilo('promoBarHeight', `${v}px`)}
+              min={20}
+              max={60}
+            />
+            <PixelInput
+              label="Tamaño Logo (px)"
+              value={parseInt(seccion.estilo.promoBarLogoSize || '48') || 48}
+              onChange={(v) => actualizarEstilo('promoBarLogoSize', `${v}px`)}
+              min={20}
+              max={80}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <PixelInput
+              label="Tamaño Texto (px)"
+              value={parseInt(seccion.estilo.promoBarTextSize || '16') || 16}
+              onChange={(v) => actualizarEstilo('promoBarTextSize', `${v}px`)}
+              min={10}
+              max={24}
+            />
+            <FontSelect
+              label="Fuente Barra"
+              value={seccion.estilo.promoBarFontFamily || 'Georgia'}
+              onChange={(f) => actualizarEstilo('promoBarFontFamily', f)}
+            />
+          </div>
+        </CardGroup>
+      )}
+
+      {/* Productos: Ajustes de Calificación / Stars */}
+      {seccion.tipo === 'productos' && (
+        <CardGroup title="Calificación de Productos" Icon={Star}>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-medium text-gray-400">Icono Calificación</label>
+              <Select
+                value={seccion.estilo.ratingIcon || 'star'}
+                onChange={(v) => actualizarEstilo('ratingIcon', v)}
+                options={[
+                  { value: 'star', label: 'Estrella ★' },
+                  { value: 'shield', label: 'Escudo 🛡' },
+                  { value: 'check', label: 'Verificado ✓' },
+                  { value: 'heart', label: 'Corazón ♥' },
+                ]}
+              />
+            </div>
+            <ColorInput
+              label="Color de Calificación"
+              value={seccion.estilo.ratingColor || '#ff841f'}
+              onChange={(v) => actualizarEstilo('ratingColor', v)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="flex flex-col justify-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={seccion.estilo.useCustomRatingIcons ?? false}
+                  onChange={(e) => actualizarEstilo('useCustomRatingIcons', e.target.checked)}
+                />
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                <span className="ml-2 text-[10px] font-medium text-gray-500">Usar Iconos Propios</span>
+              </label>
+            </div>
+            <PixelInput
+              label="Separación del Título"
+              value={seccion.estilo.titleGap ?? 5}
+              onChange={(v) => actualizarEstilo('titleGap', v)}
+              min={0}
+              max={30}
+            />
+          </div>
+        </CardGroup>
+      )}
+
+      {/* Pie de Página: Hover de Enlaces */}
+      {['pie', 'footer'].includes(seccion.tipo) && (
+        <CardGroup title="Estilos de Enlaces Corporativos" Icon={Sparkles}>
+          <ColorInput
+            label="Color de Hover en Enlaces"
+            value={seccion.estilo.linkHoverColor || '#0f4ecf'}
+            onChange={(v) => actualizarEstilo('linkHoverColor', v)}
+          />
+        </CardGroup>
+      )}
 
       <CardGroup title="Tipografia" Icon={CaseSensitive}>
         <FontSelect label="Fuente" value={fuente} onChange={onFuenteChange} />

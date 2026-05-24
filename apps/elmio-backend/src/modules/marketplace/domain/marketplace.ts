@@ -35,6 +35,7 @@ export type SectionType =
   | 'partners'
   | 'banner'
   | 'double-banner'
+  | 'dual-banner'
   | 'strip'
   | 'pillars'
   | 'text'
@@ -139,6 +140,7 @@ interface PillarItem {
   text: string;
   buttonText: string;
   buttonLink: string;
+  esPersonalizado?: boolean;
 }
 
 interface MenuItem {
@@ -146,5 +148,5 @@ interface MenuItem {
   label: string;
   href: string;
   icon: string;
-  submenus: { id: string; label: string; href: string; description: string }[];
+  submenus: { id: string; label: string; href: string; description: string; icon?: string }[];
 }

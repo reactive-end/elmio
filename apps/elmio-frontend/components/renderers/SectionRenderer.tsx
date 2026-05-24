@@ -16,6 +16,7 @@ import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
 type RendererComponent = ComponentType<{ seccion: SeccionMarketplace }>
 
 const rendererRegistry: Record<string, RendererComponent> = {
+  // Español (Frontend Types)
   principal: HeroSection,
   productos: ProductsSection,
   banner: BannerSection,
@@ -27,6 +28,19 @@ const rendererRegistry: Record<string, RendererComponent> = {
   pie: FooterSection,
   cabecera: HeaderSection,
   texto: InfoTextSection,
+
+  // Inglés (Raw Backend Database Types - Failsafe)
+  hero: HeroSection,
+  products: ProductsSection,
+  'double-banner': DualBannerSection,
+  'dual-banner': DualBannerSection,
+  partners: PartnersSection,
+  pillars: PillarsSection,
+  features: PillarsSection,
+  strip: StripSection,
+  footer: FooterSection,
+  header: HeaderSection,
+  text: InfoTextSection,
 }
 
 interface SectionRendererProps {

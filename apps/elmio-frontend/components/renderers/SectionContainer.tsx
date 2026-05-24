@@ -8,12 +8,13 @@ interface SectionContainerProps {
   children: ReactNode
   className?: string
   id?: string
+  overflowVisible?: boolean
 }
 
 /**
  * Contenedor visual de seccion que aplica estilos de padding, margen y fondo desde la config.
  */
-export function SectionContainer({ estilo, children, className = '', id }: SectionContainerProps) {
+export function SectionContainer({ estilo, children, className = '', id, overflowVisible }: SectionContainerProps) {
   const bgStyle: React.CSSProperties = {}
   if (estilo.gradienteFondo) bgStyle.backgroundImage = estilo.gradienteFondo
   else if (estilo.colorFondo !== 'transparente') bgStyle.backgroundColor = estilo.colorFondo
@@ -22,7 +23,7 @@ export function SectionContainer({ estilo, children, className = '', id }: Secti
   return (
     <section
       id={id}
-      className={`w-full relative overflow-hidden ${className}`}
+      className={`w-full relative ${overflowVisible ? 'overflow-visible' : 'overflow-hidden'} ${className}`}
       style={{
         ...bgStyle,
         paddingTop: estilo.paddingSuperior,
