@@ -10,6 +10,9 @@ import { ProductModule } from './modules/product/product.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { PasswordRecoveryModule } from './modules/password-recovery/password-recovery.module';
+import { BucketModule } from './modules/bucket/bucket.module';
+import { MercantilModule } from './modules/mercantil/mercantil.module';
+import { PaymentProcessorModule } from './modules/payment-processor/payment-processor.module';
 
 /**
  * Modulo raiz de la aplicacion NestJS.
@@ -45,6 +48,9 @@ import { PasswordRecoveryModule } from './modules/password-recovery/password-rec
     WhatsAppModule,
     NotificationModule,
     PasswordRecoveryModule,
+    BucketModule,
+    MercantilModule,
+    PaymentProcessorModule,
   ],
 })
 export class AppModule {}
