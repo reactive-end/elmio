@@ -16,20 +16,23 @@ const galleryImagesSchema = z.array(galleryImageSchema)
 
 export type GalleryServiceImage = z.infer<typeof galleryImageSchema>
 
-function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001'
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
 function toAbsolutePreviewUrl(previewUrl: string): string {
   if (previewUrl.startsWith('http://') || previewUrl.startsWith('https://')) {
     return previewUrl
   }
 
-  return new URL(previewUrl, getApiBaseUrl()).toString()
+  try {
+    const origin = new URL(API_BASE).origin
+    return new URL(previewUrl, origin).toString()
+  } catch {
+    return previewUrl
+  }
 }
 
 function buildGalleryEndpoint(path: string, tenantDirectory: string): string {
-  const url = new URL(`/api/gallery${path}`, getApiBaseUrl())
+  const url = new URL(`${API_BASE}/gallery${path}`)
   url.searchParams.set('tenant', tenantDirectory)
   return url.toString()
 }
