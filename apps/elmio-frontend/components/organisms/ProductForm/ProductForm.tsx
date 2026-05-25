@@ -714,18 +714,13 @@ export function ProductForm() {
                     ) : (
                       <FormField label="Accion / Funcion a ejecutar">
                         <Select
-                          value={w.actionKey || 'pay-cash'}
+                          value={w.type === 'payment-form' ? '' : (w.actionKey || 'mercantil-query-form')}
                           onChange={(v) => f.updWindow(w.id, 'actionKey', v)}
+                          disabled={w.type === 'payment-form'}
+                          placeholder={w.type === 'payment-form' ? 'Proximamente' : 'Seleccione accion'}
                           options={
                             w.type === 'payment-form'
-                              ? [
-                                  { value: 'pay-cash', label: 'Procesar pago de contado' },
-                                  {
-                                    value: 'pay-installments',
-                                    label: 'Procesar pago financiado/cuotas',
-                                  },
-                                  { value: 'pay-mixed', label: 'Procesar pago mixto' },
-                                ]
+                              ? []
                               : [
                                   {
                                     value: 'mercantil-query-form',
