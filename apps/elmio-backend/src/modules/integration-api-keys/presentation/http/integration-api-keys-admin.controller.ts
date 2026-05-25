@@ -22,7 +22,7 @@ import {
 /**
  * Controlador admin para credenciales por banco e integracion.
  */
-@Controller('admin/integration-api-keys')
+@Controller('integration-api-keys')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class IntegrationApiKeysAdminController {

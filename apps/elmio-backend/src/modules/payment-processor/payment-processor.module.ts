@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { PaymentProcessorController } from './presentation/http/payment-processor.controller';
+import { BankAccountsAdminController } from './presentation/http/bank-accounts-admin.controller';
 import { PaymentProcessorService } from './application/services/payment-processor.service';
 import { PaymentProcessorRepository } from './infrastructure/persistence/payment-processor.repository';
 import { PAYMENT_PROCESSOR_REPOSITORY } from './domain/ports/payment-processor-repository.interface';
@@ -37,7 +38,7 @@ import { PaymentMethod } from './infrastructure/persistence/entities/payment-met
       PaymentMethod,
     ]),
   ],
-  controllers: [PaymentProcessorController],
+  controllers: [PaymentProcessorController, BankAccountsAdminController],
   providers: [
     DoneApiKeyGuard,
     PaymentProcessorService,

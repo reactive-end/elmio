@@ -9,6 +9,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
 import type { UserSession } from '../../../auth/domain/user';
@@ -21,6 +22,7 @@ import {
 } from '../../application/list-products.use-case';
 import type { Product } from '../../domain/product';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { MarketplaceEntity } from '../../../marketplace/infrastructure/entities/marketplace.entity';
 
 /**
  * Controlador HTTP del modulo de productos.
@@ -34,12 +36,27 @@ export class ProductController {
     private readonly listProducts: ListProductsUseCase,
     private readonly getProductById: GetProductByIdUseCase,
     private readonly deleteProduct: DeleteProductUseCase,
+    private readonly dataSource: DataSource,
   ) {}
 
   /** GET /api/products - Lista todos los productos. */
+  @UseGuards(AuthGuard)
   @Get()
-  async list(): Promise<Product[]> {
-    return this.listProducts.execute();
+  async list(@CurrentUser() session: UserSession): Promise<Product[]> {
+    const allProducts = await this.listProducts.execute();
+
+    if (session.role === 'ALLIED') {
+      const marketplaces = await this.dataSource
+        .getRepository(MarketplaceEntity)
+        .find({ where: { owner: session.owner } });
+      const alliedMarketplaceIds = marketplaces.map((m) => m.id);
+
+      return allProducts.filter(
+        (p) => p.marketplaceId && alliedMarketplaceIds.includes(p.marketplaceId),
+      );
+    }
+
+    return allProducts;
   }
 
   /** GET /api/products/:id - Obtiene un producto por ID. */
@@ -61,6 +78,18 @@ export class ProductController {
       );
     }
 
+    if (session.role === 'ALLIED') {
+      if (!body.marketplaceId) {
+        throw new ForbiddenException('Debes asociar el producto a uno de tus marketplaces.');
+      }
+      const m = await this.dataSource
+        .getRepository(MarketplaceEntity)
+        .findOne({ where: { id: body.marketplaceId } });
+      if (!m || m.owner !== session.owner) {
+        throw new ForbiddenException('No tienes permisos para agregar productos a este marketplace.');
+      }
+    }
+
     return this.createProduct.execute(body);
   }
 
@@ -78,6 +107,19 @@ export class ProductController {
       );
     }
 
+    if (session.role === 'ALLIED') {
+      const prod = await this.getProductById.execute(id);
+      if (!prod.marketplaceId) {
+        throw new ForbiddenException('No tienes permisos para modificar este producto.');
+      }
+      const m = await this.dataSource
+        .getRepository(MarketplaceEntity)
+        .findOne({ where: { id: prod.marketplaceId } });
+      if (!m || m.owner !== session.owner) {
+        throw new ForbiddenException('No tienes permisos para modificar este producto.');
+      }
+    }
+
     return this.updateProduct.execute(id, body);
   }
 
@@ -92,6 +134,19 @@ export class ProductController {
       throw new ForbiddenException(
         'Las empresas no pueden eliminar productos desde el dashboard.',
       );
+    }
+
+    if (session.role === 'ALLIED') {
+      const prod = await this.getProductById.execute(id);
+      if (!prod.marketplaceId) {
+        throw new ForbiddenException('No tienes permisos para eliminar este producto.');
+      }
+      const m = await this.dataSource
+        .getRepository(MarketplaceEntity)
+        .findOne({ where: { id: prod.marketplaceId } });
+      if (!m || m.owner !== session.owner) {
+        throw new ForbiddenException('No tienes permisos para eliminar este producto.');
+      }
     }
 
     await this.deleteProduct.execute(id);

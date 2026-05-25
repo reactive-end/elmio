@@ -1,6 +1,6 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
-type UserRole = 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT'
+type UserRole = 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT' | 'ALLIED'
 
 export interface AuthToken {
   token: string

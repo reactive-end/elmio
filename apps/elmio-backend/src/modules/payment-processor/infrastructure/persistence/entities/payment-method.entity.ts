@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { BankPaymentMethod } from './bank-payment-method.entity'
 
-@Entity({ schema: 'payments', name: 'payment_method' })
+@Entity({ name: 'payment_method' })
 /**
  * Entidad de catálogo para métodos de pago disponibles.
  *

@@ -9,6 +9,8 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateMarketplaceUseCase } from '../../application/create-marketplace.use-case';
 import { DeleteMarketplaceUseCase } from '../../application/delete-marketplace.use-case';
 import { GetMarketplaceByIdUseCase } from '../../application/get-marketplace-by-id.use-case';
@@ -19,6 +21,7 @@ import type { Marketplace } from '../../domain/marketplace';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
 import type { UserSession } from '../../../auth/domain/user';
+import { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
 import { CreateMarketplaceDto } from './dto/create-marketplace.dto';
 import type { UpdateMarketplaceDto } from './dto/update-marketplace.dto';
 
@@ -35,6 +38,8 @@ export class MarketplaceController {
     private readonly createMarketplaceUseCase: CreateMarketplaceUseCase,
     private readonly updateMarketplaceUseCase: UpdateMarketplaceUseCase,
     private readonly deleteMarketplaceUseCase: DeleteMarketplaceUseCase,
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
   ) {}
 
   /**
@@ -44,7 +49,10 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Get()
-  async list(): Promise<Marketplace[]> {
+  async list(@CurrentUser() session: UserSession): Promise<Marketplace[]> {
+    if (session.role === 'ALLIED' || session.role === 'COMPANY') {
+      return this.listMarketplacesUseCase.execute(session.owner);
+    }
     return this.listMarketplacesUseCase.execute();
   }
 
@@ -67,8 +75,15 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<Marketplace> {
-    return this.getMarketplaceByIdUseCase.execute(id);
+  async getById(
+    @Param('id') id: string,
+    @CurrentUser() session: UserSession,
+  ): Promise<Marketplace> {
+    const marketplace = await this.getMarketplaceByIdUseCase.execute(id);
+    if (session.role === 'ALLIED' && marketplace.owner !== session.owner) {
+      throw new ForbiddenException('No tienes permisos para acceder a este marketplace.');
+    }
+    return marketplace;
   }
 
   /**
@@ -90,8 +105,31 @@ export class MarketplaceController {
       );
     }
 
+    let slug = body.slug;
+
+    if (session.role === 'ADMIN') {
+      slug = 'elmio';
+    } else if (session.role === 'ALLIED') {
+      const ally = await this.userRepo.findOne({
+        where: { id: session.userId },
+      });
+      if (!ally || !ally.slug) {
+        throw new ForbiddenException(
+          'El aliado no tiene un slug válido configurado en su perfil.',
+        );
+      }
+      slug = ally.slug;
+    } else {
+      if (!slug) {
+        throw new ForbiddenException(
+          'No se puede determinar el slug del marketplace.',
+        );
+      }
+    }
+
     return this.createMarketplaceUseCase.execute({
       ...body,
+      slug: slug!,
       owner: body.owner || session.owner,
     });
   }
@@ -116,6 +154,13 @@ export class MarketplaceController {
       );
     }
 
+    if (session.role === 'ALLIED') {
+      const existing = await this.getMarketplaceByIdUseCase.execute(id);
+      if (existing.owner !== session.owner) {
+        throw new ForbiddenException('No tienes permisos para modificar este marketplace.');
+      }
+    }
+
     const isAdmin = session.role === 'ADMIN';
     return this.updateMarketplaceUseCase.execute(id, body as any, isAdmin);
   }
@@ -135,6 +180,13 @@ export class MarketplaceController {
       throw new ForbiddenException(
         'Las empresas no pueden gestionar marketplaces desde el dashboard.',
       );
+    }
+
+    if (session.role === 'ALLIED') {
+      const existing = await this.getMarketplaceByIdUseCase.execute(id);
+      if (existing.owner !== session.owner) {
+        throw new ForbiddenException('No tienes permisos para eliminar este marketplace.');
+      }
     }
 
     await this.deleteMarketplaceUseCase.execute(id);

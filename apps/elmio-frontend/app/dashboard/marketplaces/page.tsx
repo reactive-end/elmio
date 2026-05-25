@@ -314,20 +314,7 @@ export default function MarketplacesPage() {
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Slug URL
-                </label>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-400 font-mono">/marketplace/</span>
-                  <Input
-                    placeholder="ej: mi-tienda"
-                    value={nuevoSlug}
-                    onChange={(e) => setNuevoSlug(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">

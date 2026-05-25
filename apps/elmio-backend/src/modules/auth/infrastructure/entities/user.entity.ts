@@ -24,6 +24,15 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 255 })
   owner!: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true, unique: true })
+  slug!: string | null;
+
+  @Column({ type: 'varchar', length: 10, default: '+58' })
+  countryCode!: string;
+
+  @Column({ type: 'varchar', length: 50, default: '' })
+  phone!: string;
+
   @Column({ type: 'varchar', length: 100 })
   createdAt!: string;
 

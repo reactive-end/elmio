@@ -47,7 +47,7 @@ export const enterpriseInterestConfigService = {
    * Lista las empresas con su tasa global.
    */
   async list(): Promise<EnterpriseInterestConfigItem[]> {
-    return apiFetch<EnterpriseInterestConfigItem[]>('/admin/enterprise-interest-configs', {
+    return apiFetch<EnterpriseInterestConfigItem[]>('/enterprise-interest-configs', {
       method: 'GET',
     })
   },
@@ -60,7 +60,7 @@ export const enterpriseInterestConfigService = {
     input: UpdateEnterpriseInterestConfigInput,
   ): Promise<EnterpriseInterestConfigItem> {
     return apiFetch<EnterpriseInterestConfigItem>(
-      `/admin/enterprise-interest-configs/${encodeURIComponent(enterpriseId)}`,
+      `/enterprise-interest-configs/${encodeURIComponent(enterpriseId)}`,
       {
         method: 'PUT',
         body: JSON.stringify(input),

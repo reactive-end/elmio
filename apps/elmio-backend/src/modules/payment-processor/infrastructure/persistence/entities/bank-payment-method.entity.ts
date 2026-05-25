@@ -12,7 +12,7 @@ import {
 import { Bank } from './bank.entity'
 import { PaymentMethod } from './payment-method.entity'
 
-@Entity({ schema: 'payments', name: 'bank_payment_method' })
+@Entity({ name: 'bank_payment_method' })
 @Unique('UQ_bank_payment_method_bank_method', ['bank', 'paymentMethod'])
 /**
  * Entidad pivote para disponibilidad de métodos de pago por banco.

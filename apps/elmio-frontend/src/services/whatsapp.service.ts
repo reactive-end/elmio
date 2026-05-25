@@ -16,10 +16,10 @@ export interface WhatsAppStatusInfo {
 export const whatsappService = {
   /**
    * Obtiene el estado actual de la conexion a WhatsApp.
-   * GET /api/whatsapp/admin/status
+   * GET /api/whatsapp/status
    */
   async getStatus(): Promise<WhatsAppStatusInfo> {
-    const response = await fetch(`${API_BASE}/whatsapp/admin/status`, {
+    const response = await fetch(`${API_BASE}/whatsapp/status`, {
       method: 'GET',
       headers: {
         ...authService.getAuthHeaders(),
@@ -36,10 +36,10 @@ export const whatsappService = {
 
   /**
    * Obtiene la URL de la imagen del codigo QR actual en formato base64.
-   * GET /api/whatsapp/admin/qr
+   * GET /api/whatsapp/qr
    */
   async getQr(): Promise<{ qr: string | null }> {
-    const response = await fetch(`${API_BASE}/whatsapp/admin/qr`, {
+    const response = await fetch(`${API_BASE}/whatsapp/qr`, {
       method: 'GET',
       headers: {
         ...authService.getAuthHeaders(),
@@ -56,25 +56,10 @@ export const whatsappService = {
 
   /**
    * Cierra la sesion activa de WhatsApp en el servidor y borra la cache local.
-   * POST /api/whatsapp/admin/logout
+   * POST /api/whatsapp/logout
    */
   async logout(): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE}/whatsapp/whatsapp/admin/logout`, {
-      method: 'POST',
-      headers: {
-        ...authService.getAuthHeaders(),
-      },
-    })
-
-    // Espera, la ruta del backend es POST /api/whatsapp/admin/logout o POST /api/whatsapp/whatsapp/admin/logout?
-    // Verificamos en el backend: @Controller('whatsapp/admin') y POST logout -> la ruta es /api/whatsapp/admin/logout.
-    // Ah, arriba puse `/whatsapp/whatsapp/admin/logout` por error, debe ser `/whatsapp/admin/logout`.
-    // Vamos a corregirlo antes de escribir.
-    return this._logoutCorrectRoute()
-  },
-
-  async _logoutCorrectRoute(): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE}/whatsapp/admin/logout`, {
+    const response = await fetch(`${API_BASE}/whatsapp/logout`, {
       method: 'POST',
       headers: {
         ...authService.getAuthHeaders(),
@@ -91,10 +76,10 @@ export const whatsappService = {
 
   /**
    * Reinicia el cliente de WhatsApp en el backend.
-   * POST /api/whatsapp/admin/restart
+   * POST /api/whatsapp/restart
    */
   async restart(): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE}/whatsapp/admin/restart`, {
+    const response = await fetch(`${API_BASE}/whatsapp/restart`, {
       method: 'POST',
       headers: {
         ...authService.getAuthHeaders(),
@@ -122,6 +107,6 @@ export const whatsappService = {
         token = parsed.token
       } catch {}
     }
-    return `${API_BASE}/whatsapp/admin/qr-stream?token=${encodeURIComponent(token)}`
+    return `${API_BASE}/whatsapp/qr-stream?token=${encodeURIComponent(token)}`
   },
 }

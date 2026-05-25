@@ -14,6 +14,7 @@ import { UserEntity } from './infrastructure/entities/user.entity';
 import { AuthGuard } from './presentation/guards/auth.guard';
 import { RolesGuard } from './presentation/guards/roles.guard';
 import { AuthController } from './presentation/http/auth.controller';
+import { AlliesAdminController } from './presentation/http/allies-admin.controller';
 
 /**
  * Modulo de autenticacion y autorizacion del sistema.
@@ -34,7 +35,7 @@ import { AuthController } from './presentation/http/auth.controller';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AlliesAdminController],
   providers: [
     LoginUseCase,
     DiscoverProfilesUseCase,

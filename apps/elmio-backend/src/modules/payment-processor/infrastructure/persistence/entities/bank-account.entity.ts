@@ -14,7 +14,7 @@ import { Currency } from './currency.entity'
 import { BankAccountType } from './bank-account-type.entity'
 import { Bank } from './bank.entity'
 
-@Entity({ schema: 'payments', name: 'bank_account' })
+@Entity({ name: 'bank_account' })
 /**
  * Entidad que representa una cuenta bancaria del dominio de pagos.
  *

@@ -215,9 +215,48 @@ const NAV: NavGroup[] = [
         href: '/dashboard/config/enterprise-interest-rates',
         icon: Percent,
       },
+      {
+        key: 'config-allies',
+        label: 'Aliados',
+        href: '/dashboard/config/allies',
+        icon: Users,
+      },
+    ],
+  },
+  {
+    key: 'banks-currencies',
+    label: 'Finanzas',
+    icon: Landmark,
+    children: [
+      {
+        key: 'config-bank-accounts',
+        label: 'Cuentas bancarias',
+        href: '/dashboard/config/bank-accounts',
+        icon: Landmark,
+      },
+      {
+        key: 'config-currencies',
+        label: 'Monedas',
+        href: '/dashboard/config/currencies',
+        icon: DollarSign,
+      },
+    ],
+  },
+  {
+    key: 'client-purchases',
+    label: 'Mis Compras',
+    icon: ShoppingBag,
+    children: [
+      {
+        key: 'client-purchases-list',
+        label: 'Mis compras',
+        href: '/dashboard/collaborator/purchases',
+        icon: List,
+      },
     ],
   },
 ]
+
 
 /**
  * Organismo de barra lateral con logo, navegacion colapsable y grupos expandibles.
@@ -294,28 +333,23 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="relative z-10 flex-1 overflow-y-auto py-4 px-2">
         {NAV.filter((group) => {
-          // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN)
-          if (group.key === 'enterprise' && role === 'ADMIN') {
+          // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN), colaboradores (EMPLOYEE), aliados (ALLIED) y clientes (CLIENT)
+          if (group.key === 'enterprise' && (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'ALLIED' || role === 'CLIENT')) {
             return false
           }
 
-          if (group.key === 'enterprise' && role === 'EMPLOYEE') {
-            return false
-          }
-
-          // Ocultar Marketplace y Productos de gestion para colaboradores y empresas.
+          // Ocultar Marketplace y Productos de gestion para colaboradores, empresas y clientes.
           if (
             (group.key === 'marketplace' || group.key === 'products') &&
-            (role === 'EMPLOYEE' || role === 'COMPANY')
+            (role === 'EMPLOYEE' || role === 'COMPANY' || role === 'CLIENT')
           ) {
             return false
           }
 
-          // Ocultar Galeria para colaboradores y empresas.
-          if (group.key === 'gallery' && (role === 'EMPLOYEE' || role === 'COMPANY')) {
+          // Ocultar Galeria para colaboradores, empresas y clientes.
+          if (group.key === 'gallery' && (role === 'EMPLOYEE' || role === 'COMPANY' || role === 'CLIENT')) {
             return false
           }
 
@@ -330,6 +364,16 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
           // Ocultar Configuracion para roles que no sean ADMIN
           if (group.key === 'config' && role !== 'ADMIN') {
+            return false
+          }
+
+          // Ocultar Bancos y Monedas para roles que no sean ADMIN
+          if (group.key === 'banks-currencies' && role !== 'ADMIN') {
+            return false
+          }
+
+          // Ocultar la sección de compras del cliente para roles que no sean CLIENT
+          if (group.key === 'client-purchases' && role !== 'CLIENT') {
             return false
           }
 

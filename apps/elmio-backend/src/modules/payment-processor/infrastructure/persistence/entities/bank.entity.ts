@@ -10,7 +10,7 @@ import {
 import { BankAccount } from './bank-account.entity'
 import { BankPaymentMethod } from './bank-payment-method.entity'
 
-@Entity({ schema: 'payments', name: 'bank' })
+@Entity({ name: 'bank' })
 export class Bank {
   @PrimaryColumn('uuid')
   id: string = randomUUID()

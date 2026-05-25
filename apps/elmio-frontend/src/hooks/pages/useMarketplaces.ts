@@ -105,10 +105,6 @@ export function useMarketplaces() {
       setErrorModal('El nombre de la configuración es obligatorio.')
       return
     }
-    if (!nuevoSlug.trim()) {
-      setErrorModal('El slug es obligatorio.')
-      return
-    }
 
     try {
       setGuardando(true)
@@ -117,7 +113,7 @@ export function useMarketplaces() {
 
       await marketplaceService.create({
         nombre: nuevoNombre.trim(),
-        slug: nuevoSlug.trim().toLowerCase(),
+        slug: '', // El backend resolverá automáticamente el slug del aliado o del admin
         descripcion: nuevaDesc.trim(),
         propietario: propietarioFinal,
       })

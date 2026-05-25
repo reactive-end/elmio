@@ -28,6 +28,9 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
       owner: entity.owner,
       createdAt: entity.createdAt,
       requirePasswordChange: entity.requirePasswordChange,
+      slug: entity.slug,
+      countryCode: entity.countryCode,
+      phone: entity.phone,
     };
   }
 
@@ -41,6 +44,9 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
     entity.owner = domain.owner;
     entity.createdAt = domain.createdAt;
     entity.requirePasswordChange = domain.requirePasswordChange;
+    entity.slug = domain.slug ?? null;
+    entity.countryCode = domain.countryCode ?? '+58';
+    entity.phone = domain.phone ?? '';
     return entity;
   }
 

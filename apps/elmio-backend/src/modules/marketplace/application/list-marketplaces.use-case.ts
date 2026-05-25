@@ -16,10 +16,15 @@ export class ListMarketplacesUseCase {
   ) {}
 
   /**
-   * Recupera todos los marketplaces del sistema.
+   * Recupera todos los marketplaces del sistema, opcionalmente filtrados por propietario.
+   * @param owner Propietario (opcional) del/los marketplaces a listar.
    * @returns Coleccion de marketplaces.
    */
-  async execute(): Promise<Marketplace[]> {
-    return this.repository.list();
+  async execute(owner?: string): Promise<Marketplace[]> {
+    const list = await this.repository.list();
+    if (owner) {
+      return list.filter((m) => m.owner === owner);
+    }
+    return list;
   }
 }

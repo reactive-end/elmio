@@ -9,7 +9,7 @@ import { UpdateEnterpriseInterestConfigDto } from './dto/enterprise-interest-con
 /**
  * Controlador admin para la tasa global por empresa.
  */
-@Controller('admin/enterprise-interest-configs')
+@Controller('enterprise-interest-configs')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class EnterpriseInterestConfigAdminController {

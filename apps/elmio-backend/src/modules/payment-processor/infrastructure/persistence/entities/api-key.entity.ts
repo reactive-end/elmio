@@ -18,7 +18,7 @@ import { BankAccount } from './bank-account.entity'
  * - `secretKey` (secundaria/secret): opcional.
  * - `extraKey` (extra): opcional.
  */
-@Entity({ schema: 'payments', name: 'api_key' })
+@Entity({ name: 'api_key' })
 export class ApiKey {
   /** Identificador único de la API key (UUID v4). */
   @PrimaryColumn('uuid')

@@ -22,7 +22,7 @@ import type { WhatsAppStatusInfo } from '../domain/types/whatsapp-status-info';
  * Solo accesible por usuarios con rol ADMIN.
  * Permite gestionar la conexion, visualizar el QR y controlar el servicio.
  */
-@Controller('whatsapp/admin')
+@Controller('whatsapp')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class WhatsAppAdminController {

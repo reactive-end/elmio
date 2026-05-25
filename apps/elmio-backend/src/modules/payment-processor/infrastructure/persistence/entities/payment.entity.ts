@@ -11,7 +11,7 @@ import {
 import { BankAccount } from './bank-account.entity'
 import { Currency } from './currency.entity'
 
-@Entity({ schema: 'payments', name: 'payment' })
+@Entity({ name: 'payment' })
 /**
  * Entidad que representa una transacción de pago persistida.
  *

@@ -51,7 +51,7 @@ export const integrationApiKeysService = {
    * Obtiene las API keys registradas.
    */
   async list(): Promise<IntegrationApiKeyItem[]> {
-    return apiFetch<IntegrationApiKeyItem[]>('/admin/integration-api-keys', {
+    return apiFetch<IntegrationApiKeyItem[]>('/integration-api-keys', {
       method: 'GET',
     })
   },
@@ -60,7 +60,7 @@ export const integrationApiKeysService = {
    * Crea una nueva API key cifrada.
    */
   async create(input: SaveIntegrationApiKeyInput & { value: string }): Promise<IntegrationApiKeyItem> {
-    return apiFetch<IntegrationApiKeyItem>('/admin/integration-api-keys', {
+    return apiFetch<IntegrationApiKeyItem>('/integration-api-keys', {
       method: 'POST',
       body: JSON.stringify(input),
     })
@@ -70,7 +70,7 @@ export const integrationApiKeysService = {
    * Actualiza una API key existente.
    */
   async update(id: string, input: SaveIntegrationApiKeyInput): Promise<IntegrationApiKeyItem> {
-    return apiFetch<IntegrationApiKeyItem>(`/admin/integration-api-keys/${encodeURIComponent(id)}`, {
+    return apiFetch<IntegrationApiKeyItem>(`/integration-api-keys/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: JSON.stringify(input),
     })
@@ -81,7 +81,7 @@ export const integrationApiKeysService = {
    */
   async toggleActive(id: string, isActive: boolean): Promise<IntegrationApiKeyItem> {
     return apiFetch<IntegrationApiKeyItem>(
-      `/admin/integration-api-keys/${encodeURIComponent(id)}/toggle-active`,
+      `/integration-api-keys/${encodeURIComponent(id)}/toggle-active`,
       {
         method: 'POST',
         body: JSON.stringify({ isActive }),
@@ -94,7 +94,7 @@ export const integrationApiKeysService = {
    */
   async reveal(id: string, revealKey: string): Promise<{ value: string }> {
     return apiFetch<{ value: string }>(
-      `/admin/integration-api-keys/${encodeURIComponent(id)}/reveal`,
+      `/integration-api-keys/${encodeURIComponent(id)}/reveal`,
       {
         method: 'POST',
         body: JSON.stringify({ revealKey }),

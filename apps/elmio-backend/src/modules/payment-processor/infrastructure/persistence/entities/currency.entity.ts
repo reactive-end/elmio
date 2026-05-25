@@ -11,7 +11,7 @@ import { BankAccount } from './bank-account.entity'
 import { Payment } from './payment.entity'
 import { ExchangeRate } from './exchange-rate.entity'
 
-@Entity({ schema: 'payments', name: 'currency' })
+@Entity({ name: 'currency' })
 /**
  * Entidad que modela una moneda disponible para el dominio de pagos.
  *

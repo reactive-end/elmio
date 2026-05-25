@@ -3,7 +3,7 @@
  */
 export class CreateMarketplaceDto {
   name!: string;
-  slug!: string;
+  slug?: string;
   description!: string;
   owner!: string;
   logo!: string;

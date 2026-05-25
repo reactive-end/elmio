@@ -11,7 +11,7 @@ import {
 } from 'typeorm'
 import { Currency } from './currency.entity'
 
-@Entity({ schema: 'payments', name: 'exchange_rate' })
+@Entity({ name: 'exchange_rate' })
 @Unique('UQ_exchange_rate_currency_effective_date', [
   'currency',
   'effectiveDate',

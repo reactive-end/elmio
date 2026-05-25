@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { BankAccount } from './bank-account.entity'
 
-@Entity({ schema: 'payments', name: 'bank_account_type' })
+@Entity({ name: 'bank_account_type' })
 /**
  * Entidad catálogo para los tipos de cuentas bancarias.
  *

@@ -44,6 +44,23 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
       '/dashboard/products',
     ]
 
+    const forbiddenForClient = [
+      '/dashboard/gallery',
+      '/dashboard/enterprise',
+      '/dashboard/marketplaces',
+      '/dashboard/products',
+      '/dashboard/collaborator/account-statement',
+      '/dashboard/collaborator/requests',
+      '/dashboard/collaborator/shop',
+      '/dashboard/config',
+    ]
+
+    const forbiddenForAllied = [
+      '/dashboard/enterprise',
+      '/dashboard/collaborator',
+      '/dashboard/config',
+    ]
+
     if (
       session?.role === 'COMPANY' &&
       forbiddenForCompany.some((path) => pathname.startsWith(path))
@@ -57,6 +74,22 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
       forbiddenForEmployee.some((path) => pathname.startsWith(path))
     ) {
       router.push('/dashboard/collaborator/account-statement')
+      return
+    }
+
+    if (
+      session?.role === 'CLIENT' &&
+      (pathname === '/dashboard' || pathname === '/dashboard/' || forbiddenForClient.some((path) => pathname.startsWith(path)))
+    ) {
+      router.push('/dashboard/collaborator/purchases')
+      return
+    }
+
+    if (
+      session?.role === 'ALLIED' &&
+      (pathname === '/dashboard' || pathname === '/dashboard/' || forbiddenForAllied.some((path) => pathname.startsWith(path)))
+    ) {
+      router.push('/dashboard/marketplaces')
       return
     }
 

@@ -10,6 +10,7 @@ export enum UserRole {
   COMPANY = 'COMPANY',
   EMPLOYEE = 'EMPLOYEE',
   CLIENT = 'CLIENT',
+  ALLIED = 'ALLIED',
 }
 
 /**
@@ -24,6 +25,9 @@ export interface User {
   owner: string;
   createdAt: string;
   requirePasswordChange?: boolean;
+  slug?: string | null;
+  countryCode?: string;
+  phone?: string;
 }
 
 /**
