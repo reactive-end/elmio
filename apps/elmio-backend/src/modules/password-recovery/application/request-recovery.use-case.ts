@@ -10,6 +10,7 @@ import { NOTIFICATION_SENDER_PORT } from '../../notification/domain/ports/notifi
 import type { NotificationSenderPort } from '../../notification/domain/ports/notification-sender.port';
 import { hashPassword } from '../../auth/helpers';
 import type { RecoveryCode } from '../domain/types/recovery-code';
+import { PersonProfileEntity } from '../../enterprise/infrastructure/entities/person-profile.entity';
 
 export interface RequestRecoveryResult {
   channel: 'whatsapp' | 'email';
@@ -55,12 +56,11 @@ export class RequestRecoveryUseCase {
       }
 
       // Obtener el numero de telefono del usuario desde person_profiles
-      const profile = await this.dataSource.query<{ phone?: string }[]>(
-        `SELECT phone FROM person_profiles WHERE "userId" = $1 LIMIT 1`,
-        [user.id],
-      );
+      const profile = await this.dataSource
+        .getRepository(PersonProfileEntity)
+        .findOne({ where: { userId: user.id } });
 
-      const phone = profile && profile.length > 0 ? profile[0].phone : undefined;
+      const phone = profile ? profile.phone : undefined;
 
       // Invalidar todos los codigos previos del usuario
       await this.recoveryCodeRepository.invalidateAllForUser(user.id);

@@ -4,6 +4,8 @@ import { Repository, DataSource, In } from 'typeorm';
 import type { User } from '../domain/user';
 import type { AuthRepositoryPort } from '../domain/ports/auth-repository.port';
 import { UserEntity } from './entities/user.entity';
+import { EnterpriseEntity } from '../../enterprise/infrastructure/entities/enterprise.entity';
+import { PersonProfileEntity } from '../../enterprise/infrastructure/entities/person-profile.entity';
 
 /**
  * Implementacion en base de datos PostgreSQL del repositorio de autenticacion usando TypeORM.
@@ -55,25 +57,31 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
       const cleanInputPhone = resolvedEmail.replace(/\D/g, '');
       if (cleanInputPhone.length > 0) {
         try {
-          // Buscamos en empresas usando query directo para evitar acoplamientos circulares de modulo
-          // Comparamos usando los últimos 10 dígitos para máxima flexibilidad de formatos de entrada (+58, 0, etc.)
-          const enterprises: Array<{ email: string }> =
-            await this.dataSource.query(
-              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
-              [cleanInputPhone],
-            );
+          const enterprise = await this.dataSource
+            .getRepository(EnterpriseEntity)
+            .createQueryBuilder('e')
+            .select('e.email')
+            .where(
+              `RIGHT(regexp_replace(e.phone, '[^0-9]', '', 'g'), 10) = RIGHT(:phone, 10)`,
+              { phone: cleanInputPhone },
+            )
+            .getOne();
 
-          if (enterprises && enterprises.length > 0) {
-            resolvedEmail = enterprises[0].email.toLowerCase();
+          if (enterprise) {
+            resolvedEmail = enterprise.email.toLowerCase();
           } else {
-            // Buscamos en perfiles de persona (colaboradores/clientes)
-            const profiles: Array<{ email: string }> =
-              await this.dataSource.query(
-                `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
-                [cleanInputPhone],
-              );
-            if (profiles && profiles.length > 0) {
-              resolvedEmail = profiles[0].email.toLowerCase();
+            const profile = await this.dataSource
+              .getRepository(PersonProfileEntity)
+              .createQueryBuilder('p')
+              .select('p.email')
+              .where(
+                `RIGHT(regexp_replace(p.phone, '[^0-9]', '', 'g'), 10) = RIGHT(:phone, 10)`,
+                { phone: cleanInputPhone },
+              )
+              .getOne();
+
+            if (profile) {
+              resolvedEmail = profile.email.toLowerCase();
             }
           }
         } catch (err) {
@@ -123,20 +131,28 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
         try {
           const emailsSet = new Set<string>();
 
-          const enterprises: Array<{ email: string }> =
-            await this.dataSource.query(
-              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10)`,
-              [cleanInputPhone],
-            );
+          const enterprises = await this.dataSource
+            .getRepository(EnterpriseEntity)
+            .createQueryBuilder('e')
+            .select('e.email')
+            .where(
+              `RIGHT(regexp_replace(e.phone, '[^0-9]', '', 'g'), 10) = RIGHT(:phone, 10)`,
+              { phone: cleanInputPhone },
+            )
+            .getMany();
           for (const ent of enterprises) {
             emailsSet.add(ent.email.toLowerCase());
           }
 
-          const profiles: Array<{ email: string }> =
-            await this.dataSource.query(
-              `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10)`,
-              [cleanInputPhone],
-            );
+          const profiles = await this.dataSource
+            .getRepository(PersonProfileEntity)
+            .createQueryBuilder('p')
+            .select('p.email')
+            .where(
+              `RIGHT(regexp_replace(p.phone, '[^0-9]', '', 'g'), 10) = RIGHT(:phone, 10)`,
+              { phone: cleanInputPhone },
+            )
+            .getMany();
           for (const prof of profiles) {
             emailsSet.add(prof.email.toLowerCase());
           }

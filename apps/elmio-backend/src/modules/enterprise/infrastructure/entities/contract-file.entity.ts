@@ -1,9 +1,14 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { ContractEntity } from './contract.entity';
 
 @Entity('contract_files')
 export class ContractFileEntity {
   @PrimaryColumn('uuid')
   id!: string;
+
+  @ManyToOne(() => ContractEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'contractId' })
+  contract!: ContractEntity;
 
   @Column({ type: 'uuid' })
   contractId!: string;

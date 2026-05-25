@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Shareholder, BankAccount, SocialMediaLinks } from '../../domain/enterprise';
+import { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
 
 const jsonTransformer = {
   to: <T>(value: T | null): string | null => (value ? JSON.stringify(value) : null),
@@ -15,6 +16,10 @@ const jsonArrayTransformer = {
 export class EnterpriseEntity {
   @PrimaryColumn('uuid')
   id!: string;
+
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user!: UserEntity;
 
   @Column({ type: 'uuid' })
   userId!: string;

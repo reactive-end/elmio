@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { CardInfo, PersonalReference } from '../../domain/person-profile';
 import { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
+import { EnterpriseEntity } from './enterprise.entity';
 
 const jsonTransformer = {
   to: <T>(value: T | null): string | null => (value ? JSON.stringify(value) : null),
@@ -108,7 +109,10 @@ export class PersonProfileEntity {
   @Column({ type: 'boolean', default: false })
   hasDriverLicense!: boolean;
 
-  // — Grupo 4: Empleo —
+  @ManyToOne(() => EnterpriseEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'enterpriseId' })
+  enterprise!: EnterpriseEntity | null;
+
   @Column({ type: 'uuid', nullable: true })
   enterpriseId!: string | null;
 

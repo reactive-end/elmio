@@ -1,10 +1,11 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import {
   ProductAttribute,
   PriceList,
   DiscountPeriod,
   ProductWindow,
 } from '../../domain/product';
+import { MarketplaceEntity } from '@/modules/marketplace/infrastructure/entities/marketplace.entity';
 
 // Transformador generico para columnas complejas en PostgreSQL/SQLite
 const jsonTransformer = {
@@ -112,6 +113,10 @@ export class ProductEntity {
     transformer: jsonTransformer,
   })
   windows!: ProductWindow[];
+
+  @ManyToOne(() => MarketplaceEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'marketplaceId' })
+  marketplace!: MarketplaceEntity | null;
 
   @Column({ type: 'uuid', nullable: true })
   marketplaceId!: string | null;

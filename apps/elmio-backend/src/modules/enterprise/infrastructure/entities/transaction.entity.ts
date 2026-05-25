@@ -1,12 +1,22 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { EnterpriseEntity } from './enterprise.entity';
+import { PersonProfileEntity } from './person-profile.entity';
 
 @Entity('transactions')
 export class TransactionEntity {
   @PrimaryColumn('uuid')
   id!: string;
 
+  @ManyToOne(() => EnterpriseEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'enterpriseId' })
+  enterprise!: EnterpriseEntity;
+
   @Column({ type: 'uuid' })
   enterpriseId!: string;
+
+  @ManyToOne(() => PersonProfileEntity, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'collaboratorId' })
+  collaborator!: PersonProfileEntity | null;
 
   @Column({ type: 'uuid', nullable: true })
   collaboratorId!: string | null;

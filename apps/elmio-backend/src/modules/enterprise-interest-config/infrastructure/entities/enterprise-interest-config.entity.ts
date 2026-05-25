@@ -5,7 +5,10 @@ import {
   Entity,
   PrimaryColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { EnterpriseEntity } from '@/modules/enterprise/infrastructure/entities/enterprise.entity';
 
 /**
  * Configuracion de interes global por empresa.
@@ -14,6 +17,10 @@ import {
 export class EnterpriseInterestConfigEntity {
   @PrimaryColumn('uuid')
   id: string = randomUUID();
+
+  @ManyToOne(() => EnterpriseEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'enterpriseId' })
+  enterprise!: EnterpriseEntity;
 
   @Column({ type: 'uuid', unique: true })
   enterpriseId!: string;
