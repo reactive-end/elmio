@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { UserEntity } from './entities/user.entity';
 import { hashPassword } from '../helpers';
 import { UserRole } from '../domain/user';
+import { PersonProfileEntity } from '../../enterprise/infrastructure/entities/person-profile.entity';
 
 @Injectable()
 export class AuthSeedService implements OnApplicationBootstrap {
@@ -38,6 +39,8 @@ export class AuthSeedService implements OnApplicationBootstrap {
       },
     ];
 
+    const profileRepo = this.dataSource.getRepository(PersonProfileEntity);
+
     for (const admin of defaultAdmins) {
       const emailLower = admin.email.trim().toLowerCase();
       let user = await this.userRepo.findOne({ where: { email: emailLower } });
@@ -59,95 +62,72 @@ export class AuthSeedService implements OnApplicationBootstrap {
 
       // Asegurar que el perfil de persona exista con su telefono correspondiente
       try {
-        const existingProfile: any[] = await this.dataSource.query(
-          `SELECT id FROM person_profiles WHERE email = $1 LIMIT 1`,
-          [emailLower],
-        );
+        const existingProfile = await profileRepo.findOne({ where: { email: emailLower } });
 
-        if (existingProfile.length === 0) {
-          const profileId = randomUUID();
-          await this.dataSource.query(
-            `INSERT INTO person_profiles (
-              id, "userId", name, "lastName", "documentType", "documentId", "documentPhoto",
-              email, phone, "phone2", "phoneType", photo, "birthDate", age, gender, "civilStatus",
-              height, weight, diseases, "familyDependents", "countryOfOrigin", "countryOfResidence",
-              address, hobbies, "favoriteFood", "hasLaptopOrPc", "operatingSystem", "vehicleCount",
-              "hasDriverLicense", "enterpriseId", department, position, "startDate", "baseSalary",
-              "maxLoanLimit", "employmentType", "employmentSector", "timeInCompanyMonths", "loanPurpose",
-              status, "socialMedia1", "socialMedia2", "socialMedia3", "residenceType", "isResidenceOwned",
-              "recurringIncome", "nationalBank1", "nationalBank2", "nationalBank3", "internationalBank",
-              "creditCard", "debitCard", "personalReferences", "onboardingCompleted", "createdAt"
-            ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-              $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
-              $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44,
-              $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55
-            )`,
-            [
-              profileId,
-              user.id,
-              admin.name,
-              admin.lastName,
-              'V',
-              '00000000',
-              '',
-              emailLower,
-              admin.phone,
-              '',
-              'mobile',
-              '',
-              '1990-01-01',
-              30,
-              'N/A',
-              'single',
-              '',
-              '',
-              '',
-              0,
-              'Venezuela',
-              'Venezuela',
-              'Caracas, Venezuela',
-              '',
-              '',
-              false,
-              '',
-              0,
-              false,
-              null,
-              'IT',
-              'Administrator',
-              '2026-01-01',
-              0,
-              0,
-              'full-time',
-              'technology',
-              1,
-              '',
-              'active',
-              '',
-              '',
-              '',
-              '',
-              false,
-              0,
-              '',
-              '',
-              '',
-              '',
-              null,
-              null,
-              '[]',
-              true,
-              new Date().toISOString(),
-            ],
-          );
+        if (!existingProfile) {
+          const profile = new PersonProfileEntity();
+          profile.id = randomUUID();
+          profile.userId = user.id;
+          profile.name = admin.name;
+          profile.lastName = admin.lastName;
+          profile.documentType = 'V';
+          profile.documentId = '00000000';
+          profile.documentPhoto = '';
+          profile.email = emailLower;
+          profile.phone = admin.phone;
+          profile.phone2 = '';
+          profile.phoneType = 'mobile';
+          profile.photo = '';
+          profile.birthDate = '1990-01-01';
+          profile.age = 30;
+          profile.gender = 'N/A';
+          profile.civilStatus = 'single';
+          profile.height = '';
+          profile.weight = '';
+          profile.diseases = '';
+          profile.familyDependents = 0;
+          profile.countryOfOrigin = 'Venezuela';
+          profile.countryOfResidence = 'Venezuela';
+          profile.address = 'Caracas, Venezuela';
+          profile.hobbies = '';
+          profile.favoriteFood = '';
+          profile.hasLaptopOrPc = false;
+          profile.operatingSystem = '';
+          profile.vehicleCount = 0;
+          profile.hasDriverLicense = false;
+          profile.enterpriseId = null;
+          profile.department = 'IT';
+          profile.position = 'Administrator';
+          profile.startDate = '2026-01-01';
+          profile.baseSalary = 0;
+          profile.maxLoanLimit = 0;
+          profile.employmentType = 'full-time';
+          profile.employmentSector = 'technology';
+          profile.timeInCompanyMonths = 1;
+          profile.loanPurpose = '';
+          profile.status = 'active';
+          profile.socialMedia1 = '';
+          profile.socialMedia2 = '';
+          profile.socialMedia3 = '';
+          profile.residenceType = '';
+          profile.isResidenceOwned = false;
+          profile.recurringIncome = 0;
+          profile.nationalBank1 = '';
+          profile.nationalBank2 = '';
+          profile.nationalBank3 = '';
+          profile.internationalBank = '';
+          profile.creditCard = null;
+          profile.debitCard = null;
+          profile.personalReferences = [];
+          profile.onboardingCompleted = true;
+          profile.createdAt = new Date().toISOString();
+
+          await profileRepo.save(profile);
           this.logger.log(`Perfil de persona creado con éxito para ${admin.name} ${admin.lastName} con teléfono ${admin.phone}`);
         } else {
           // Si el perfil ya existe, actualizamos el teléfono para asegurarnos de que tenga el teléfono correcto provisto
-          await this.dataSource.query(
-            `UPDATE person_profiles SET phone = $1 WHERE email = $2`,
-            [admin.phone, emailLower],
-          );
+          existingProfile.phone = admin.phone;
+          await profileRepo.save(existingProfile);
           this.logger.log(`Teléfono actualizado para el perfil de ${admin.name} ${admin.lastName}: ${admin.phone}`);
         }
       } catch (err) {

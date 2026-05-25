@@ -20,6 +20,8 @@ function requiredEnv(name: string): string {
   return v;
 }
 
+const isCompiled = __filename.endsWith('.js');
+
 const AppDataSource = new DataSource({
   type: 'postgres',
   host: requiredEnv('DB_HOST'),
@@ -35,14 +37,12 @@ const AppDataSource = new DataSource({
   },
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
   logging: process.env.DB_LOGGING === 'true' || process.env.NODE_ENV === 'development',
-  entities: [
-    'src/modules/**/*.entity.ts',
-    'dist/modules/**/*.entity.js',
-  ],
-  migrations: [
-    'src/shared/database/migrations/*.ts',
-    'dist/shared/database/migrations/*.js',
-  ],
+  entities: isCompiled
+    ? ['dist/modules/**/*.entity.js']
+    : ['src/modules/**/*.entity.ts'],
+  migrations: isCompiled
+    ? ['dist/shared/database/migrations/*.js']
+    : ['src/shared/database/migrations/*.ts'],
 });
 
 export default AppDataSource;
