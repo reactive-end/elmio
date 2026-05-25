@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import { Eye, FolderTree, ImageIcon, Search, Trash2, Upload, X } from 'lucide-react'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Button } from '@/components/atoms/Button/Button'
 import { Input } from '@/components/atoms/Input/Input'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 import { useGalleryManager } from './useGalleryManager'
 import type { GalleryImageItem, GalleryManagerProps } from './GalleryManager.d'
 
@@ -44,12 +46,12 @@ function GalleryCard({
           sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 25vw"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
-        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/65 via-black/15 to-transparent px-4 py-3 text-white">
-          <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+        <div className="absolute inset-x-0 bottom-3 flex items-center justify-between px-3 text-white">
+          <span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold shadow-sm transition-all duration-200">
             {formatFileSize(image.size)}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
-            <Eye className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold shadow-sm transition-all duration-200">
+            <Eye className="h-3.5 w-3.5" strokeWidth={2.2} />
             Ver
           </span>
         </div>
@@ -74,6 +76,7 @@ function GalleryCard({
  * Permite cargar imagenes, buscarlas y revisarlas antes de integrarlas con el bucket real.
  */
 export function GalleryManager({ className = '' }: GalleryManagerProps) {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const {
     tenantDirectory,
     search,
@@ -247,96 +250,153 @@ export function GalleryManager({ className = '' }: GalleryManagerProps) {
       )}
 
       {selectedImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
-          <div className="relative flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl lg:grid lg:grid-cols-[minmax(0,1.3fr)_400px]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 md:p-6 backdrop-blur-md transition-all duration-300">
+          <div className="relative flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl border border-gray-100/50 lg:grid lg:grid-cols-[1fr_420px] animate-in fade-in zoom-in-95 duration-300">
+            {/* Botón de cerrar para desktop */}
             <button
               type="button"
-              onClick={closePreview}
-              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/65"
+              onClick={() => {
+                setIsConfirmOpen(false)
+                closePreview()
+              }}
+              className="absolute right-4 top-4 z-20 hidden lg:flex h-9 w-9 items-center justify-center rounded-full bg-white/90 border border-gray-100 text-gray-500 shadow-sm transition-all duration-200 hover:scale-105 hover:bg-white hover:text-gray-800"
               aria-label="Cerrar vista previa"
             >
-              <X className="h-5 w-5" strokeWidth={1.5} />
+              <X className="h-4.5 w-4.5" strokeWidth={1.5} />
             </button>
 
-            <div className="min-h-[320px] bg-gray-950/95 p-4 lg:p-6">
-              <div className="flex h-full items-center justify-center overflow-hidden rounded-[1.5rem] bg-black/20">
+            {/* Contenedor de la Imagen */}
+            <div className="relative flex min-h-[300px] flex-1 items-center justify-center bg-slate-50 p-6 lg:p-8">
+              {/* Botón de cerrar móvil */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfirmOpen(false)
+                  closePreview()
+                }}
+                className="absolute left-4 top-4 z-20 flex lg:hidden h-9 w-9 items-center justify-center rounded-full bg-white/80 border border-slate-200 text-slate-600 backdrop-blur-md transition-all duration-200 hover:bg-white hover:text-slate-800"
+                aria-label="Cerrar vista previa"
+              >
+                <X className="h-4.5 w-4.5" strokeWidth={1.5} />
+              </button>
+
+              <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-md">
                 <Image
                   src={selectedImage.previewUrl}
                   alt={selectedImage.name}
                   width={1600}
                   height={1200}
                   unoptimized
-                  className="max-h-[72vh] w-full object-contain"
+                  className="max-h-[50vh] lg:max-h-[70vh] w-full object-contain transition-all duration-300 hover:scale-[1.01]"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col overflow-y-auto p-6 lg:p-7">
-              <div className="mb-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
-                  Vista previa
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-body">{selectedImage.name}</h2>
-                <p className="mt-2 text-sm leading-6 text-gray-500">
-                  Recurso disponible en la galeria del tenant administrador.
-                </p>
+            {/* Panel de Detalles a la Derecha */}
+            <div className="flex flex-col h-[50vh] lg:h-auto overflow-y-auto bg-white border-t border-gray-100 lg:border-t-0 lg:border-l lg:border-gray-100">
+              <div className="flex-1 p-6 lg:p-8 space-y-6">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/8 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-secondary border border-secondary/5">
+                    <FolderTree className="h-3 w-3" strokeWidth={2} />
+                    Detalles del recurso
+                  </span>
+                  <h2 className="mt-3 text-lg font-bold text-gray-900 leading-snug break-all">
+                    {selectedImage.name}
+                  </h2>
+                  <p className="mt-1.5 text-xs font-medium text-gray-400">
+                    Imagen de la biblioteca activa del tenant administrador.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between rounded-xl border border-gray-50 bg-gray-50/50 px-4 py-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                      Directorio
+                    </span>
+                    <span className="text-xs font-semibold text-gray-800">
+                      {selectedImage.tenantDirectory}
+                    </span>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-50 bg-gray-50/50 px-4 py-3 space-y-1">
+                    <span className="text-[11px] block font-semibold uppercase tracking-wider text-gray-400">
+                      Ruta del Archivo
+                    </span>
+                    <span className="text-[11px] block font-mono font-medium text-gray-500 break-all bg-white rounded-lg border border-gray-100/60 p-2">
+                      {selectedImage.storagePath}
+                    </span>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-gray-50 bg-gray-50/50 px-4 py-3">
+                      <span className="text-[11px] block font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
+                        Tamaño
+                      </span>
+                      <span className="text-xs font-bold text-gray-800">
+                        {formatFileSize(selectedImage.size)}
+                      </span>
+                    </div>
+                    <div className="rounded-xl border border-gray-50 bg-gray-50/50 px-4 py-3">
+                      <span className="text-[11px] block font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
+                        Tipo MIME
+                      </span>
+                      <span className="text-xs font-bold text-gray-800 truncate block">
+                        {selectedImage.mimeType}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-50 bg-gray-50/50 px-4 py-3 flex items-center justify-between">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                      Subido el
+                    </span>
+                    <span className="text-xs font-semibold text-gray-800">
+                      {formatDate(selectedImage.createdAt)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <dl className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50/80 p-5">
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
-                    Directorio
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium text-body">
-                    {selectedImage.tenantDirectory}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
-                    Ruta
-                  </dt>
-                  <dd className="mt-1 break-all text-sm text-body">{selectedImage.storagePath}</dd>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
-                      Peso
-                    </dt>
-                    <dd className="mt-1 text-sm text-body">{formatFileSize(selectedImage.size)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
-                      Formato
-                    </dt>
-                    <dd className="mt-1 text-sm text-body">{selectedImage.mimeType}</dd>
-                  </div>
-                </div>
-                <div>
-                  <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">
-                    Fecha de carga
-                  </dt>
-                  <dd className="mt-1 text-sm text-body">{formatDate(selectedImage.createdAt)}</dd>
-                </div>
-              </dl>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Button type="button" fullWidth variant="ghost" onClick={closePreview}>
-                  Cerrar preview
+              {/* Botones de Acción */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-100 p-6 lg:p-8 flex flex-col sm:flex-row gap-3">
+                <Button 
+                  type="button" 
+                  fullWidth 
+                  variant="ghost" 
+                  onClick={() => {
+                    setIsConfirmOpen(false)
+                    closePreview()
+                  }}
+                  className="py-2.5 h-11 border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-xs rounded-xl"
+                >
+                  Cerrar vista previa
                 </Button>
                 <Button
                   type="button"
                   fullWidth
-                  className="bg-red-500 hover:bg-red-600 focus:ring-red-300"
-                  onClick={() => {
-                    void removeImage(selectedImage.id)
-                  }}
+                  className="bg-red-600 hover:bg-red-700 border-red-600 text-white font-medium text-xs rounded-xl py-2.5 h-11 shadow-lg shadow-red-600/10 transition-all duration-200 active:scale-[0.98]"
+                  onClick={() => setIsConfirmOpen(true)}
                 >
-                  <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                  <Trash2 className="h-4 w-4" strokeWidth={1.8} />
                   Eliminar imagen
                 </Button>
               </div>
             </div>
           </div>
+
+          {/* Modal de Confirmación personalizado para Borrado */}
+          <ConfirmModal
+            isOpen={isConfirmOpen}
+            onClose={() => setIsConfirmOpen(false)}
+            onConfirm={async () => {
+              await removeImage(selectedImage.id)
+              setIsConfirmOpen(false)
+            }}
+            title="¿Eliminar esta imagen?"
+            description={`Esta acción eliminará de forma permanente el archivo "${selectedImage.name}" de la galería del administrador. ¿Deseas continuar?`}
+            confirmText="Sí, eliminar"
+            cancelText="Cancelar"
+          />
         </div>
       )}
     </div>
