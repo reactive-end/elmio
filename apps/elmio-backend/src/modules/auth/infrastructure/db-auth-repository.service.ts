@@ -7,28 +7,90 @@ import { UserEntity } from './entities/user.entity';
 import { EnterpriseEntity } from '../../enterprise/infrastructure/entities/enterprise.entity';
 import { PersonProfileEntity } from '../../enterprise/infrastructure/entities/person-profile.entity';
 
-/**
- * Implementacion en base de datos PostgreSQL del repositorio de autenticacion usando TypeORM.
- */
-@Injectable()
-export class DbAuthRepositoryService implements AuthRepositoryPort {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly repo: Repository<UserEntity>,
-    private readonly dataSource: DataSource,
-  ) {}
+  /**
+   * Obtiene el resumen del shopcart de compra de pólizas de Mercantil.
+   * @async
+   * @param {string} shopcartId - ID del carrito.
+   * @returns {Promise<ShopcartSummary>} Objeto del resumen del carrito.
+   */
+  async getShopcartSummary(shopcartId: string): Promise<ShopcartSummary> {
+    return apiFetch<ShopcartSummary>(`/mercantil/shopcarts/${shopcartId}/summary`);
+  },
 
-  private toDomain(entity: UserEntity): User {
-    return {
-      id: entity.id,
-      name: entity.name,
-      email: entity.email,
-      passwordHash: entity.passwordHash,
-      role: entity.role,
-      owner: entity.owner,
-      createdAt: entity.createdAt,
-      requirePasswordChange: entity.requirePasswordChange,
-    };
+  /**
+   * Consulta la información de vehículos disponibles por año, marca, modelo y versión.
+   * @async
+   * @param {Record<string, unknown>} params - Parámetros de filtro (year, brand, model, version).
+   * @returns {Promise<Record<string, unknown>>} Datos de vehículos del catálogo Mercantil.
+   */
+  async getVehicleInformation(params: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.append(key, String(value));
+      }
+    });
+    return apiFetch<Record<string, unknown>>(`/mercantil/auto-products/vehicles/vehicle-information?${query.toString()}`);
+  },
+
+  /**
+   * Obtiene la lista de colores de vehículos disponibles.
+   * @async
+   * @returns {Promise<Record<string, unknown>[]>} Lista de colores.
+   */
+  async getVehicleColors(): Promise<Record<string, unknown>[]> {
+    return apiFetch<Record<string, unknown>[]>('/mercantil/auto-products/vehicles/colors');
+  },
+
+  /**
+   * Obtiene la lista de ubicaciones geográficas para vehículos.
+   * @async
+   * @returns {Promise<Record<string, unknown>[]>} Lista de ubicaciones.
+   */
+  async getVehicleLocations(): Promise<Record<string, unknown>[]> {
+    return apiFetch<Record<string, unknown>[]>('/mercantil/auto-products/vehicles/locations');
+  },
+
+  /**
+   * Obtiene los planes RCV disponibles para un tipo de vehículo específico.
+   * @async
+   * @param {string} vehicleTypeId - ID del tipo de vehículo.
+   * @returns {Promise<MercantilCategoryResult[]>} Planes de seguro RCV.
+   */
+  async getAutoPlans(vehicleTypeId: string): Promise<MercantilCategoryResult[]> {
+    return apiFetch<MercantilCategoryResult[]>(`/mercantil/auto-products/plans/client?vehicleTypeId=${encodeURIComponent(vehicleTypeId)}`);
+  },
+
+  /**
+   * Completa la información técnica del vehículo en el shopcart.
+   * @async
+   * @param {string} shopcartId - ID del carrito.
+   * @param {Record<string, unknown>} body - Datos del vehículo.
+   * @returns {Promise<Record<string, unknown>>} Confirmación del servidor.
+   */
+  async completeVehicleInfo(shopcartId: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return apiFetch<Record<string, unknown>>(`/mercantil/auto-products/vehicles/complete-vehicle-info?shopcartId=${encodeURIComponent(shopcartId)}`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  /**
+   * Sube el título de propiedad del vehículo al shopcart.
+   * @async
+   * @param {string} shopcartId - ID del carrito.
+   * @param {File} file - Archivo del título de propiedad.
+   * @returns {Promise<Record<string, unknown>>} Confirmación del servidor.
+   */
+  async uploadVehiclePropertyTitle(shopcartId: string, file: File): Promise<Record<string, unknown>> {
+    const formData = new FormData();
+    formData.append('vehiclePropertyFile', file);
+    return apiFetch<Record<string, unknown>>(`/mercantil/shopcarts/${shopcartId}/vehicle-property-title`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+};
   }
 
   private toPersistence(domain: User): UserEntity {
