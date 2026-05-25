@@ -20,6 +20,8 @@ import {
   DollarSign,
   LogOut,
   MessageSquare,
+  KeyRound,
+  Percent,
 } from 'lucide-react'
 import { Logo } from '@/components/atoms/Logo/Logo'
 import { useRouter } from 'next/navigation'
@@ -50,6 +52,12 @@ function getVisibleChildren(group: NavGroup, role: string | null): NavChild[] {
         href: '/dashboard/enterprise/shop',
         icon: ShoppingBag,
       },
+      {
+        key: 'shop-purchases-company',
+        label: 'Mis compras',
+        href: '/dashboard/enterprise/purchases',
+        icon: List,
+      },
     ]
   }
 
@@ -60,6 +68,12 @@ function getVisibleChildren(group: NavGroup, role: string | null): NavChild[] {
         label: 'Ver productos',
         href: '/dashboard/collaborator/shop',
         icon: ShoppingBag,
+      },
+      {
+        key: 'shop-purchases-employee',
+        label: 'Mis compras',
+        href: '/dashboard/collaborator/purchases',
+        icon: List,
       },
     ]
   }
@@ -188,6 +202,18 @@ const NAV: NavGroup[] = [
         label: 'WhatsApp Web',
         href: '/dashboard/config/whatsapp',
         icon: MessageSquare,
+      },
+      {
+        key: 'config-api-keys',
+        label: 'API Keys',
+        href: '/dashboard/config/api-keys',
+        icon: KeyRound,
+      },
+      {
+        key: 'config-enterprise-interest-rates',
+        label: 'Tasas por empresa',
+        href: '/dashboard/config/enterprise-interest-rates',
+        icon: Percent,
       },
     ],
   },

@@ -14,34 +14,34 @@ import {
   createParamDecorator,
   ExecutionContext,
   Req,
-} from '@nestjs/common'
-import type { Request } from 'express'
-import { PaymentProcessorService } from '../../application/services/payment-processor.service'
-import { AuthGuard } from '../../../auth/presentation/guards/auth.guard'
-import { DoneApiKeyGuard } from './done-api-key.guard'
-import type { UserSession } from '../../../auth/domain/user'
-import type { LegacyTokenPayload } from '../../domain/ports/payment-processor-repository.interface'
+} from '@nestjs/common';
+import type { Request } from 'express';
+import { PaymentProcessorService } from '../../application/services/payment-processor.service';
+import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
+import { DoneApiKeyGuard } from './done-api-key.guard';
+import type { UserSession } from '../../../auth/domain/user';
+import type { LegacyTokenPayload } from '../../domain/ports/payment-processor-repository.interface';
 
-import { InitiateDebitDto } from '../../presentation/dtos/banco-plaza/initiate-debit.dto'
-import { CheckStatusDto } from '../../presentation/dtos/banco-plaza/check-status.dto'
-import { SendMobilePaymentDto } from '../../presentation/dtos/banco-plaza/send-mobile-payment.dto'
-import { CustomerMobilePaymentDto } from '../../presentation/dtos/banco-plaza/customer-mobile-payment.dto'
-import { ConsultMobilePaymentDto } from '../../presentation/dtos/banco-plaza/consult-mobile-payment.dto'
-import { InitiateTransferDto } from '../../presentation/dtos/banco-plaza/initiate-transfer.dto'
-import { CustomerTransferDto } from '../../presentation/dtos/banco-plaza/customer-transfer.dto'
-import { ConsultTransferStatusDto } from '../../presentation/dtos/banco-plaza/consult-transfer-status.dto'
-import { RequestDebitTokenDto } from '../../presentation/dtos/banco-plaza/request-debit-token.dto'
-import { InitiateDirectDebitDto } from '../../presentation/dtos/banco-plaza/initiate-direct-debit.dto'
-import { CheckSettlementDto } from '../../presentation/dtos/banco-plaza/check-settlement.dto'
+import { InitiateDebitDto } from '../../presentation/dtos/banco-plaza/initiate-debit.dto';
+import { CheckStatusDto } from '../../presentation/dtos/banco-plaza/check-status.dto';
+import { SendMobilePaymentDto } from '../../presentation/dtos/banco-plaza/send-mobile-payment.dto';
+import { CustomerMobilePaymentDto } from '../../presentation/dtos/banco-plaza/customer-mobile-payment.dto';
+import { ConsultMobilePaymentDto } from '../../presentation/dtos/banco-plaza/consult-mobile-payment.dto';
+import { InitiateTransferDto } from '../../presentation/dtos/banco-plaza/initiate-transfer.dto';
+import { CustomerTransferDto } from '../../presentation/dtos/banco-plaza/customer-transfer.dto';
+import { ConsultTransferStatusDto } from '../../presentation/dtos/banco-plaza/consult-transfer-status.dto';
+import { RequestDebitTokenDto } from '../../presentation/dtos/banco-plaza/request-debit-token.dto';
+import { InitiateDirectDebitDto } from '../../presentation/dtos/banco-plaza/initiate-direct-debit.dto';
+import { CheckSettlementDto } from '../../presentation/dtos/banco-plaza/check-settlement.dto';
 
-import { GetExchangeRateDto } from '../../presentation/dtos/banco-r4/get-r4-exchange-rate.dto'
-import { ConsultMobilePaymentR4Dto } from '../../presentation/dtos/banco-r4/consult-mobile-payment.dto'
-import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4/mobile-payment-notification.dto'
-import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto'
-import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto'
-import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto'
-import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
-import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto'
+import { GetExchangeRateDto } from '../../presentation/dtos/banco-r4/get-r4-exchange-rate.dto';
+import { ConsultMobilePaymentR4Dto } from '../../presentation/dtos/banco-r4/consult-mobile-payment.dto';
+import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4/mobile-payment-notification.dto';
+import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto';
+import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto';
+import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto';
+import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto';
+import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto';
 
 /**
  * Decorador personalizado local para extraer y mapear la sesión actual
@@ -49,18 +49,18 @@ import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query
  */
 export const User = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): LegacyTokenPayload => {
-    const request = ctx.switchToHttp().getRequest()
-    const session = request.session as UserSession | undefined
+    const request = ctx.switchToHttp().getRequest();
+    const session = request.session as UserSession | undefined;
     return {
       sub: session?.userId || 'anonymous',
       role: session?.role,
-    }
+    };
   },
-)
+);
 
 @Controller('')
 export class PaymentProcessorController {
-  private readonly logger = new Logger(PaymentProcessorController.name)
+  private readonly logger = new Logger(PaymentProcessorController.name);
 
   constructor(
     private readonly paymentProcessorService: PaymentProcessorService,
@@ -80,7 +80,7 @@ export class PaymentProcessorController {
   @UseGuards(AuthGuard)
   @Post('banco-plaza/debit/token')
   async requestDebitToken(@Body() dto: RequestDebitTokenDto, @Ip() ip: string) {
-    return this.paymentProcessorService.requestToken(dto, ip)
+    return this.paymentProcessorService.requestToken(dto, ip);
   }
 
   /**
@@ -93,7 +93,7 @@ export class PaymentProcessorController {
   @UseGuards(AuthGuard)
   @Post('banco-plaza/debit')
   async debit(@Body() dto: InitiateDebitDto, @Ip() ip: string) {
-    return this.paymentProcessorService.debit(dto, ip)
+    return this.paymentProcessorService.debit(dto, ip);
   }
 
   /**
@@ -109,7 +109,7 @@ export class PaymentProcessorController {
     @Body() dto: RequestDebitTokenDto,
     @Ip() ip: string,
   ) {
-    return this.paymentProcessorService.requestToken(dto, ip)
+    return this.paymentProcessorService.requestToken(dto, ip);
   }
 
   /**
@@ -125,21 +125,21 @@ export class PaymentProcessorController {
     let rawIp = (req.headers['x-forwarded-for'] ||
       req.ip ||
       req.socket?.remoteAddress ||
-      '127.0.0.1') as string
+      '127.0.0.1') as string;
 
     if (rawIp.includes(',')) {
-      rawIp = rawIp.split(',')[0].trim()
+      rawIp = rawIp.split(',')[0].trim();
     }
 
-    let cleanIp = rawIp.replace(/^.*:/, '')
+    let cleanIp = rawIp.replace(/^.*:/, '');
     const ipv4Regex =
-      /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+      /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
     if (!ipv4Regex.test(cleanIp)) {
-      cleanIp = '127.0.0.1'
+      cleanIp = '127.0.0.1';
     }
 
-    return this.paymentProcessorService.debit(dto, cleanIp)
+    return this.paymentProcessorService.debit(dto, cleanIp);
   }
 
   /**
@@ -156,9 +156,9 @@ export class PaymentProcessorController {
     @Ip() ip: string,
   ) {
     if (!dto.userIp) {
-      dto.userIp = ip || '127.0.0.1'
+      dto.userIp = ip || '127.0.0.1';
     }
-    return await this.paymentProcessorService.initiateDirectDebit(dto)
+    return await this.paymentProcessorService.initiateDirectDebit(dto);
   }
 
   /**
@@ -175,22 +175,22 @@ export class PaymentProcessorController {
     @Ip() ip: string,
   ) {
     if (!dto.userIp) {
-      dto.userIp = ip || '127.0.0.1'
+      dto.userIp = ip || '127.0.0.1';
     }
 
     const resolvedCompanyAccountId =
       dto.companyAccountId?.trim() ||
-      process.env.PLAZA_DEFAULT_COMPANY_ACCOUNT_ID?.trim()
+      process.env.PLAZA_DEFAULT_COMPANY_ACCOUNT_ID?.trim();
 
     if (!resolvedCompanyAccountId) {
       throw new HttpException(
         'Falta configurar PLAZA_DEFAULT_COMPANY_ACCOUNT_ID para operar con Banco Plaza.',
         HttpStatus.INTERNAL_SERVER_ERROR,
-      )
+      );
     }
 
-    dto.companyAccountId = resolvedCompanyAccountId
-    return await this.paymentProcessorService.initiateDirectDebit(dto)
+    dto.companyAccountId = resolvedCompanyAccountId;
+    return await this.paymentProcessorService.initiateDirectDebit(dto);
   }
 
   /**
@@ -202,7 +202,7 @@ export class PaymentProcessorController {
   @UseGuards(AuthGuard)
   @Post('banco-plaza/direct-debit/check-dom')
   async checkDirectDebitSettlement(@Body() dto: CheckSettlementDto) {
-    return await this.paymentProcessorService.checkSettlement(dto)
+    return await this.paymentProcessorService.checkSettlement(dto);
   }
 
   /**
@@ -214,7 +214,7 @@ export class PaymentProcessorController {
   @UseGuards(AuthGuard)
   @Post('banco-plaza/check-status')
   async checkStatus(@Body() dto: CheckStatusDto) {
-    return await this.paymentProcessorService.checkStatus(dto)
+    return await this.paymentProcessorService.checkStatus(dto);
   }
 
   /**
@@ -233,9 +233,9 @@ export class PaymentProcessorController {
     @User() user: LegacyTokenPayload,
   ) {
     if (!dto.userIp) {
-      dto.userIp = ip || '127.0.0.1'
+      dto.userIp = ip || '127.0.0.1';
     }
-    return await this.paymentProcessorService.sendMobilePayment(dto, user)
+    return await this.paymentProcessorService.sendMobilePayment(dto, user);
   }
 
   /**
@@ -252,9 +252,9 @@ export class PaymentProcessorController {
     @Ip() ip: string,
   ) {
     if (!dto.userIp) {
-      dto.userIp = ip || '127.0.0.1'
+      dto.userIp = ip || '127.0.0.1';
     }
-    return await this.paymentProcessorService.processCustomerMobilePayment(dto)
+    return await this.paymentProcessorService.processCustomerMobilePayment(dto);
   }
 
   /**
@@ -282,8 +282,8 @@ export class PaymentProcessorController {
       provider: provider,
       date,
       reference,
-    }
-    return await this.paymentProcessorService.getMobilePaymentHistory(dto)
+    };
+    return await this.paymentProcessorService.getMobilePaymentHistory(dto);
   }
 
   /**
@@ -302,9 +302,9 @@ export class PaymentProcessorController {
     @User() user: LegacyTokenPayload,
   ) {
     if (!dto.userIp) {
-      dto.userIp = ip || '127.0.0.1'
+      dto.userIp = ip || '127.0.0.1';
     }
-    return await this.paymentProcessorService.initiateTransfer(dto, user)
+    return await this.paymentProcessorService.initiateTransfer(dto, user);
   }
 
   /**
@@ -323,12 +323,12 @@ export class PaymentProcessorController {
     @User() user: LegacyTokenPayload,
   ) {
     if (!dto.userIp) {
-      dto.userIp = ip || '127.0.0.1'
+      dto.userIp = ip || '127.0.0.1';
     }
     return await this.paymentProcessorService.initiateCustomerTransfer(
       dto,
       user,
-    )
+    );
   }
 
   /**
@@ -358,7 +358,7 @@ export class PaymentProcessorController {
       throw new HttpException(
         'El ID es obligatorio en la URL',
         HttpStatus.BAD_REQUEST,
-      )
+      );
     }
 
     const dto: ConsultTransferStatusDto = {
@@ -369,8 +369,8 @@ export class PaymentProcessorController {
       reference: reference,
       amount: Number(amount),
       date: date,
-    }
-    return await this.paymentProcessorService.consultTransferStatus(dto)
+    };
+    return await this.paymentProcessorService.consultTransferStatus(dto);
   }
 
   // ==========================================
@@ -384,15 +384,15 @@ export class PaymentProcessorController {
    * @returns Tasa de cambio obtenida.
    */
   @UseGuards(AuthGuard)
-  @Post('bancoR4/R4consulta/tasa')
+  @Post('banco-r4/consulta/tasa')
   async getExchangeRate(@Body() dto: GetExchangeRateDto) {
     if (!dto.date || !dto.currency) {
       throw new HttpException(
         'Los parámetros fecha y moneda son obligatorios',
         HttpStatus.BAD_REQUEST,
-      )
+      );
     }
-    return await this.paymentProcessorService.getExchangeRate(dto)
+    return await this.paymentProcessorService.getExchangeRate(dto);
   }
 
   /**
@@ -402,10 +402,10 @@ export class PaymentProcessorController {
    * @returns Código y estado de la solicitud.
    */
   @UseGuards(AuthGuard)
-  @Post('bancoR4/generate-otp')
+  @Post('banco-r4/generate-otp')
   @HttpCode(HttpStatus.OK)
   async generateOTP(@Body() dto: GenerateOtpDto) {
-    return await this.paymentProcessorService.generateOTP(dto)
+    return await this.paymentProcessorService.generateOTP(dto);
   }
 
   /**
@@ -415,17 +415,17 @@ export class PaymentProcessorController {
    * @returns Resultado del débito procesado.
    */
   @UseGuards(AuthGuard)
-  @Post('bancoR4/immediate-debit')
+  @Post('banco-r4/immediate-debit')
   async processImmediateDebitR4(@Body() dto: ImmediateDebitRequestDto) {
     this.logger.debug(
-      `[bancoR4/immediate-debit] Request received: ${JSON.stringify(dto)}`,
-    )
+      `[banco-r4/immediate-debit] Request received: ${JSON.stringify(dto)}`,
+    );
     const result =
-      await this.paymentProcessorService.processImmediateDebitR4(dto)
+      await this.paymentProcessorService.processImmediateDebitR4(dto);
     this.logger.debug(
-      `[bancoR4/immediate-debit] Response returned: ${JSON.stringify(result)}`,
-    )
-    return result
+      `[banco-r4/immediate-debit] Response returned: ${JSON.stringify(result)}`,
+    );
+    return result;
   }
 
   /**
@@ -435,17 +435,17 @@ export class PaymentProcessorController {
    * @returns Datos y estado de la operación consultada.
    */
   @UseGuards(AuthGuard)
-  @Post('bancoR4/consult-operations')
+  @Post('banco-r4/consult-operations')
   @HttpCode(HttpStatus.OK)
   async queryOperationR4(@Body() dto: QueryOperationRequestDto) {
     this.logger.debug(
-      `[bancoR4/consult-operations] Request received: ${JSON.stringify(dto)}`,
-    )
-    const result = await this.paymentProcessorService.queryOperationR4(dto)
+      `[banco-r4/consult-operations] Request received: ${JSON.stringify(dto)}`,
+    );
+    const result = await this.paymentProcessorService.queryOperationR4(dto);
     this.logger.debug(
-      `[bancoR4/consult-operations] Response returned: ${JSON.stringify(result)}`,
-    )
-    return result
+      `[banco-r4/consult-operations] Response returned: ${JSON.stringify(result)}`,
+    );
+    return result;
   }
 
   /**
@@ -455,13 +455,13 @@ export class PaymentProcessorController {
    * @returns La última tasa de cambio disponible.
    */
   @UseGuards(AuthGuard)
-  @Get('bancoR4/exchange-rate')
+  @Get('banco-r4/exchange-rate')
   async getLastExchangeRate(
     @Query('companyAccountId') companyAccountId: string,
   ) {
     return await this.paymentProcessorService.getLastExchangeRate(
       companyAccountId,
-    )
+    );
   }
 
   /**
@@ -471,9 +471,9 @@ export class PaymentProcessorController {
    * @returns Resultado de la domiciliación procesada.
    */
   @UseGuards(AuthGuard)
-  @Post('bancoR4/direct-debit/account')
+  @Post('banco-r4/direct-debit/account')
   async processAccountDirectDebitR4(@Body() dto: AccountDirectDebitDto) {
-    return await this.paymentProcessorService.processAccountDirectDebitR4(dto)
+    return await this.paymentProcessorService.processAccountDirectDebitR4(dto);
   }
 
   /**
@@ -483,9 +483,9 @@ export class PaymentProcessorController {
    * @returns Resultado de la domiciliación procesada.
    */
   @UseGuards(AuthGuard)
-  @Post('bancoR4/direct-debit/phone')
+  @Post('banco-r4/direct-debit/phone')
   async processPhoneDirectDebitR4(@Body() dto: PhoneDirectDebitDto) {
-    return await this.paymentProcessorService.processPhoneDirectDebitR4(dto)
+    return await this.paymentProcessorService.processPhoneDirectDebitR4(dto);
   }
 
   /**
@@ -494,10 +494,10 @@ export class PaymentProcessorController {
    * @param dto - Datos de la consulta de pago móvil.
    * @returns Estado actual del pago móvil.
    */
-  @Post('bancoR4/R4consulta')
+  @Post('banco-r4/consulta')
   @HttpCode(HttpStatus.OK)
   async consultMobilePaymentR4(@Body() dto: ConsultMobilePaymentR4Dto) {
-    return await this.paymentProcessorService.consultMobilePaymentR4(dto)
+    return await this.paymentProcessorService.consultMobilePaymentR4(dto);
   }
 
   /**
@@ -506,14 +506,14 @@ export class PaymentProcessorController {
    * @param dto - Datos y metadatos de la notificación de pago móvil recibida.
    * @returns Estado de recepción y aceptación de la notificación.
    */
-  @Post('bancoR4/R4notifica')
+  @Post('banco-r4/notifica')
   @HttpCode(HttpStatus.OK)
   async processMobilePaymentNotificationR4(
     @Body() dto: MobilePaymentNotificationR4Dto,
   ) {
-    this.logger.debug('Notificación R4 recibida:', dto)
+    this.logger.debug('Notificación R4 recibida:', dto);
     return await this.paymentProcessorService.processMobilePaymentNotificationR4(
       dto,
-    )
+    );
   }
 }

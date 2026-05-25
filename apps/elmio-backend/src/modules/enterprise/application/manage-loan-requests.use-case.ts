@@ -75,6 +75,19 @@ export class ManageLoanRequestsUseCase {
       decision === 'denied' ? (denialReason ?? null) : null;
     request.updatedAt = new Date().toISOString();
 
-    return this.repository.saveRequest(request);
+    const savedRequest = await this.repository.saveRequest(request);
+
+    // Sincronizar el estado de la transacción asociada
+    try {
+      const transaction = await this.repository.findTransactionById(requestId);
+      if (transaction) {
+        transaction.status = decision === 'approved' ? 'paid' : 'failed';
+        await this.repository.saveTransaction(transaction);
+      }
+    } catch (e) {
+      // Ignorar fallas al sincronizar transacción asociada
+    }
+
+    return savedRequest;
   }
 }

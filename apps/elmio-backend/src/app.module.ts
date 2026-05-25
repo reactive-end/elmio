@@ -13,6 +13,8 @@ import { PasswordRecoveryModule } from './modules/password-recovery/password-rec
 import { BucketModule } from './modules/bucket/bucket.module';
 import { MercantilModule } from './modules/mercantil/mercantil.module';
 import { PaymentProcessorModule } from './modules/payment-processor/payment-processor.module';
+import { IntegrationApiKeysModule } from './modules/integration-api-keys/integration-api-keys.module';
+import { EnterpriseInterestConfigModule } from './modules/enterprise-interest-config/enterprise-interest-config.module';
 
 /**
  * Modulo raiz de la aplicacion NestJS.
@@ -51,7 +53,8 @@ import { PaymentProcessorModule } from './modules/payment-processor/payment-proc
     BucketModule,
     MercantilModule,
     PaymentProcessorModule,
+    IntegrationApiKeysModule,
+    EnterpriseInterestConfigModule,
   ],
 })
 export class AppModule {}
-

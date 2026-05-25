@@ -487,6 +487,11 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return entities.map((entity) => this.transactionToDomain(entity));
   }
 
+  async findTransactionById(id: string): Promise<Transaction | null> {
+    const entity = await this.transactionRepo.findOne({ where: { id } });
+    return entity ? this.transactionToDomain(entity) : null;
+  }
+
   async saveTransaction(transaction: Transaction): Promise<Transaction> {
     const entity = this.transactionToPersistence(transaction);
     await this.transactionRepo.save(entity);

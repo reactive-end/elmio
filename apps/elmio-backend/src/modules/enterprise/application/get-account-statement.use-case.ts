@@ -1,9 +1,12 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import type { LoanSummary, Transaction } from '../domain/enterprise';
 import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../domain/ports/enterprise-repository.port';
+import { EnterpriseInterestConfigEntity } from '../../enterprise-interest-config/infrastructure/entities/enterprise-interest-config.entity';
 
 /**
  * Obtiene el estado de cuenta de la empresa basado en los prestamos
@@ -14,6 +17,8 @@ export class GetAccountStatementUseCase {
   constructor(
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly repository: EnterpriseRepositoryPort,
+    @InjectRepository(EnterpriseInterestConfigEntity)
+    private readonly interestConfigRepo: Repository<EnterpriseInterestConfigEntity>,
   ) {}
 
   /**
@@ -49,6 +54,10 @@ export class GetAccountStatementUseCase {
       .reduce((sum, t) => sum + t.amount, 0);
     const balance = totalDebt - totalPaid;
 
+    const interestConfig = await this.interestConfigRepo.findOne({
+      where: { enterpriseId },
+    });
+
     return {
       totalLoans,
       totalLoanAmount,
@@ -57,6 +66,9 @@ export class GetAccountStatementUseCase {
       totalDebt,
       totalPaid,
       balance,
+      interestType: interestConfig?.interestType ?? 'none',
+      interestRate: interestConfig ? Number(interestConfig.interestRate) : 0,
+      interestIsActive: interestConfig?.isActive ?? false,
     };
   }
 
@@ -104,6 +116,12 @@ export class GetAccountStatementUseCase {
       .reduce((sum, t) => sum + t.amount, 0);
     const balance = totalDebt - totalPaid;
 
+    const interestConfig = collaborator.enterpriseId
+      ? await this.interestConfigRepo.findOne({
+          where: { enterpriseId: collaborator.enterpriseId },
+        })
+      : null;
+
     return {
       totalLoans,
       totalLoanAmount,
@@ -112,6 +130,9 @@ export class GetAccountStatementUseCase {
       totalDebt,
       totalPaid,
       balance,
+      interestType: interestConfig?.interestType ?? 'none',
+      interestRate: interestConfig ? Number(interestConfig.interestRate) : 0,
+      interestIsActive: interestConfig?.isActive ?? false,
     };
   }
 

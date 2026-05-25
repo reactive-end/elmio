@@ -25,6 +25,7 @@ import { ContractEntity } from './infrastructure/entities/contract.entity';
 import { ContractFileEntity } from './infrastructure/entities/contract-file.entity';
 import { EnterpriseController } from './presentation/http/enterprise.controller';
 import { ProfileController } from './presentation/http/profile.controller';
+import { EnterpriseInterestConfigEntity } from '../enterprise-interest-config/infrastructure/entities/enterprise-interest-config.entity';
 
 /**
  * Modulo empresarial: onboarding, colaboradores, solicitudes y estado de cuenta.
@@ -41,6 +42,7 @@ import { ProfileController } from './presentation/http/profile.controller';
       PlatformConfigEntity,
       ContractEntity,
       ContractFileEntity,
+      EnterpriseInterestConfigEntity,
     ]),
   ],
   controllers: [EnterpriseController, ProfileController],

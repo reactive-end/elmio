@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { IntegrationApiKeysService } from '../../../integration-api-keys/application/integration-api-keys.service';
 
 export class MulterFile {
   fieldname!: string;
@@ -31,20 +32,13 @@ export class MercantilService {
 
   private readonly baseUrl: string;
 
-  private readonly apiKey: string;
-
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly integrationApiKeysService: IntegrationApiKeysService,
+  ) {
     this.baseUrl =
       this.configService.get<string>('MERCANTIL_API_BASE_URL') ||
       'https://imajev78v9.execute-api.us-east-2.amazonaws.com';
-
-    this.apiKey = this.configService.get<string>('MERCANTIL_API_KEY') || '';
-
-    if (!this.apiKey) {
-      this.logger.warn(
-        'MERCANTIL_API_KEY no está configurado. Debes definirlo en el .env para consumir la API externa.',
-      );
-    }
   }
 
   async get(path: string, query?: QueryParams): Promise<unknown> {
@@ -78,9 +72,12 @@ export class MercantilService {
     query?: QueryParams,
   ): Promise<unknown> {
     const formData = new FormData();
-    const fileBlob = new Blob([new Uint8Array(file.buffer || Buffer.alloc(0))], {
-      type: file.mimetype,
-    });
+    const fileBlob = new Blob(
+      [new Uint8Array(file.buffer || Buffer.alloc(0))],
+      {
+        type: file.mimetype,
+      },
+    );
     formData.append(fileFieldName, fileBlob, file.originalname);
 
     return this.post(path, formData, query);
@@ -106,9 +103,14 @@ export class MercantilService {
     path: string,
     options: RequestOptions,
   ): Promise<unknown> {
-    if (!this.apiKey) {
+    const apiKey = await this.integrationApiKeysService.getActivePlainValue(
+      'mercantil',
+      'ally-api',
+    );
+
+    if (!apiKey) {
       throw new InternalServerErrorException(
-        'MERCANTIL_API_KEY no configurado en variables de entorno',
+        'No existe una API key activa para Mercantil / ally-api.',
       );
     }
 
@@ -116,7 +118,7 @@ export class MercantilService {
     const isFormData = options.body instanceof FormData;
 
     const headers: Record<string, string> = {
-      'x-api-key': this.apiKey,
+      'x-api-key': apiKey,
       Accept: 'application/json',
     };
 
@@ -131,11 +133,12 @@ export class MercantilService {
       requestBody = JSON.stringify(options.body);
     }
 
-    const bodyForLog = options.body instanceof FormData
-      ? '[FormData]'
-      : options.body
-        ? JSON.stringify(options.body)
-        : 'undefined';
+    const bodyForLog =
+      options.body instanceof FormData
+        ? '[FormData]'
+        : options.body
+          ? JSON.stringify(options.body)
+          : 'undefined';
 
     this.logger.log(`[MERCANTIL REQUEST] ${method} ${url}`);
     this.logger.log(`[MERCANTIL HEADERS] ${JSON.stringify(headers)}`);
@@ -155,10 +158,16 @@ export class MercantilService {
       : { raw: rawText };
 
     const responseHeaders: Record<string, string> = {};
-    response.headers.forEach((v, k) => { responseHeaders[k] = v; });
+    response.headers.forEach((v, k) => {
+      responseHeaders[k] = v;
+    });
 
-    this.logger.log(`[MERCANTIL RESPONSE] ${response.status} ${response.statusText}`);
-    this.logger.log(`[MERCANTIL RESPONSE HEADERS] ${JSON.stringify(responseHeaders)}`);
+    this.logger.log(
+      `[MERCANTIL RESPONSE] ${response.status} ${response.statusText}`,
+    );
+    this.logger.log(
+      `[MERCANTIL RESPONSE HEADERS] ${JSON.stringify(responseHeaders)}`,
+    );
     this.logger.log(`[MERCANTIL RESPONSE BODY] ${JSON.stringify(parsedBody)}`);
 
     if (!response.ok) {
@@ -178,7 +187,7 @@ export class MercantilService {
   private safeParseJson(rawText: string): unknown {
     try {
       return rawText ? JSON.parse(rawText) : {};
-    } catch (_error) {
+    } catch {
       return { raw: rawText };
     }
   }

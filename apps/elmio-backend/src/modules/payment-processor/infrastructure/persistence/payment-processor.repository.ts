@@ -2043,12 +2043,13 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
   ): Promise<MobilePaymentResponse> {
     try {
       const baseUrl = process.env.PLAZA_API_URL
-      const apiKey = process.env.PLAZA_API_KEY
-      const apiSecret = process.env.PLAZA_API_SECRET
+      const context = await this.getPlazaContext(data.companyAccountId, true)
+      const apiKey = context.apiKey
+      const apiSecret = context.apiSecret
 
-      const companyId = process.env.PLAZA_COMPANY_ID
-      const companyPhone = process.env.PLAZA_MOBILE_PHONE
-      const companyBankCode = process.env.PLAZA_BANK_CODE
+      const companyId = context.documentId
+      const companyPhone = String(context.account.phoneNumber || '').trim()
+      const companyBankCode = context.account.bank?.bankCode?.trim()
 
       if (!baseUrl || !apiKey || !apiSecret || !companyId || !companyPhone) {
         throw new InternalServerErrorException(
@@ -2456,13 +2457,15 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
   ): Promise<TransferResponse> {
     try {
       const baseUrl = process.env.PLAZA_API_URL
-      const apiKey = process.env.PLAZA_API_KEY
-      const apiSecret = process.env.PLAZA_API_SECRET
+      const context = await this.getPlazaContext(data.companyAccountId, true)
+      const apiKey = context.apiKey
+      const apiSecret = context.apiSecret
       const currencyId = data.gatewayCurrencyId
 
-      const companyId = process.env.PLAZA_COMPANY_ID
-      const companyAccount = process.env.PLAZA_COMPANY_ACCOUNT
-      const companyName = process.env.PLAZA_COMPANY_NAME
+      const companyId = context.documentId
+      const companyAccount = context.accountNumber
+      const companyName = String(context.account.businessName || '').trim()
+      const companyBankCode = context.account.bank?.bankCode?.trim()
 
       if (
         !baseUrl ||
@@ -2471,6 +2474,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         !companyId ||
         !companyAccount ||
         !companyName ||
+        !companyBankCode ||
         !currencyId
       ) {
         throw new InternalServerErrorException(
@@ -2490,11 +2494,11 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
 
         identificacion_o: data.payerId.trim(),
         cuenta_origen: data.payerAccount.trim(),
-        cod_banco_d: process.env.PLAZA_BANK_CODE,
+        cod_banco_d: companyBankCode,
         nombre_d: data.payerName.toUpperCase().trim(),
 
         identificacion_b: companyId.trim(),
-        cod_banco_a: process.env.PLAZA_BANK_CODE,
+        cod_banco_a: companyBankCode,
         nombre_a: companyName.toUpperCase().trim(),
         cuenta_destino: companyAccount.trim(),
 

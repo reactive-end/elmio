@@ -187,6 +187,13 @@ export interface EnterpriseRepositoryPort {
   ): Promise<Transaction[]>;
 
   /**
+   * Busca una transaccion por su ID.
+   * @param id ID de la transaccion.
+   * @returns Transaccion o null.
+   */
+  findTransactionById(id: string): Promise<Transaction | null>;
+
+  /**
    * Crea o actualiza una transaccion.
    * @param transaction Datos de la transaccion.
    * @returns Transaccion guardada.

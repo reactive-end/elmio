@@ -68,13 +68,36 @@ export default function AccountStatementPage() {
   const fmt = (n: number) =>
     new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(n)
 
+  const getInterestText = (summary: typeof loanSummary) => {
+    if (!summary || !summary.interestIsActive || summary.interestType === 'none') {
+      return 'Sin definir'
+    }
+    if (summary.interestType === 'percentage') {
+      return `${summary.interestRate}%`
+    }
+    if (summary.interestType === 'fixed') {
+      return `${summary.interestRate} USD Fijo`
+    }
+    return 'Sin definir'
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-bold text-body">Estado de cuenta</h1>
-        <p className="text-sm text-body-muted mt-0.5">
-          Resumen de deuda por beneficios en efectivo de colaboradores.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100/50 pb-5">
+        <div>
+          <h1 className="text-xl font-bold text-body">Estado de cuenta</h1>
+          <p className="text-sm text-body-muted mt-0.5">
+            Resumen de deuda por beneficios en efectivo de colaboradores.
+          </p>
+        </div>
+        {loanSummary && (
+          <div className="flex items-center gap-2.5 bg-secondary/5 border border-secondary/15 rounded-2xl px-4 py-2.5 w-fit">
+            <span className="text-xs font-semibold text-secondary uppercase tracking-wider select-none">Tasa de Interés Activa:</span>
+            <span className={`text-sm font-bold ${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? 'text-secondary' : 'text-gray-400'}`}>
+              {getInterestText(loanSummary)}
+            </span>
+          </div>
+        )}
       </div>
 
       {loanSummary && (
@@ -109,7 +132,7 @@ export default function AccountStatementPage() {
             iconColor="text-purple-600"
             label="Gastos Administrativos (Beneficios en Efectivo)"
             value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.serviceFeePercent}% sobre intereses`}
+            sub={`${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? loanSummary.interestRate : loanSummary.serviceFeePercent}% sobre intereses`}
           />
           <KpiCard
             icon={Percent}
@@ -117,7 +140,7 @@ export default function AccountStatementPage() {
             iconColor="text-purple-600"
             label="Gastos Administrativos (Beneficios de Productos)"
             value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.serviceFeePercent}% sobre intereses`}
+            sub={`${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? loanSummary.interestRate : loanSummary.serviceFeePercent}% sobre intereses`}
           />
           <KpiCard
             icon={Percent}
@@ -125,7 +148,7 @@ export default function AccountStatementPage() {
             iconColor="text-purple-600"
             label="Gastos Administrativos (Beneficios de Seguro)"
             value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.serviceFeePercent}% sobre intereses`}
+            sub={`${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? loanSummary.interestRate : loanSummary.serviceFeePercent}% sobre intereses`}
           />
           <KpiCard
             icon={CheckCircle2}

@@ -314,6 +314,9 @@ export interface LoanSummary {
   totalDebt: number
   totalPaid: number
   balance: number
+  interestType?: 'none' | 'percentage' | 'fixed'
+  interestRate?: number
+  interestIsActive?: boolean
 }
 
 export interface ContractFile {

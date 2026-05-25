@@ -285,6 +285,17 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
       }));
   }
 
+  async findTransactionById(id: string): Promise<Transaction | null> {
+    const data = await this.read();
+    const found = data.transactions.find((t) => t.id === id);
+    if (!found) return null;
+    return {
+      ...found,
+      collaboratorId: found.collaboratorId ?? null,
+      kind: found.kind ?? 'payment',
+    };
+  }
+
   async saveTransaction(transaction: Transaction): Promise<Transaction> {
     const data = await this.read();
     const idx = data.transactions.findIndex((t) => t.id === transaction.id);

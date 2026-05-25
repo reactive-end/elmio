@@ -54,6 +54,7 @@ export class CreateTransactionUseCase {
     }
 
     let collaboratorId: string | null = null;
+    let collaboratorName = '';
     if (input.collaboratorId) {
       const collaborator = await this.repository.findCollaboratorById(
         input.collaboratorId,
@@ -64,10 +65,14 @@ export class CreateTransactionUseCase {
         );
       }
       collaboratorId = collaborator.id;
+      collaboratorName = `${collaborator.name} ${collaborator.lastName}`.trim();
     }
 
-    return this.repository.saveTransaction({
-      id: randomUUID(),
+    const transactionId = randomUUID();
+    const isMarketplacePurchase = collaboratorId && input.kind === 'charge' && concept.startsWith('Compra marketplace:');
+
+    const savedTx = await this.repository.saveTransaction({
+      id: transactionId,
       enterpriseId,
       collaboratorId,
       kind: input.kind ?? 'payment',
@@ -76,5 +81,27 @@ export class CreateTransactionUseCase {
       status: input.status ?? 'pending',
       date: new Date().toISOString(),
     });
+
+    if (isMarketplacePurchase && collaboratorId) {
+      try {
+        await this.repository.saveRequest({
+          id: transactionId, // Compartimos el mismo ID para vincularlas 1:1
+          enterpriseId,
+          collaboratorId,
+          collaboratorName,
+          type: 'loan',
+          amount: Math.round(input.amount * 100) / 100,
+          description: concept,
+          status: 'pending',
+          denialReason: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        // Ignorar o loggear si falla la creación de la solicitud asociada para no romper la compra
+      }
+    }
+
+    return savedTx;
   }
 }
