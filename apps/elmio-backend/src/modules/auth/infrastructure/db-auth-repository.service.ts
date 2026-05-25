@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import type { User } from '../domain/user';
 import type { AuthRepositoryPort } from '../domain/ports/auth-repository.port';
 import { UserEntity } from './entities/user.entity';
@@ -59,7 +59,7 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
           // Comparamos usando los últimos 10 dígitos para máxima flexibilidad de formatos de entrada (+58, 0, etc.)
           const enterprises: Array<{ email: string }> =
             await this.dataSource.query(
-              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
+              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
               [cleanInputPhone],
             );
 
@@ -69,15 +69,15 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
             // Buscamos en perfiles de persona (colaboradores/clientes)
             const profiles: Array<{ email: string }> =
               await this.dataSource.query(
-                `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
+                `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10) LIMIT 1`,
                 [cleanInputPhone],
               );
             if (profiles && profiles.length > 0) {
               resolvedEmail = profiles[0].email.toLowerCase();
             }
           }
-        } catch {
-          // En caso de que las tablas no existan todavia en el primer arranque, ignoramos el fallo silenciosamente
+        } catch (err) {
+          console.error('Error al resolver teléfono en findByEmail:', err);
         }
       }
     }
@@ -114,39 +114,44 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
    * Busca todos los usuarios asociados a un mismo email o teléfono.
    */
   async findAllByEmail(email: string): Promise<User[]> {
-    let resolvedEmail = email.trim().toLowerCase();
+    let resolvedEmails = [email.trim().toLowerCase()];
 
     // Si no contiene '@', asumimos que es un teléfono
-    if (!resolvedEmail.includes('@')) {
-      const cleanInputPhone = resolvedEmail.replace(/\D/g, '');
+    if (!email.includes('@')) {
+      const cleanInputPhone = email.replace(/\D/g, '');
       if (cleanInputPhone.length > 0) {
         try {
+          const emailsSet = new Set<string>();
+
           const enterprises: Array<{ email: string }> =
             await this.dataSource.query(
-              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10)`,
+              `SELECT email FROM enterprises WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10)`,
               [cleanInputPhone],
             );
-
-          if (enterprises && enterprises.length > 0) {
-            resolvedEmail = enterprises[0].email.toLowerCase();
-          } else {
-            const profiles: Array<{ email: string }> =
-              await this.dataSource.query(
-                `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = RIGHT($1, 10)`,
-                [cleanInputPhone],
-              );
-            if (profiles && profiles.length > 0) {
-              resolvedEmail = profiles[0].email.toLowerCase();
-            }
+          for (const ent of enterprises) {
+            emailsSet.add(ent.email.toLowerCase());
           }
-        } catch {
-          // Ignoramos silenciosamente si falla la query
+
+          const profiles: Array<{ email: string }> =
+            await this.dataSource.query(
+              `SELECT email FROM person_profiles WHERE RIGHT(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = RIGHT($1, 10)`,
+              [cleanInputPhone],
+            );
+          for (const prof of profiles) {
+            emailsSet.add(prof.email.toLowerCase());
+          }
+
+          if (emailsSet.size > 0) {
+            resolvedEmails = Array.from(emailsSet);
+          }
+        } catch (err) {
+          console.error('Error al resolver teléfono en findAllByEmail:', err);
         }
       }
     }
 
     const userEntities = await this.repo.find({
-      where: { email: resolvedEmail },
+      where: { email: In(resolvedEmails) },
     });
     return userEntities.map((entity) => this.toDomain(entity));
   }
