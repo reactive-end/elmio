@@ -9,7 +9,6 @@
 import { type DragEvent, type ChangeEvent, useRef } from 'react'
 import { UploadCloud, FileText, Trash2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
-import { Alert } from '@/components/atoms/Alert/Alert'
 
 interface Step3DniUploadProps {
   /** Archivo DNI seleccionado activamente */
@@ -97,8 +96,6 @@ export function Step3DniUpload({
           </p>
         </div>
       </div>
-
-      {stepError && <Alert type="error" message={stepError} />}
 
       <div className="flex flex-col gap-5">
         {!idFile ? (

@@ -12,7 +12,6 @@ import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
 import { FormField } from '@/components/molecules/FormField/FormField'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
-import { Alert } from '@/components/atoms/Alert/Alert'
 import { type Country, type CountryLocations } from '@/src/services/mercantil.service'
 
 interface Step4CompleteDataProps {
@@ -147,8 +146,6 @@ export function Step4CompleteData({
           </p>
         </div>
       </div>
-
-      {stepError && <Alert type="error" message={stepError} />}
 
       {loadingCountries ? (
         <div className="flex flex-col items-center justify-center py-10 gap-3">

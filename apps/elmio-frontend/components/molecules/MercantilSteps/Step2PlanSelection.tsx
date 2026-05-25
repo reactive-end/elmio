@@ -9,7 +9,7 @@
 import { Shield, AlertCircle, FileText, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Select } from '@/components/atoms/Select/Select'
-import { Alert } from '@/components/atoms/Alert/Alert'
+import { Toggle } from '@/components/atoms/Toggle/Toggle'
 import {
   type SelectedPlan,
   type PaymentFrequency,
@@ -106,8 +106,6 @@ export function Step2PlanSelection({
           </p>
         </div>
       </div>
-
-      {stepError && <Alert type="error" message={stepError} />}
 
       {filteredCategories.length === 0 ? (
         <div className="p-8 border border-dashed border-gray-200 rounded-2xl text-center bg-gray-50/50">
@@ -225,7 +223,7 @@ export function Step2PlanSelection({
                                         label: `${FREQUENCY_LABELS[key]} (${formatCurrency(divCost)})`,
                                       }
                                     })}
-                                    className="h-8 py-0 px-2 text-xs w-44"
+                                    className="text-xs min-w-[200px]"
                                   />
                                 </div>
                               )}
@@ -248,13 +246,8 @@ export function Step2PlanSelection({
                   Declaraciones de Suscripción
                 </span>
 
-                <label className="flex items-start gap-3 cursor-pointer text-xs text-body p-1 hover:bg-gray-100/50 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer"
-                  />
+                <div className="flex items-center gap-3 text-xs text-body p-1">
+                  <Toggle checked={termsAccepted} onChange={setTermsAccepted} />
                   <span>
                     Acepto los{' '}
                     <a
@@ -267,15 +260,10 @@ export function Step2PlanSelection({
                     </a>{' '}
                     del servicio de Mercantil Seguros.
                   </span>
-                </label>
+                </div>
 
-                <label className="flex items-start gap-3 cursor-pointer text-xs text-body p-1 hover:bg-gray-100/50 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={healthAccepted}
-                    onChange={(e) => setHealthAccepted(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer"
-                  />
+                <div className="flex items-center gap-3 text-xs text-body p-1">
+                  <Toggle checked={healthAccepted} onChange={setHealthAccepted} />
                   <span>
                     Declaro bajo fe de juramento que me encuentro en{' '}
                     <button
@@ -287,7 +275,7 @@ export function Step2PlanSelection({
                     </button>{' '}
                     y no padezco patologías preexistentes de exclusión absoluta.
                   </span>
-                </label>
+                </div>
               </div>
 
               {/* Resumen Totalizador */}
