@@ -1,24 +1,26 @@
 /**
  * @fileoverview Componente de Paso 1: Datos del Asegurado.
- * @description Captura los datos básicos del asegurado para la consulta RCV.
+ * @description Captura los datos básicos del asegurado para la consulta RCV usando CedulaInput y PhoneInput del proyecto.
  * @module components/molecules/MercantilRCVSteps/Step1InsuredData
  */
 
 'use client';
 
-import { User } from 'lucide-react';
-import { Button } from '@/components/atoms/Button/Button';
-import { Input } from '@/components/atoms/Input/Input';
-import { Select } from '@/components/atoms/Select/Select';
-import { FormField } from '@/components/molecules/FormField/FormField';
-import type { InsuredData, PhoneCode } from '@/src/hooks/pages/useMercantilConsultaRCV';
+import { User } from 'lucide-react'
+import { Button } from '@/components/atoms/Button/Button'
+import { Input } from '@/components/atoms/Input/Input'
+import { Select } from '@/components/atoms/Select/Select'
+import { FormField } from '@/components/molecules/FormField/FormField'
+import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
+import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
+import type { InsuredData, PhoneCode } from '@/src/hooks/pages/useMercantilConsultaRCV'
 
 interface Step1InsuredDataProps {
-  insured: InsuredData;
-  setInsured: React.Dispatch<React.SetStateAction<InsuredData>>;
-  loading: boolean;
-  errorMessage: string;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
+  insured: InsuredData
+  setInsured: React.Dispatch<React.SetStateAction<InsuredData>>
+  loading: boolean
+  errorMessage: string
+  onSubmit: (e: React.FormEvent) => Promise<void>
 }
 
 export function Step1InsuredData({
@@ -28,6 +30,11 @@ export function Step1InsuredData({
   errorMessage,
   onSubmit,
 }: Step1InsuredDataProps) {
+  const phoneDisplay = insured.phoneNumber
+    .replace(/^(\d{3})(\d{2})(\d{0,2})$/, '$1 $2 $3')
+    .replace(/^(\d{3})(\d{0,2})$/, '$1 $2')
+    .trim()
+
   return (
     <div className="flex flex-col gap-6 animate-fadeIn">
       <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
@@ -58,26 +65,13 @@ export function Step1InsuredData({
           />
         </FormField>
         <FormField label="Cédula" required>
-          <div className="flex">
-            <Select
-              value={insured.docType}
-              onChange={(v) => setInsured((p) => ({ ...p, docType: v }))}
-              options={[
-                { value: 'V', label: 'V' },
-                { value: 'E', label: 'E' },
-              ]}
-              className="rounded-r-none w-16"
-            />
-            <Input
-              type="text"
-              inputMode="numeric"
-              maxLength={8}
-              value={insured.docNumber}
-              onChange={(e) => setInsured((p) => ({ ...p, docNumber: e.target.value.replace(/\D/g, '').slice(0, 8) }))}
-              className="rounded-l-none flex-1"
-              required
-            />
-          </div>
+          <CedulaInput
+            value={{ letter: insured.docType as 'V' | 'E' | 'G', digits: insured.docNumber }}
+            onChange={(v) =>
+              setInsured((p) => ({ ...p, docType: v.letter, docNumber: v.digits }))
+            }
+            allowedLetters={['V', 'E']}
+          />
         </FormField>
         <FormField label="Correo electrónico" required>
           <Input
@@ -88,32 +82,20 @@ export function Step1InsuredData({
           />
         </FormField>
         <FormField label="Teléfono" required>
-          <div className="flex">
-            <Select
-              value={insured.phoneCode}
-              onChange={(v) => setInsured((p) => ({ ...p, phoneCode: v as PhoneCode }))}
-              options={[
-                { value: '0412', label: '0412' },
-                { value: '0422', label: '0422' },
-                { value: '0414', label: '0414' },
-                { value: '0424', label: '0424' },
-                { value: '0426', label: '0426' },
-              ]}
-              className="rounded-r-none w-20"
-            />
-            <Input
-              type="tel"
-              value={insured.phoneNumber.replace(/^(\d{3})(\d{2})(\d{0,2})$/, '$1 $2 $3').replace(/^(\d{3})(\d{0,2})$/, '$1 $2').trim()}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/\D/g, '').slice(0, 7);
-                setInsured((p) => ({ ...p, phoneNumber: raw }));
-              }}
-              placeholder="741 36 75"
-              maxLength={10}
-              className="rounded-l-none flex-1"
-              required
-            />
-          </div>
+          <PhoneInput
+            displayValue={phoneDisplay}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, '').slice(0, 7)
+              setInsured((p) => ({ ...p, phoneNumber: raw }))
+            }}
+            countryCode={{ code: 'VE', dial: '+58', flag: '🇻🇪', name: 'Venezuela' }}
+            onCountryCodeChange={() => {}}
+            operatorPrefix={insured.phoneCode.slice(1) as '412' | '422' | '414' | '424' | '416' | '426'}
+            onOperatorPrefixChange={(prefix) =>
+              setInsured((p) => ({ ...p, phoneCode: `0${prefix}` as PhoneCode }))
+            }
+            hideCountrySelector
+          />
         </FormField>
         <FormField label="Fecha de nacimiento" required>
           <Input
@@ -144,5 +126,5 @@ export function Step1InsuredData({
         <p className="text-sm text-red-600 font-medium">{errorMessage}</p>
       )}
     </div>
-  );
+  )
 }

@@ -105,17 +105,7 @@ function MercantilConsultaRCVContent() {
         </div>
       )}
 
-      <div className="w-full max-w-2xl">
-        {/* Cabecera */}
-        <div className="flex flex-col items-center text-center gap-2 mb-8">
-          <h1 className="text-2xl font-black tracking-tight text-body">
-            Consulta <span className="text-secondary font-black">RCV Mercantil</span>
-          </h1>
-          <p className="text-sm text-body-muted max-w-md">
-            Cotice y adquiera su seguro de Responsabilidad Civil Vehicular de forma segura.
-          </p>
-        </div>
-
+      <div className="w-full max-w-5xl">
         {/* Indicador de progreso */}
         <StepsProgressBar currentStep={m.step} />
 
