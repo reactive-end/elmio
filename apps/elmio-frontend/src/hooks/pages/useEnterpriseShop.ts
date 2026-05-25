@@ -7,6 +7,7 @@ import { enterpriseService, type Enterprise } from '@/src/services/empresa.servi
 import { productService, type Product } from '@/src/services/product.service'
 
 const MERCANTIL_CUSTOM_FORM_ACTION = 'mercantil-query-form'
+const MERCANTIL_RCV_CUSTOM_FORM_ACTION = 'mercantil-rcv-query-form'
 const MERCANTIL_PROVIDER_SLUGS: Record<string, string> = {
   'elmio:mercantil-vida': 'life',
   'elmio:mercantil-accidentes': 'personalAccidents',
@@ -67,6 +68,15 @@ function buildMercantilEmbeddedUrl(product: Product): string {
     params.set('slug', slug)
   }
   return `/mercantil/consulta?${params.toString()}`
+}
+
+/**
+ * Construye la URL embebida del flujo RCV Mercantil.
+ * @returns {string} Ruta relativa lista para ser usada en un iframe.
+ */
+function buildMercantilRCVEmbeddedUrl(): string {
+  const params = new URLSearchParams({ embedded: '1' })
+  return `/mercantil/consulta-rcv?${params.toString()}`
 }
 
 /**
@@ -223,6 +233,20 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
 
       setError(null)
       setEmbeddedFormUrl(buildMercantilEmbeddedUrl(purchaseDraft.product))
+      return
+    }
+
+    if (
+      window.type === 'custom-form' &&
+      window.config.redirectUrl === MERCANTIL_RCV_CUSTOM_FORM_ACTION
+    ) {
+      if (session?.role !== 'COMPANY') {
+        setError('La consulta RCV Mercantil embebida solo esta disponible para empresas por ahora.')
+        return
+      }
+
+      setError(null)
+      setEmbeddedFormUrl(buildMercantilRCVEmbeddedUrl())
       return
     }
 

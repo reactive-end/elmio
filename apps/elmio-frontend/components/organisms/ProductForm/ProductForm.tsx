@@ -726,6 +726,10 @@ export function ProductForm() {
                                     value: 'mercantil-query-form',
                                     label: 'Consulta de clientes Mercantil (mercantil/consulta)',
                                   },
+                                  {
+                                    value: 'mercantil-rcv-query-form',
+                                    label: 'Consulta RCV Mercantil (mercantil/consulta-rcv)',
+                                  },
                                 ]
                           }
                         />
