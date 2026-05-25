@@ -16,6 +16,7 @@ import type {
   SelectedPlan,
 } from '@/src/hooks/pages/useMercantilConsultaRCV';
 import { formatCurrency } from '@/src/hooks/pages/useMercantilConsultaRCV';
+import { TERMS_PDF } from '@/src/hooks/pages/useMercantilConsulta';
 
 interface Step3PlanSelectionProps {
   categories: MercantilCategoryResult[];
@@ -128,7 +129,16 @@ export function Step3PlanSelection({
                 <div className="flex items-center gap-3 text-xs text-body p-1">
                   <Toggle checked={termsAccepted} onChange={setTermsAccepted} />
                   <span>
-                    Acepto los Términos y Condiciones Generales del servicio de Mercantil Seguros.
+                    Acepto los{' '}
+                    <a
+                      href={TERMS_PDF}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-secondary hover:underline"
+                    >
+                      Términos y Condiciones Generales
+                    </a>{' '}
+                    del servicio de Mercantil Seguros.
                   </span>
                 </div>
               </div>

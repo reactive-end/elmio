@@ -1,12 +1,15 @@
 /**
  * @fileoverview Componente de Paso 4: Carga de Documentos.
  * @description Provee áreas drag-and-drop para cargar cédula y título de propiedad del vehículo.
+ * Oculta la cédula si el cliente no requiere completación de datos.
+ * Incluye botón de cámara para capturar documentos directamente.
  * @module components/molecules/MercantilRCVSteps/Step4Documents
  */
 
 'use client';
 
-import { UploadCloud, FileText, Trash2 } from 'lucide-react';
+import { useRef } from 'react';
+import { UploadCloud, FileText, Trash2, Camera } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
 
 interface Step4DocumentsProps {
@@ -25,6 +28,7 @@ interface Step4DocumentsProps {
   handlePropertyFileDrop: (e: React.DragEvent) => void;
   handlePropertyFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   loading: boolean;
+  needsCompletion: boolean | null;
   onBack: () => void;
   onNext: () => Promise<void>;
 }
@@ -45,6 +49,7 @@ export function Step4Documents({
   handlePropertyFileDrop,
   handlePropertyFileSelect,
   loading,
+  needsCompletion,
   onBack,
   onNext,
 }: Step4DocumentsProps) {
@@ -56,6 +61,9 @@ export function Step4Documents({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const cameraFileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraPropertyFileInputRef = useRef<HTMLInputElement | null>(null);
+
   const renderDropZone = (
     label: string,
     file: File | null,
@@ -65,6 +73,7 @@ export function Step4Documents({
     onDrop: (e: React.DragEvent) => void,
     onSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
     inputRef: React.RefObject<HTMLInputElement | null>,
+    cameraInputRef?: React.RefObject<HTMLInputElement | null>,
   ) => {
     if (file) {
       return (
@@ -96,35 +105,58 @@ export function Step4Documents({
     }
 
     return (
-      <div
-        onDragEnter={(e) => { e.preventDefault(); setIsDragActive(true); }}
-        onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
-        onDragLeave={(e) => { e.preventDefault(); setIsDragActive(false); }}
-        onDrop={onDrop}
-        onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 cursor-pointer ${
-          isDragActive
-            ? 'border-secondary bg-secondary/5 scale-[0.99] shadow-inner'
-            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 bg-white'
-        }`}
-      >
-        <input
-          type="file"
-          ref={inputRef}
-          onChange={onSelect}
-          accept="image/*,application/pdf"
-          className="hidden"
-        />
-        <div className="p-4 bg-secondary/5 text-secondary rounded-full shadow-sm">
-          <UploadCloud className="h-10 w-10 animate-pulse" strokeWidth={1} />
+      <div className="flex flex-col gap-3">
+        <div
+          onDragEnter={(e) => { e.preventDefault(); setIsDragActive(true); }}
+          onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
+          onDragLeave={(e) => { e.preventDefault(); setIsDragActive(false); }}
+          onDrop={onDrop}
+          onClick={() => inputRef.current?.click()}
+          className={`border-2 border-dashed rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 cursor-pointer ${
+            isDragActive
+              ? 'border-secondary bg-secondary/5 scale-[0.99] shadow-inner'
+              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 bg-white'
+          }`}
+        >
+          <input
+            type="file"
+            ref={inputRef}
+            onChange={onSelect}
+            accept="image/*,application/pdf"
+            className="hidden"
+          />
+          <div className="p-4 bg-secondary/5 text-secondary rounded-full shadow-sm">
+            <UploadCloud className="h-10 w-10 animate-pulse" strokeWidth={1} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-body">{label}</p>
+            <p className="text-xs text-body-muted mt-1">Arrastre o seleccione archivo (JPG, PNG o PDF. Máx 10MB)</p>
+          </div>
+          <Button type="button" variant="ghost" className="mt-2">
+            Buscar Archivo
+          </Button>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-body">{label}</p>
-          <p className="text-xs text-body-muted mt-1">Arrastre o seleccione archivo (JPG, PNG o PDF. Máx 10MB)</p>
-        </div>
-        <Button type="button" variant="ghost" className="mt-2">
-          Buscar Archivo
-        </Button>
+        {cameraInputRef && (
+          <>
+            <input
+              type="file"
+              ref={cameraInputRef}
+              onChange={onSelect}
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => cameraInputRef.current?.click()}
+            >
+              <Camera className="h-4 w-4 mr-2" strokeWidth={1.5} />
+              Tomar foto
+            </Button>
+          </>
+        )}
       </div>
     );
   };
@@ -142,7 +174,7 @@ export function Step4Documents({
       </div>
 
       <div className="flex flex-col gap-5">
-        {renderDropZone(
+        {needsCompletion !== false && renderDropZone(
           'Cédula de Identidad del Asegurado',
           idFile,
           setIdFile,
@@ -151,6 +183,7 @@ export function Step4Documents({
           handleFileDrop,
           handleFileSelect,
           fileInputRef,
+          cameraFileInputRef,
         )}
         {renderDropZone(
           'Título de Propiedad del Vehículo',
@@ -161,6 +194,7 @@ export function Step4Documents({
           handlePropertyFileDrop,
           handlePropertyFileSelect,
           propertyFileInputRef,
+          cameraPropertyFileInputRef,
         )}
       </div>
 
@@ -171,7 +205,9 @@ export function Step4Documents({
         <Button
           type="button"
           fullWidth
-          disabled={!idFile || !vehiclePropertyFile}
+          disabled={
+            (needsCompletion !== false && !idFile) || !vehiclePropertyFile
+          }
           isLoading={loading}
           onClick={onNext}
         >

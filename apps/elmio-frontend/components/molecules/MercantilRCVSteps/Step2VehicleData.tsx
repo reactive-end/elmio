@@ -1,6 +1,6 @@
 /**
  * @fileoverview Componente de Paso 2: Datos del Vehículo.
- * @description Selects en cascada para año, marca, modelo, versión, ubicación y blindaje.
+ * @description Selects en cascada para año, marca, modelo, versión, ubicación y blindaje (opcional).
  * @module components/molecules/MercantilRCVSteps/Step2VehicleData
  */
 
@@ -35,6 +35,7 @@ interface Step2VehicleDataProps {
   loadingModels: boolean;
   loadingVersions: boolean;
   loadingLocations: boolean;
+  loadingPlans: boolean;
   handleYearChange: (v: string) => Promise<void>;
   handleBrandChange: (v: string) => Promise<void>;
   handleModelChange: (v: string) => Promise<void>;
@@ -66,6 +67,7 @@ export function Step2VehicleData({
   loadingModels,
   loadingVersions,
   loadingLocations,
+  loadingPlans,
   handleYearChange,
   handleBrandChange,
   handleModelChange,
@@ -131,17 +133,17 @@ export function Step2VehicleData({
             disabled={loadingLocations}
           />
         </FormField>
-        <FormField label="¿Tiene blindaje?" required>
+        <FormField label="¿Tiene blindaje?">
           <div className="flex items-center gap-3 pt-2">
             <Toggle checked={hasArmor === true} onChange={(checked) => setHasArmor(checked ? true : false)} />
-            <span className="text-sm text-body">{hasArmor === true ? 'Sí' : hasArmor === false ? 'No' : 'Seleccione'}</span>
+            <span className="text-sm text-body">{hasArmor === true ? 'Sí' : 'No'}</span>
           </div>
         </FormField>
         <div className="sm:col-span-2 flex gap-3 border-t border-gray-100 pt-5 mt-4">
           <Button type="button" variant="ghost" fullWidth onClick={onBack}>
             Anterior
           </Button>
-          <Button type="submit" fullWidth disabled={!isVehicleFormValid}>
+          <Button type="submit" fullWidth disabled={!isVehicleFormValid} isLoading={loadingPlans}>
             Consultar Planes
           </Button>
         </div>

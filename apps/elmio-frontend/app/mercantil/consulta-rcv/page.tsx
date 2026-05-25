@@ -109,19 +109,21 @@ function MercantilConsultaRCVContent() {
         {/* Indicador de progreso */}
         <StepsProgressBar currentStep={m.step} />
 
-        {/* Banner de error */}
-        {m.emissionStatus === 'error' && m.stepError && (
+        {/* Banner de error de pasos */}
+        {m.stepError && (
           <div className="mb-6 w-full animate-fadeIn flex flex-col gap-3">
             <Alert type="error" message={m.stepError} onDismiss={() => m.setStepError('')} />
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                onClick={() => void m.handleEmitPolicy()}
-                className="text-xs h-9 px-4 font-bold"
-              >
-                Reintentar Emisión
-              </Button>
-            </div>
+            {m.emissionStatus === 'error' && (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  onClick={() => void m.handleEmitPolicy()}
+                  className="text-xs h-9 px-4 font-bold"
+                >
+                  Reintentar Emisión
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -165,6 +167,7 @@ function MercantilConsultaRCVContent() {
               handleModelChange={m.handleModelChange}
               handleVersionChange={m.handleVersionChange}
               isVehicleFormValid={m.isVehicleFormValid}
+              loadingPlans={m.loadingPlans}
               onSubmit={m.handleVehicleSubmit}
               onBack={m.handleBack}
             />
@@ -200,6 +203,7 @@ function MercantilConsultaRCVContent() {
               handlePropertyFileDrop={m.handlePropertyFileDrop}
               handlePropertyFileSelect={m.handlePropertyFileSelect}
               loading={m.loadingDocuments}
+              needsCompletion={m.needsCompletion}
               onBack={m.handleBack}
               onNext={m.handleContinueToStep5}
             />

@@ -434,7 +434,7 @@ export function useMercantilConsultaRCV() {
     }
   };
 
-  const isVehicleFormValid = year !== '' && brand !== '' && model !== '' && version !== '' && locationId !== '' && hasArmor !== null;
+  const isVehicleFormValid = year !== '' && brand !== '' && model !== '' && version !== '' && locationId !== '';
 
   const handleVehicleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -560,12 +560,15 @@ export function useMercantilConsultaRCV() {
 
   // Step 4: Upload documents and go to complete vehicle
   const handleContinueToStep5 = async () => {
-    if (!shopcartId || !vehiclePropertyFile || !idFile) return;
+    if (!shopcartId || !vehiclePropertyFile) return;
+    if (needsCompletion !== false && !idFile) return;
     setStepError('');
     setLoadingDocuments(true);
     try {
-      dniBucketRef.current = await mercantilService.uploadDniToBucket(idFile, `${insured.docType}${insured.docNumber}-${shopcartId}`);
-      await mercantilService.uploadDni(shopcartId, idFile);
+      if (idFile) {
+        dniBucketRef.current = await mercantilService.uploadDniToBucket(idFile, `${insured.docType}${insured.docNumber}-${shopcartId}`);
+        await mercantilService.uploadDni(shopcartId, idFile);
+      }
       await mercantilService.uploadVehiclePropertyTitle(shopcartId, vehiclePropertyFile);
       setStep(5);
     } catch (error) {
@@ -588,7 +591,7 @@ export function useMercantilConsultaRCV() {
       setStepError('No se encontró el carrito de compras');
       return;
     }
-    if (!isVehicleCompletionValid || hasArmor === null || !locationId) {
+    if (!isVehicleCompletionValid || !locationId) {
       setStepError('Completa todos los datos obligatorios del vehículo');
       return;
     }
@@ -598,7 +601,7 @@ export function useMercantilConsultaRCV() {
       await mercantilService.completeVehicleInfo(shopcartId, {
         vehicleInformation: {
           commonLocationId: locationId,
-          isArmored: hasArmor,
+          isArmored: hasArmor ?? false,
           plate: vehiclePlate,
           colorId: vehicleColorId,
           chassisSerial: vehicleChassisSerial,
@@ -1013,5 +1016,6 @@ export function useMercantilConsultaRCV() {
     handleDownloadPdf,
     shopcartId,
     clientId,
+    needsCompletion,
   };
 }
