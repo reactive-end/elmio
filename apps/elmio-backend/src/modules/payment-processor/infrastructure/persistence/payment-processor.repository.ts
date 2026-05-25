@@ -80,7 +80,7 @@ type PlazaContext = {
 
 type R4Context = {
   companyAccountId: string
-  account: BankAccount
+  account?: BankAccount
   commerceKey: string
   secretKey: string
 }
@@ -5210,47 +5210,58 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
     companyAccountId?: string,
     useDefault = false,
   ): Promise<R4Context> {
-    const resolvedCompanyAccountId = this.resolveR4CompanyAccountId(
-      companyAccountId,
-      useDefault,
-    )
+    let resolvedCompanyAccountId = 'GLOBAL_R4_FALLBACK'
+    let account: BankAccount | undefined = undefined
+    let decryptedCommerceKey: string | null = null
+    let decryptedSecretKey: string | null = null
 
-    const account = await this.bankAccountRepository.findOne({
-      where: { id: resolvedCompanyAccountId },
-    })
-
-    if (!account) {
-      throw new NotFoundException(
-        'No se encontro la cuenta indicada para Banco R4.',
+    try {
+      resolvedCompanyAccountId = this.resolveR4CompanyAccountId(
+        companyAccountId,
+        useDefault,
       )
+
+      const foundAccount = await this.bankAccountRepository.findOne({
+        where: { id: resolvedCompanyAccountId },
+      })
+
+      if (foundAccount) {
+        account = foundAccount
+        const activeKey = await this.apiKeyRepository.findOne({
+          where: {
+            bankAccount: { id: resolvedCompanyAccountId },
+            isActive: true,
+          },
+          order: { createdAt: 'DESC' },
+          relations: ['bankAccount'],
+        })
+
+        if (activeKey?.commerceKey && activeKey?.secretKey) {
+          decryptedCommerceKey = ApiKeyCipher.decryptIfEncrypted(
+            activeKey.commerceKey,
+          )
+          decryptedSecretKey = ApiKeyCipher.decryptIfEncrypted(
+            activeKey.secretKey,
+          )
+        }
+      }
+    } catch {
+      // Ignorar errores de resolución o de búsqueda para caer en el fallback
     }
 
-    const activeKey = await this.apiKeyRepository.findOne({
-      where: {
-        bankAccount: { id: resolvedCompanyAccountId },
-        isActive: true,
-      },
-      order: { createdAt: 'DESC' },
-      relations: ['bankAccount'],
-    })
-
-    if (!activeKey?.commerceKey || !activeKey?.secretKey) {
-      throw new InternalServerErrorException(
-        'No hay credenciales activas para la cuenta indicada de Banco R4.',
-      )
-    }
-
-    const decryptedCommerceKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.commerceKey,
-    )
-    const decryptedSecretKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.secretKey,
-    )
-
+    // Fallback: Si no se consiguieron en la DB, usar las variables de entorno globales
     if (!decryptedCommerceKey || !decryptedSecretKey) {
-      throw new InternalServerErrorException(
-        'No se pudieron descifrar credenciales activas para la cuenta indicada de Banco R4.',
-      )
+      const envCommerceKey = process.env.R4_COMMERCE_KEY || process.env.R4_COMMERCE_KEY_QA
+      const envSecretKey = process.env.R4_SECRET_KEY || process.env.R4_SECRET_KEY_QA
+
+      if (!envCommerceKey || !envSecretKey) {
+        throw new InternalServerErrorException(
+          'Configuración incompleta: No se encontró la cuenta de Banco R4 en la DB ni las credenciales R4_COMMERCE_KEY / R4_SECRET_KEY en las variables de entorno globales.',
+        )
+      }
+
+      decryptedCommerceKey = envCommerceKey
+      decryptedSecretKey = envSecretKey
     }
 
     return {
