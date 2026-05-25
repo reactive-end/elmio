@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -22,8 +23,8 @@ import { Currency } from './currency.entity'
  * para una fecha efectiva determinada.
  */
 export class ExchangeRate {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @Column({ name: 'effective_date', type: 'date' })
   effectiveDate: Date

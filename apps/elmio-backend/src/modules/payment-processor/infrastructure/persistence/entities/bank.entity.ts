@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -11,8 +12,8 @@ import { BankPaymentMethod } from './bank-payment-method.entity'
 
 @Entity({ schema: 'payments', name: 'bank' })
 export class Bank {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @Column({ name: 'bank_code', type: 'varchar', length: 4, unique: true })
   bankCode: string

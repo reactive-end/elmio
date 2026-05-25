@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -18,8 +19,8 @@ import { Currency } from './currency.entity'
  * para trazabilidad y auditoría.
  */
 export class Payment {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @Column({ name: 'amount_bs', type: 'decimal', precision: 15, scale: 2 })
   amountBs: number

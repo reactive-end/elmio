@@ -1,10 +1,11 @@
+import { randomUUID } from 'node:crypto'
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm'
@@ -20,8 +21,8 @@ import { PaymentMethod } from './payment-method.entity'
  * const availability = { isActive: true, isExternal: false }
  */
 export class BankPaymentMethod {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @ManyToOne(() => Bank, (bank) => bank.bankPaymentMethods, {
     nullable: false,

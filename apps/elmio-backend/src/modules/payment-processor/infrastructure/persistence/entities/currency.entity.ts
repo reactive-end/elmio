@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -17,8 +18,8 @@ import { ExchangeRate } from './exchange-rate.entity'
  * Se usa como catálogo transversal para cuentas, pagos y tasas de cambio.
  */
 export class Currency {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @Column({
     name: 'name',

@@ -1,8 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -11,8 +12,8 @@ import {
  */
 @Entity('integration_api_keys')
 export class IntegrationApiKeyEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryColumn('uuid')
+  id: string = randomUUID();
 
   @Column({ type: 'varchar', length: 100 })
   bank!: string;

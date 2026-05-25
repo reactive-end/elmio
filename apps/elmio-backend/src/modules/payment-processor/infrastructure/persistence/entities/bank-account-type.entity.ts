@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -16,8 +17,8 @@ import { BankAccount } from './bank-account.entity'
  * que las cuentas bancarias los referencien por id.
  */
 export class BankAccountType {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @Column({
     name: 'tipo_cuenta',

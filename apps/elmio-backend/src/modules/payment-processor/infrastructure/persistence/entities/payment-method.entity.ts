@@ -1,9 +1,10 @@
+import { randomUUID } from 'node:crypto'
 import {
   Column,
   CreateDateColumn,
   Entity,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm'
 import { BankPaymentMethod } from './bank-payment-method.entity'
@@ -16,8 +17,8 @@ import { BankPaymentMethod } from './bank-payment-method.entity'
  * const method = { code: 'p2p', name: 'Pago Móvil P2P', isActive: true }
  */
 export class PaymentMethod {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @Column({ name: 'code', type: 'varchar', length: 40, unique: true })
   code: string

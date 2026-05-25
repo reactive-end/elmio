@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -21,8 +22,8 @@ import { Bank } from './bank.entity'
  * de pago y transferencias.
  */
 export class BankAccount {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   @ManyToOne(() => Bank, (bank) => bank.bankAccounts, {
     nullable: false,

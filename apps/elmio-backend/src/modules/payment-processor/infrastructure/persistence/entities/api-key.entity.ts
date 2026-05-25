@@ -1,6 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -20,8 +21,8 @@ import { BankAccount } from './bank-account.entity'
 @Entity({ schema: 'payments', name: 'api_key' })
 export class ApiKey {
   /** Identificador único de la API key (UUID v4). */
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryColumn('uuid')
+  id: string = randomUUID()
 
   /**
    * API key principal o de comercio.

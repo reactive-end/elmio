@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { randomUUID } from 'node:crypto';
+import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 /**
  * Entidad TypeORM que representa la tabla `recovery_codes`.
@@ -7,8 +8,8 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 @Entity('recovery_codes')
 export class RecoveryCodeEntity {
   /** Identificador unico del codigo de recuperacion. */
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryColumn('uuid')
+  id: string = randomUUID();
 
   /** ID del usuario al que pertenece el codigo. */
   @Column({ type: 'varchar', length: 255 })
