@@ -1,5 +1,6 @@
 import { Controller, Post, HttpCode, HttpStatus, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { Storage } from '@google-cloud/storage';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -8,6 +9,7 @@ import * as path from 'node:path';
 import { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
 import { PersonProfileEntity } from '../../../enterprise/infrastructure/entities/person-profile.entity';
 import { MarketplaceEntity } from '../../../marketplace/infrastructure/entities/marketplace.entity';
+import { GalleryImageEntity } from '../../../gallery/infrastructure/entities/gallery-image.entity';
 import { UserRole } from '../../../auth/domain/user';
 import { hashPassword } from '../../../auth/helpers';
 
@@ -115,13 +117,33 @@ export class MigrationController {
     this.logger.log(`usuarios.csv en: ${usersCsvPath}`);
     this.logger.log(`marketplaces.csv en: ${marketplacesCsvPath}`);
 
-    // Inicializar cliente GCS (Se desactiva la interacción con GCS a petición del usuario ya que las imágenes ya están ubicadas)
-    const bucketName = process.env.GCS_BUCKET_NAME || 'elmio-img';
+    // Inicializar cliente GCS
+    const bucketName = process.env.GCS_BUCKET_NAME || '';
+    const credentialsJson = process.env.GCS_CREDENTIALS_JSON?.trim();
+    const credentialsPath = process.env.GCS_CREDENTIALS_JSON_PATH?.trim();
+
+    if (!bucketName) {
+      throw new Error('La variable de entorno GCS_BUCKET_NAME no está configurada.');
+    }
+
+    let storageClient: Storage;
+    if (credentialsJson) {
+      storageClient = new Storage({
+        credentials: JSON.parse(credentialsJson),
+      });
+    } else if (credentialsPath) {
+      storageClient = new Storage({ keyFilename: credentialsPath });
+    } else {
+      storageClient = new Storage();
+    }
+
+    const bucket = storageClient.bucket(bucketName);
 
     // Repositorios de base de datos
     const userRepo = this.dataSource.getRepository(UserEntity);
     const profileRepo = this.dataSource.getRepository(PersonProfileEntity);
     const marketplaceRepo = this.dataSource.getRepository(MarketplaceEntity);
+    const galleryRepo = this.dataSource.getRepository(GalleryImageEntity);
 
     // Leer y parsear CSVs
     const usersCsvContent = fs.readFileSync(usersCsvPath, 'utf8');
@@ -315,7 +337,7 @@ export class MigrationController {
           }
         }
 
-        // Función recursiva para buscar y migrar imágenes viejas al nuevo formato multitenant esperado
+        // Función recursiva para buscar y migrar imágenes viejas en el bucket GCS
         const processObjectImages = async (obj: any): Promise<any> => {
           if (typeof obj === 'string') {
             if (obj.includes('/marketplace/')) {
@@ -327,20 +349,64 @@ export class MigrationController {
                 // Procesar únicamente si pertenece a la carpeta vieja 'marketplace/'
                 if (oldPathInBucket.startsWith('marketplace/')) {
                   try {
-                    // Extraer nombre original de la imagen
+                    const sourceFile = bucket.file(oldPathInBucket);
+                    const [exists] = await sourceFile.exists();
+
+                    if (!exists) {
+                      this.logger.warn(`Imagen física no encontrada en el bucket viejo: ${oldPathInBucket}`);
+                      return obj;
+                    }
+
+                    // Extraer nombre y extensión del archivo
                     const parts = oldPathInBucket.split('/');
                     const originalName = parts[parts.length - 1];
+                    const extension = originalName.includes('.')
+                      ? originalName.split('.').pop()?.toLowerCase() ?? 'png'
+                      : 'png';
 
-                    const newObjectKey = `gallery/${slugAliado}/images/${originalName}`;
+                    const newFileName = `${randomUUID()}.${extension}`;
+                    const newTenantDir = `gallery/${slugAliado}/images`;
+                    const newObjectKey = `${newTenantDir}/${newFileName}`;
 
-                    // Devolver nueva URL pública multitenant directamente
+                    // Copiar en GCS al nuevo directorio multitenant de la galería del aliado
+                    const destFile = bucket.file(newObjectKey);
+                    await sourceFile.copy(destFile);
+
+                    // Obtener metadatos del archivo copiado
+                    const [metadata] = await destFile.getMetadata();
+                    const size = parseInt(String(metadata.size || '0'), 10);
+                    const mimeType = metadata.contentType || `image/${extension === 'svg' ? 'svg+xml' : extension}`;
+
+                    // Generar un storagePath consistente con GoogleCloudGalleryStorageService
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const safeName = originalName
+                      .trim()
+                      .toLowerCase()
+                      .replace(/[^a-z0-9.-]+/g, '-');
+                    const storagePath = `${newTenantDir}/${timestamp}-${safeName}`;
+
+                    // Registrar en gallery_images
+                    const galleryImage = new GalleryImageEntity();
+                    galleryImage.id = randomUUID();
+                    galleryImage.tenantDirectory = newTenantDir;
+                    galleryImage.name = originalName;
+                    galleryImage.mimeType = mimeType;
+                    galleryImage.size = size;
+                    galleryImage.storagePath = storagePath;
+                    galleryImage.fileName = newFileName;
+                    galleryImage.createdAt = new Date().toISOString();
+
+                    await galleryRepo.save(galleryImage);
+                    stats.imagesCopied++;
+
+                    // Devolver nueva URL pública
                     const publicBaseUrl = process.env.GCS_PUBLIC_BASE_URL?.trim();
                     if (publicBaseUrl) {
                       return `${publicBaseUrl.replace(/\/$/, '')}/${newObjectKey}`;
                     }
                     return `https://storage.googleapis.com/${bucketName}/${newObjectKey}`;
                   } catch (imgErr) {
-                    this.logger.error(`Error al procesar la URL de la imagen ${oldPathInBucket}: ${(imgErr as Error).message}`);
+                    this.logger.error(`Error al procesar la imagen física ${oldPathInBucket}: ${(imgErr as Error).message}`);
                   }
                 }
               }
