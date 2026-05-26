@@ -15,6 +15,7 @@ import { MercantilModule } from './modules/mercantil/mercantil.module';
 import { PaymentProcessorModule } from './modules/payment-processor/payment-processor.module';
 import { IntegrationApiKeysModule } from './modules/integration-api-keys/integration-api-keys.module';
 import { EnterpriseInterestConfigModule } from './modules/enterprise-interest-config/enterprise-interest-config.module';
+import { MigrationModule } from './modules/migration/migration.module';
 
 /**
  * Modulo raiz de la aplicacion NestJS.
@@ -55,6 +56,7 @@ import { EnterpriseInterestConfigModule } from './modules/enterprise-interest-co
     PaymentProcessorModule,
     IntegrationApiKeysModule,
     EnterpriseInterestConfigModule,
+    MigrationModule,
   ],
 })
 export class AppModule {}
