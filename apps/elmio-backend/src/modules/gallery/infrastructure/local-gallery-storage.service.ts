@@ -167,9 +167,24 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
     absolutePath?: string;
     publicUrl?: string;
   } | null> {
-    const entity = await this.galleryRepository.findOne({
+    // 1. Intentar buscar por ID y tenantDirectory
+    let entity = await this.galleryRepository.findOne({
       where: { id: imageId, tenantDirectory },
     });
+
+    // 2. Si no se encuentra, intentar buscar por name y tenantDirectory
+    if (!entity) {
+      entity = await this.galleryRepository.findOne({
+        where: { name: imageId, tenantDirectory },
+      });
+    }
+
+    // 3. Fallback: intentar buscar por fileName y tenantDirectory
+    if (!entity) {
+      entity = await this.galleryRepository.findOne({
+        where: { fileName: imageId, tenantDirectory },
+      });
+    }
 
     if (!entity) {
       return null;
