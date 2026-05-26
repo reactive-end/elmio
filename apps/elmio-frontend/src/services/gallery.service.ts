@@ -71,29 +71,43 @@ export async function uploadGalleryImages(
   tenantDirectory: string,
   files: File[],
 ): Promise<GalleryServiceImage[]> {
-  const formData = new FormData()
-
-  for (const file of files) {
+  const uploadPromises = files.map(async (file) => {
+    const formData = new FormData()
     formData.append('files', file)
-  }
 
-  const response = await fetch(buildGalleryEndpoint('/upload', tenantDirectory), {
-    method: 'POST',
-    body: formData,
-    headers: {
-      ...authService.getAuthHeaders(),
-    },
+    const response = await fetch(buildGalleryEndpoint('/upload', tenantDirectory), {
+      method: 'POST',
+      body: formData,
+      headers: {
+        ...authService.getAuthHeaders(),
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 413) {
+        throw new Error(
+          `La imagen "${file.name}" supera el tamaño máximo permitido por el servidor web (error 413).`,
+        )
+      }
+
+      const text = await response.text()
+      if (text.includes('<html') || text.includes('Request Entity Too Large')) {
+        throw new Error(
+          `La imagen "${file.name}" supera el tamaño máximo permitido por el servidor web.`,
+        )
+      }
+
+      throw new Error(text || `No se pudo cargar la imagen "${file.name}" al servidor.`)
+    }
+
+    const payload: unknown = await response.json()
+    return galleryImagesSchema
+      .parse(payload)
+      .map((image) => ({ ...image, previewUrl: toAbsolutePreviewUrl(image.previewUrl) }))
   })
 
-  if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || 'No se pudieron cargar las imagenes al servidor.')
-  }
-
-  const payload: unknown = await response.json()
-  return galleryImagesSchema
-    .parse(payload)
-    .map((image) => ({ ...image, previewUrl: toAbsolutePreviewUrl(image.previewUrl) }))
+  const results = await Promise.all(uploadPromises)
+  return results.flat()
 }
 
 /**

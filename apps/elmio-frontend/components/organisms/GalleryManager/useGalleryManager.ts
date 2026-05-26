@@ -117,6 +117,20 @@ export function useGalleryManager(): UseGalleryManagerReturn {
       return
     }
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+    const oversizedFiles = imageFiles.filter((file) => file.size > MAX_FILE_SIZE)
+
+    if (oversizedFiles.length > 0) {
+      const listNames = oversizedFiles.map((f) => `"${f.name}"`).join(', ')
+      setAlert({
+        type: 'warning',
+        message: `Las siguientes imágenes superan el tamaño máximo permitido de 5MB: ${listNames}.`,
+      })
+      if (singleInputRef.current) singleInputRef.current.value = ''
+      if (bulkInputRef.current) bulkInputRef.current.value = ''
+      return
+    }
+
     setIsUploading(true)
 
     try {
