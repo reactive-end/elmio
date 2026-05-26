@@ -18,7 +18,7 @@ import type { LoginFormProps } from './LoginForm.d'
  *
  * Animado con GSAP: fade-in del formulario, slide horizontal al cambiar tabs.
  */
-export function LoginForm({ className = '' }: LoginFormProps) {
+export function LoginForm({ className = '', onLoginSuccess }: LoginFormProps) {
   const {
     loginMethod,
     selectedProfile,
@@ -57,7 +57,8 @@ export function LoginForm({ className = '' }: LoginFormProps) {
     handleResetPasswordSubmit,
     handleSelectorBack,
     switchTab,
-  } = useLoginForm()
+  } = useLoginForm(onLoginSuccess)
+
 
   return (
     <div ref={containerRef} className={`w-full ${className}`}>

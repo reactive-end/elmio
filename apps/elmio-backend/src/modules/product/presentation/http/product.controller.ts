@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
+import { OptionalAuthGuard } from '../../../auth/presentation/guards/optional-auth.guard';
 import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
 import type { UserSession } from '../../../auth/domain/user';
 import { CreateProductUseCase } from '../../application/create-product.use-case';
@@ -40,12 +41,12 @@ export class ProductController {
   ) {}
 
   /** GET /api/products - Lista todos los productos. */
-  @UseGuards(AuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @Get()
-  async list(@CurrentUser() session: UserSession): Promise<Product[]> {
+  async list(@CurrentUser() session?: UserSession): Promise<Product[]> {
     const allProducts = await this.listProducts.execute();
 
-    if (session.role === 'ALLIED') {
+    if (session && session.role === 'ALLIED') {
       const marketplaces = await this.dataSource
         .getRepository(MarketplaceEntity)
         .find({ where: { owner: session.owner } });

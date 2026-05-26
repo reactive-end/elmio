@@ -1,8 +1,9 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react'
+import React, { createContext, useContext, useReducer, ReactNode, useState, useEffect } from 'react'
+import { LoginForm } from '@/components/organisms/LoginForm/LoginForm'
 
-export type MarketplaceActionType = 'PAYMENT' | 'INSURANCE_FORM' | 'NONE' | string
+export type MarketplaceActionType = 'PAYMENT' | 'INSURANCE_FORM' | 'MERCANTIL-QUERY' | 'MERCANTIL-RCV-QUERY' | 'NONE' | string
 
 interface ActionState {
   isOpen: boolean
@@ -52,6 +53,7 @@ const MarketplaceActionContext = createContext<MarketplaceActionContextProps | u
  */
 export function MarketplaceActionProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(actionReducer, initialState)
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
 
   const openAction = (actionType: MarketplaceActionType, actionData?: any) => {
     dispatch({ type: 'OPEN_ACTION', payload: { actionType, actionData } })
@@ -60,6 +62,30 @@ export function MarketplaceActionProvider({ children }: { children: ReactNode })
   const closeAction = () => {
     dispatch({ type: 'CLOSE_ACTION' })
   }
+
+  // Escuchar mensajes provenientes del iframe embebido (completado, cancelado o requerimiento de autenticación)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return
+      const data = event.data
+      if (!data) return
+
+      if (data.source === 'mercantil-consulta') {
+        if (data.type === 'completed' || data.type === 'cancelled') {
+          closeAction()
+        }
+      }
+
+      if (data.source === 'mercantil-consulta-auth-required' && data.type === 'login-required') {
+        setIsLoginOpen(true)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => {
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [state.isOpen])
 
   return (
     <MarketplaceActionContext.Provider value={{ state, openAction, closeAction }}>
@@ -71,6 +97,34 @@ export function MarketplaceActionProvider({ children }: { children: ReactNode })
       )}
       {state.isOpen && state.actionType === 'INSURANCE_FORM' && (
         <InsuranceFormModal data={state.actionData} onClose={closeAction} />
+      )}
+      {state.isOpen && state.actionType === 'MERCANTIL-QUERY' && (
+        <MercantilQueryModal data={state.actionData} onClose={closeAction} />
+      )}
+      {state.isOpen && state.actionType === 'MERCANTIL-RCV-QUERY' && (
+        <MercantilRcvQueryModal data={state.actionData} onClose={closeAction} />
+      )}
+
+      {/* Modal de Login Premium Superpuesta para el Marketplace */}
+      {isLoginOpen && (
+        <LoginModal
+          onClose={() => setIsLoginOpen(false)}
+          onSuccess={() => {
+            setIsLoginOpen(false)
+            
+            // 1. Notificar al iframe de la consulta que la sesión ya está activa
+            const iframe = document.querySelector('iframe')
+            if (iframe && iframe.contentWindow) {
+              iframe.contentWindow.postMessage(
+                { source: 'marketplace-auth', type: 'login-success' },
+                window.location.origin
+              )
+            }
+
+            // 2. Disparar evento global para que la barra de navegación se actualice de inmediato
+            window.dispatchEvent(new CustomEvent('marketplace-login-success-update'))
+          }}
+        />
       )}
     </MarketplaceActionContext.Provider>
   )
@@ -87,7 +141,7 @@ export function useMarketplaceAction() {
   return context
 }
 
-// ----- Componentes Modales (Placeholders escalables) -----
+// ----- Componentes Modales (Premium y adaptados) -----
 
 function PaymentModal({ data, onClose }: { data: any; onClose: () => void }) {
   return (
@@ -112,6 +166,124 @@ function InsuranceFormModal({ data, onClose }: { data: any; onClose: () => void 
         <button onClick={onClose} className="rounded-xl px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
           Cerrar
         </button>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Ventana de consulta general de Mercantil idéntica a la tienda empresarial.
+ */
+function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
+  const embeddedUrl = `/mercantil/consulta?embedded=1&slug=${data?.slug || ''}&productId=${data?.productId || ''}`
+  
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
+              Consulta embebida
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-body">Mercantil Seguros</h3>
+            <p className="mt-1 text-sm text-body-muted">
+              Completa el proceso de consulta mercantil dentro de esta ventana para registrar tu
+              compra.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          >
+            Cerrar
+          </button>
+        </div>
+
+        <div className="flex-1 bg-gray-50">
+          <iframe
+            title="Consulta Mercantil embebida"
+            src={embeddedUrl}
+            className="h-full w-full border-0"
+            allow="clipboard-write"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Ventana de consulta RCV de Mercantil idéntica a la tienda empresarial.
+ */
+function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
+  const embeddedUrl = `/mercantil/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
+  
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
+              Consulta RCV embebida
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-body">Mercantil Seguros RCV</h3>
+            <p className="mt-1 text-sm text-body-muted">
+              Completa el proceso de consulta RCV mercantil dentro de esta ventana para registrar tu
+              compra.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          >
+            Cerrar
+          </button>
+        </div>
+
+        <div className="flex-1 bg-gray-50">
+          <iframe
+            title="Consulta Mercantil RCV embebida"
+            src={embeddedUrl}
+            className="h-full w-full border-0"
+            allow="clipboard-write"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Modal de login premium minimalista flotante del marketplace.
+ */
+function LoginModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex min-h-screen w-screen items-center justify-center bg-slate-950/28 px-4 py-8 backdrop-blur-sm transition-all duration-300">
+      <div className="absolute inset-0 bg-black/20" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-lg rounded-[28px] overflow-hidden border border-gray-100 bg-white p-7 shadow-[0_24px_80px_rgba(15,23,42,0.18)] animate-in fade-in zoom-in duration-200">
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={onClose}
+            className="rounded-full p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer border-none bg-transparent"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <LoginForm onLoginSuccess={onSuccess} />
       </div>
     </div>
   )

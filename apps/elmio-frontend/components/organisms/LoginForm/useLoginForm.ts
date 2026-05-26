@@ -39,7 +39,7 @@ interface ProfileItem {
  * la modal de seleccion de perfiles, ingreso de contrasena y el flujo
  * ultra-premium de recuperacion de contrasena via OTP en varios pasos.
  */
-export function useLoginForm() {
+export function useLoginForm(onLoginSuccess?: () => void) {
   const router = useRouter()
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone')
   // El stage principal se mantiene siempre en identifier
@@ -185,7 +185,11 @@ export function useLoginForm() {
 
       await authService.login(loginVal, password, selectedProfile.userId)
       setShowSelector(false)
-      router.push('/dashboard')
+      if (onLoginSuccess) {
+        onLoginSuccess()
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err) {
       setAlert({
         type: 'error',

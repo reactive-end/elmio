@@ -18,6 +18,7 @@ import {
   type ShopcartSummary,
   type BucketUploadResult,
 } from '@/src/services/mercantil.service';
+import { authService } from '@/src/services/auth.service';
 
 export const ALLOWED_PRODUCT_SLUGS = ['personalAccidents', 'life', 'funerary'] as const;
 export type AllowedProductSlug = (typeof ALLOWED_PRODUCT_SLUGS)[number];
@@ -134,6 +135,7 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
   const [step, setStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [stepError, setStepError] = useState('');
+  const waitingForLoginRef = useRef(false);
 
   const handleBack = () => setStep((s) => Math.max(1, s - 1));
 
@@ -456,6 +458,20 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
   // Transición 2 -> 3 (Crear cliente/shopcart, subir productos) o directo a Emisión (modal)
   const handleContinueToStep3 = async () => {
     setStepError('');
+
+    // Validar si existe sesión
+    const session = authService.getSession();
+    if (!session) {
+      waitingForLoginRef.current = true;
+      if (typeof window !== 'undefined') {
+        window.parent.postMessage(
+          { source: 'mercantil-consulta-auth-required', type: 'login-required' },
+          window.location.origin
+        );
+      }
+      return;
+    }
+
     setStep3Loading(true);
     try {
       let currClientId = clientId;
@@ -587,6 +603,24 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
       setStep5Loading(false);
     }
   };
+
+  // Reanudar flujo de consulta tras el inicio de sesión exitoso en la modal
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.source === 'marketplace-auth' && event.data?.type === 'login-success') {
+        if (waitingForLoginRef.current) {
+          waitingForLoginRef.current = false;
+          void handleContinueToStep3();
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [handleContinueToStep3]);
 
   return {
     step,

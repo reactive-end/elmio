@@ -17,6 +17,7 @@ import {
   type CountryLocations,
   type BucketUploadResult,
 } from '@/src/services/mercantil.service';
+import { authService } from '@/src/services/auth.service';
 
 export type { MercantilCategoryResult, MercantilProduct, MercantilPlan } from '@/src/services/mercantil.service';
 
@@ -219,6 +220,7 @@ export function useMercantilConsultaRCV() {
   // Step tracking
   const [step, setStep] = useState(1);
   const TOTAL_STEPS = 7;
+  const waitingForLoginRef = useRef(false);
 
   // Step 1: Insured data
   const [insured, setInsured] = useState<InsuredData>({
@@ -501,6 +503,20 @@ export function useMercantilConsultaRCV() {
   // Step 3: Continue to documents (create client, shopcart, add products)
   const handleContinueToStep4 = async () => {
     setStepError('');
+
+    // Validar si existe sesión
+    const session = authService.getSession();
+    if (!session) {
+      waitingForLoginRef.current = true;
+      if (typeof window !== 'undefined') {
+        window.parent.postMessage(
+          { source: 'mercantil-consulta-auth-required', type: 'login-required' },
+          window.location.origin
+        );
+      }
+      return;
+    }
+
     setLoadingPlans(true);
     try {
       let currentClientId = clientId;
@@ -902,6 +918,24 @@ export function useMercantilConsultaRCV() {
       return acc + ((item.plan.totalPrime || 0) / divisor);
     }, 0);
   }, [selectedPlans]);
+
+  // Reanudar flujo de consulta RCV tras el inicio de sesión exitoso en la modal
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.source === 'marketplace-auth' && event.data?.type === 'login-success') {
+        if (waitingForLoginRef.current) {
+          waitingForLoginRef.current = false;
+          void handleContinueToStep4();
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [handleContinueToStep4]);
 
   return {
     step,

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import * as Icons from 'lucide-react'
 import { SectionContainer } from './SectionContainer'
 import type { SeccionMarketplace, MenuItem } from '@/src/utils/editor-types.d'
+import { authService } from '@/src/services/auth.service'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const iconsMap = Icons as unknown as Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>>
@@ -31,6 +32,21 @@ export function HeaderSection({ seccion }: HeaderSectionProps) {
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null)
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const navRef = useRef<HTMLDivElement>(null)
+
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    setUser(authService.getSession())
+
+    const handleLoginUpdate = () => {
+      setUser(authService.getSession())
+    }
+
+    window.addEventListener('marketplace-login-success-update', handleLoginUpdate)
+    return () => {
+      window.removeEventListener('marketplace-login-success-update', handleLoginUpdate)
+    }
+  }, [])
 
   /** Cancela el cierre programado */
   const cancelarCierre = useCallback(() => {
@@ -187,37 +203,90 @@ export function HeaderSection({ seccion }: HeaderSectionProps) {
               </div>
 
               <div
-                className="flex items-center gap-3"
+                className="flex items-center gap-4"
                 style={{ color: estilo.tituloColor || '#111827' }}
               >
-                <button type="button" className="flex flex-col items-center gap-0.5 cursor-pointer hover:opacity-70 transition-opacity">
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
+                {user ? (
+                  <>
+                    {/* Identificador de Usuario (Premium con indicador de sesión activa) */}
+                    <div className="relative flex items-center justify-center h-9 w-9 rounded-full bg-secondary/5 border border-secondary/15 text-secondary shadow-sm" title={user.email}>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      {/* Círculo verde indicador de sesión activa */}
+                      <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
+                    </div>
+
+                    {/* Botón puramente iconográfico de ir al Dashboard */}
+                    <Link
+                      href="/dashboard"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                      title="Ir al Dashboard"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="3" width="7" height="9" rx="1" />
+                        <rect x="14" y="3" width="7" height="5" rx="1" />
+                        <rect x="14" y="12" width="7" height="9" rx="1" />
+                        <rect x="3" y="16" width="7" height="5" rx="1" />
+                      </svg>
+                    </Link>
+                  </>
+                ) : (
+                  /* Botón de Cuenta (Personita) que siempre envía al Login */
+                  <Link
+                    href="/login"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                    title="Iniciar sesión"
                   >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  <span className="hidden text-[10px] font-medium md:inline">Cuenta</span>
-                </button>
-                <button type="button" className="relative flex flex-col items-center gap-0.5 cursor-pointer hover:opacity-70 transition-opacity">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </Link>
+                )}
+
+                {/* Botón de Carrito (Sin texto) */}
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                  title="Carrito"
+                >
                   <svg
-                    width="22"
-                    height="22"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.5"
+                    strokeWidth="2"
                   >
                     <circle cx="8" cy="21" r="1" />
                     <circle cx="19" cy="21" r="1" />
                     <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
                   </svg>
-                  <span className="hidden text-[10px] font-medium md:inline">Carrito</span>
                 </button>
               </div>
             </div>

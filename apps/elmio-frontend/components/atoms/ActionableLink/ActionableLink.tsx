@@ -22,8 +22,19 @@ export function ActionableLink({ href, children, onClick, ...props }: Actionable
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isAction) {
       e.preventDefault()
-      const actionType = href.replace('action:', '').toUpperCase()
-      openAction(actionType)
+      const actionUrl = href.replace('action:', '')
+      const [type, queryStr] = actionUrl.split('?')
+      const actionType = type.toUpperCase()
+      
+      const params: Record<string, string> = {}
+      if (queryStr) {
+        const searchParams = new URLSearchParams(queryStr)
+        searchParams.forEach((value, key) => {
+          params[key] = value
+        })
+      }
+      
+      openAction(actionType, params)
     }
     if (onClick) {
       onClick(e)

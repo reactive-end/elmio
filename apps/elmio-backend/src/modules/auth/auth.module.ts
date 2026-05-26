@@ -12,6 +12,7 @@ import { DbAuthRepositoryService } from './infrastructure/db-auth-repository.ser
 import { AuthSeedService } from './infrastructure/auth-seed.service';
 import { UserEntity } from './infrastructure/entities/user.entity';
 import { AuthGuard } from './presentation/guards/auth.guard';
+import { OptionalAuthGuard } from './presentation/guards/optional-auth.guard';
 import { RolesGuard } from './presentation/guards/roles.guard';
 import { AuthController } from './presentation/http/auth.controller';
 import { AlliesAdminController } from './presentation/http/allies-admin.controller';
@@ -45,6 +46,7 @@ import { AlliesAdminController } from './presentation/http/allies-admin.controll
     DbAuthRepositoryService,
     AuthSeedService,
     AuthGuard,
+    OptionalAuthGuard,
     RolesGuard,
     {
       provide: AUTH_REPOSITORY_PORT,
@@ -53,6 +55,7 @@ import { AlliesAdminController } from './presentation/http/allies-admin.controll
   ],
   exports: [
     AuthGuard,
+    OptionalAuthGuard,
     RolesGuard,
     ValidateSessionUseCase,
     AUTH_REPOSITORY_PORT,

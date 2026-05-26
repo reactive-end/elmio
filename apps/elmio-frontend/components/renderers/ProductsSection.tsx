@@ -46,12 +46,36 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           filtered = allLoadedProducts
         }
 
+        const MERCANTIL_PROVIDER_SLUGS: Record<string, string> = {
+          'elmio:mercantil-vida': 'life',
+          'elmio:mercantil-accidentes': 'personalAccidents',
+          'elmio:mercantil-funeraria': 'funerary',
+        }
+
         // Mapear los productos reales al formato compatible de ElementoSeccion
         const mapped = filtered.map((p) => {
           const priceStr = p.priceLists?.[0]
             ? `${p.priceLists[0].currency} ${Number(p.priceLists[0].amount).toLocaleString()}`
             : ''
             
+          const hasMercantilQuery = p.windows?.some(
+            (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-query-form'
+          )
+          const hasMercantilRcvQuery = p.windows?.some(
+            (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-rcv-query-form'
+          )
+
+          let enlaceBoton = p.active ? `/dashboard/enterprise/shop?product=${p.id}` : null
+          if (p.active) {
+            if (hasMercantilRcvQuery) {
+              enlaceBoton = `action:mercantil-rcv-query?productId=${p.id}`
+            } else if (hasMercantilQuery) {
+              const provider = p.globalThirdPartyProvider ?? ''
+              const slug = MERCANTIL_PROVIDER_SLUGS[provider] || ''
+              enlaceBoton = `action:mercantil-query?productId=${p.id}&slug=${slug}`
+            }
+          }
+
           return {
             id: p.id,
             titulo: p.name,
@@ -59,7 +83,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
             imagenUrl: p.images?.[0] || '',
             enlaceUrl: priceStr, // Usamos la etiqueta para mostrar el precio formateado
             textoBoton: !p.active ? 'No disponible' : p.type === 'LOAN' ? 'Solicitar' : 'Comprar',
-            enlaceBoton: p.active ? `/dashboard/enterprise/shop?product=${p.id}` : null,
+            enlaceBoton,
             active: p.active,
           }
         })
