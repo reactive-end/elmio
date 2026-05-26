@@ -32,7 +32,8 @@ export function MarketplaceRenderer({ marketplaceSlug }: MarketplaceRendererProp
         if (!cancelado) {
           setDatos(config)
         }
-      } catch {
+      } catch (err) {
+        console.error('[MarketplaceRenderer] Error al cargar la configuración de la landing:', err)
         if (!cancelado) {
           setError(true)
         }

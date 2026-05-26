@@ -63,7 +63,7 @@ function mapToFrontend(item: any): DatosMarketplace {
   const rawSections = item.sections ?? item.secciones ?? []
   const secciones = rawSections.map((s: any): SeccionMarketplace => {
     // Mapear estilo de sección
-    const rawEstilo = s.style ?? s.estilo ?? {}
+    const rawEstilo = s.style ?? s.estilo ?? s.styles ?? {}
     const estilo: EstiloSeccion = {
       paddingSuperior: rawEstilo.paddingTop ?? rawEstilo.paddingSuperior ?? 80,
       paddingDerecho: rawEstilo.paddingRight ?? rawEstilo.paddingDerecho ?? 24,
@@ -167,7 +167,10 @@ function mapToFrontend(item: any): DatosMarketplace {
         textoBoton: pilar.buttonText ?? pilar.textoBoton ?? '',
         enlaceBoton: pilar.buttonLink ?? pilar.enlaceBoton ?? '',
       })),
-      menu: (rawContenido.menu ?? []).map((menuItem: any): MenuItem => ({
+      menu: (Array.isArray(rawContenido.menu)
+        ? rawContenido.menu
+        : (rawContenido.menu?.items ?? [])
+      ).map((menuItem: any): MenuItem => ({
         id: menuItem.id,
         label: menuItem.label ?? '',
         href: menuItem.href ?? '',
