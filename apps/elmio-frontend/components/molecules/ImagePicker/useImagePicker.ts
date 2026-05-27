@@ -23,8 +23,9 @@ export function useImagePicker(
   const [images, setImages] = useState<GalleryServiceImage[]>([])
 
   const editorContext = useMarketplaceEditorContext()
-  const activeTenantDirectory =
-    tenantDirectory || editorContext?.tenantDirectory || DEFAULT_TENANT_DIRECTORY
+  const rawTenant = tenantDirectory || editorContext?.tenantDirectory || DEFAULT_TENANT_DIRECTORY
+  // Si el tenant evaluado es 'system', hacemos un fallback automático a 'elmio' ya que la galería administrativa unificada reside allí
+  const activeTenantDirectory = rawTenant === 'system' ? 'elmio' : rawTenant
 
   const filteredImages = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
