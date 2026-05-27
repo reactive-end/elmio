@@ -10,6 +10,7 @@ import {
   type ProductAttribute,
   type WindowActionType,
   type CreateProductInput,
+  type ProductAction,
 } from '@/src/services/product.service'
 import { categoryService, type Categoria } from '@/src/services/category.service'
 
@@ -49,7 +50,7 @@ interface AlertState {
   message: string
 }
 
-const LAST_STEP = 5
+const LAST_STEP = 6
 const MANAGED_PAYMENT_PROVIDERS = new Set([
   'elmio:mercantil-vida',
   'elmio:mercantil-accidentes',
@@ -135,6 +136,9 @@ export function useProductForm() {
   // Step 5: Windows
   const [windows, setWindows] = useState<WindowDraft[]>([])
 
+  // Step 6: Actions
+  const [actions, setActions] = useState<ProductAction[]>([])
+
   const usesProviderManagedPayment =
     usesThirdParty && MANAGED_PAYMENT_PROVIDERS.has(globalThirdPartyProvider)
   const isThirdPartyProviderPending = usesThirdParty && !globalThirdPartyProvider
@@ -212,6 +216,16 @@ export function useProductForm() {
                   ? w.config.redirectUrl || 'mercantil-query-form'
                   : w.config.redirectUrl || '',
           })),
+        )
+
+        setActions(
+          product.actions?.map((a) => ({
+            id: a.id || crypto.randomUUID(),
+            type: a.type,
+            name: a.name,
+            active: a.active,
+            config: a.config || {},
+          })) || [],
         )
       } catch (err) {
         console.error('Error al cargar datos del producto en edicion:', err)
@@ -401,6 +415,12 @@ export function useProductForm() {
           }
         }),
         marketplaceId: null,
+        actions: actions.map((a) => ({
+          type: a.type,
+          name: a.name,
+          active: a.active,
+          config: a.config,
+        })),
       }
 
       if (isEdit) {
@@ -495,6 +515,8 @@ export function useProductForm() {
     addWindow,
     updWindow,
     remWindow,
+    actions,
+    setActions,
     handleNext,
     handleBack,
     handleSubmit,

@@ -4,6 +4,7 @@ import {
   PriceList,
   DiscountPeriod,
   ProductWindow,
+  ProductAction,
 } from '../../domain/product';
 import { MarketplaceEntity } from '@/modules/marketplace/infrastructure/entities/marketplace.entity';
 
@@ -120,6 +121,13 @@ export class ProductEntity {
 
   @Column({ type: 'uuid', nullable: true })
   marketplaceId!: string | null;
+
+  @Column({
+    type: 'text',
+    transformer: jsonTransformer,
+    nullable: true,
+  })
+  actions!: ProductAction[] | null;
 
   @Column({ type: 'varchar', length: 100 })
   createdAt!: string;

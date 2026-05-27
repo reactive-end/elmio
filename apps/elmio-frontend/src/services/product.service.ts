@@ -66,6 +66,14 @@ export interface ProductWindow {
   required: boolean
 }
 
+export interface ProductAction {
+  id: string
+  type: 'disburse_funds' | 'send_email_voucher' | 'custom_webhook'
+  name: string
+  active: boolean
+  config: Record<string, any>
+}
+
 export interface Product {
   id: string
   sku: string
@@ -94,6 +102,7 @@ export interface Product {
   usesThirdPartyPricing: boolean
   globalThirdPartyProvider: string | null
   windows: ProductWindow[]
+  actions?: ProductAction[]
   marketplaceId: string | null
   createdAt: string
   updatedAt: string
@@ -125,6 +134,7 @@ export interface CreateProductInput {
   usesThirdPartyPricing: boolean
   globalThirdPartyProvider?: string | null
   windows: Omit<ProductWindow, 'id'>[]
+  actions?: Omit<ProductAction, 'id'>[]
   marketplaceId: string | null
 }
 

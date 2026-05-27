@@ -17,7 +17,8 @@ const stepDefs = [
   { id: 2, title: 'Inventario', icon: Box },
   { id: 3, title: 'Atributos', icon: ListChecks },
   { id: 4, title: 'Precios y Pago', icon: DollarSign },
-  { id: 5, title: 'Acciones', icon: Layers },
+  { id: 5, title: 'Acciones de compra', icon: Layers },
+  { id: 6, title: 'Acciones al finalizar', icon: Sparkles },
 ]
 
 const WINDOW_TYPES = [
@@ -768,6 +769,41 @@ export function ProductForm() {
             </div>
           )}
 
+          {/* Step 6: Post-Purchase Actions */}
+          {f.step === 6 && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <span className="text-sm font-medium text-body-secondary block">
+                  Acciones al finalizar la compra
+                </span>
+                <p className="text-xs text-body-muted mt-0.5">
+                  Configura N acciones automatizadas que se ejecutarán cuando se concrete y apruebe la compra de este producto.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3 bg-gray-50/50 rounded-xl p-4 border border-gray-150/70">
+                <div className="flex h-5 items-center">
+                  <input
+                    id="enable-actions"
+                    name="enable-actions"
+                    type="checkbox"
+                    disabled
+                    checked={false}
+                    className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary opacity-60"
+                  />
+                </div>
+                <div className="text-sm leading-6">
+                  <label htmlFor="enable-actions" className="font-semibold text-gray-400">
+                    Habilitar Acciones Automatizadas (Próximamente)
+                  </label>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Esta opción te permitirá diseñar y acoplar N acciones automatizadas a medida (como desembolso inmediato, envío automático de cupones por email, o llamadas a webhooks externos). Actualmente está en fase de desarrollo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Navigation */}
           <div className="flex gap-3 mt-4 border-t border-gray-100 pt-4">
             {f.step > 1 && (
@@ -775,7 +811,7 @@ export function ProductForm() {
                 Anterior
               </Button>
             )}
-            {f.step < 5 ? (
+            {f.step < 6 ? (
               <Button type="button" fullWidth onClick={f.handleNext}>
                 Siguiente
               </Button>

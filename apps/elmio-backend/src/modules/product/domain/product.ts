@@ -110,6 +110,17 @@ export interface FormField {
 }
 
 /**
+ * Accion de post-compra del producto (ej: desembolso de fondos, webhook, email).
+ */
+export interface ProductAction {
+  id: string;
+  type: 'disburse_funds' | 'send_email_voucher' | 'custom_webhook';
+  name: string;
+  active: boolean;
+  config: Record<string, any>;
+}
+
+/**
  * Entidad principal de producto del catalogo.
  */
 export interface Product {
@@ -150,6 +161,9 @@ export interface Product {
 
   /** Ventanas/acciones que el producto invoca */
   windows: ProductWindow[];
+
+  /** Acciones ejecutadas al finalizar la compra */
+  actions?: ProductAction[];
 
   /** Marketplace al que pertenece (opcional) */
   marketplaceId: string | null;

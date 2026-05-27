@@ -8,6 +8,7 @@ import type {
   DiscountPeriod,
   ProductAttribute,
   ProductWindow,
+  ProductAction,
 } from '../domain/product';
 import {
   PRODUCT_REPOSITORY_PORT,
@@ -41,6 +42,7 @@ export interface CreateProductInput {
   globalThirdPartyProvider?: string | null;
   windows: Omit<ProductWindow, 'id'>[];
   marketplaceId: string | null;
+  actions?: Omit<ProductAction, 'id'>[];
 }
 
 /**
@@ -109,6 +111,7 @@ export class CreateProductUseCase {
       globalThirdPartyProvider: input.globalThirdPartyProvider ?? null,
       windows: (input.windows ?? []).map((w) => ({ ...w, id: randomUUID() })),
       marketplaceId: input.marketplaceId ?? null,
+      actions: (input.actions ?? []).map((a) => ({ ...a, id: randomUUID() })),
       createdAt: now,
       updatedAt: now,
     };
