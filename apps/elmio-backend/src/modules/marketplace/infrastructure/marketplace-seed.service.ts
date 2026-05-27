@@ -26,15 +26,33 @@ export class MarketplaceSeedService implements OnApplicationBootstrap {
       const existing = await this.repository.findBySlug(slug);
 
       if (!existing) {
-        // Cargar el marketplace default migrado desde el JSON local del backend
-        const jsonPath = path.join(__dirname, '..', 'data', 'marketplace-default.json');
-        
-        if (!fs.existsSync(jsonPath)) {
-          this.logger.error(`No se encontró el archivo JSON del marketplace default en la ruta: ${jsonPath}`);
+        // Buscar el marketplace-default.json en múltiples rutas posibles según el entorno (dev/QA/prod)
+        const rootDir = process.cwd();
+        const possiblePaths = [
+          path.join(__dirname, 'data', 'marketplace-default.json'),
+          path.join(__dirname, '..', 'data', 'marketplace-default.json'),
+          path.join(rootDir, 'marketplace-default.json'),
+          path.join(rootDir, 'apps', 'elmio-backend', 'src', 'modules', 'marketplace', 'infrastructure', 'data', 'marketplace-default.json'),
+        ];
+
+        let jsonPath = '';
+        for (const p of possiblePaths) {
+          if (fs.existsSync(p)) {
+            jsonPath = p;
+            break;
+          }
+        }
+
+        if (!jsonPath) {
+          this.logger.error(
+            `No se encontró el archivo JSON del marketplace default en ninguna de las rutas intentadas: ${JSON.stringify(possiblePaths, null, 2)}`,
+          );
           return;
         }
 
-        const mainMarketplace = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) as Marketplace;
+        const mainMarketplace = JSON.parse(
+          fs.readFileSync(jsonPath, 'utf8'),
+        ) as Marketplace;
 
         await this.repository.create(mainMarketplace);
         this.logger.log(`Sembrado exitoso de marketplace principal predeterminado ('${slug}')`);
