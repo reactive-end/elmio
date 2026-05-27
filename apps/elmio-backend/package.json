@@ -24,7 +24,8 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:run-csv": "ts-node -r tsconfig-paths/register src/modules/migration/run-csv-migration.ts",
-    "migration:heal-images": "ts-node -r tsconfig-paths/register src/modules/migration/heal-marketplace-images.ts"
+    "migration:heal-images": "ts-node -r tsconfig-paths/register src/modules/migration/heal-marketplace-images.ts",
+    "migration:elmio-default": "ts-node -r tsconfig-paths/register src/modules/migration/migrate-elmio-default.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
