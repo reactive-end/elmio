@@ -54,6 +54,8 @@ export function HeroSection({ seccion }: HeroSectionProps) {
   const slideActual = slides[indiceActual] ?? slides[0]
   if (!slideActual) return null
 
+  const showPromoBar = (contenido.showPromoBar !== false) && !!contenido.promoBarText
+
   return (
     <SectionContainer
       estilo={{
@@ -64,6 +66,49 @@ export function HeroSection({ seccion }: HeroSectionProps) {
         paddingIzquierdo: 0,
       }}
     >
+      {/* Franja Publicitaria Superior */}
+      {showPromoBar && (
+        <div
+          className="w-full flex items-center justify-center px-4 overflow-hidden text-center transition-all duration-300 shadow-sm relative z-30"
+          style={{
+            backgroundColor: estilo.promoBarBackgroundColor || '#878787',
+            color: estilo.promoBarTextColor || '#ffffff',
+            height: estilo.promoBarHeight || '35px',
+            fontFamily: estilo.promoBarFontFamily ? `'${estilo.promoBarFontFamily}', sans-serif` : 'Georgia',
+            fontSize: estilo.promoBarTextSize || '14px',
+          }}
+        >
+          {contenido.promoBarUrl ? (
+            <ActionableLink
+              href={contenido.promoBarUrl}
+              className="flex items-center justify-center hover:opacity-90 transition-opacity w-full h-full font-medium"
+            >
+              {contenido.promoBarLogo && (
+                <img
+                  src={contenido.promoBarLogo}
+                  alt="Logo"
+                  style={{ maxHeight: estilo.promoBarLogoSize || '24px', objectFit: 'contain' }}
+                  className="mr-2 shrink-0"
+                />
+              )}
+              <span>{contenido.promoBarText}</span>
+            </ActionableLink>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full font-medium">
+              {contenido.promoBarLogo && (
+                <img
+                  src={contenido.promoBarLogo}
+                  alt="Logo"
+                  style={{ maxHeight: estilo.promoBarLogoSize || '24px', objectFit: 'contain' }}
+                  className="mr-2 shrink-0"
+                />
+              )}
+              <span>{contenido.promoBarText}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="relative flex h-[300px] items-center justify-center overflow-hidden md:h-[520px]">
         <div
           className="absolute inset-0 flex transition-transform duration-700 ease-out"

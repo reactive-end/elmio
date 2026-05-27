@@ -1,8 +1,8 @@
-'use client'
-
+import { useState } from 'react'
 import { X } from 'lucide-react'
 import { TextField } from '@/components/atoms/TextField/TextField'
 import { ImagePicker } from '@/components/molecules/ImagePicker/ImagePicker'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 import type { ElementoSeccion } from '@/src/utils/editor-types.d'
 
 interface ElementosListProps {
@@ -24,7 +24,15 @@ export function ElementosList({
   onActualizar,
   onEliminar,
 }: ElementosListProps) {
+  const [elementoParaEliminarId, setElementoParaEliminarId] = useState<string | null>(null)
   const puedeAgregar = limiteElementos === undefined || elementos.length < limiteElementos;
+
+  const handleConfirmarEliminar = () => {
+    if (elementoParaEliminarId) {
+      onEliminar(elementoParaEliminarId)
+      setElementoParaEliminarId(null)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,7 +56,7 @@ export function ElementosList({
             <span className="text-xs font-medium text-gray-400">Elemento {idx + 1}</span>
             <button
               type="button"
-              onClick={() => onEliminar(elem.id)}
+              onClick={() => setElementoParaEliminarId(elem.id)}
               className="text-gray-300 hover:text-red-500 transition-colors"
             >
               <X className="w-3 h-3" strokeWidth={1.5} />
@@ -82,6 +90,16 @@ export function ElementosList({
           />
         </div>
       ))}
+
+      <ConfirmModal
+        isOpen={elementoParaEliminarId !== null}
+        onClose={() => setElementoParaEliminarId(null)}
+        onConfirm={handleConfirmarEliminar}
+        title="¿Eliminar este elemento?"
+        description="El subelemento se eliminará permanentemente de la sección actual. ¿Deseas continuar?"
+        confirmText="Sí, eliminar elemento"
+        cancelText="Cancelar"
+      />
     </div>
   )
 }

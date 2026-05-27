@@ -18,7 +18,10 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
   const pie = datos.secciones.find((s) => s.tipo === 'pie' && s.visible)
 
   return (
-    <div className="min-h-screen">
+    <div
+      className="min-h-screen"
+      style={{ fontFamily: `'${datos.tema?.fuente || 'Inter'}', sans-serif` }}
+    >
       {cabecera && <HeaderSection seccion={cabecera} />}
 
       {datos.secciones

@@ -1,9 +1,9 @@
-'use client'
-
+import { useState } from 'react'
 import { X } from 'lucide-react'
 import { TextField } from '@/components/atoms/TextField/TextField'
 import { TextArea } from '@/components/atoms/TextArea/TextArea'
 import { ImagePicker } from '@/components/molecules/ImagePicker/ImagePicker'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 import type { PilarItem } from '@/src/utils/editor-types.d'
 
 const ICON_OPTIONS = [
@@ -35,6 +35,15 @@ interface EditorPilaresProps {
  * Permite agregar, editar y eliminar pilares con icono, titulo, texto y boton.
  */
 export function EditorPilares({ pilares, onChange }: EditorPilaresProps) {
+  const [pilarParaEliminarIdx, setPilarParaEliminarIdx] = useState<number | null>(null)
+
+  const handleConfirmarEliminar = () => {
+    if (pilarParaEliminarIdx !== null) {
+      onChange(pilares.filter((_, i) => i !== pilarParaEliminarIdx))
+      setPilarParaEliminarIdx(null)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {pilares.map((pilar, idx) => (
@@ -45,7 +54,7 @@ export function EditorPilares({ pilares, onChange }: EditorPilaresProps) {
             </span>
             <button
               type="button"
-              onClick={() => onChange(pilares.filter((_, i) => i !== idx))}
+              onClick={() => setPilarParaEliminarIdx(idx)}
               className="text-gray-300 transition-colors hover:text-red-500"
             >
               <X className="h-3 w-3" strokeWidth={1.5} />
@@ -168,6 +177,16 @@ export function EditorPilares({ pilares, onChange }: EditorPilaresProps) {
       >
         + Agregar pilar
       </button>
+
+      <ConfirmModal
+        isOpen={pilarParaEliminarIdx !== null}
+        onClose={() => setPilarParaEliminarIdx(null)}
+        onConfirm={handleConfirmarEliminar}
+        title="¿Eliminar este pilar?"
+        description="Este pilar y toda su información se borrarán de la sección. ¿Deseas continuar?"
+        confirmText="Sí, eliminar pilar"
+        cancelText="Cancelar"
+      />
     </div>
   )
 }

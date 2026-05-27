@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Undo2, Redo2 } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from '@/components/atoms/Input/Input'
 import { Button } from '@/components/atoms/Button/Button'
@@ -14,6 +14,10 @@ interface EditorTopBarProps {
   onNombreChange: (nombre: string) => void
   onPestanaChange: (pestana: PestanaEditor) => void
   onGuardar: () => void
+  onDeshacer: () => void
+  onRehacer: () => void
+  puedeDeshacer: boolean
+  puedeRehacer: boolean
 }
 
 /**
@@ -27,6 +31,10 @@ export function EditorTopBar({
   onNombreChange,
   onPestanaChange,
   onGuardar,
+  onDeshacer,
+  onRehacer,
+  puedeDeshacer,
+  puedeRehacer,
 }: EditorTopBarProps) {
   return (
     <div className="flex items-center justify-between gap-4 mb-4 flex-shrink-0">
@@ -47,7 +55,7 @@ export function EditorTopBar({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex bg-gray-100 rounded-xl p-0.5">
+        <div className="flex bg-gray-100 rounded-xl p-0.5 mr-2">
           {[
             { id: 'general' as PestanaEditor, label: 'General' },
             { id: 'secciones' as PestanaEditor, label: 'Secciones' },
@@ -68,6 +76,37 @@ export function EditorTopBar({
             </button>
           ))}
         </div>
+
+        {/* Botones de Deshacer y Rehacer */}
+        <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl p-1 shadow-sm">
+          <button
+            type="button"
+            onClick={onDeshacer}
+            disabled={!puedeDeshacer}
+            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 ${
+              puedeDeshacer
+                ? 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                : 'text-gray-300 cursor-not-allowed'
+            }`}
+            title="Deshacer (Ctrl+Z)"
+          >
+            <Undo2 className="w-4.5 h-4.5" strokeWidth={1.75} />
+          </button>
+          <button
+            type="button"
+            onClick={onRehacer}
+            disabled={!puedeRehacer}
+            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 ${
+              puedeRehacer
+                ? 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                : 'text-gray-300 cursor-not-allowed'
+            }`}
+            title="Rehacer (Ctrl+Y)"
+          >
+            <Redo2 className="w-4.5 h-4.5" strokeWidth={1.75} />
+          </button>
+        </div>
+
         <Button onClick={onGuardar}>
           <Save className="w-4 h-4" strokeWidth={1.5} />
           Guardar

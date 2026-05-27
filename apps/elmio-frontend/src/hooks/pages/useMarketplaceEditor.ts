@@ -32,6 +32,9 @@ export interface UseMarketplaceEditorReturn {
   gradienteInicio: string
   gradienteFin: string
   gradienteDireccion: string
+  guardando: boolean
+  puedeDeshacer: boolean
+  puedeRehacer: boolean
   setMarketplace: (m: DatosMarketplace) => void
   setSeleccionadaId: (id: string | null) => void
   setPestana: (p: PestanaEditor) => void
@@ -45,7 +48,7 @@ export interface UseMarketplaceEditorReturn {
   construirGradiente: () => string
   actualizarSeccion: (id: string, cambios: Partial<SeccionMarketplace>) => void
   actualizarContenido: (campo: keyof ContenidoSeccion, valor: string) => void
-  actualizarEstilo: (campo: keyof EstiloSeccion, valor: string | number) => void
+  actualizarEstilo: (campo: keyof EstiloSeccion, valor: string | number | boolean) => void
   agregarElemento: () => void
   actualizarElemento: (id: string, campo: string, valor: string) => void
   eliminarElemento: (id: string) => void
@@ -54,7 +57,9 @@ export interface UseMarketplaceEditorReturn {
   moverSeccion: (id: string, direccion: 'arriba' | 'abajo') => void
   reordenarSeccion: (origenId: string, destinoId: string, posicion?: 'antes' | 'despues') => void
   eliminarSeccion: (id: string) => void
-  guardar: () => void
+  guardar: () => Promise<void>
+  deshacer: () => void
+  rehacer: () => void
 }
 
 export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarketplaceEditorReturn {
@@ -71,10 +76,47 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   const [gradienteFin, setGradienteFin] = useState('#13ce99')
   const [gradienteDireccion, setGradienteDireccion] = useState('135deg')
 
+  // Estados locales para el Historial (Undo / Redo)
+  const [past, setPast] = useState<SeccionMarketplace[][]>([])
+  const [future, setFuture] = useState<SeccionMarketplace[][]>([])
+  const [guardando, setGuardando] = useState(false)
+
+  const puedeDeshacer = past.length > 0
+  const puedeRehacer = future.length > 0
+
   const construirGradiente = () =>
     `linear-gradient(${gradienteDireccion}, ${gradienteInicio}, ${gradienteFin})`
 
   const seleccionada = secciones.find((s) => s.id === seleccionadaId) ?? null
+
+  // Guardar estado profundo antes de cualquier cambio discreto
+  const registrarHistorial = useCallback((seccionesActuales: SeccionMarketplace[]) => {
+    const clon = JSON.parse(JSON.stringify(seccionesActuales)) as SeccionMarketplace[]
+    setPast((prev) => [...prev, clon])
+    setFuture([])
+  }, [])
+
+  const deshacer = useCallback(() => {
+    if (past.length === 0) return
+    const anterior = past[past.length - 1]
+    const nuevoPast = past.slice(0, -1)
+
+    const actualClon = JSON.parse(JSON.stringify(secciones)) as SeccionMarketplace[]
+    setFuture((prev) => [actualClon, ...prev])
+    setPast(nuevoPast)
+    setSecciones(anterior)
+  }, [past, secciones])
+
+  const rehacer = useCallback(() => {
+    if (future.length === 0) return
+    const siguiente = future[0]
+    const nuevoFuture = future.slice(1)
+
+    const actualClon = JSON.parse(JSON.stringify(secciones)) as SeccionMarketplace[]
+    setPast((prev) => [...prev, actualClon])
+    setFuture(nuevoFuture)
+    setSecciones(siguiente)
+  }, [future, secciones])
 
   const actualizarSeccion = useCallback((id: string, cambios: Partial<SeccionMarketplace>) => {
     setSecciones((prev) => prev.map((s) => (s.id === id ? { ...s, ...cambios } : s)))
@@ -82,16 +124,19 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
 
   const actualizarContenido = (campo: keyof ContenidoSeccion, valor: string) => {
     if (!seleccionada) return
+    registrarHistorial(secciones)
     actualizarSeccion(seleccionada.id, { contenido: { ...seleccionada.contenido, [campo]: valor } })
   }
 
-  const actualizarEstilo = (campo: keyof EstiloSeccion, valor: string | number) => {
+  const actualizarEstilo = (campo: keyof EstiloSeccion, valor: string | number | boolean) => {
     if (!seleccionada) return
+    registrarHistorial(secciones)
     actualizarSeccion(seleccionada.id, { estilo: { ...seleccionada.estilo, [campo]: valor } })
   }
 
   const agregarElemento = () => {
     if (!seleccionada) return
+    registrarHistorial(secciones)
     actualizarSeccion(seleccionada.id, {
       contenido: {
         ...seleccionada.contenido,
@@ -114,6 +159,9 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
 
   const actualizarElemento = (id: string, campo: string, valor: string) => {
     if (!seleccionada) return
+    // Guardar en el historial solo en el primer cambio de foco para no saturar al escribir
+    // Opcionalmente se puede guardar en cada acción
+    registrarHistorial(secciones)
     actualizarSeccion(seleccionada.id, {
       contenido: {
         ...seleccionada.contenido,
@@ -126,6 +174,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
 
   const eliminarElemento = (id: string) => {
     if (!seleccionada) return
+    registrarHistorial(secciones)
     actualizarSeccion(seleccionada.id, {
       contenido: {
         ...seleccionada.contenido,
@@ -135,6 +184,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   }
 
   const agregarSeccion = (tipo: TipoSeccion) => {
+    registrarHistorial(secciones)
     const nueva: SeccionMarketplace = {
       id: crypto.randomUUID(),
       nombre: `Nueva seccion ${secciones.length + 1}`,
@@ -170,10 +220,12 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   }
 
   const toggleVisibilidad = (id: string) => {
+    registrarHistorial(secciones)
     setSecciones((prev) => prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s)))
   }
 
   const moverSeccion = (id: string, direccion: 'arriba' | 'abajo') => {
+    registrarHistorial(secciones)
     setSecciones((prev) => {
       const idx = prev.findIndex((s) => s.id === id)
       if (idx === -1) return prev
@@ -191,7 +243,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     posicion: 'antes' | 'despues' = 'antes',
   ) => {
     if (origenId === destinoId) return
-
+    registrarHistorial(secciones)
     setSecciones((prev) => {
       const origenIdx = prev.findIndex((s) => s.id === origenId)
       const destinoIdx = prev.findIndex((s) => s.id === destinoId)
@@ -213,12 +265,14 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   }
 
   const eliminarSeccion = (id: string) => {
+    registrarHistorial(secciones)
     setSecciones((prev) => prev.filter((s) => s.id !== id))
     if (seleccionadaId === id) setSeleccionadaId(null)
   }
 
   const guardar = async () => {
     try {
+      setGuardando(true)
       const datosGuardar: DatosMarketplace = {
         ...marketplace,
         secciones,
@@ -228,6 +282,8 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
       setAlerta({ type: 'success', message: 'Cambios guardados correctamente.' })
     } catch {
       setAlerta({ type: 'info', message: 'Error al guardar. Verifica la conexion con el backend.' })
+    } finally {
+      setGuardando(false)
     }
 
     setTimeout(() => setAlerta(null), 4000)
@@ -246,6 +302,9 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     gradienteInicio,
     gradienteFin,
     gradienteDireccion,
+    guardando,
+    puedeDeshacer,
+    puedeRehacer,
     setMarketplace,
     setSeleccionadaId,
     setPestana,
@@ -269,5 +328,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
     reordenarSeccion,
     eliminarSeccion,
     guardar,
+    deshacer,
+    rehacer,
   }
 }

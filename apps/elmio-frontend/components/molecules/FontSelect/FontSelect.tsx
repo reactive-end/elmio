@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { ChevronDown, Check } from 'lucide-react'
 import type { FontSelectProps } from './FontSelect.d'
 
 const FUENTES = [
@@ -30,37 +31,83 @@ const categorias = ['Sin serifa', 'Con serifa', 'Monoespaciada']
 
 /**
  * Componente molecule para seleccionar una fuente tipografica.
- * Agrupa las fuentes por categoria y muestra una vista previa del nombre
- * renderizado en la propia fuente.
+ * Rediseñado como dropdown flotante interactivo y de estética premium que
+ * no afecta el espacio físico en el DOM.
  */
 export function FontSelect({ label, value, onChange }: FontSelectProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const selectedFont = FUENTES.find((f) => f.value === value) || FUENTES[0]
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 w-full relative" ref={containerRef}>
       <label className="text-[10px] font-medium text-gray-400">{label}</label>
+      
       <div className="relative">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-body transition-all duration-200 outline-none focus:border-border-focus focus:ring-2 focus:ring-ring/20 cursor-pointer"
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-body transition-all duration-200 outline-none hover:border-gray-300 focus:border-border-focus focus:ring-2 focus:ring-ring/20 cursor-pointer shadow-sm"
         >
-          {categorias.map((cat) => (
-            <optgroup key={cat} label={`── ${cat} ──`}>
-              {FUENTES.filter((f) => f.category === cat).map((f) => (
-                <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
-                  {f.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <ChevronDown
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-          strokeWidth={1.5}
-        />
+          <span style={{ fontFamily: selectedFont.value }} className="font-medium">
+            {selectedFont.label}
+          </span>
+          <ChevronDown
+            className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+            strokeWidth={1.5}
+          />
+        </button>
+
+        {isOpen && (
+          <div 
+            className="absolute left-0 right-0 mt-1 rounded-xl border border-gray-200 bg-white shadow-xl max-h-64 overflow-y-auto z-50 animate-fadeIn divide-y divide-gray-50 py-1"
+          >
+            {categorias.map((cat) => (
+              <div key={cat} className="py-1">
+                <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50">
+                  {cat}
+                </div>
+                <div className="flex flex-col">
+                  {FUENTES.filter((f) => f.category === cat).map((f) => {
+                    const isSelected = f.value === value
+                    return (
+                      <button
+                        key={f.value}
+                        type="button"
+                        onClick={() => {
+                          onChange(f.value)
+                          setIsOpen(false)
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${
+                          isSelected ? 'bg-secondary/5 text-secondary font-semibold' : 'text-body'
+                        }`}
+                        style={{ fontFamily: f.value }}
+                      >
+                        <span>{f.label}</span>
+                        {isSelected && <Check className="w-4 h-4 text-secondary shrink-0" strokeWidth={2} />}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Preview */}
-      <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 mt-1">
+      <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 mt-1.5 shadow-inner">
         <p className="text-xs text-gray-400 mb-1">Vista previa</p>
         <p className="text-base text-body" style={{ fontFamily: value }}>
           ABC abc 123 — ElMio

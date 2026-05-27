@@ -115,7 +115,7 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
               <div className="flex flex-col flex-1 w-full">
                 <h3
                   className="mb-2 font-semibold"
-                  style={{ color: estilo.tituloColor, fontSize: 18 }}
+                  style={{ color: estilo.pilarTituloColor || estilo.tituloColor || '#111827', fontSize: 18 }}
                 >
                   {item.titulo}
                 </h3>

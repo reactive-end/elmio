@@ -267,6 +267,15 @@ export function EstilosEditor({
               max={10}
             />
           </div>
+          {['pilares', 'caracteristicas'].includes(seccion.tipo) && (
+            <div className="mt-2 pt-2 border-t border-gray-100">
+              <ColorInput
+                label="Color de título de pilares"
+                value={seccion.estilo.pilarTituloColor || seccion.estilo.tituloColor || '#111827'}
+                onChange={(v) => actualizarEstilo('pilarTituloColor', v)}
+              />
+            </div>
+          )}
         </CardGroup>
       )}
 

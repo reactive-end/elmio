@@ -110,6 +110,9 @@ export interface EstiloSeccion {
 
   // Pie de página (footer)
   linkHoverColor?: string
+
+  // Pilares / Características
+  pilarTituloColor?: string
 }
 
 export interface ElementoSeccion {
@@ -210,6 +213,7 @@ export interface ContenidoSeccion {
   promoBarText?: string
   promoBarUrl?: string
   promoBarLogo?: string
+  showPromoBar?: boolean
 
   // Pie de página (footer)
   logoAlt?: string

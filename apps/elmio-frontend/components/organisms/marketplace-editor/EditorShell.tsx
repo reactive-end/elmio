@@ -74,6 +74,7 @@ export function EditorShell({ id }: EditorShellProps) {
 }
 
 import { MarketplaceEditorProvider } from './MarketplaceEditorContext'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 
 interface EditorInternoProps {
   datosIniciales: DatosMarketplace
@@ -89,6 +90,7 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
   } | null>(null)
   const [modalAgregarAbierto, setModalAgregarAbierto] = useState(false)
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoSeccion>('principal')
+  const [seccionParaEliminarId, setSeccionParaEliminarId] = useState<string | null>(null)
 
   useEffect(() => {
     setSession(authService.getSession())
@@ -109,6 +111,17 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
     editor.reordenarSeccion(seccionArrastradaId, objetivoArrastre.id, objetivoArrastre.posicion)
     setSeccionArrastradaId(null)
     setObjetivoArrastre(null)
+  }
+
+  const handleEliminarSeccionClick = (id: string) => {
+    setSeccionParaEliminarId(id)
+  }
+
+  const confirmarEliminarSeccion = () => {
+    if (seccionParaEliminarId) {
+      editor.eliminarSeccion(seccionParaEliminarId)
+      setSeccionParaEliminarId(null)
+    }
   }
 
   useEffect(() => {
@@ -150,6 +163,10 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
           onNombreChange={(v) => editor.setMarketplace({ ...editor.marketplace, nombre: v })}
           onPestanaChange={(p) => editor.setPestana(p as PestanaEditor)}
           onGuardar={editor.guardar}
+          onDeshacer={editor.deshacer}
+          onRehacer={editor.rehacer}
+          puedeDeshacer={editor.puedeDeshacer}
+          puedeRehacer={editor.puedeRehacer}
         />
 
         {editor.alerta && (
@@ -227,7 +244,7 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
               editor.setSeleccionadaId(sId)
               editor.setPestana('edicion')
             }}
-            onEliminar={editor.eliminarSeccion}
+            onEliminar={handleEliminarSeccionClick}
           />
         )}
 
@@ -250,6 +267,23 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
           onTipoChange={setTipoSeleccionado}
           onConfirmar={confirmarAgregarSeccion}
           onCancelar={() => setModalAgregarAbierto(false)}
+        />
+
+        {editor.guardando && (
+          <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white gap-3 font-medium animate-fadeIn">
+            <Spinner />
+            <span className="text-sm font-semibold tracking-wide">Guardando cambios...</span>
+          </div>
+        )}
+
+        <ConfirmModal
+          isOpen={seccionParaEliminarId !== null}
+          onClose={() => setSeccionParaEliminarId(null)}
+          onConfirm={confirmarEliminarSeccion}
+          title="¿Eliminar esta sección?"
+          description="Esta sección y todo su contenido configurado se eliminarán permanentemente del marketplace. ¿Deseas continuar?"
+          confirmText="Sí, eliminar sección"
+          cancelText="Cancelar"
         />
       </div>
     </MarketplaceEditorProvider>
