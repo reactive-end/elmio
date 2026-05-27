@@ -18,14 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "typeorm-ts-node-commonjs -d src/shared/database/typeorm.datasource.ts",
-    "migration:create": "npm run typeorm -- migration:create src/shared/database/migrations/Migration",
-    "migration:generate": "npm run typeorm -- migration:generate src/shared/database/migrations/AutoMigration",
-    "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert",
-    "migration:run-csv": "ts-node -r tsconfig-paths/register src/modules/migration/run-csv-migration.ts",
-    "migration:heal-images": "ts-node -r tsconfig-paths/register src/modules/migration/heal-marketplace-images.ts",
-    "migration:elmio-default": "ts-node -r tsconfig-paths/register src/modules/migration/migrate-elmio-default.ts"
+    "db:migrate": "ts-node -r tsconfig-paths/register src/shared/database/run-migrations.ts --action=migrate",
+    "db:rollback": "ts-node -r tsconfig-paths/register src/shared/database/run-migrations.ts --action=rollback",
+    "db:rollback-one": "ts-node -r tsconfig-paths/register src/shared/database/run-migrations.ts --action=rollback-one",
+    "db:status": "ts-node -r tsconfig-paths/register src/shared/database/run-migrations.ts --action=status"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
