@@ -267,6 +267,24 @@ export function EstilosEditor({
               max={10}
             />
           </div>
+          {seccion.tipo === 'productos' && (
+            <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100">
+              <PixelInput
+                label="Ancho de tarjeta (px)"
+                value={seccion.estilo.tarjetaAncho ?? 208}
+                onChange={(v) => actualizarEstilo('tarjetaAncho', v)}
+                min={150}
+                max={400}
+              />
+              <PixelInput
+                label="Alto de imagen (px)"
+                value={seccion.estilo.altoImagenProducto ?? 200}
+                onChange={(v) => actualizarEstilo('altoImagenProducto', v)}
+                min={100}
+                max={400}
+              />
+            </div>
+          )}
           {['pilares', 'caracteristicas'].includes(seccion.tipo) && (
             <div className="mt-2 pt-2 border-t border-gray-100">
               <ColorInput

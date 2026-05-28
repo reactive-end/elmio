@@ -9,13 +9,19 @@ interface VistaPreviaTabProps {
   secciones: SeccionMarketplace[]
   seleccionadaId: string | null
   onSeccionClick: (id: string) => void
+  carritoActivo?: boolean
 }
 
 /**
  * Pestaña de vista previa del marketplace.
  * Renderiza las secciones visibles usando los mismos componentes de renderizado publico.
  */
-export function VistaPreviaTab({ secciones, seleccionadaId, onSeccionClick }: VistaPreviaTabProps) {
+export function VistaPreviaTab({
+  secciones,
+  seleccionadaId,
+  onSeccionClick,
+  carritoActivo = true,
+}: VistaPreviaTabProps) {
   return (
     <MarketplaceActionProvider>
       <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
@@ -36,6 +42,7 @@ export function VistaPreviaTab({ secciones, seleccionadaId, onSeccionClick }: Vi
                 previewMode
                 seleccionada={seleccionadaId === seccion.id}
                 onClick={() => onSeccionClick(seccion.id)}
+                carritoActivo={carritoActivo}
               />
             ))}
         </div>

@@ -187,6 +187,7 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
               editor.setSeleccionadaId(id)
               editor.setPestana('edicion')
             }}
+            carritoActivo={editor.marketplace.carrito?.activo ?? true}
           />
         )}
 

@@ -43,6 +43,9 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
     }
   })
 
+  const alignValue = estilo.cuerpoAlineacion === 'centro' ? 'center' : estilo.cuerpoAlineacion === 'derecha' ? 'right' : 'left'
+  const flexAlignValue = estilo.cuerpoAlineacion === 'centro' ? 'center' : estilo.cuerpoAlineacion === 'derecha' ? 'flex-end' : 'flex-start'
+
   return (
     <SectionContainer estilo={estilo}>
       <div className="container mx-auto px-4">
@@ -79,7 +82,11 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
 
               <div
                 className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 z-10"
-                style={{ color: estilo.tituloColor || '#fff' }}
+                style={{
+                  color: estilo.tituloColor || '#fff',
+                  textAlign: alignValue,
+                  alignItems: flexAlignValue,
+                }}
               >
                 <h3 className="text-xl font-bold md:text-2xl tracking-tight leading-tight">
                   {banner.titulo}
@@ -92,7 +99,7 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
                 {banner.textoBoton && (
                   <ActionableLink
                     href={banner.enlaceBoton || '#'}
-                    className="mt-4 inline-flex items-center self-start px-5 py-2 font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
+                    className="mt-4 inline-flex items-center px-5 py-2 font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
                     style={{
                       backgroundColor: estilo.botonColorFondo || '#fff',
                       color: estilo.botonColorTexto || '#111827',

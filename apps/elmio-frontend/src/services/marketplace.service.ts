@@ -106,6 +106,7 @@ function mapToFrontend(item: any): DatosMarketplace {
       tarjetaRadioBorde: rawEstilo.tarjetaRadioBorde,
       tarjetaAnchoBorde: rawEstilo.tarjetaAnchoBorde,
       tarjetaColorBorde: rawEstilo.tarjetaColorBorde,
+      tarjetaAncho: rawEstilo.productCardWidth ?? rawEstilo.tarjetaAncho ?? 208,
     }
 
     // Mapear contenido de sección
@@ -262,6 +263,7 @@ function mapToBackend(frontendItem: DatosMarketplace): any {
       tarjetaRadioBorde: s.estilo?.tarjetaRadioBorde,
       tarjetaAnchoBorde: s.estilo?.tarjetaAnchoBorde,
       tarjetaColorBorde: s.estilo?.tarjetaColorBorde,
+      productCardWidth: s.estilo?.tarjetaAncho ?? 208,
     }
 
     const content = {

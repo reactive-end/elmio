@@ -5,6 +5,7 @@ import { ChevronDown, Check } from 'lucide-react'
 import type { FontSelectProps } from './FontSelect.d'
 
 const FUENTES = [
+  { value: 'WixMadeforText', label: 'Wix Madefor Text', category: 'Sin serifa' },
   { value: 'Inter', label: 'Inter', category: 'Sin serifa' },
   { value: 'Geist', label: 'Geist', category: 'Sin serifa' },
   { value: 'Roboto', label: 'Roboto', category: 'Sin serifa' },
@@ -38,7 +39,17 @@ export function FontSelect({ label, value, onChange }: FontSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const selectedFont = FUENTES.find((f) => f.value === value) || FUENTES[0]
+  const [abrirHaciaArriba, setAbrirHaciaArriba] = useState(false)
+  const selectedFont = FUENTES.find((f) => f.value === value) || { value, label: value, category: 'Sin serifa' }
+
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const espacioAbajo = window.innerHeight - rect.bottom
+      // Si hay menos de 260px de espacio debajo del componente, abrimos el selector hacia arriba
+      setAbrirHaciaArriba(espacioAbajo < 260)
+    }
+  }, [isOpen])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,7 +82,9 @@ export function FontSelect({ label, value, onChange }: FontSelectProps) {
 
         {isOpen && (
           <div 
-            className="absolute left-0 right-0 mt-1 rounded-xl border border-gray-200 bg-white shadow-xl max-h-64 overflow-y-auto z-50 animate-fadeIn divide-y divide-gray-50 py-1"
+            className={`absolute left-0 right-0 rounded-xl border border-gray-200 bg-white shadow-xl max-h-64 overflow-y-auto z-50 animate-fadeIn divide-y divide-gray-50 py-1 ${
+              abrirHaciaArriba ? 'bottom-full mb-2' : 'top-full mt-1'
+            }`}
           >
             {categorias.map((cat) => (
               <div key={cat} className="py-1">

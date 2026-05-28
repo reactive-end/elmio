@@ -23,13 +23,16 @@ export function BannerSection({ seccion }: BannerSectionProps) {
   const textoBoton = contenido.textoBoton || ''
   const enlaceBoton = contenido.enlaceBoton || '#'
 
+  const alignValue = estilo.cuerpoAlineacion === 'centro' ? 'center' : estilo.cuerpoAlineacion === 'derecha' ? 'right' : 'left'
+  const flexAlignValue = estilo.cuerpoAlineacion === 'centro' ? 'center' : estilo.cuerpoAlineacion === 'derecha' ? 'flex-end' : 'flex-start'
+
   return (
     <SectionContainer estilo={estilo}>
       <div className="container mx-auto px-4">
         <div className="grid items-center gap-8 md:grid-cols-2">
           {imagenDerecha ? (
             <>
-              <div className="flex flex-col gap-5" style={{ textAlign: 'left' }}>
+              <div className="flex flex-col gap-5" style={{ textAlign: alignValue, alignItems: flexAlignValue }}>
                 <h2
                   className="font-bold tracking-tight"
                   style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor || '#111827' }}
@@ -45,7 +48,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                 {textoBoton && (
                   <ActionableLink
                     href={enlaceBoton}
-                    className="inline-flex items-center self-start px-6 py-3 font-semibold shadow transition-all duration-300 hover:scale-105 active:scale-95"
+                    className="inline-flex items-center px-6 py-3 font-semibold shadow transition-all duration-300 hover:scale-105 active:scale-95"
                     style={{
                       backgroundColor: estilo.botonColorFondo || '#0f4ece',
                       color: estilo.botonColorTexto || '#fff',
@@ -62,7 +65,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
               
               <div className="w-full">
                 {imagenUrl ? (
-                  <img
+                   <img
                     src={imagenUrl}
                     alt={titulo}
                     className="h-48 w-full rounded-2xl bg-white object-cover shadow-md md:h-80 transition-transform duration-500 hover:scale-[1.01]"
@@ -96,7 +99,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                 )}
               </div>
               
-              <div className="flex flex-col gap-5" style={{ textAlign: 'left' }}>
+              <div className="flex flex-col gap-5" style={{ textAlign: alignValue, alignItems: flexAlignValue }}>
                 <h2
                   className="font-bold tracking-tight"
                   style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor || '#111827' }}
@@ -112,7 +115,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                 {textoBoton && (
                   <ActionableLink
                     href={enlaceBoton}
-                    className="inline-flex items-center self-start px-6 py-3 font-semibold shadow transition-all duration-300 hover:scale-105 active:scale-95"
+                    className="inline-flex items-center px-6 py-3 font-semibold shadow transition-all duration-300 hover:scale-105 active:scale-95"
                     style={{
                       backgroundColor: estilo.botonColorFondo || '#0f4ece',
                       color: estilo.botonColorTexto || '#fff',

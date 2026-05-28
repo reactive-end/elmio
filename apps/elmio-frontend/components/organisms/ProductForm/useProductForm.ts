@@ -363,6 +363,7 @@ export function useProductForm() {
         category: category.trim(),
         tags,
         images,
+        hasStock: hasStock,
         currentStock: hasStock ? currentStock : 0,
         minimumStock: hasStock ? minimumStock : 0,
         hasValidity,

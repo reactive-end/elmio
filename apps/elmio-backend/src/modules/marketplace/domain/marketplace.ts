@@ -73,6 +73,7 @@ export interface SectionStyle {
   buttonTextColor: string;
   buttonBorderRadius: number;
   productImageHeight: number;
+  productCardWidth?: number;
   carouselAuto: boolean;
   carouselSpeed: number;
 }

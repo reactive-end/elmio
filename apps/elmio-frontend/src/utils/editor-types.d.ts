@@ -45,6 +45,8 @@ export interface EstiloSeccion {
   botonRedondez: number
   /** Altura de imagenes de producto en carrusel */
   altoImagenProducto: number
+  /** Ancho de las tarjetas de producto en carrusel */
+  tarjetaAncho?: number
   /** Reproduccion automatica de carrusel */
   carruselAuto: boolean
   /** Velocidad del carrusel en segundos */

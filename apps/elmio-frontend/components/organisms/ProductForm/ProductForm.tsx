@@ -304,13 +304,15 @@ export function ProductForm() {
                       key={url}
                       className="relative group rounded-lg border border-gray-200 overflow-hidden aspect-square bg-gray-50 flex items-center justify-center"
                     >
-                      <span className="text-[10px] text-gray-400 truncate px-1">
-                        {url.split('/').pop()}
-                      </span>
+                      <img
+                        src={url}
+                        alt="Vista previa de producto"
+                        className="h-full w-full object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => f.remImage(url)}
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none"
                       >
                         ✕
                       </button>

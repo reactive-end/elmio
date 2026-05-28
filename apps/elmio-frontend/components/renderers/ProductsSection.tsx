@@ -128,7 +128,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const tarjetasPorVista = 5
-  const anchoTarjeta = 208
+  const anchoTarjeta = estilo.tarjetaAncho || 208
   const espacio = 16
   const paso = anchoTarjeta + espacio
 
@@ -174,16 +174,15 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
   return (
     <SectionContainer estilo={estilo} id={contenido.htmlId || undefined}>
       <div className="mx-auto px-4">
-        {contenido.titulo && (
-          <h2
-            className="mb-8 text-3xl font-bold"
-            style={{ color: estilo.tituloColor, textAlign: estilo.tituloAlineacion as never }}
-          >
-            {contenido.titulo}
-          </h2>
-        )}
-
         <div className="relative mx-auto" style={{ maxWidth: tarjetasPorVista * paso }}>
+          {contenido.titulo && (
+            <h2
+              className="mb-8 text-3xl font-bold"
+              style={{ color: estilo.tituloColor, textAlign: estilo.tituloAlineacion as never }}
+            >
+              {contenido.titulo}
+            </h2>
+          )}
           {puedeAvanzar && (
             <>
               <button
@@ -235,7 +234,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {productos.map((producto) => (
                 <div
                   key={producto.id}
-                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all ${
+                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all flex flex-col h-full ${
                     producto.active === false ? 'opacity-65 bg-gray-50/30' : ''
                   }`}
                   style={{
@@ -248,11 +247,11 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                   }}
                 >
                   <div
-                    className="relative h-32 bg-gray-50"
-                    style={{ height: estilo.altoImagenProducto || 200 }}
+                    className="relative bg-gray-50 flex-shrink-0"
+                    style={{ height: estilo.altoImagenProducto || anchoTarjeta }}
                   >
                     {producto.imagenUrl ? (
-                      <img
+                       <img
                         src={producto.imagenUrl}
                         alt={producto.titulo}
                         className="h-full w-full object-cover"
@@ -268,23 +267,25 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       </span>
                     )}
                   </div>
-                  <div className="p-4">
-                    {producto.enlaceUrl && (
-                      <span
-                        className="mb-2 inline-block bg-secondary/10 px-2.5 py-1 text-[10px] font-bold text-secondary"
-                        style={{ borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 8 }}
-                      >
-                        {producto.enlaceUrl}
-                      </span>
-                    )}
-                    <h4 className="text-sm font-semibold text-body line-clamp-2">
-                      {producto.titulo}
-                    </h4>
-                    {producto.descripcion && (
-                      <p className="mt-1 text-xs text-gray-500 line-clamp-2">
-                        {producto.descripcion}
-                      </p>
-                    )}
+                  <div className="p-4 flex flex-col flex-1 justify-between">
+                    <div>
+                      {producto.enlaceUrl && (
+                        <span
+                          className="mb-2 inline-block bg-secondary/10 px-2.5 py-1 text-[10px] font-bold text-secondary"
+                          style={{ borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 8 }}
+                        >
+                          {producto.enlaceUrl}
+                        </span>
+                      )}
+                      <h4 className="text-sm font-semibold text-body line-clamp-2">
+                        {producto.titulo}
+                      </h4>
+                      {producto.descripcion && (
+                        <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                          {producto.descripcion}
+                        </p>
+                      )}
+                    </div>
                     <div className="mt-auto pt-3">
                       {producto.enlaceBoton ? (
                         <ActionableLink

@@ -72,27 +72,66 @@ export class ManageCollaboratorsUseCase {
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
     const profiles: PersonProfile[] = [];
+    const existingCollaborators = await this.repository.findCollaboratorsByEnterprise(enterpriseId);
 
     for (const input of inputs) {
       const email = input.email.trim().toLowerCase();
+      const documentId = input.documentId.trim();
 
-      const userId = randomUUID();
-      const newUser: User = {
-        id: userId,
-        name: `${input.name.trim()} ${input.lastName.trim()}`,
-        email,
-        passwordHash: hashPassword(input.documentId.trim()),
-        role: UserRole.EMPLOYEE,
-        owner: enterpriseId,
-        createdAt: new Date().toISOString(),
-        requirePasswordChange: true,
-      };
+      const existingCollab = existingCollaborators.find(
+        (c) =>
+          c.documentId === documentId ||
+          c.email.trim().toLowerCase() === email,
+      );
 
-      await this.authRepository.create(newUser);
-      profiles.push(this.buildProfile(enterpriseId, input, userId));
+      if (existingCollab) {
+        // Actualizar colaborador existente
+        existingCollab.name = input.name.trim();
+        existingCollab.lastName = input.lastName.trim();
+        existingCollab.documentType = input.documentType;
+        existingCollab.documentId = documentId;
+        existingCollab.email = email;
+        existingCollab.phone = input.phone.trim();
+        existingCollab.birthDate = input.birthDate;
+        existingCollab.gender = input.gender;
+        existingCollab.civilStatus = input.civilStatus;
+        existingCollab.address = input.address;
+        existingCollab.countryOfOrigin = input.countryOfOrigin;
+        existingCollab.familyDependents = input.familyDependents;
+        existingCollab.department = input.department;
+        existingCollab.position = input.position;
+        existingCollab.startDate = input.startDate;
+        existingCollab.baseSalary = input.baseSalary;
+        existingCollab.maxLoanLimit = input.maxLoanLimit;
+
+        const saved = await this.repository.saveCollaborator(existingCollab);
+        profiles.push(saved);
+      } else {
+        // Crear nuevo colaborador
+        const userId = randomUUID();
+        const existingUser = await this.authRepository.findByEmail(email);
+
+        if (!existingUser) {
+          const newUser: User = {
+            id: userId,
+            name: `${input.name.trim()} ${input.lastName.trim()}`,
+            email,
+            passwordHash: hashPassword(documentId),
+            role: UserRole.EMPLOYEE,
+            owner: enterpriseId,
+            createdAt: new Date().toISOString(),
+            requirePasswordChange: true,
+          };
+          await this.authRepository.create(newUser);
+        }
+
+        const profile = this.buildProfile(enterpriseId, input, existingUser?.id ?? userId);
+        const saved = await this.repository.saveCollaborator(profile);
+        profiles.push(saved);
+      }
     }
 
-    return this.repository.saveCollaborators(profiles);
+    return profiles;
   }
 
   /**

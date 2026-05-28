@@ -22,13 +22,13 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
       className="min-h-screen"
       style={{ fontFamily: `'${datos.tema?.fuente || 'Inter'}', sans-serif` }}
     >
-      {cabecera && <HeaderSection seccion={cabecera} />}
+      {cabecera && <HeaderSection seccion={cabecera} carritoActivo={datos.carrito?.activo ?? true} />}
 
       {datos.secciones
         .filter((s) => s.tipo !== 'cabecera' && s.tipo !== 'pie')
         .sort((a, b) => a.orden - b.orden)
         .map((seccion) => (
-          <SectionRenderer key={seccion.id} seccion={seccion} />
+          <SectionRenderer key={seccion.id} seccion={seccion} carritoActivo={datos.carrito?.activo ?? true} />
         ))}
 
       {pie && <FooterSection seccion={pie} />}

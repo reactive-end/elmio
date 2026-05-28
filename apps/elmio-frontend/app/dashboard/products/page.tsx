@@ -151,7 +151,7 @@ export default function ProductsPage() {
                     className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <code className="text-xs bg-gray-100 rounded-md px-2 py-1 text-gray-600">
+                      <code className="text-xs bg-gray-100 rounded-md px-2 py-1 text-gray-600 whitespace-nowrap">
                         {p.sku}
                       </code>
                     </td>

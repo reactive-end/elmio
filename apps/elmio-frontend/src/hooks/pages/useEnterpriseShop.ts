@@ -67,7 +67,7 @@ function buildMercantilEmbeddedUrl(product: Product): string {
   if (slug) {
     params.set('slug', slug)
   }
-  return `/mercantil/consulta?${params.toString()}`
+  return `/marketplace/mercantil/consulta?${params.toString()}`
 }
 
 /**
@@ -76,7 +76,7 @@ function buildMercantilEmbeddedUrl(product: Product): string {
  */
 function buildMercantilRCVEmbeddedUrl(): string {
   const params = new URLSearchParams({ embedded: '1' })
-  return `/mercantil/consulta-rcv?${params.toString()}`
+  return `/marketplace/mercantil/consulta-rcv?${params.toString()}`
 }
 
 /**

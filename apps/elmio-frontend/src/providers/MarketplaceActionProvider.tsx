@@ -175,7 +175,7 @@ function InsuranceFormModal({ data, onClose }: { data: any; onClose: () => void 
  * Ventana de consulta general de Mercantil idéntica a la tienda empresarial.
  */
 function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
-  const embeddedUrl = `/mercantil/consulta?embedded=1&slug=${data?.slug || ''}&productId=${data?.productId || ''}`
+  const embeddedUrl = `/marketplace/mercantil/consulta?embedded=1&slug=${data?.slug || ''}&productId=${data?.productId || ''}`
   
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -217,7 +217,7 @@ function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void
  * Ventana de consulta RCV de Mercantil idéntica a la tienda empresarial.
  */
 function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
-  const embeddedUrl = `/mercantil/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
+  const embeddedUrl = `/marketplace/mercantil/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
   
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
