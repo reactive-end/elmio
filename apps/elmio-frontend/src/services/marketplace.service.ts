@@ -108,6 +108,7 @@ function mapToFrontend(item: any): DatosMarketplace {
       tarjetaColorBorde: rawEstilo.tarjetaColorBorde,
       tarjetaAncho: rawEstilo.productCardWidth ?? rawEstilo.tarjetaAncho ?? 208,
       mostrarSombra: rawEstilo.showShadow ?? rawEstilo.mostrarSombra ?? false,
+      pilarTituloColor: rawEstilo.pilarTitleColor ?? rawEstilo.pilarTituloColor ?? '',
     }
 
     // Mapear contenido de sección
@@ -266,6 +267,7 @@ function mapToBackend(frontendItem: DatosMarketplace): any {
       tarjetaColorBorde: s.estilo?.tarjetaColorBorde,
       productCardWidth: s.estilo?.tarjetaAncho ?? 208,
       showShadow: s.estilo?.mostrarSombra ?? false,
+      pilarTitleColor: s.estilo?.pilarTituloColor ?? '',
     }
 
     const content = {
