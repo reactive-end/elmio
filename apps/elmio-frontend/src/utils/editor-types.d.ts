@@ -115,6 +115,7 @@ export interface EstiloSeccion {
 
   // Pilares / Características
   pilarTituloColor?: string
+  mostrarSombra?: boolean
 }
 
 export interface ElementoSeccion {

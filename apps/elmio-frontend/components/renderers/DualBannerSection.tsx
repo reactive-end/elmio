@@ -57,7 +57,9 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
           {banners.map((banner, idx) => (
             <div
               key={banner.id ?? idx}
-              className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl"
+              className={`group relative overflow-hidden transition-all duration-300 ${
+                estilo.mostrarSombra ? 'shadow-md hover:shadow-xl' : ''
+              }`}
               style={{
                 minHeight: 280,
                 backgroundColor: estilo.tarjetaColorFondo || 'transparent',

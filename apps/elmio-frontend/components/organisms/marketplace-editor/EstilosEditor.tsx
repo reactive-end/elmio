@@ -691,6 +691,23 @@ export function EstilosEditor({
         </CardGroup>
       )}
 
+      {['banner', 'doble-banner', 'double-banner', 'dual-banner'].includes(seccion.tipo) && (
+        <CardGroup title="Efectos Visuales" Icon={Sparkles}>
+          <div className="flex flex-col justify-center py-1">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={seccion.estilo.mostrarSombra ?? false}
+                onChange={(e) => actualizarEstilo('mostrarSombra', e.target.checked)}
+              />
+              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <span className="ml-2 text-[10px] font-medium text-gray-500">Aplicar sombreado</span>
+            </label>
+          </div>
+        </CardGroup>
+      )}
+
       <CardGroup title="Tipografia" Icon={CaseSensitive}>
         <FontSelect label="Fuente" value={fuente} onChange={onFuenteChange} />
       </CardGroup>

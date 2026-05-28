@@ -68,7 +68,9 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                    <img
                     src={imagenUrl}
                     alt={titulo}
-                    className="h-48 w-full rounded-2xl bg-white object-cover shadow-md md:h-80 transition-transform duration-500 hover:scale-[1.01]"
+                    className={`h-48 w-full rounded-2xl bg-white object-cover md:h-80 transition-transform duration-500 hover:scale-[1.01] ${
+                      estilo.mostrarSombra ? 'shadow-md' : ''
+                    }`}
                   />
                 ) : (
                   <div className="h-48 w-full rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 gap-2 md:h-80 shadow-inner">
@@ -87,7 +89,9 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                   <img
                     src={imagenUrl}
                     alt={titulo}
-                    className="h-48 w-full rounded-2xl bg-white object-cover shadow-md md:h-80 transition-transform duration-500 hover:scale-[1.01]"
+                    className={`h-48 w-full rounded-2xl bg-white object-cover md:h-80 transition-transform duration-500 hover:scale-[1.01] ${
+                      estilo.mostrarSombra ? 'shadow-md' : ''
+                    }`}
                   />
                 ) : (
                   <div className="h-48 w-full rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 gap-2 md:h-80 shadow-inner">
