@@ -783,25 +783,24 @@ export function ProductForm() {
                 </p>
               </div>
 
-              <div className="flex items-start gap-3 bg-gray-50/50 rounded-xl p-4 border border-gray-150/70">
-                <div className="flex h-5 items-center">
-                  <input
-                    id="enable-actions"
-                    name="enable-actions"
-                    type="checkbox"
-                    disabled
-                    checked={false}
-                    className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary opacity-60"
-                  />
-                </div>
-                <div className="text-sm leading-6">
-                  <label htmlFor="enable-actions" className="font-semibold text-gray-400">
+              <div className="flex items-center gap-4 bg-gray-50/50 rounded-xl p-4 border border-gray-100/50">
+                <div className="flex-1 text-sm">
+                  <label className="font-semibold text-gray-400 block">
                     Habilitar Acciones Automatizadas (Próximamente)
                   </label>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                     Esta opción te permitirá diseñar y acoplar N acciones automatizadas a medida (como desembolso inmediato, envío automático de cupones por email, o llamadas a webhooks externos). Actualmente está en fase de desarrollo.
                   </p>
                 </div>
+                <button
+                  type="button"
+                  role="switch"
+                  disabled
+                  aria-checked={false}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-not-allowed bg-gray-200/70 opacity-60 flex-shrink-0"
+                >
+                  <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-0.5" />
+                </button>
               </div>
             </div>
           )}
