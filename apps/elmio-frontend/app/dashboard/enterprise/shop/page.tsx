@@ -18,6 +18,7 @@ import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { FormField } from '@/components/molecules/FormField/FormField'
 import { Select } from '@/components/atoms/Select/Select'
 import { useEnterpriseShop } from '@/src/hooks/pages/useEnterpriseShop'
+import { enterpriseService } from '@/src/services/empresa.service'
 import { authService } from '@/src/services/auth.service'
 
 /**
@@ -58,6 +59,10 @@ export default function EnterpriseShopPage() {
   const [selectedProductForScheme, setSelectedProductForScheme] = useState<any | null>(null)
   const [showSchemeSelectorModal, setShowSchemeSelectorModal] = useState(false)
 
+  const [requestSending, setRequestSending] = useState(false)
+  const [requestError, setRequestError] = useState<string | null>(null)
+  const [requestSuccess, setRequestSuccess] = useState<string | null>(null)
+
   const handleStartPurchaseClick = (product: any) => {
     if (product.financingSchemes && product.financingSchemes.length > 1) {
       setSelectedProductForScheme(product)
@@ -68,11 +73,45 @@ export default function EnterpriseShopPage() {
     }
   }
 
-  const proceedToPurchaseFlow = (product: any, schemeId: string) => {
-    if (!product.windows || product.windows.length === 0) {
-      window.open(`/dashboard/enterprise/shop/checkout?product=${product.id}&scheme=${schemeId}`, '_blank')
-    } else {
-      startPurchase(product)
+  const proceedToPurchaseFlow = async (product: any, schemeId: string) => {
+    try {
+      setRequestSending(true)
+      setRequestError(null)
+      setRequestSuccess(null)
+
+      const amount = product.priceLists?.[0]?.amount ?? 0
+      if (amount <= 0) {
+        throw new Error('El producto no tiene un precio principal configurado.')
+      }
+
+      const concept = `Compra marketplace: ${product.name}`
+
+      if (session?.role === 'COMPANY') {
+        const me = await enterpriseService.getMe()
+        if (!me) throw new Error('No se encontró la empresa asociada a la sesión.')
+        await enterpriseService.createTransaction(me.id, {
+          kind: 'charge',
+          concept,
+          amount,
+          status: 'pending',
+        })
+      } else {
+        await enterpriseService.createMyTransaction({
+          kind: 'charge',
+          concept,
+          amount,
+          status: 'pending',
+        })
+      }
+
+      setRequestSuccess(
+        `¡Solicitud enviada! Se ha generado tu solicitud de compra para "${product.name}". Una vez aprobada por tu empresa y finanzas, podrás proceder a completarla desde tu panel.`
+      )
+    } catch (err) {
+      console.error(err)
+      setRequestError(err instanceof Error ? err.message : 'Error al enviar la solicitud de compra.')
+    } finally {
+      setRequestSending(false)
     }
   }
 
@@ -141,6 +180,13 @@ export default function EnterpriseShopPage() {
 
       {error && <Alert type="error" message={error} />}
       {successMessage && <Alert type="success" message={successMessage} />}
+      {requestError && <Alert type="error" message={requestError} />}
+      {requestSuccess && <Alert type="success" message={requestSuccess} />}
+      {requestSending && (
+        <div className="rounded-xl bg-blue-50 border border-blue-100 p-3 text-xs text-blue-700 font-medium">
+          ⌛ Enviando solicitud de compra y registrando en el estado de cuenta... por favor espera.
+        </div>
+      )}
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />

@@ -110,6 +110,7 @@ export interface Product {
   windows: ProductWindow[]
   actions?: ProductAction[]
   marketplaceId: string | null
+  alternativeBankAccountId?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -139,6 +140,7 @@ export interface CreateProductInput {
   windows: Omit<ProductWindow, 'id'>[]
   actions?: Omit<ProductAction, 'id'>[]
   marketplaceId: string | null
+  alternativeBankAccountId?: string | null
 }
 
 export type UpdateProductInput = Partial<Product> | CreateProductInput

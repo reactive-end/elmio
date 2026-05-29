@@ -36,6 +36,7 @@ export class CreateProductDto {
   globalThirdPartyProvider?: string | null;
   windows!: Omit<ProductWindow, 'id'>[];
   marketplaceId!: string | null;
+  alternativeBankAccountId?: string | null;
   actions?: Omit<ProductAction, 'id'>[];
 }
 
@@ -66,5 +67,6 @@ export class UpdateProductDto {
   globalThirdPartyProvider?: string | null;
   windows?: ProductWindow[];
   marketplaceId?: string | null;
+  alternativeBankAccountId?: string | null;
   actions?: ProductAction[];
 }

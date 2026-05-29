@@ -29,6 +29,43 @@ const WINDOW_TYPES = [
 
 export function ProductForm() {
   const f = useProductForm()
+
+  const disburseAction = f.actions.find((a) => a.type === 'disburse_funds')
+  const isDisburseActive = disburseAction?.active ?? false
+  const disburseAmountUsd = disburseAction?.config?.amountUsd ?? ''
+
+  const handleToggleDisburse = () => {
+    const exists = f.actions.some((a) => a.type === 'disburse_funds')
+    if (exists) {
+      f.setActions(
+        f.actions.map((a) =>
+          a.type === 'disburse_funds' ? { ...a, active: !a.active } : a
+        )
+      )
+    } else {
+      f.setActions([
+        ...f.actions,
+        {
+          id: crypto.randomUUID(),
+          type: 'disburse_funds',
+          name: 'Desembolso Automático de Préstamos',
+          active: true,
+          config: { amountUsd: 50.0 },
+        },
+      ])
+    }
+  }
+
+  const handleUpdateDisburseAmount = (amount: number) => {
+    f.setActions(
+      f.actions.map((a) =>
+        a.type === 'disburse_funds'
+          ? { ...a, config: { ...a.config, amountUsd: amount } }
+          : a
+      )
+    )
+  }
+
   const completedSteps = useMemo(
     () => Array.from({ length: f.step - 1 }, (_, i) => i + 1),
     [f.step],
@@ -700,6 +737,59 @@ export function ProductForm() {
                     automaticamente.
                   </p>
                 )}
+              {/* Sección Premium: Cuenta Receptora Destino Alternativa (Traspaso Transparente) */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <span className="text-sm font-semibold text-body block">Cuenta Receptora Destino Alternativa</span>
+                    <p className="text-xs text-body-muted mt-1 leading-relaxed">
+                      Si se habilita, todos los fondos de la venta de este producto se transferirán de forma transparente e inmediata a la cuenta bancaria corporativa seleccionada.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 sm:shrink-0">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={f.hasAlternativeAccount}
+                      onClick={() => f.setHasAlternativeAccount(!f.hasAlternativeAccount)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                        f.hasAlternativeAccount ? 'bg-secondary' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                          f.hasAlternativeAccount ? 'translate-x-5' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {f.hasAlternativeAccount && (
+                  <div className="mt-2 transition-all duration-200">
+                    <FormField label="Selecciona la cuenta bancaria de destino (de la DB)" required>
+                      <Select
+                        value={f.alternativeBankAccountId || ''}
+                        onChange={(v) => f.setAlternativeBankAccountId(v)}
+                        options={f.bankAccountsList.map((acc: any) => ({
+                          value: acc.id,
+                          label: `${acc.bank.bankName} - ${acc.accountNumber.slice(0, 4)}...${acc.accountNumber.slice(-4)} (${acc.businessName || acc.description || 'Sin Alias'})`,
+                        }))}
+                        placeholder={
+                          f.bankAccountsList.length > 0
+                            ? "Selecciona una cuenta corporativa registrada..."
+                            : "No hay cuentas bancarias registradas en el sistema"
+                        }
+                      />
+                    </FormField>
+                    {f.bankAccountsList.length === 0 && (
+                      <p className="text-xs text-red-500 mt-2">
+                        ⚠️ Debes registrar primero una cuenta bancaria en la configuración del sistema para poder seleccionarla aquí.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -819,7 +909,7 @@ export function ProductForm() {
           {f.step === 6 && (
             <div className="flex flex-col gap-4">
               <div>
-                <span className="text-sm font-medium text-body-secondary block">
+                <span className="text-sm font-semibold text-body block">
                   Acciones al finalizar la compra
                 </span>
                 <p className="text-xs text-body-muted mt-0.5">
@@ -827,24 +917,75 @@ export function ProductForm() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 bg-gray-50/50 rounded-xl p-4 border border-gray-100/50">
-                <div className="flex-1 text-sm">
-                  <label className="font-semibold text-gray-400 block">
-                    Habilitar Acciones Automatizadas (Próximamente)
-                  </label>
-                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                    Esta opción te permitirá diseñar y acoplar N acciones automatizadas a medida (como desembolso inmediato, envío automático de cupones por email, o llamadas a webhooks externos). Actualmente está en fase de desarrollo.
-                  </p>
+              {/* Acción de Desembolso Automático de Préstamos */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 transition-all duration-200 hover:border-gray-200">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold text-body block">Desembolso Automático de Préstamos (disburse_funds)</span>
+                    <p className="text-xs text-body-muted mt-1 leading-relaxed">
+                      Al aprobarse la solicitud, el sistema transferirá de forma inmediata el monto configurado en USD (convertido a Bolívares a tasa oficial BCV) a la cuenta destino del usuario.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 sm:shrink-0">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isDisburseActive}
+                      onClick={handleToggleDisburse}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                        isDisburseActive ? 'bg-secondary' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                          isDisburseActive ? 'translate-x-5' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  disabled
-                  aria-checked={false}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-not-allowed bg-gray-200/70 opacity-60 flex-shrink-0"
-                >
-                  <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform translate-x-0.5" />
-                </button>
+
+                {isDisburseActive && (
+                  <div className="border-t border-gray-50 pt-4 flex flex-col gap-4 mt-1 transition-all duration-200">
+                    <FormField label="Monto de Capital a Desembolsar (USD)" required>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex gap-2 items-center">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">$</span>
+                            <Input
+                              type="number"
+                              value={String(disburseAmountUsd)}
+                              onChange={(e) => handleUpdateDisburseAmount(Number(e.target.value))}
+                              placeholder="Ingresa el monto exacto en USD (ej: 50.00)"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Botones Rápidos Premium */}
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {[20, 50, 100].map((amt) => {
+                            const isSel = Number(disburseAmountUsd) === amt
+                            return (
+                              <button
+                                key={amt}
+                                type="button"
+                                onClick={() => handleUpdateDisburseAmount(amt)}
+                                className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer ${
+                                  isSel
+                                    ? 'bg-secondary border-secondary text-white shadow-sm shadow-secondary/20'
+                                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300 text-body'
+                                }`}
+                              >
+                                {`$${amt} USD`}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </FormField>
+                  </div>
+                )}
               </div>
             </div>
           )}

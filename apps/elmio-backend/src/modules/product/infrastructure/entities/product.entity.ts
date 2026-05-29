@@ -118,6 +118,9 @@ export class ProductEntity {
   @Column({ type: 'uuid', nullable: true })
   marketplaceId!: string | null;
 
+  @Column({ type: 'uuid', nullable: true })
+  alternativeBankAccountId!: string | null;
+
   @Column({
     type: 'text',
     transformer: jsonTransformer,

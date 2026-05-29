@@ -401,6 +401,15 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return entity ? this.requestToDomain(entity) : null;
   }
 
+  async findAllRequests(status?: LoanRequest['status']): Promise<LoanRequest[]> {
+    const query: { status?: LoanRequest['status'] } = {};
+    if (status) {
+      query.status = status;
+    }
+    const entities = await this.requestRepo.find({ where: query });
+    return entities.map((entity) => this.requestToDomain(entity));
+  }
+
   async findRequestsByCollaborator(
     collaboratorId: string,
     status?: LoanRequest['status'],
@@ -499,6 +508,12 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     await this.transactionRepo.save(entity);
     return transaction;
   }
+
+  async findAllTransactions(): Promise<Transaction[]> {
+    const entities = await this.transactionRepo.find();
+    return entities.map((entity) => this.transactionToDomain(entity));
+  }
+
 
   // --- Platform Config ---
 

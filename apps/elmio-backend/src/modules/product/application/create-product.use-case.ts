@@ -40,6 +40,7 @@ export interface CreateProductInput {
   globalThirdPartyProvider?: string | null;
   windows: Omit<ProductWindow, 'id'>[];
   marketplaceId: string | null;
+  alternativeBankAccountId?: string | null;
   actions?: Omit<ProductAction, 'id'>[];
 }
 
@@ -109,6 +110,7 @@ export class CreateProductUseCase {
       globalThirdPartyProvider: input.globalThirdPartyProvider ?? null,
       windows: (input.windows ?? []).map((w) => ({ ...w, id: randomUUID() })),
       marketplaceId: input.marketplaceId ?? null,
+      alternativeBankAccountId: input.alternativeBankAccountId ?? null,
       actions: (input.actions ?? []).map((a) => ({ ...a, id: randomUUID() })),
       createdAt: now,
       updatedAt: now,

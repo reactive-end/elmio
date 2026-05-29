@@ -120,7 +120,7 @@ export interface LoanRequest {
   type: 'advance' | 'loan' | 'permission' | 'other';
   amount: number;
   description: string;
-  status: 'pending' | 'approved' | 'denied';
+  status: 'pending' | 'company_approved' | 'approved' | 'denied';
   denialReason: string | null;
   createdAt: string;
   updatedAt: string;

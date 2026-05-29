@@ -177,6 +177,9 @@ export interface Product {
   /** Marketplace al que pertenece (opcional) */
   marketplaceId: string | null;
 
+  /** Cuenta bancaria alternativa para traspaso de fondos (opcional) */
+  alternativeBankAccountId?: string | null;
+
   createdAt: string;
   updatedAt: string;
 }

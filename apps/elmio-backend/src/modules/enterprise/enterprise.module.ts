@@ -26,6 +26,7 @@ import { ContractFileEntity } from './infrastructure/entities/contract-file.enti
 import { EnterpriseController } from './presentation/http/enterprise.controller';
 import { ProfileController } from './presentation/http/profile.controller';
 import { EnterpriseInterestConfigEntity } from '../enterprise-interest-config/infrastructure/entities/enterprise-interest-config.entity';
+import { MercantilModule } from '../mercantil/mercantil.module';
 
 /**
  * Modulo empresarial: onboarding, colaboradores, solicitudes y estado de cuenta.
@@ -34,6 +35,7 @@ import { EnterpriseInterestConfigEntity } from '../enterprise-interest-config/in
 @Module({
   imports: [
     AuthModule,
+    MercantilModule,
     TypeOrmModule.forFeature([
       EnterpriseEntity,
       PersonProfileEntity,

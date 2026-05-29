@@ -98,7 +98,25 @@ export interface Enterprise {
   createdAt: string
 }
 
-// ── PersonProfile (CLIENT / EMPLOYEE) ────────────────────────────────────────
+export interface FinancePurchaseResponse {
+  transactionId: string
+  collaborator: {
+    name: string
+    documentId: string
+    email: string
+  }
+  enterprise: {
+    name: string
+  }
+  concept: string
+  amount: number
+  date: string
+  type: 'insurance' | 'product'
+  totalQuotes: number
+  paidQuotes: number
+  pendingQuotes: number
+  pendingAmount: number
+}
 
 export interface PersonProfile {
   id: string
@@ -294,7 +312,7 @@ export interface LoanRequest {
   type: 'advance' | 'loan' | 'permission' | 'other'
   amount: number
   description: string
-  status: 'pending' | 'approved' | 'denied'
+  status: 'pending' | 'company_approved' | 'approved' | 'denied'
   denialReason: string | null
   createdAt: string
   updatedAt: string
@@ -534,6 +552,13 @@ export const enterpriseService = {
     return (await res.json()) as Transaction[]
   },
 
+  async listAllPurchases(): Promise<FinancePurchaseResponse[]> {
+    const res = await authedFetch('/enterprises/finance/purchases')
+    if (!res.ok) throw new Error('Error al listar las compras del sistema.')
+    return (await res.json()) as FinancePurchaseResponse[]
+  },
+
+
   async createTransaction(
     enterpriseId: string,
     data: CreateTransactionInput,
@@ -666,5 +691,27 @@ export const enterpriseService = {
     }
 
     return (await res.json()) as { url: string; fileName: string }
+  },
+
+  async listFinancePendingRequests(): Promise<LoanRequest[]> {
+    const res = await authedFetch('/enterprises/requests/finance-pending')
+    if (!res.ok) throw new Error('No se pudieron obtener las solicitudes para finanzas.')
+    return (await res.json()) as LoanRequest[]
+  },
+
+  async resolveFinanceRequest(
+    requestId: string,
+    status: 'approved' | 'denied',
+    denialReason?: string | null,
+  ): Promise<LoanRequest> {
+    const res = await authedFetch(`/enterprises/requests/${requestId}/finance-resolve`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, denialReason }),
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al resolver la solicitud de finanzas.')
+    }
+    return (await res.json()) as LoanRequest
   },
 }

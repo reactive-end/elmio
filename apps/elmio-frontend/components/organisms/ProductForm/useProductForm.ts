@@ -13,6 +13,7 @@ import {
   type ProductAction,
 } from '@/src/services/product.service'
 import { categoryService, type Categoria } from '@/src/services/category.service'
+import { bankAccountsAdminService, type BankAccountItem } from '@/src/services/bank-accounts-admin.service'
 
 interface PriceListDraft {
   id: string
@@ -104,6 +105,19 @@ export function useProductForm() {
       })
   }, [])
 
+  // Cargar cuentas bancarias corporativas desde la DB
+  const [bankAccountsList, setBankAccountsList] = useState<BankAccountItem[]>([])
+  useEffect(() => {
+    bankAccountsAdminService
+      .list()
+      .then((data) => {
+        setBankAccountsList(data)
+      })
+      .catch((err) => {
+        console.error('Error al cargar cuentas bancarias para productos:', err)
+      })
+  }, [])
+
   // Step 2: Inventory
   const [hasStock, setHasStock] = useState(true)
   const [currentStock, setCurrentStock] = useState(0)
@@ -122,6 +136,10 @@ export function useProductForm() {
   const [discounts, setDiscounts] = useState<DiscountDraft[]>([])
   const [usesThirdParty, setUsesThirdParty] = useState(false)
   const [globalThirdPartyProvider, setGlobalThirdPartyProvider] = useState('')
+
+  // Step 4: Alternative Destination Account
+  const [hasAlternativeAccount, setHasAlternativeAccount] = useState(false)
+  const [alternativeBankAccountId, setAlternativeBankAccountId] = useState('')
 
   // Step 4: Payment / Financing Schemes
   const [financingSchemes, setFinancingSchemes] = useState<any[]>([
@@ -254,6 +272,14 @@ export function useProductForm() {
             config: a.config || {},
           })) || [],
         )
+
+        if (product.alternativeBankAccountId) {
+          setHasAlternativeAccount(true)
+          setAlternativeBankAccountId(product.alternativeBankAccountId)
+        } else {
+          setHasAlternativeAccount(false)
+          setAlternativeBankAccountId('')
+        }
       } catch (err) {
         console.error('Error al cargar datos del producto en edicion:', err)
         setAlert({ type: 'error', message: 'No se pudo cargar la informacion del producto.' })
@@ -464,6 +490,7 @@ export function useProductForm() {
           active: a.active,
           config: a.config,
         })),
+        alternativeBankAccountId: hasAlternativeAccount && alternativeBankAccountId ? alternativeBankAccountId : null,
       }
 
       if (isEdit) {
@@ -556,6 +583,11 @@ export function useProductForm() {
     remWindow,
     actions,
     setActions,
+    hasAlternativeAccount,
+    setHasAlternativeAccount,
+    alternativeBankAccountId,
+    setAlternativeBankAccountId,
+    bankAccountsList,
     handleNext,
     handleBack,
     handleSubmit,

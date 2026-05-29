@@ -106,6 +106,13 @@ export interface EnterpriseRepositoryPort {
   findRequestById(id: string): Promise<LoanRequest | null>;
 
   /**
+   * Lista todas las solicitudes de la plataforma por estado (sin filtrar por empresa).
+   * @param status Filtro de estado.
+   * @returns Lista global de solicitudes.
+   */
+  findAllRequests(status?: LoanRequest['status']): Promise<LoanRequest[]>;
+
+  /**
    * Crea o actualiza una solicitud.
    * @param request Datos de la solicitud.
    * @returns Solicitud guardada.
@@ -199,6 +206,13 @@ export interface EnterpriseRepositoryPort {
    * @returns Transaccion guardada.
    */
   saveTransaction(transaction: Transaction): Promise<Transaction>;
+  
+  /**
+   * Recupera todas las transacciones del sistema.
+   * @returns Lista de todas las transacciones.
+   */
+  findAllTransactions(): Promise<Transaction[]>;
+
 
   // --- Platform Config ---
 

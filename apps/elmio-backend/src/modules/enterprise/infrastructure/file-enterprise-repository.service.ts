@@ -166,6 +166,15 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     return data.requests.find((r) => r.id === id) ?? null;
   }
 
+  async findAllRequests(status?: LoanRequest['status']): Promise<LoanRequest[]> {
+    const data = await this.read();
+    let results = data.requests;
+    if (status) {
+      results = results.filter((r) => r.status === status);
+    }
+    return results;
+  }
+
   async findRequestsByCollaborator(
     collaboratorId: string,
     status?: LoanRequest['status'],
@@ -306,6 +315,15 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     }
     await this.write(data);
     return transaction;
+  }
+
+  async findAllTransactions(): Promise<Transaction[]> {
+    const data = await this.read();
+    return data.transactions.map((t) => ({
+      ...t,
+      collaboratorId: t.collaboratorId ?? null,
+      kind: t.kind ?? 'payment',
+    }));
   }
 
   // --- Platform Config ---

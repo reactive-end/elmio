@@ -221,6 +221,12 @@ const NAV: NavGroup[] = [
         href: '/dashboard/config/allies',
         icon: Users,
       },
+      {
+        key: 'config-finance-users',
+        label: 'Usuarios Finanzas',
+        href: '/dashboard/config/finance-users',
+        icon: Landmark,
+      },
     ],
   },
   {
@@ -239,6 +245,25 @@ const NAV: NavGroup[] = [
         label: 'Monedas',
         href: '/dashboard/config/currencies',
         icon: DollarSign,
+      },
+    ],
+  },
+  {
+    key: 'finance-desk',
+    label: 'Finanzas',
+    icon: Landmark,
+    children: [
+      {
+        key: 'finance-requests',
+        label: 'Aprobar Solicitudes',
+        href: '/dashboard/finance/requests',
+        icon: Landmark,
+      },
+      {
+        key: 'finance-purchases',
+        label: 'Control de Compras',
+        href: '/dashboard/finance/purchases',
+        icon: List,
       },
     ],
   },
@@ -336,7 +361,17 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
       <nav className="relative z-10 flex-1 overflow-y-auto py-4 px-2">
         {NAV.filter((group) => {
           // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN), colaboradores (EMPLOYEE), aliados (ALLIED) y clientes (CLIENT)
-          if (group.key === 'enterprise' && (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'ALLIED' || role === 'CLIENT')) {
+          if (group.key === 'enterprise' && (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'ALLIED' || role === 'CLIENT' || role === 'FINANCE')) {
+            return false
+          }
+
+          // Si el rol es FINANCE, ocultamos todos los menús excepto la mesa de control de finanzas
+          if (role === 'FINANCE' && group.key !== 'finance-desk') {
+            return false
+          }
+
+          // Si no es FINANCE, ocultamos el menú de finanzas de mesa de control
+          if (role !== 'FINANCE' && group.key === 'finance-desk') {
             return false
           }
 

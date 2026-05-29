@@ -39,6 +39,8 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
       globalThirdPartyProvider: entity.globalThirdPartyProvider,
       windows: entity.windows,
       marketplaceId: entity.marketplaceId,
+      alternativeBankAccountId: entity.alternativeBankAccountId,
+      actions: entity.actions || [],
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };
@@ -71,6 +73,8 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
     entity.globalThirdPartyProvider = domain.globalThirdPartyProvider;
     entity.windows = domain.windows;
     entity.marketplaceId = domain.marketplaceId;
+    entity.alternativeBankAccountId = domain.alternativeBankAccountId || null;
+    entity.actions = domain.actions || [];
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;
     return entity;

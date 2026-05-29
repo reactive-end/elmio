@@ -16,6 +16,7 @@ import { OptionalAuthGuard } from './presentation/guards/optional-auth.guard';
 import { RolesGuard } from './presentation/guards/roles.guard';
 import { AuthController } from './presentation/http/auth.controller';
 import { AlliesAdminController } from './presentation/http/allies-admin.controller';
+import { FinanceUsersAdminController } from './presentation/http/finance-users-admin.controller';
 
 /**
  * Modulo de autenticacion y autorizacion del sistema.
@@ -36,7 +37,7 @@ import { AlliesAdminController } from './presentation/http/allies-admin.controll
       }),
     }),
   ],
-  controllers: [AuthController, AlliesAdminController],
+  controllers: [AuthController, AlliesAdminController, FinanceUsersAdminController],
   providers: [
     LoginUseCase,
     DiscoverProfilesUseCase,

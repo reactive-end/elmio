@@ -91,6 +91,7 @@ export interface BucketUploadResult {
 }
 
 export interface PaymentQuote {
+  id?: string;
   quote: string;
   agreement?: number;
   receipt?: number;
@@ -549,5 +550,15 @@ export const mercantilService = {
       method: 'POST',
       body: formData,
     });
+  },
+
+  /**
+   * Obtiene la lista de cuotas guardadas localmente para un shopcart de Mercantil.
+   * @async
+   * @param {string} shopcartId - ID del carrito de compras.
+   * @returns {Promise<PaymentQuote[]>} Lista de cuotas asociadas.
+   */
+  async getQuotesByShopcart(shopcartId: string): Promise<PaymentQuote[]> {
+    return apiFetch<PaymentQuote[]>(`/mercantil/storage/payment-quotes?shopcartId=${encodeURIComponent(shopcartId)}`);
   },
 };

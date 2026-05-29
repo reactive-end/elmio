@@ -1,17 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { FileCheck, Clock, CheckCircle2, XCircle, Filter, Eye } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { FileCheck, Clock, CheckCircle2, XCircle, Filter, Eye, ArrowRight } from 'lucide-react'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { useEmployeeRequests } from '@/src/hooks/pages/useEmployeeRequests'
 import type { LoanRequest } from '@/src/services/empresa.service'
+import { productService } from '@/src/services/product.service'
+import { Button } from '@/components/atoms/Button/Button'
 
 const STATUS_BADGE: Record<
   LoanRequest['status'],
   { bg: string; text: string; icon: typeof Clock; label: string }
 > = {
   pending: { bg: 'bg-amber-50', text: 'text-amber-700', icon: Clock, label: 'Pendiente' },
+  company_approved: { bg: 'bg-blue-50', text: 'text-blue-700', icon: Clock, label: 'Por Finanzas' },
   approved: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle2, label: 'Aprobada' },
   denied: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle, label: 'Denegada' },
 }
@@ -42,6 +46,42 @@ export default function CollaboratorRequestsPage() {
     setSelectedRequest,
   } = useEmployeeRequests()
   const [denialReason] = useState('')
+  const [redirectingId, setRedirectingId] = useState<string | null>(null)
+  const router = useRouter()
+
+  const handleCompleteAcquisition = async (request: LoanRequest) => {
+    try {
+      setRedirectingId(request.id)
+      const products = await productService.list()
+      const prefix = 'Compra marketplace: '
+      const description = request.description || ''
+      const productName = description.startsWith(prefix) ? description.slice(prefix.length).trim() : description.trim()
+
+      const matchedProduct = products.find(
+        (p) => p.name.trim().toLowerCase() === productName.toLowerCase()
+      )
+
+      if (!matchedProduct) {
+        router.push('/dashboard/collaborator/shop')
+        return
+      }
+
+      const schemeId = matchedProduct.financingSchemes?.[0]?.id || 'default'
+
+      if (!matchedProduct.windows || matchedProduct.windows.length === 0) {
+        router.push(
+          `/dashboard/enterprise/shop/checkout?product=${matchedProduct.id}&scheme=${schemeId}&requestId=${request.id}`
+        )
+      } else {
+        router.push(`/dashboard/collaborator/shop?product=${matchedProduct.id}&continue=true`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('No se pudo completar la adquisición en este momento.')
+    } finally {
+      setRedirectingId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -153,13 +193,29 @@ export default function CollaboratorRequestsPage() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedRequest(request)}
-                          className="rounded-lg p-1.5 hover:bg-gray-100"
-                        >
-                          <Eye className="h-4 w-4 text-body-muted" strokeWidth={1.5} />
-                        </button>
+                        <div className="flex items-center justify-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRequest(request)}
+                            className="rounded-lg p-1.5 hover:bg-gray-100"
+                            title="Ver detalles"
+                          >
+                            <Eye className="h-4 w-4 text-body-muted" strokeWidth={1.5} />
+                          </button>
+                          
+                          {request.status === 'approved' && (
+                            <Button
+                              onClick={() => void handleCompleteAcquisition(request)}
+                              variant="primary"
+                              className="text-[11px] font-bold px-3 py-1.5 flex items-center gap-1 cursor-pointer bg-secondary hover:bg-secondary/95 border-none shadow-sm rounded-lg text-white"
+                              disabled={redirectingId !== null}
+                              isLoading={redirectingId === request.id}
+                            >
+                              Adquirir
+                              <ArrowRight className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )

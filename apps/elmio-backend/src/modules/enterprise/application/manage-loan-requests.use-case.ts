@@ -70,6 +70,54 @@ export class ManageLoanRequestsUseCase {
       );
     }
 
+    // Al aprobar la empresa, el estado intermedio es 'company_approved'
+    request.status = decision === 'approved' ? 'company_approved' : 'denied';
+    request.denialReason =
+      decision === 'denied' ? (denialReason ?? null) : null;
+    request.updatedAt = new Date().toISOString();
+
+    const savedRequest = await this.repository.saveRequest(request);
+
+    // Sincronizar el estado de la transacción asociada (solo si es denegada pasa a failed)
+    try {
+      const transaction = await this.repository.findTransactionById(requestId);
+      if (transaction) {
+        if (decision === 'denied') {
+          transaction.status = 'failed';
+          await this.repository.saveTransaction(transaction);
+        }
+      }
+    } catch (e) {
+      // Ignorar fallas al sincronizar transacción asociada
+    }
+
+    return savedRequest;
+  }
+
+  /**
+   * Aprueba o deniega una solicitud por parte del área de Finanzas.
+   * @param requestId ID de la solicitud.
+   * @param decision Aprobada o denegada por finanzas.
+   * @param denialReason Motivo del rechazo (solo para denegadas).
+   * @returns Solicitud actualizada.
+   */
+  async resolveByFinance(
+    requestId: string,
+    decision: 'approved' | 'denied',
+    denialReason?: string,
+  ): Promise<LoanRequest> {
+    const request = await this.repository.findRequestById(requestId);
+
+    if (!request) {
+      throw new NotFoundException('Solicitud no encontrada.');
+    }
+
+    if (request.status !== 'company_approved') {
+      throw new BadRequestException(
+        'Solo se pueden resolver por finanzas aquellas solicitudes aprobadas previamente por la empresa.',
+      );
+    }
+
     request.status = decision;
     request.denialReason =
       decision === 'denied' ? (denialReason ?? null) : null;
@@ -77,7 +125,7 @@ export class ManageLoanRequestsUseCase {
 
     const savedRequest = await this.repository.saveRequest(request);
 
-    // Sincronizar el estado de la transacción asociada
+    // Sincronizar el estado definitivo de la transacción asociada
     try {
       const transaction = await this.repository.findTransactionById(requestId);
       if (transaction) {

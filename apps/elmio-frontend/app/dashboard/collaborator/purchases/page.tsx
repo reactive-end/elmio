@@ -39,13 +39,6 @@ const FILTERS: { value: Transaction['status'] | 'all'; label: string }[] = [
   { value: 'failed', label: 'Rechazadas' },
 ]
 
-interface PolicyCuotaSimulada {
-  number: number
-  amount: number
-  dueDate: string
-  status: 'paid' | 'pending' | 'failed'
-}
-
 export default function CollaboratorPurchasesPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -56,10 +49,6 @@ export default function CollaboratorPurchasesPage() {
   const [requests, setRequests] = useState<LoanRequest[]>([])
   const [activeTab, setActiveTab] = useState<'products' | 'insurances'>('products')
   const [filterStatus, setFilterStatus] = useState<Transaction['status'] | 'all'>('all')
-
-  // Estado del modal de cuotas
-  const [selectedInsurance, setSelectedInsurance] = useState<Transaction | null>(null)
-  const [cuotas, setCuotas] = useState<PolicyCuotaSimulada[]>([])
 
   useEffect(() => {
     const load = async () => {
@@ -164,48 +153,7 @@ export default function CollaboratorPurchasesPage() {
     return concept
   }
 
-  // Genera cuotas simuladas para una póliza de seguro
-  const handleOpenCuotas = (insurance: Transaction) => {
-    setSelectedInsurance(insurance)
-    const numCuotas = 6 // Dividimos la póliza de seguro del colaborador en 6 cuotas
-    const totalAmount = insurance.amount
-    const cuotaAmount = Math.round((totalAmount / numCuotas) * 100) / 100
-    
-    const baseDate = new Date(insurance.date)
-    const items: PolicyCuotaSimulada[] = []
 
-    for (let i = 1; i <= numCuotas; i++) {
-      const dueDate = new Date(baseDate)
-      dueDate.setMonth(baseDate.getMonth() + i)
-      
-      let status: PolicyCuotaSimulada['status'] = 'pending'
-      if (insurance.status === 'paid') {
-        status = 'paid'
-      } else if (insurance.status === 'failed') {
-        status = 'failed'
-      } else {
-        // Por defecto, las primeras 2 cuotas se muestran ya pagadas
-        status = i <= 2 ? 'paid' : 'pending'
-      }
-
-      items.push({
-        number: i,
-        amount: i === numCuotas ? totalAmount - cuotaAmount * (numCuotas - 1) : cuotaAmount,
-        dueDate: dueDate.toISOString(),
-        status,
-      })
-    }
-
-    setCuotas(items)
-  }
-
-  const handleSimularPagoCuota = (cuotaNumber: number) => {
-    setCuotas((prev) =>
-      prev.map((c) => (c.number === cuotaNumber ? { ...c, status: 'paid' as const } : c)),
-    )
-    setSuccessMessage(`¡Cuota de Seguro N° ${cuotaNumber} cancelada con éxito!`)
-    setTimeout(() => setSuccessMessage(null), 3500)
-  }
 
   if (loading) {
     return (
@@ -383,11 +331,9 @@ export default function CollaboratorPurchasesPage() {
                   <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-body-muted">
                     Estado de Pago
                   </th>
-                  {activeTab === 'insurances' && (
-                    <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-body-muted">
-                      Acción
-                    </th>
-                  )}
+                  <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-body-muted">
+                    Acción
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -433,17 +379,21 @@ export default function CollaboratorPurchasesPage() {
                           </span>
                         </div>
                       </td>
-                      {activeTab === 'insurances' && (
-                        <td className="px-5 py-4 text-center">
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleOpenCuotas(item)}
-                            className="flex items-center gap-1.5 mx-auto border border-gray-100 hover:bg-secondary/5 hover:text-secondary py-1.5 px-3 text-xs"
-                          >
-                            <Eye className="h-3.5 w-3.5" /> Ver Cuotas
-                          </Button>
-                        </td>
-                      )}
+                      <td className="px-5 py-4 text-center">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            if (activeTab === 'insurances') {
+                              router.push(`/dashboard/collaborator/purchases/insurance/${item.id}/quotes`)
+                            } else {
+                              router.push(`/dashboard/collaborator/purchases/product/${item.id}/quotes`)
+                            }
+                          }}
+                          className="flex items-center gap-1.5 mx-auto border border-gray-100 hover:bg-secondary/5 hover:text-secondary py-1.5 px-3 text-xs cursor-pointer rounded-lg"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Ver Cuotas
+                        </Button>
+                      </td>
                     </tr>
                   )
                 })}
@@ -453,116 +403,7 @@ export default function CollaboratorPurchasesPage() {
         )}
       </div>
 
-      {/* Modal Premium de Cuotas de Seguros del Colaborador */}
-      {selectedInsurance && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setSelectedInsurance(null)}
-          />
-          <div className="relative z-10 w-full max-w-2xl rounded-3xl border border-gray-150 bg-white p-6 shadow-2xl transition-all">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
-                  <Shield className="h-5 w-5" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">Desglose de Cuotas</span>
-                  <h3 className="text-xl font-bold text-body mt-0.5">
-                    {getProductName(selectedInsurance.concept)}
-                  </h3>
-                </div>
-              </div>
-              <Button variant="ghost" onClick={() => setSelectedInsurance(null)} className="h-8 py-0">
-                Cerrar
-              </Button>
-            </div>
 
-            {/* Resumen de la Póliza */}
-            <div className="grid grid-cols-3 gap-4 my-5 rounded-2xl bg-gray-50 p-4 text-sm">
-              <div>
-                <span className="text-[11px] text-body-muted block">Monto de Cobertura</span>
-                <span className="font-bold text-body font-mono text-base">{fmt(selectedInsurance.amount)}</span>
-              </div>
-              <div>
-                <span className="text-[11px] text-body-muted block">Tipo de Pago</span>
-                <span className="font-semibold text-body">Deducción de Nómina</span>
-              </div>
-              <div>
-                <span className="text-[11px] text-body-muted block">Estado General</span>
-                <span className={`font-semibold inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded text-xs ${
-                  selectedInsurance.status === 'paid' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                }`}>
-                  {selectedInsurance.status === 'paid' ? 'Totalmente Pago' : 'Pendiente por Cuotas'}
-                </span>
-              </div>
-            </div>
-
-            {/* Listado de Cuotas */}
-            <div className="max-h-[35vh] overflow-y-auto rounded-xl border border-gray-100">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50/50 text-xs font-semibold text-body-muted uppercase">
-                    <th className="px-4 py-2.5 text-center">N° Cuota</th>
-                    <th className="px-4 py-2.5 text-right">Monto</th>
-                    <th className="px-4 py-2.5 text-left">Vencimiento</th>
-                    <th className="px-4 py-2.5 text-center">Estado</th>
-                    <th className="px-4 py-2.5 text-center">Acción</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {cuotas.map((cuota) => (
-                    <tr key={cuota.number} className="hover:bg-gray-50/50">
-                      <td className="px-4 py-3 text-center font-semibold text-body-muted">
-                        {cuota.number} de {cuotas.length}
-                      </td>
-                      <td className="px-4 py-3 text-right font-bold font-mono text-body">
-                        {fmt(cuota.amount)}
-                      </td>
-                      <td className="px-4 py-3 text-left text-body-muted">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                          {new Intl.DateTimeFormat('es-VE', { dateStyle: 'medium' }).format(new Date(cuota.dueDate))}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          cuota.status === 'paid'
-                            ? 'bg-green-50 text-green-700'
-                            : cuota.status === 'failed'
-                            ? 'bg-red-50 text-red-700'
-                            : 'bg-amber-50 text-amber-700'
-                        }`}>
-                          {cuota.status === 'paid' ? 'Pagado' : cuota.status === 'failed' ? 'Fallido' : 'Pendiente'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {cuota.status === 'pending' ? (
-                          <button
-                            type="button"
-                            onClick={() => handleSimularPagoCuota(cuota.number)}
-                            className="rounded-lg bg-secondary px-2.5 py-1 text-xs font-semibold text-white shadow hover:bg-secondary/90 transition-colors"
-                          >
-                            Pagar cuota
-                          </button>
-                        ) : (
-                          <span className="text-xs text-body-muted font-medium">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <Button onClick={() => setSelectedInsurance(null)} variant="primary">
-                Entendido
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

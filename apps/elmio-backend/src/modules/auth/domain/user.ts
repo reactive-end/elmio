@@ -11,6 +11,7 @@ export enum UserRole {
   EMPLOYEE = 'EMPLOYEE',
   CLIENT = 'CLIENT',
   ALLIED = 'ALLIED',
+  FINANCE = 'FINANCE',
 }
 
 /**

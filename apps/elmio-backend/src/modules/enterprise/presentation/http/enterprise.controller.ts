@@ -21,6 +21,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
+import { RolesGuard } from '../../../auth/presentation/guards/roles.guard';
+import { Roles } from '../../../auth/presentation/guards/roles.decorator';
+import { MercantilStorageService } from '../../../mercantil/application/services/mercantil-storage.service';
+import { UserRole } from '../../../auth/domain/user';
 import {
   GetOrCreateEnterpriseUseCase,
   GetEnterpriseUseCase,
@@ -70,6 +74,7 @@ export class EnterpriseController {
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
     private readonly documentStorage: DocumentStorageService,
+    private readonly mercantilStorageService: MercantilStorageService,
   ) {}
 
   // --- Enterprise ---
@@ -210,6 +215,170 @@ export class EnterpriseController {
   ) {
     return this.manageRequests.resolve(reqId, body.status, body.denialReason);
   }
+
+  /** GET /api/enterprises/requests/finance-pending - Lista de solicitudes pendientes para Finanzas. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE)
+  @Get('requests/finance-pending')
+  async listFinancePendingRequests() {
+    return this.enterpriseRepository.findAllRequests('company_approved');
+  }
+
+  /** PATCH /api/enterprises/requests/:reqId/finance-resolve - Finanzas aprueba/deniega. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE)
+  @Patch('requests/:reqId/finance-resolve')
+  async resolveFinanceRequest(
+    @Param('reqId') reqId: string,
+    @Body() body: ResolveLoanRequestDto,
+  ) {
+    return this.manageRequests.resolveByFinance(reqId, body.status, body.denialReason);
+  }
+
+  /** GET /api/enterprises/finance/purchases - Obtiene todas las compras y cuotas pendientes del sistema. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Get('finance/purchases')
+  async listAllFinancePurchases() {
+    const transactions = await this.enterpriseRepository.findAllTransactions();
+    
+    // 1. Filtrar las transacciones de tipo 'charge' que comiencen con 'Compra marketplace:'
+    const chargeTxs = transactions.filter(
+      (t) => t.kind === 'charge' && t.concept.startsWith('Compra marketplace:'),
+    );
+
+    const results = [];
+
+    for (const tx of chargeTxs) {
+      // 2. Buscar el colaborador
+      let collaboratorName = 'Colaborador del Sistema';
+      let documentId = '—';
+      let email = '—';
+
+      if (tx.collaboratorId) {
+        const collab = await this.enterpriseRepository.findCollaboratorById(tx.collaboratorId);
+        if (collab) {
+          collaboratorName = `${collab.name} ${collab.lastName}`.trim();
+          documentId = collab.documentId || '—';
+          email = collab.email || '—';
+        }
+      }
+
+      // 3. Buscar la empresa
+      let enterpriseName = 'Empresa del Sistema';
+      const enterprise = await this.enterpriseRepository.findEnterpriseById(tx.enterpriseId);
+      if (enterprise) {
+        enterpriseName = enterprise.companyName;
+      }
+
+      // 4. Determinar si es un Seguro Mercantil
+      const conceptLower = tx.concept.toLowerCase();
+      const isInsurance =
+        conceptLower.includes('seguro') ||
+        conceptLower.includes('póliza') ||
+        conceptLower.includes('poliza');
+
+      let totalQuotes = 6;
+      let paidQuotes = 0;
+      let pendingQuotes = 6;
+      let pendingAmount = tx.amount;
+
+      if (isInsurance) {
+        // Seguros de mercantil: Consultar las cuotas reales por su shopcartId
+        try {
+          if (email !== '—') {
+            const clientSearchResult = await this.mercantilStorageService.searchClients({ email });
+            const userOrders = clientSearchResult?.items || [];
+            if (userOrders.length > 0) {
+              const shopcartId = userOrders[0].shopcartId;
+              const quotes = await this.mercantilStorageService.getQuotesByShopcart(shopcartId);
+              if (quotes && quotes.length > 0) {
+                totalQuotes = quotes.length;
+                const paidList = quotes.filter(
+                  (cuota) =>
+                    cuota.isPaid ||
+                    cuota.receiptStatus?.toLowerCase() === 'paid' ||
+                    cuota.quoteStatus?.toLowerCase() === 'paid',
+                );
+                paidQuotes = paidList.length;
+                pendingQuotes = Math.max(0, totalQuotes - paidQuotes);
+                
+                // Calcular el monto pendiente acumulando el total de las cuotas no pagadas
+                const unpaidList = quotes.filter(
+                  (cuota) =>
+                    !(
+                      cuota.isPaid ||
+                      cuota.receiptStatus?.toLowerCase() === 'paid' ||
+                      cuota.quoteStatus?.toLowerCase() === 'paid'
+                    ),
+                );
+                pendingAmount = unpaidList.reduce((sum, q) => sum + (q.amount ?? 0), 0);
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error calculando cuotas de seguro mercantil en backend:', err);
+        }
+      } else {
+        // Producto estándar / Préstamos
+        // Para productos estándar/préstamos simulamos cuotas (por defecto 6 cuotas)
+        totalQuotes = 6;
+        if (tx.status === 'paid') {
+          paidQuotes = 6;
+          pendingQuotes = 0;
+          pendingAmount = 0;
+        } else if (tx.status === 'failed') {
+          paidQuotes = 0;
+          pendingQuotes = 6;
+          pendingAmount = 0;
+        } else {
+          // Si está pendiente, las cuotas cuya fecha ya pasó se consideran pagadas
+          const baseDate = new Date(tx.date);
+          const now = new Date();
+          let unpaidCount = 0;
+          let unpaidSum = 0;
+          const cuotaAmount = Math.round((tx.amount / 6) * 100) / 100;
+
+          for (let i = 1; i <= 6; i++) {
+            const dueDate = new Date(baseDate);
+            dueDate.setMonth(baseDate.getMonth() + i);
+
+            if (dueDate < now) {
+              paidQuotes++;
+            } else {
+              unpaidCount++;
+              unpaidSum += i === 6 ? tx.amount - cuotaAmount * 5 : cuotaAmount;
+            }
+          }
+          pendingQuotes = unpaidCount;
+          pendingAmount = Math.max(0, Math.round(unpaidSum * 100) / 100);
+        }
+      }
+
+      results.push({
+        transactionId: tx.id,
+        collaborator: {
+          name: collaboratorName,
+          documentId,
+          email,
+        },
+        enterprise: {
+          name: enterpriseName,
+        },
+        concept: tx.concept,
+        amount: tx.amount,
+        date: tx.date,
+        type: isInsurance ? 'insurance' : 'product',
+        totalQuotes,
+        paidQuotes,
+        pendingQuotes,
+        pendingAmount,
+      });
+    }
+
+    return results;
+  }
+
 
   // --- Account Statement ---
 
