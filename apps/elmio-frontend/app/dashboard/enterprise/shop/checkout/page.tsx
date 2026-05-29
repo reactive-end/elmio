@@ -27,6 +27,11 @@ import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { FormField } from '@/components/molecules/FormField/FormField'
 import { LoginForm } from '@/components/organisms/LoginForm/LoginForm'
+import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
+import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
+import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
+import type { CedulaValue, CedulaLetter } from '@/components/molecules/CedulaInput/CedulaInput.d'
+import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 
 const VENEZUELAN_BANKS = [
   { code: '0102', label: 'Banco de Venezuela (0102)' },
@@ -82,8 +87,15 @@ export default function CheckoutPage() {
   const [success, setSuccess] = useState(false)
 
   // Campos del formulario
-  const [documentId, setDocumentId] = useState('')
-  const [phone, setPhone] = useState('')
+  const [cedulaValue, setCedulaValue] = useState<CedulaValue>({ letter: 'V', digits: '' })
+  const phoneFormat = usePhoneFormat()
+  const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>({
+    code: 'VE',
+    dial: '+58',
+    flag: '🇻🇪',
+    name: 'Venezuela',
+  })
+  const [phoneOperatorPrefix, setPhoneOperatorPrefix] = useState<OperatorPrefix>('412')
   const [selectedBank, setSelectedBank] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [authorizedDomiciliation, setAuthorizedDomiciliation] = useState(false)
@@ -128,8 +140,25 @@ export default function CheckoutPage() {
         try {
           const prof = await enterpriseService.getMyProfile()
           setProfile(prof)
-          if (prof.documentId) setDocumentId(prof.documentId)
-          if (prof.phone) setPhone(prof.phone)
+          if (prof.documentId) {
+            const match = prof.documentId.match(/^([VEJGP])(\d+)$/i)
+            if (match) {
+              setCedulaValue({ letter: match[1].toUpperCase() as CedulaLetter, digits: match[2] })
+            } else {
+              setCedulaValue({ letter: 'V', digits: prof.documentId.replace(/\D/g, '') })
+            }
+          }
+          if (prof.phone) {
+            const cleanPhone = prof.phone.replace(/^\+58|^0/, '')
+            const prefix = cleanPhone.substring(0, 3) as OperatorPrefix
+            const digits = cleanPhone.substring(3)
+            if (['412', '422', '414', '424', '416', '426'].includes(prefix)) {
+              setPhoneOperatorPrefix(prefix)
+              phoneFormat.setRawDigits(digits)
+            } else {
+              phoneFormat.setRawDigits(cleanPhone)
+            }
+          }
 
           // Pre-cargar cuenta de banco debito guardada si existe
           if (prof.debitCard) {
@@ -165,29 +194,20 @@ export default function CheckoutPage() {
     setAccountNumber(clean)
   }
 
-  // Formatear teléfono con números solamente y máximo de 11 dígitos
-  const handlePhoneChange = (val: string) => {
-    const clean = val.replace(/\D/g, '').substring(0, 11)
-    setPhone(clean)
-  }
-
-  // Formatear cédula
-  const handleCedulaChange = (val: string) => {
-    const clean = val.replace(/[^0-9VEve]/g, '').substring(0, 12)
-    setDocumentId(clean)
-  }
-
   const handleConfirmPurchase = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!product || !selectedScheme) return
 
+    const documentIdStr = `${cedulaValue.letter}${cedulaValue.digits}`
+    const phoneStr = `0${phoneOperatorPrefix}${phoneFormat.rawDigits}`
+
     // Validaciones
-    if (!documentId.trim()) {
+    if (!cedulaValue.digits.trim()) {
       setError('Por favor ingresa tu número de cédula de identidad.')
       return
     }
-    if (!phone.trim() || phone.length < 10) {
-      setError('Por favor ingresa un número de teléfono móvil de contacto válido (mínimo 10 dígitos).')
+    if (!phoneFormat.rawDigits.trim() || phoneFormat.rawDigits.length !== 7) {
+      setError('Por favor ingresa un número de teléfono móvil de contacto válido (7 dígitos después del prefijo).')
       return
     }
     if (!selectedBank) {
@@ -232,8 +252,8 @@ export default function CheckoutPage() {
 
       // 1. Persistencia de datos bancarios en el perfil
       await enterpriseService.updateMyProfile({
-        documentId: documentId.trim(),
-        phone: phone.trim(),
+        documentId: documentIdStr,
+        phone: phoneStr,
         debitCard: {
           bank: selectedBank,
           cardNumber: accountNumber,
@@ -443,29 +463,24 @@ export default function CheckoutPage() {
 
               <form onSubmit={handleConfirmPurchase} className="space-y-5">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField label="Cédula de Identidad" required>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                      <Input
-                        className="pl-10"
-                        placeholder="V12345678"
-                        value={documentId}
-                        onChange={(e) => handleCedulaChange(e.target.value)}
-                      />
-                    </div>
-                  </FormField>
-
-                  <FormField label="Teléfono Celular Asociado" required>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                      <Input
-                        className="pl-10"
-                        placeholder="04121234567"
-                        value={phone}
-                        onChange={(e) => handlePhoneChange(e.target.value)}
-                      />
-                    </div>
-                  </FormField>
+                   <FormField label="Cédula de Identidad" required>
+                     <CedulaInput
+                       value={cedulaValue}
+                       onChange={setCedulaValue}
+                       allowedLetters={['V', 'E', 'G', 'J', 'P'] as any}
+                     />
+                   </FormField>
+ 
+                   <FormField label="Teléfono Celular Asociado" required>
+                     <PhoneInput
+                       displayValue={phoneFormat.displayValue}
+                       onChange={phoneFormat.handleChange}
+                       countryCode={phoneCountryCode}
+                       onCountryCodeChange={setPhoneCountryCode}
+                       operatorPrefix={phoneOperatorPrefix}
+                       onOperatorPrefixChange={setPhoneOperatorPrefix}
+                     />
+                   </FormField>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

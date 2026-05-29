@@ -84,7 +84,9 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
               )}
               
               {/* Overlay de gradiente oscuro para asegurar legibilidad */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+              {String(estilo.mostrarSombra) === 'true' && (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+              )}
 
               <div
                 className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 z-10"

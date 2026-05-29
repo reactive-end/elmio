@@ -166,7 +166,7 @@ export function useProductForm() {
         setType(product.type)
         setCategory(product.category || '')
         setTags(product.tags || [])
-        setHasStock(product.hasStock)
+        setHasStock(Boolean(product.hasStock))
         setCurrentStock(product.currentStock)
         setMinimumStock(product.minimumStock)
         setHasValidity(product.hasValidity)

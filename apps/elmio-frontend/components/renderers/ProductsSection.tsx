@@ -294,7 +294,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {productos.map((producto) => (
                 <div
                   key={producto.id}
-                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all flex flex-col self-stretch h-full ${
+                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all flex flex-col self-stretch ${
                     producto.active === false ? 'opacity-65 bg-gray-50/30' : ''
                   }`}
                   style={{
