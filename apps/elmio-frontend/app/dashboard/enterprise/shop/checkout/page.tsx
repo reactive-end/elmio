@@ -30,6 +30,7 @@ import { Alert } from '@/components/atoms/Alert/Alert'
 import { FormField } from '@/components/molecules/FormField/FormField'
 import { LoginForm } from '@/components/organisms/LoginForm/LoginForm'
 import { StepIndicator } from '@/components/molecules/StepIndicator/StepIndicator'
+import { OtpInput } from '@/components/molecules/OtpInput/OtpInput'
 import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
 import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
 import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
@@ -122,6 +123,16 @@ export default function CheckoutPage() {
   const [otpFeedback, setOtpFeedback] = useState('')
   const [isRequestingOtp, setIsRequestingOtp] = useState(false)
   const [paymentReference, setPaymentReference] = useState('')
+  const [otpCountdown, setOtpCountdown] = useState(0)
+
+  // Temporizador para el reenvío de OTP (1 minuto)
+  useEffect(() => {
+    if (otpCountdown <= 0) return
+    const timer = setTimeout(() => {
+      setOtpCountdown((c) => c - 1)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [otpCountdown])
 
   // Detectar y cargar sesión del usuario
   useEffect(() => {
@@ -272,6 +283,7 @@ export default function CheckoutPage() {
       if (res.success || res.code === '202') {
         setOtpSent(true)
         setOtpFeedback('¡Clave OTP/C2P solicitada! Tu banco te enviará un SMS con el código dinámico.')
+        setOtpCountdown(60)
       } else {
         throw new Error(res.message || 'El banco no autorizó el envío de OTP.')
       }
@@ -304,8 +316,8 @@ export default function CheckoutPage() {
     const hasInitial = selectedScheme.paymentMode === 'mixed' && selectedScheme.initialPayment > 0
     const needsImmediatePayment = isCash || hasInitial
 
-    if (needsImmediatePayment && (!otpValue || otpValue.trim().length < 6)) {
-      setError('Por favor ingresa la clave OTP / C2P que has recibido en tu celular.')
+    if (needsImmediatePayment && (!otpValue || otpValue.trim().length !== 8)) {
+      setError('Por favor ingresa la clave OTP / C2P completa de 8 dígitos.')
       return
     }
 
@@ -720,44 +732,53 @@ export default function CheckoutPage() {
                         </div>
                       </div>
 
-                      <div className="border-t border-gray-100/50 pt-4 flex flex-col sm:flex-row items-end gap-3">
-                        <div className="flex-1 w-full">
-                          <FormField label="Clave OTP / C2P de Autorización" required>
-                            <div className="relative flex items-center">
-                              <Input
-                                placeholder={otpSent ? "Ingresa tu clave de 6 dígitos" : "Solicita tu OTP primero"}
-                                value={otpValue}
-                                onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, '').substring(0, 8))}
-                                disabled={!otpSent}
-                                className="pr-20"
-                              />
-                              <span className="absolute right-3 text-[10px] font-bold text-body-muted">VES</span>
-                            </div>
-                          </FormField>
-                        </div>
-                        <div className="shrink-0 w-full sm:w-auto">
+                      {/* Botón de solicitud y reenvío de OTP con temporizador de 1 minuto */}
+                      <div className="border-t border-gray-150/40 pt-4 flex flex-col items-center gap-4">
+                        <div className="w-full sm:w-auto">
                           {isRequestingOtp ? (
-                            <Button disabled className="w-full">
-                              Solicitando...
+                            <Button disabled className="w-full min-w-[200px]">
+                              Solicitando OTP...
                             </Button>
                           ) : (
                             <Button
                               type="button"
                               onClick={handleRequestOtp}
                               variant={otpSent ? "ghost" : "primary"}
-                              className="w-full"
+                              disabled={otpCountdown > 0}
+                              className="w-full min-w-[200px] font-bold"
                             >
-                              {otpSent ? "Re-solicitar OTP" : "Solicitar OTP"}
+                              {otpCountdown > 0
+                                ? `Reenviar en (${otpCountdown}s)`
+                                : otpSent
+                                ? "Re-solicitar OTP"
+                                : "Solicitar OTP"}
                             </Button>
                           )}
                         </div>
-                      </div>
 
-                      {otpFeedback && (
-                        <p className="text-[11px] font-semibold text-green-600 animate-pulse bg-green-50 border border-green-100 rounded-xl px-3 py-1.5">
-                          ✓ {otpFeedback}
-                        </p>
-                      )}
+                        {otpFeedback && (
+                          <p className="text-[11px] font-semibold text-green-600 animate-pulse bg-green-50 border border-green-100 rounded-xl px-4 py-2 text-center w-full">
+                            ✓ {otpFeedback}
+                          </p>
+                        )}
+
+                        {/* Mostrar el componente OtpInput de 8 dígitos solo cuando se haya enviado */}
+                        {otpSent && (
+                          <div className="w-full pt-3 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <label className="text-xs font-bold text-body-muted text-center block">
+                              Introduce tu Clave OTP / C2P de 8 dígitos
+                            </label>
+                            <OtpInput
+                              length={8}
+                              value={otpValue}
+                              onChange={setOtpValue}
+                            />
+                            <p className="text-[10px] text-body-muted text-center max-w-xs mt-1 leading-relaxed">
+                              Digita secuencialmente los 8 caracteres numéricos de tu Clave de Pago Móvil Comercio.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
