@@ -470,14 +470,26 @@ export default function CheckoutPage() {
   }
 
   // Pre-cálculos financieros
-  const originalPrice = product?.priceLists[0]?.amount ?? 0
+  const basePrice = product?.priceLists[0]?.amount ?? 0
+  const isCash = selectedScheme?.paymentMode === 'cash'
+  
+  let originalPrice = basePrice
+  if (selectedScheme && !isCash) {
+    const interestType = product?.interestType ?? 'none'
+    const interestRate = product?.interestRate ?? 0
+    if (interestType === 'percentage') {
+      originalPrice = basePrice * (1 + interestRate / 100)
+    } else if (interestType === 'fixed') {
+      originalPrice = basePrice + interestRate
+    }
+  }
+
   const initialPct = selectedScheme?.initialPayment ?? 0
   const initialAmount = (originalPrice * initialPct) / 100
   const remainingAmount = originalPrice - initialAmount
   const quotaCount = selectedScheme?.maxQuotas ?? 1
   const quotaAmount = remainingAmount / quotaCount
 
-  const isCash = selectedScheme?.paymentMode === 'cash'
   const needsImmediate = isCash || (selectedScheme?.paymentMode === 'mixed' && initialPct > 0)
   const immediateUsd = isCash ? originalPrice : initialAmount
 

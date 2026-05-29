@@ -454,6 +454,30 @@ export default function EnterpriseShopPage() {
             <div className="mt-4 flex flex-col gap-3 max-h-[50vh] overflow-y-auto pr-1">
               {selectedProductForScheme.financingSchemes.map((scheme: any) => {
                 const isCash = scheme.paymentMode === 'cash'
+                
+                const basePrice = selectedProductForScheme.priceLists?.[0]?.amount ?? 0
+                
+                let finalPrice = basePrice
+                const isMercantil = 
+                  selectedProductForScheme.globalThirdPartyProvider?.includes('mercantil') || 
+                  selectedProductForScheme.name.toLowerCase().includes('mercantil')
+                                    
+                if (!isCash && !isMercantil) {
+                  const interestType = selectedProductForScheme.interestType ?? 'none'
+                  const interestRate = selectedProductForScheme.interestRate ?? 0
+                  if (interestType === 'percentage') {
+                    finalPrice = basePrice * (1 + interestRate / 100)
+                  } else if (interestType === 'fixed') {
+                    finalPrice = basePrice + interestRate
+                  }
+                }
+                
+                const initialPct = scheme.initialPayment ?? 0
+                const initialAmount = (finalPrice * initialPct) / 100
+                const remainingAmount = finalPrice - initialAmount
+                const quotaCount = scheme.maxQuotas ?? 1
+                const quotaAmount = remainingAmount / quotaCount
+
                 return (
                   <button
                     key={scheme.id}
@@ -469,12 +493,12 @@ export default function EnterpriseShopPage() {
                         {isCash ? 'Contado' : 'Crédito'}
                       </span>
                     </div>
-                    <span className="text-xs text-body-muted">
+                    <span className="text-xs text-body-muted leading-relaxed">
                       {isCash 
-                        ? 'Pago único completo e inmediato.'
-                        : `Financiamiento en hasta ${scheme.maxQuotas} cuotas ${
+                        ? `Pago único completo e inmediato de ${fmt(finalPrice)}.`
+                        : `Financiamiento de ${fmt(finalPrice)} en ${scheme.maxQuotas} cuotas de ${fmt(quotaAmount)} ${
                             scheme.paymentPeriod === 'monthly' ? 'mensuales' : 'periódicas'
-                          }${scheme.initialPayment > 0 ? ` con inicial de ${scheme.initialPayment}%` : ''}.`
+                          }${scheme.initialPayment > 0 ? ` con inicial de ${scheme.initialPayment}% (${fmt(initialAmount)})` : ''}.`
                       }
                     </span>
                   </button>
