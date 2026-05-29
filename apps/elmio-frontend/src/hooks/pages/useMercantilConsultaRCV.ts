@@ -848,19 +848,23 @@ export function useMercantilConsultaRCV() {
             engineSerial: vehicleEngineSerial || undefined,
           };
 
-          await mercantilService.finalizePersistence(shopcartId, {
-            client: clientPayload,
-            vehicle: vehiclePayload,
-            ...(dniBucketRef.current?.path
-              ? {
-                  dniDocument: {
-                    path: dniBucketRef.current.path,
-                    originalName: dniBucketRef.current.originalName,
-                    contentType: dniBucketRef.current.contentType,
-                  },
-                }
-              : {}),
-          });
+          try {
+            await mercantilService.finalizePersistence(shopcartId, {
+              client: clientPayload,
+              vehicle: vehiclePayload,
+              ...(dniBucketRef.current?.path
+                ? {
+                    dniDocument: {
+                      path: dniBucketRef.current.path,
+                      originalName: dniBucketRef.current.originalName,
+                      contentType: dniBucketRef.current.contentType,
+                    },
+                  }
+                : {}),
+            });
+          } catch (persistErr) {
+            console.error('Error al persistir RCV localmente (Mercantil sí emitió con éxito):', persistErr);
+          }
 
           setPolicyData(summary.policies?.map((p) => ({ policyId: p.id, number: p.number })) || null);
           setEmissionStatus('completed');

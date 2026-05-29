@@ -128,6 +128,7 @@ function mapToFrontend(item: any): DatosMarketplace {
       autoplay: rawContenido.autoplay ?? true,
       autoplayVelocidad: rawContenido.autoplaySpeed ?? rawContenido.autoplayVelocidad ?? 5000,
       htmlId: rawContenido.htmlId ?? '',
+      imagenPosicion: rawContenido.imagePosition ?? rawContenido.imagenPosicion ?? 'derecha',
       elementos: (rawContenido.elements ?? rawContenido.elementos ?? []).map((el: any): ElementoSeccion => ({
         id: el.id,
         titulo: el.title ?? el.titulo ?? '',
@@ -285,6 +286,7 @@ function mapToBackend(frontendItem: DatosMarketplace): any {
       autoplay: s.contenido?.autoplay ?? true,
       autoplaySpeed: s.contenido?.autoplayVelocidad ?? 5000,
       htmlId: s.contenido?.htmlId ?? '',
+      imagePosition: s.contenido?.imagenPosicion ?? 'derecha',
       elements: (s.contenido?.elementos || []).map((el) => ({
         id: el.id,
         title: el.titulo,

@@ -100,6 +100,7 @@ export interface SectionContent {
   autoplay: boolean;
   autoplaySpeed: number;
   htmlId: string;
+  imagePosition?: string;
 }
 
 interface SectionElement {

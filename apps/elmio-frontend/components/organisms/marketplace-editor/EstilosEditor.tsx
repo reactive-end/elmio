@@ -422,7 +422,11 @@ export function EstilosEditor({
               options={[
                 { value: '50/50', label: '50/50 Simétrico' },
                 { value: '60/40', label: '60/40 Destaque Izquierdo' },
-                { value: '30/70', label: '30/70 Destaque Derecho' },
+                { value: '40/60', label: '40/60 Destaque Derecho' },
+                { value: '30/70', label: '30/70 Destaque Extremo Derecho' },
+                { value: '70/30', label: '70/30 Destaque Extremo Izquierdo' },
+                { value: '25/75', label: '25/75 Destaque Ultra Derecho' },
+                { value: '75/25', label: '75/25 Destaque Ultra Izquierdo' },
               ]}
             />
           </div>
@@ -665,7 +669,7 @@ export function EstilosEditor({
                   checked={seccion.estilo.useCustomRatingIcons ?? false}
                   onChange={(e) => actualizarEstilo('useCustomRatingIcons', e.target.checked)}
                 />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#0f4ece]"></div>
                 <span className="ml-2 text-[10px] font-medium text-gray-500">Usar Iconos Propios</span>
               </label>
             </div>
@@ -698,10 +702,10 @@ export function EstilosEditor({
               <input
                 type="checkbox"
                 className="sr-only peer"
-                checked={seccion.estilo.mostrarSombra ?? false}
+                checked={String(seccion.estilo.mostrarSombra) === 'true'}
                 onChange={(e) => actualizarEstilo('mostrarSombra', e.target.checked)}
               />
-              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#0f4ece]"></div>
               <span className="ml-2 text-[10px] font-medium text-gray-500">Aplicar sombreado</span>
             </label>
           </div>

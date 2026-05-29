@@ -25,20 +25,20 @@ export type AllowedProductSlug = (typeof ALLOWED_PRODUCT_SLUGS)[number];
 
 export const PRODUCT_PDFS: Record<AllowedProductSlug, { particulares: string; generales: string }> = {
   life: {
-    particulares: '/mercantil/condiciones/SM.824 Pól.Seg.Mas.Vida -Vida Vit.Merc.-Cond.Part.pdf',
-    generales: '/mercantil/condiciones/SM.823 Pól.Seg.Mas.Vida -Vida Vit.Merc.-Cond.Gen.pdf',
+    particulares: '/mercantil/condiciones/vida-condiciones-particulares.pdf',
+    generales: '/mercantil/condiciones/vida-condiciones-generales.pdf',
   },
   personalAccidents: {
-    particulares: '/mercantil/condiciones/SM.828 Pól.Seg. Mas. Accid.Pers.-Prot. Vit.Merc.-Cond.Part.pdf',
-    generales: '/mercantil/condiciones/SM.827 Pól.Seg. Mas. Accid.Pers.-Prot. Vit.Merc.-Cond.Gen.pdf',
+    particulares: '/mercantil/condiciones/accidentes-condiciones-particulares.pdf',
+    generales: '/mercantil/condiciones/accidentes-condiciones-generales.pdf',
   },
   funerary: {
-    particulares: '/mercantil/condiciones/SM.832 Pól.Seg. Mas.Serv. Funer.-Tranq. Vit.Merc.-Cond.Part - copia.pdf',
-    generales: '/mercantil/condiciones/SM.831 Pól.Seg. Mas.Serv. Funer.-Tranq. Vit.Merc.-Cond.Gen - copia.pdf',
+    particulares: '/mercantil/condiciones/funerario-condiciones-particulares.pdf',
+    generales: '/mercantil/condiciones/funerario-condiciones-generales.pdf',
   },
 };
 
-export const TERMS_PDF = '/mercantil/condiciones/TÉRMINOS Y POLÍTICAS VENEZUELA.pdf';
+export const TERMS_PDF = '/mercantil/condiciones/terminos-y-politicas-venezuela.pdf';
 
 export const HEALTH_DISCLOSURE_TEXT = `¿Qué es gozar de buena salud?
 Se refiere a que el asegurado (titular y adicionales) no padezcan, haya padecido, tenga secuelas o complicaciones de algunas o varias de las siguientes enfermedades: Cáncer, Lupus Eritematoso Sistémico, Artritis Reumatoidea, Enfermedades Pulmonares, Asma Bronquial, Enfermedades Cardiovasculares, Accidente Cerebro Vascular, Tromboembolismo Pulmonar, Cirrosis hepática, Esclerosis Múltiples, Esclerosis Lateral Amiotrófica, Enfermedad de Parkinson, Diabetes Mellitus, VIH/Sida, Insuficiencia Renal Crónica, Enfermedad de Crohn, Fibrosis quística, Enfermedad de Alzheimer, Epilepsias, Trasplante de órganos mayores, Obesidad.
@@ -424,7 +424,11 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
               : {}),
           };
 
-          await mercantilService.finalizePersistence(targetCartId, persistencePayload);
+          try {
+            await mercantilService.finalizePersistence(targetCartId, persistencePayload);
+          } catch (persistErr) {
+            console.error('Error al persistir la póliza localmente (Mercantil sí emitió con éxito):', persistErr);
+          }
           setEmissionStatus('completed');
           setStep(5); // La confirmación exitosa es ahora el Paso 5
           return;

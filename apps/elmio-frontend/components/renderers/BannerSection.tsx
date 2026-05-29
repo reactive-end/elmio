@@ -69,7 +69,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                     src={imagenUrl}
                     alt={titulo}
                     className={`h-48 w-full rounded-2xl bg-white object-cover md:h-80 transition-transform duration-500 hover:scale-[1.01] ${
-                      estilo.mostrarSombra ? 'shadow-md' : ''
+                      String(estilo.mostrarSombra) === 'true' ? 'shadow-md' : ''
                     }`}
                   />
                 ) : (
@@ -90,7 +90,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
                     src={imagenUrl}
                     alt={titulo}
                     className={`h-48 w-full rounded-2xl bg-white object-cover md:h-80 transition-transform duration-500 hover:scale-[1.01] ${
-                      estilo.mostrarSombra ? 'shadow-md' : ''
+                      String(estilo.mostrarSombra) === 'true' ? 'shadow-md' : ''
                     }`}
                   />
                 ) : (

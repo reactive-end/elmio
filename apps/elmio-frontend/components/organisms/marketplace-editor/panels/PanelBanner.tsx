@@ -4,6 +4,7 @@ import { TextField } from '@/components/atoms/TextField/TextField'
 import { TextArea } from '@/components/atoms/TextArea/TextArea'
 import { FormGroup } from '@/components/molecules/FormGroup/FormGroup'
 import { ImagePicker } from '@/components/molecules/ImagePicker/ImagePicker'
+import { Select } from '@/components/atoms/Select/Select'
 import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
 
 interface PanelBannerProps {
@@ -52,6 +53,21 @@ export function PanelBanner({ seccion, actualizarSeccion }: PanelBannerProps) {
             actualizarSeccion(seccion.id, { contenido: { ...seccion.contenido, imagenUrl: value } })
           }
         />
+        <div className="mt-2 space-y-1">
+          <label className="text-xs font-semibold text-gray-500">Posición de la imagen</label>
+          <Select
+            value={seccion.contenido.imagenPosicion || 'derecha'}
+            onChange={(v) =>
+              actualizarSeccion(seccion.id, {
+                contenido: { ...seccion.contenido, imagenPosicion: v },
+              })
+            }
+            options={[
+              { value: 'derecha', label: 'Derecha (Texto Izquierda)' },
+              { value: 'izquierda', label: 'Izquierda (Texto Derecha)' },
+            ]}
+          />
+        </div>
       </FormGroup>
       <FormGroup label="Accion">
         <TextField

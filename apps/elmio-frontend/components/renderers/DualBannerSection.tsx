@@ -51,14 +51,18 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
       <div className="container mx-auto px-4">
         <div className={`grid gap-6 ${
           estilo.proporcionColumnas === '60/40' ? 'md:grid-cols-[3fr_2fr]' :
+          estilo.proporcionColumnas === '40/60' ? 'md:grid-cols-[2fr_3fr]' :
           estilo.proporcionColumnas === '30/70' ? 'md:grid-cols-[3fr_7fr]' :
+          estilo.proporcionColumnas === '70/30' ? 'md:grid-cols-[7fr_3fr]' :
+          estilo.proporcionColumnas === '25/75' ? 'md:grid-cols-[1fr_3fr]' :
+          estilo.proporcionColumnas === '75/25' ? 'md:grid-cols-[3fr_1fr]' :
           'md:grid-cols-2'
         }`}>
           {banners.map((banner, idx) => (
             <div
               key={banner.id ?? idx}
               className={`group relative overflow-hidden transition-all duration-300 ${
-                estilo.mostrarSombra ? 'shadow-md hover:shadow-xl' : ''
+                String(estilo.mostrarSombra) === 'true' ? 'shadow-md hover:shadow-xl' : ''
               }`}
               style={{
                 minHeight: 280,

@@ -53,7 +53,7 @@ export interface EstiloSeccion {
   carruselVelocidad: number
   /** Layouts opcionales */
   layoutPilares?: 'grid' | 'zigzag'
-  proporcionColumnas?: '50/50' | '60/40' | '30/70'
+  proporcionColumnas?: '50/50' | '60/40' | '40/60' | '30/70' | '70/30' | '25/75' | '75/25'
   layoutPrincipal?: 'centro' | 'dividido'
   /** Patrón visual de fondo superpuesto */
   patronFondo?: 'ninguno' | 'puntos' | 'cuadricula' | 'diagonal' | 'malla'
@@ -202,6 +202,7 @@ export interface ContenidoSeccion {
   autoplayVelocidad: number
   /** Identificador HTML para anclaje */
   htmlId: string
+  imagenPosicion?: string
 
   // ==========================================
   // CONTENIDO EXTENDIDO

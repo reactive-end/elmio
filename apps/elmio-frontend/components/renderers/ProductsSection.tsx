@@ -285,7 +285,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           <div className="overflow-hidden">
             <div
               ref={trackRef}
-              className="flex gap-4 pb-2"
+              className="flex items-stretch gap-4 pb-2"
               style={{
                 width: productos.length * paso,
                 transition: 'transform 300ms ease-out',
@@ -294,7 +294,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {productos.map((producto) => (
                 <div
                   key={producto.id}
-                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all flex flex-col h-full ${
+                  className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all flex flex-col self-stretch h-full ${
                     producto.active === false ? 'opacity-65 bg-gray-50/30' : ''
                   }`}
                   style={{

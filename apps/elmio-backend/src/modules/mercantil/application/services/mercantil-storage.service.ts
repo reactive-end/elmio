@@ -697,7 +697,7 @@ export class MercantilStorageService {
   async resolveExistingClient(dto: ResolveClientDto): Promise<EmulatedClient | null> {
     if (dto.clientId?.trim()) {
       const order = await this.orderRepo.createQueryBuilder('o')
-        .where("o.clientSnapshot->>'clientId' = :clientId", { clientId: dto.clientId.trim() })
+        .where("o.\"clientSnapshot\"->>'clientId' = :clientId", { clientId: dto.clientId.trim() })
         .orderBy('o.updatedAt', 'DESC')
         .getOne();
       if (order) return this.mapToEmulatedClient(order);
@@ -705,8 +705,8 @@ export class MercantilStorageService {
 
     if (dto.dniType?.trim() && dto.dniNumber?.trim()) {
       const order = await this.orderRepo.createQueryBuilder('o')
-        .where("o.clientSnapshot->>'dniType' = :dniType", { dniType: dto.dniType.trim() })
-        .andWhere("o.clientSnapshot->>'dniNumber' = :dniNumber", { dniNumber: dto.dniNumber.trim() })
+        .where("o.\"clientSnapshot\"->>'dniType' = :dniType", { dniType: dto.dniType.trim() })
+        .andWhere("o.\"clientSnapshot\"->>'dniNumber' = :dniNumber", { dniNumber: dto.dniNumber.trim() })
         .orderBy('o.updatedAt', 'DESC')
         .getOne();
       if (order) return this.mapToEmulatedClient(order);
@@ -886,25 +886,25 @@ export class MercantilStorageService {
     const perPage = Math.min(100, Math.max(1, dto.perPage ?? 20));
 
     const qb = this.orderRepo.createQueryBuilder('o')
-      .where("o.clientSnapshot IS NOT NULL");
+      .where("o.\"clientSnapshot\" IS NOT NULL");
 
     if (dto.clientId?.trim()) {
-      qb.andWhere("o.clientSnapshot->>'clientId' = :clientId", { clientId: dto.clientId.trim() });
+      qb.andWhere("o.\"clientSnapshot\"->>'clientId' = :clientId", { clientId: dto.clientId.trim() });
     }
     if (dto.dniType?.trim()) {
-      qb.andWhere("o.clientSnapshot->>'dniType' = :dniType", { dniType: dto.dniType.trim() });
+      qb.andWhere("o.\"clientSnapshot\"->>'dniType' = :dniType", { dniType: dto.dniType.trim() });
     }
     if (dto.dniNumber?.trim()) {
-      qb.andWhere("o.clientSnapshot->>'dniNumber' LIKE :dniNumber", { dniNumber: `%${dto.dniNumber.trim()}%` });
+      qb.andWhere("o.\"clientSnapshot\"->>'dniNumber' LIKE :dniNumber", { dniNumber: `%${dto.dniNumber.trim()}%` });
     }
     if (dto.name?.trim()) {
-      qb.andWhere("LOWER(o.clientSnapshot->>'firstName') LIKE :name", { name: `%${dto.name.trim().toLowerCase()}%` });
+      qb.andWhere("LOWER(o.\"clientSnapshot\"->>'firstName') LIKE :name", { name: `%${dto.name.trim().toLowerCase()}%` });
     }
     if (dto.lastName?.trim()) {
-      qb.andWhere("LOWER(o.clientSnapshot->>'lastName') LIKE :lastName", { lastName: `%${dto.lastName.trim().toLowerCase()}%` });
+      qb.andWhere("LOWER(o.\"clientSnapshot\"->>'lastName') LIKE :lastName", { lastName: `%${dto.lastName.trim().toLowerCase()}%` });
     }
     if (dto.email?.trim()) {
-      qb.andWhere("LOWER(o.clientSnapshot->>'email') LIKE :email", { email: `%${dto.email.trim().toLowerCase()}%` });
+      qb.andWhere("LOWER(o.\"clientSnapshot\"->>'email') LIKE :email", { email: `%${dto.email.trim().toLowerCase()}%` });
     }
 
     qb.orderBy('o.updatedAt', 'DESC')
@@ -1047,13 +1047,13 @@ export class MercantilStorageService {
     }
 
     const qb = this.orderRepo.createQueryBuilder('o')
-      .where("o.clientSnapshot IS NOT NULL");
+      .where("o.\"clientSnapshot\" IS NOT NULL");
 
     if (hasClientId) {
-      qb.andWhere("o.clientSnapshot->>'clientId' = :clientId", { clientId: filters.clientId!.trim() });
+      qb.andWhere("o.\"clientSnapshot\"->>'clientId' = :clientId", { clientId: filters.clientId!.trim() });
     } else {
-      qb.andWhere("o.clientSnapshot->>'dniType' = :dniType", { dniType: filters.dniType!.trim() })
-        .andWhere("o.clientSnapshot->>'dniNumber' = :dniNumber", { dniNumber: filters.dniNumber!.trim() });
+      qb.andWhere("o.\"clientSnapshot\"->>'dniType' = :dniType", { dniType: filters.dniType!.trim() })
+        .andWhere("o.\"clientSnapshot\"->>'dniNumber' = :dniNumber", { dniNumber: filters.dniNumber!.trim() });
     }
 
     const order = await qb.orderBy('o.updatedAt', 'DESC').getOne();
