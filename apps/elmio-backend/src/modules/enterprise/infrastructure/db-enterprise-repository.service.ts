@@ -67,6 +67,7 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
       shareholderCount: entity.shareholderCount,
       shareholders: entity.shareholders,
       bankAccounts: entity.bankAccounts,
+      additionalLegalReps: entity.additionalLegalReps || [],
       onboardingCompleted: entity.onboardingCompleted,
       createdAt: entity.createdAt,
     };
@@ -98,6 +99,7 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     entity.shareholderCount = domain.shareholderCount;
     entity.shareholders = domain.shareholders;
     entity.bankAccounts = domain.bankAccounts;
+    entity.additionalLegalReps = domain.additionalLegalReps || [];
     entity.onboardingCompleted = domain.onboardingCompleted;
     entity.createdAt = domain.createdAt;
     return entity;

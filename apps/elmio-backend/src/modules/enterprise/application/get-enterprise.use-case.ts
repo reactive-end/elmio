@@ -53,6 +53,7 @@ export class GetOrCreateEnterpriseUseCase {
       shareholderCount: 0,
       shareholders: [],
       bankAccounts: [],
+      additionalLegalReps: [],
       onboardingCompleted: false,
       createdAt: new Date().toISOString(),
     };

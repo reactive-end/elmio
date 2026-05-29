@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Shareholder, BankAccount, SocialMediaLinks } from '../../domain/enterprise';
+import { Shareholder, BankAccount, SocialMediaLinks, AdditionalLegalRep } from '../../domain/enterprise';
 import { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
 
 const jsonTransformer = {
@@ -111,6 +111,14 @@ export class EnterpriseEntity {
     transformer: jsonArrayTransformer,
   })
   bankAccounts!: BankAccount[];
+
+  // — Representantes Legales Adicionales —
+  @Column({
+    type: 'text',
+    transformer: jsonArrayTransformer,
+    nullable: true,
+  })
+  additionalLegalReps!: AdditionalLegalRep[];
 
   // — Metadatos —
   @Column({ type: 'boolean', default: false })

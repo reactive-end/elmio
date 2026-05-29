@@ -13,6 +13,15 @@ export interface Shareholder {
   email: string
 }
 
+export interface AdditionalLegalRep {
+  name: string
+  lastName: string
+  documentId: string
+  documentPhoto: string
+  phone: string
+  email: string
+}
+
 export interface BankAccount {
   accountNumber: string
   accountType: 'checking' | 'savings'
@@ -80,6 +89,9 @@ export interface Enterprise {
 
   // Cuentas bancarias
   bankAccounts: BankAccount[]
+
+  // Representantes legales adicionales
+  additionalLegalReps: AdditionalLegalRep[]
 
   // Metadatos
   onboardingCompleted: boolean
@@ -198,6 +210,7 @@ export interface UpdateEnterpriseInput {
   shareholderCount?: number
   shareholders?: Shareholder[]
   bankAccounts?: BankAccount[]
+  additionalLegalReps?: AdditionalLegalRep[]
 }
 
 /**

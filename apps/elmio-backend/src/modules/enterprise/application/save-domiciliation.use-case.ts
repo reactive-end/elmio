@@ -4,6 +4,7 @@ import type {
   SocialMediaLinks,
   Shareholder,
   BankAccount,
+  AdditionalLegalRep,
 } from '../domain/enterprise';
 import {
   ENTERPRISE_REPOSITORY_PORT,
@@ -36,6 +37,7 @@ interface UpdateEnterpriseInput {
   shareholderCount?: number;
   shareholders?: Shareholder[];
   bankAccounts?: BankAccount[];
+  additionalLegalReps?: AdditionalLegalRep[];
 }
 
 /**
@@ -99,6 +101,8 @@ export class UpdateEnterpriseUseCase {
       enterprise.shareholders = input.shareholders;
     if (input.bankAccounts !== undefined)
       enterprise.bankAccounts = input.bankAccounts;
+    if (input.additionalLegalReps !== undefined)
+      enterprise.additionalLegalReps = input.additionalLegalReps;
 
     return this.repository.saveEnterprise(enterprise);
   }

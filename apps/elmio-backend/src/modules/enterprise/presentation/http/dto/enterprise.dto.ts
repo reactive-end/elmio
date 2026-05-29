@@ -2,6 +2,7 @@ import type {
   SocialMediaLinks,
   Shareholder,
   BankAccount,
+  AdditionalLegalRep,
 } from '../../../domain/enterprise';
 import type {
   CardInfo,
@@ -61,6 +62,9 @@ export class UpdateEnterpriseDto {
 
   // Cuentas bancarias (max 3)
   bankAccounts?: BankAccount[];
+
+  // Representantes legales adicionales
+  additionalLegalReps?: AdditionalLegalRep[];
 }
 
 // ── Collaborator / PersonProfile DTOs ────────────────────────────────────────

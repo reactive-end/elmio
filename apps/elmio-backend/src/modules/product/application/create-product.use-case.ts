@@ -9,6 +9,7 @@ import type {
   ProductAttribute,
   ProductWindow,
   ProductAction,
+  FinancingScheme,
 } from '../domain/product';
 import {
   PRODUCT_REPOSITORY_PORT,
@@ -32,12 +33,9 @@ export interface CreateProductInput {
   attributes: ProductAttribute[];
   priceLists: Omit<PriceList, 'id'>[];
   discounts: Omit<DiscountPeriod, 'id'>[];
-  paymentMode: PaymentMode;
-  paymentPeriod?: string | null;
-  maxQuotas: number;
+  financingSchemes: FinancingScheme[];
   interestType?: 'none' | 'percentage' | 'fixed';
   interestRate: number;
-  initialPayment?: number;
   usesThirdPartyPricing: boolean;
   globalThirdPartyProvider?: string | null;
   windows: Omit<ProductWindow, 'id'>[];
@@ -101,12 +99,12 @@ export class CreateProductUseCase {
         ...d,
         id: randomUUID(),
       })),
-      paymentMode: input.paymentMode ?? 'cash',
-      paymentPeriod: input.paymentPeriod ?? null,
-      maxQuotas: input.maxQuotas ?? 1,
+      financingSchemes: (input.financingSchemes ?? []).map((s) => ({
+        ...s,
+        id: s.id || randomUUID(),
+      })),
       interestType: input.interestType ?? 'none',
       interestRate: input.interestRate ?? 0,
-      initialPayment: input.initialPayment ?? 0,
       usesThirdPartyPricing: input.usesThirdPartyPricing ?? false,
       globalThirdPartyProvider: input.globalThirdPartyProvider ?? null,
       windows: (input.windows ?? []).map((w) => ({ ...w, id: randomUUID() })),

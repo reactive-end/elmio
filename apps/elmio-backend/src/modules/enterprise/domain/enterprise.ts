@@ -17,6 +17,18 @@ export interface Shareholder {
 }
 
 /**
+ * Representante legal adicional de la empresa.
+ */
+export interface AdditionalLegalRep {
+  name: string;
+  lastName: string;
+  documentId: string;
+  documentPhoto: string;
+  phone: string;
+  email: string;
+}
+
+/**
  * Cuenta bancaria registrada por la empresa (max 3).
  */
 export interface BankAccount {
@@ -86,6 +98,9 @@ export interface Enterprise {
 
   // — Grupo 6: Cuentas Bancarias (max 3) —
   bankAccounts: BankAccount[];
+
+  // — Representantes Legales Adicionales —
+  additionalLegalReps: AdditionalLegalRep[];
 
   // — Metadatos —
   onboardingCompleted: boolean;

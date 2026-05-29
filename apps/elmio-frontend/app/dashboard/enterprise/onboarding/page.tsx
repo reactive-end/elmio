@@ -356,6 +356,99 @@ export default function OnboardingEnterprisePage() {
                     />
                   </div>
                 </div>
+
+                {/* Representantes Legales Adicionales */}
+                <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/30 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                        <Users className="w-5 h-5 text-secondary" strokeWidth={1.5} />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-body">Representantes Legales Adicionales</h3>
+                        <p className="text-xs text-body-muted">Si tu empresa cuenta con más firmantes, agrégalos aquí.</p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={ob.addAdditionalLegalRep}
+                    >
+                      + Agregar Representante
+                    </Button>
+                  </div>
+
+                  {ob.additionalLegalReps && ob.additionalLegalReps.length > 0 && (
+                    <div className="flex flex-col gap-4 mt-3">
+                      {ob.additionalLegalReps.map((rep: any, idx: number) => {
+                        const parsedCedula = parseCedula(rep.documentId)
+                        return (
+                          <div key={idx} className="border border-gray-100 rounded-xl p-4 bg-white space-y-3 relative">
+                            <button
+                              type="button"
+                              onClick={() => ob.removeAdditionalLegalRep(idx)}
+                              className="absolute top-3 right-3 text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer"
+                            >
+                              Eliminar
+                            </button>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <FormField label="Nombre" required>
+                                <Input
+                                  placeholder="Nombre"
+                                  value={rep.name}
+                                  onChange={(e) => ob.updateAdditionalLegalRep(idx, 'name', e.target.value)}
+                                />
+                              </FormField>
+                              <FormField label="Apellido" required>
+                                <Input
+                                  placeholder="Apellido"
+                                  value={rep.lastName}
+                                  onChange={(e) => ob.updateAdditionalLegalRep(idx, 'lastName', e.target.value)}
+                                />
+                              </FormField>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                              <FormField label="Cédula de Identidad" required>
+                                <CedulaInput
+                                  value={parsedCedula}
+                                  onChange={(val) => ob.updateAdditionalLegalRep(idx, 'documentId', `${val.letter}${val.digits}`)}
+                                />
+                              </FormField>
+                              <FileUploader
+                                label="Foto cédula Rep. Adicional"
+                                compact
+                                url={rep.documentPhoto}
+                                uploading={!!ob.uploading.additionalReps?.[idx]}
+                                onUpload={(files) => {
+                                  const file = files[0]
+                                  if (file) void ob.uploadAdditionalRepFile(file, idx)
+                                }}
+                                onClear={() => ob.updateAdditionalLegalRep(idx, 'documentPhoto', '')}
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <FormField label="Teléfono" required>
+                                <Input
+                                  placeholder="Teléfono"
+                                  value={rep.phone}
+                                  onChange={(e) => ob.updateAdditionalLegalRep(idx, 'phone', e.target.value)}
+                                />
+                              </FormField>
+                              <FormField label="Correo Electrónico" required>
+                                <Input
+                                  type="email"
+                                  placeholder="Correo"
+                                  value={rep.email}
+                                  onChange={(e) => ob.updateAdditionalLegalRep(idx, 'email', e.target.value)}
+                                />
+                              </FormField>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
               <hr className="border-gray-100" />
               <p className="text-sm font-medium text-body-muted">Presencia digital (opcional)</p>
@@ -824,10 +917,23 @@ function FileUploader({
   compact = false
 }: FileUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [activeUrl, setActiveUrl] = useState<string | null>(null)
   
   const hasValue = multiple 
     ? Array.isArray(url) && url.length > 0 
     : typeof url === 'string' && url.length > 0
+
+  const handlePreview = (singleUrl: string) => {
+    const cleanUrl = singleUrl.startsWith('http') || singleUrl.startsWith('/')
+      ? singleUrl
+      : `/uploads/${singleUrl}` // fallback path
+
+    if (cleanUrl.toLowerCase().endsWith('.pdf')) {
+      window.open(cleanUrl, '_blank')
+    } else {
+      setActiveUrl(cleanUrl)
+    }
+  }
 
   return (
     <FormField label={label} required={required}>
@@ -838,32 +944,63 @@ function FileUploader({
             <span className="text-sm font-medium text-secondary">Subiendo...</span>
           </div>
         ) : hasValue ? (
-          <div className={`flex items-center justify-between border border-green-200 bg-green-50/50 rounded-xl ${compact ? 'h-[46px] px-3.5' : 'p-4'}`}>
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                <Check className="w-3.5 h-3.5 text-green-600" strokeWidth={2.5} />
-              </div>
-              <div className="flex flex-col min-w-0">
-                {!compact && (
-                  <span className="text-xs font-semibold text-green-800">
-                    {multiple ? 'Documentos cargados' : 'Documento cargado con éxito'}
+          <div className="flex flex-col gap-2">
+            <div className={`flex items-center justify-between border border-green-200 bg-green-50/50 rounded-xl ${compact ? 'h-[46px] px-3.5' : 'p-4'}`}>
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                  <Check className="w-3.5 h-3.5 text-green-600" strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  {!compact && (
+                    <span className="text-xs font-semibold text-green-800">
+                      {multiple ? 'Documentos cargados' : 'Documento cargado con éxito'}
+                    </span>
+                  )}
+                  <span className="text-xs text-body font-medium truncate max-w-[120px] sm:max-w-[200px]">
+                    {multiple 
+                      ? `${(url as string[]).length} archivo(s)` 
+                      : (url as string).split('/').pop()
+                    }
                   </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {!multiple && typeof url === 'string' && (
+                  <button
+                    type="button"
+                    onClick={() => handlePreview(url)}
+                    className="text-xs font-semibold text-secondary hover:text-secondary-dark transition-colors px-2 py-1 cursor-pointer bg-white border border-gray-100 rounded-md shadow-sm"
+                  >
+                    Visualizar
+                  </button>
                 )}
-                <span className="text-xs text-body font-medium truncate max-w-[120px] sm:max-w-[200px]">
-                  {multiple 
-                    ? `${(url as string[]).length} archivo(s)` 
-                    : (url as string).split('/').pop()
-                  }
-                </span>
+                <button
+                  type="button"
+                  onClick={onClear}
+                  className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors px-2 py-1 cursor-pointer"
+                >
+                  Reemplazar
+                </button>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors shrink-0 px-2 py-1"
-            >
-              Reemplazar
-            </button>
+            {multiple && Array.isArray(url) && url.length > 0 && (
+              <div className="flex flex-col gap-1.5 pl-2 mt-1">
+                {url.map((fileUrl, index) => (
+                  <div key={index} className="flex items-center justify-between bg-white border border-gray-100 rounded-lg p-2 text-xs">
+                    <span className="truncate max-w-[200px] text-body font-medium">
+                      {fileUrl.split('/').pop()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handlePreview(fileUrl)}
+                      className="text-[11px] font-semibold text-secondary hover:underline cursor-pointer"
+                    >
+                      Visualizar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div 
@@ -899,6 +1036,29 @@ function FileUploader({
           </div>
         )}
       </div>
+
+      {activeUrl && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+          onClick={() => setActiveUrl(null)}
+        >
+          <div className="relative max-w-3xl max-h-[85vh] overflow-hidden bg-white rounded-2xl p-2 shadow-2xl flex flex-col items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={activeUrl} 
+              alt="Visualización de documento"
+              className="max-w-full max-h-[75vh] object-contain rounded-lg"
+            />
+            <button
+              type="button"
+              onClick={() => setActiveUrl(null)}
+              className="mt-4 px-4 py-2 bg-gray-900 text-white text-xs font-semibold rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+            >
+              Cerrar Vista Previa
+            </button>
+          </div>
+        </div>
+      )}
     </FormField>
   )
 }

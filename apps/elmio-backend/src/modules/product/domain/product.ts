@@ -9,6 +9,18 @@ export type ProductType = 'PRODUCT' | 'SERVICE' | 'KIT' | 'LOAN';
 export type PaymentMode = 'cash' | 'quota' | 'mixed';
 
 /**
+ * Esquema de financiamiento del producto.
+ */
+export interface FinancingScheme {
+  id: string;
+  name: string;
+  paymentMode: PaymentMode;
+  paymentPeriod: string;
+  maxQuotas: number;
+  initialPayment: number;
+}
+
+/**
  * Origen de la lista de precios.
  */
 export type PriceSource = 'manual' | 'third-party';
@@ -150,12 +162,9 @@ export interface Product {
   discounts: DiscountPeriod[];
 
   /** Configuracion de pago */
-  paymentMode: PaymentMode;
-  paymentPeriod: string | null;
-  maxQuotas: number;
+  financingSchemes: FinancingScheme[];
   interestType: 'none' | 'percentage' | 'fixed';
   interestRate: number;
-  initialPayment: number;
   usesThirdPartyPricing: boolean;
   globalThirdPartyProvider: string | null;
 

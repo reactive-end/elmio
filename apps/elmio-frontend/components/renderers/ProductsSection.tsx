@@ -2,9 +2,11 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ActionableLink } from '@/components/atoms/ActionableLink/ActionableLink'
 import { SectionContainer } from './SectionContainer'
 import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
+import { authService } from '@/src/services/auth.service'
 
 interface ProductsSectionProps {
   seccion: SeccionMarketplace
@@ -17,8 +19,65 @@ interface ProductsSectionProps {
 export function ProductsSection({ seccion }: ProductsSectionProps) {
   const { contenido, estilo } = seccion
   
+  const router = useRouter()
   const [listaProductos, setListaProductos] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
+  
+  const [selectedProductForScheme, setSelectedProductForScheme] = useState<any | null>(null)
+  const [showSchemeSelectorModal, setShowSchemeSelectorModal] = useState(false)
+
+  const handleProductClick = (producto: any, e: React.MouseEvent) => {
+    const raw = producto.rawProduct
+    if (!raw) return
+
+    const hasMercantilQuery = raw.windows?.some(
+      (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-query-form'
+    )
+    const hasMercantilRcvQuery = raw.windows?.some(
+      (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-rcv-query-form'
+    )
+
+    // Si tiene consultas mercantil (custom-form actions), no interceptamos, delegamos a ActionableLink
+    if (hasMercantilQuery || hasMercantilRcvQuery) {
+      return
+    }
+
+    const hasWindows = raw.windows && raw.windows.length > 0
+
+    // Si tiene ventanas de acción de compra estándar, navega a la tienda
+    if (hasWindows) {
+      router.push(`/dashboard/enterprise/shop?product=${raw.id}`)
+      return
+    }
+
+    // SI NO TIENE VENTANAS DE ACCIÓN: Validar sesión
+    e.preventDefault()
+    const session = authService.getSession()
+    const defaultSchemeId = raw.financingSchemes?.[0]?.id || 'default'
+
+    if (!session) {
+      // Forzar redirección al portal de login y retornar al checkout en _blank (enlace final)
+      const targetUrl = `/dashboard/enterprise/shop/checkout?product=${raw.id}&scheme=${defaultSchemeId}`
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`)
+      return
+    }
+
+    // Si está autenticado y tiene múltiples esquemas de financiamiento
+    if (raw.financingSchemes && raw.financingSchemes.length > 1) {
+      setSelectedProductForScheme(raw)
+      setShowSchemeSelectorModal(true)
+    } else {
+      // Un solo esquema o predeterminado
+      window.open(`/dashboard/enterprise/shop/checkout?product=${raw.id}&scheme=${defaultSchemeId}`, '_blank')
+    }
+  }
+
+  const handleSelectSchemeAndProceed = (schemeId: string) => {
+    if (!selectedProductForScheme) return
+    window.open(`/dashboard/enterprise/shop/checkout?product=${selectedProductForScheme.id}&scheme=${schemeId}`, '_blank')
+    setShowSchemeSelectorModal(false)
+    setSelectedProductForScheme(null)
+  }
 
   useEffect(() => {
     let cancelado = false
@@ -85,6 +144,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
             textoBoton: !p.active ? 'No disponible' : p.type === 'LOAN' ? 'Solicitar' : 'Comprar',
             enlaceBoton,
             active: p.active,
+            rawProduct: p,
           }
         })
         
@@ -287,21 +347,40 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                       )}
                     </div>
                     <div className="mt-auto pt-3">
-                      {producto.enlaceBoton ? (
-                        <ActionableLink
-                          href={producto.enlaceBoton}
-                          className="block w-full py-2 text-center text-sm font-medium transition-colors cursor-pointer"
-                          style={{
-                            backgroundColor: estilo.botonColorFondo || '#0f4ece',
-                            color: estilo.botonColorTexto || '#fff',
-                            borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
-                            borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
-                            borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
-                            borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
-                          }}
-                        >
-                          {producto.textoBoton || 'Ver detalle'}
-                        </ActionableLink>
+                      {producto.active ? (
+                        producto.rawProduct && (!producto.rawProduct.windows || producto.rawProduct.windows.length === 0) ? (
+                          <button
+                            type="button"
+                            onClick={(e) => handleProductClick(producto, e)}
+                            className="block w-full py-2 text-center text-sm font-medium transition-colors cursor-pointer border-none"
+                            style={{
+                              backgroundColor: estilo.botonColorFondo || '#0f4ece',
+                              color: estilo.botonColorTexto || '#fff',
+                              borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                              borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                              borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                              borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
+                            }}
+                          >
+                            {producto.textoBoton || 'Comprar'}
+                          </button>
+                        ) : (
+                          <ActionableLink
+                            href={producto.enlaceBoton || '#'}
+                            onClick={(e) => handleProductClick(producto, e)}
+                            className="block w-full py-2 text-center text-sm font-medium transition-colors cursor-pointer"
+                            style={{
+                              backgroundColor: estilo.botonColorFondo || '#0f4ece',
+                              color: estilo.botonColorTexto || '#fff',
+                              borderRadius: estilo.botonRedondez !== undefined ? estilo.botonRedondez : 12,
+                              borderWidth: estilo.botonAnchoBorde !== undefined ? estilo.botonAnchoBorde : 0,
+                              borderColor: estilo.botonColorBorde || estilo.botonColorFondo || '#0f4ece',
+                              borderStyle: (estilo.botonAnchoBorde ?? 0) > 0 ? 'solid' : 'none',
+                            }}
+                          >
+                            {producto.textoBoton || 'Ver detalle'}
+                          </ActionableLink>
+                        )
                       ) : (
                         <button
                           type="button"
@@ -341,6 +420,72 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           </div>
         )}
       </div>
+
+      {showSchemeSelectorModal && selectedProductForScheme && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/35 backdrop-blur-sm" onClick={() => {
+            setShowSchemeSelectorModal(false)
+            setSelectedProductForScheme(null)
+          }} />
+          <div className="relative z-10 w-full max-w-lg rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.18)] animate-in fade-in zoom-in-95 duration-200">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
+                Selección de Pago
+              </p>
+              <h3 className="mt-2 text-xl font-bold text-body">
+                Selecciona la modalidad de pago
+              </h3>
+              <p className="mt-1 text-xs text-body-muted">
+                Este producto ofrece múltiples planes de financiamiento. Elige el de tu preferencia para continuar.
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 max-h-[50vh] overflow-y-auto pr-1">
+              {selectedProductForScheme.financingSchemes?.map((scheme: any) => {
+                const isCash = scheme.paymentMode === 'cash'
+                return (
+                  <button
+                    key={scheme.id}
+                    type="button"
+                    onClick={() => handleSelectSchemeAndProceed(scheme.id)}
+                    className="w-full text-left p-4 border border-gray-200 hover:border-secondary/40 hover:bg-secondary/[0.02] rounded-2xl transition-all duration-200 cursor-pointer flex flex-col gap-1 group bg-white"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-body group-hover:text-secondary transition-colors">
+                        {scheme.name}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+                        {isCash ? 'Contado' : 'Crédito'}
+                      </span>
+                    </div>
+                    <span className="text-xs text-body-muted">
+                      {isCash 
+                        ? 'Pago único completo e inmediato.'
+                        : `Financiamiento en hasta ${scheme.maxQuotas} cuotas ${
+                            scheme.paymentPeriod === 'monthly' ? 'mensuales' : 'periódicas'
+                          }${scheme.initialPayment > 0 ? ` con inicial de ${scheme.initialPayment}%` : ''}.`
+                      }
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSchemeSelectorModal(false)
+                  setSelectedProductForScheme(null)
+                }}
+                className="w-full py-2.5 text-center text-sm font-medium rounded-xl border border-gray-200 bg-white text-body hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </SectionContainer>
   )
 }

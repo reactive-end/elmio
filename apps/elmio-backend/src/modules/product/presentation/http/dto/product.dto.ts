@@ -6,6 +6,7 @@ import type {
   PriceList,
   DiscountPeriod,
   ProductAction,
+  FinancingScheme,
 } from '../../../domain/product';
 
 /**
@@ -28,12 +29,9 @@ export class CreateProductDto {
   attributes!: ProductAttribute[];
   priceLists!: Omit<PriceList, 'id'>[];
   discounts!: Omit<DiscountPeriod, 'id'>[];
-  paymentMode!: PaymentMode;
-  paymentPeriod?: string | null;
-  maxQuotas!: number;
+  financingSchemes!: FinancingScheme[];
   interestType?: 'none' | 'percentage' | 'fixed';
   interestRate!: number;
-  initialPayment?: number;
   usesThirdPartyPricing!: boolean;
   globalThirdPartyProvider?: string | null;
   windows!: Omit<ProductWindow, 'id'>[];
@@ -61,12 +59,9 @@ export class UpdateProductDto {
   attributes?: ProductAttribute[];
   priceLists?: PriceList[];
   discounts?: DiscountPeriod[];
-  paymentMode?: PaymentMode;
-  paymentPeriod?: string | null;
-  maxQuotas?: number;
+  financingSchemes?: FinancingScheme[];
   interestType?: 'none' | 'percentage' | 'fixed';
   interestRate?: number;
-  initialPayment?: number;
   usesThirdPartyPricing?: boolean;
   globalThirdPartyProvider?: string | null;
   windows?: ProductWindow[];

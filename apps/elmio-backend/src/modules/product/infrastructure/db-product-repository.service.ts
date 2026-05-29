@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { Product, ProductType, PaymentMode } from '../domain/product';
+import type { Product, ProductType, FinancingScheme } from '../domain/product';
 import type { ProductRepositoryPort } from '../domain/ports/product-repository.port';
 import { ProductEntity } from './entities/product.entity';
 
@@ -32,12 +32,9 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
       attributes: entity.attributes,
       priceLists: entity.priceLists,
       discounts: entity.discounts,
-      paymentMode: entity.paymentMode as PaymentMode,
-      paymentPeriod: entity.paymentPeriod,
-      maxQuotas: entity.maxQuotas,
+      financingSchemes: entity.financingSchemes || [],
       interestType: entity.interestType as 'none' | 'percentage' | 'fixed',
       interestRate: entity.interestRate,
-      initialPayment: entity.initialPayment,
       usesThirdPartyPricing: entity.usesThirdPartyPricing,
       globalThirdPartyProvider: entity.globalThirdPartyProvider,
       windows: entity.windows,
@@ -67,12 +64,9 @@ export class DbProductRepositoryService implements ProductRepositoryPort {
     entity.attributes = domain.attributes;
     entity.priceLists = domain.priceLists;
     entity.discounts = domain.discounts;
-    entity.paymentMode = domain.paymentMode;
-    entity.paymentPeriod = domain.paymentPeriod;
-    entity.maxQuotas = domain.maxQuotas;
+    entity.financingSchemes = domain.financingSchemes || [];
     entity.interestType = domain.interestType;
     entity.interestRate = domain.interestRate;
-    entity.initialPayment = domain.initialPayment;
     entity.usesThirdPartyPricing = domain.usesThirdPartyPricing;
     entity.globalThirdPartyProvider = domain.globalThirdPartyProvider;
     entity.windows = domain.windows;

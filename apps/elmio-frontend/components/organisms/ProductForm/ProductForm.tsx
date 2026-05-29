@@ -531,107 +531,151 @@ export function ProductForm() {
                   </div>
                 ) : (
                   <>
-                    <FormField label="Modalidad de pago" required>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {[
-                          { value: 'cash', label: 'Contado', desc: 'Pago unico inmediato.' },
-                          { value: 'quota', label: 'Cuotas', desc: 'Financiamiento periodico.' },
-                          { value: 'mixed', label: 'Mixto', desc: 'Pago inicial + cuotas.' },
-                        ].map((mode) => {
-                          const isSel = f.paymentMode === mode.value
-                          return (
-                            <button
-                              key={mode.value}
-                              type="button"
-                              onClick={() => f.setPaymentMode(mode.value as typeof f.paymentMode)}
-                              className={`p-4 rounded-xl border text-left flex flex-col gap-1 transition-all duration-200 cursor-pointer ${
-                                isSel
-                                  ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
-                                  : 'border-gray-200 hover:border-gray-300 bg-white'
-                              }`}
-                            >
-                              <span
-                                className={`text-sm font-semibold ${isSel ? 'text-secondary' : 'text-body'}`}
-                              >
-                                {mode.label}
-                              </span>
-                              <span className="text-xs text-gray-400 font-normal">{mode.desc}</span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </FormField>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        Planes de Financiamiento Configurados ({f.financingSchemes.length})
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={f.addFinancingScheme}
+                      >
+                        + Agregar Plan
+                      </Button>
+                    </div>
 
-                    {f.paymentMode !== 'cash' && (
-                      <div className="flex flex-col gap-4 border border-gray-100 bg-gray-50/30 rounded-2xl p-5 mt-2">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">
-                          Configuracion de Financiamiento
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <FormField label="Frecuencia / Periodo">
-                            <Select
-                              value={f.paymentPeriod || 'monthly'}
-                              onChange={(v) => f.setPaymentPeriod(v)}
-                              options={[
-                                { value: 'daily', label: 'Diario' },
-                                { value: 'biweekly', label: 'Quincenal' },
-                                { value: 'monthly', label: 'Mensual' },
-                                { value: 'quarterly', label: 'Trimestral' },
-                                { value: 'semiannually', label: 'Semestral' },
-                                { value: 'annually', label: 'Anual' },
-                              ]}
-                            />
-                          </FormField>
-                          <FormField label="Cuotas maximas">
-                            <Input
-                              type="number"
-                              value={String(f.maxQuotas)}
-                              onChange={(e) => f.setMaxQuotas(Number(e.target.value))}
-                              min={1}
-                            />
-                          </FormField>
-                          <FormField label="Pago inicial (Cuota inicial)">
-                            <Input
-                              type="number"
-                              value={String(f.initialPayment)}
-                              onChange={(e) => f.setInitialPayment(Number(e.target.value))}
-                              min={0}
-                              placeholder="Ej: 50"
-                            />
-                          </FormField>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-100/70 pt-4 mt-1">
-                          <FormField label="Tipo de interes">
-                            <Select
-                              value={f.interestType}
-                              onChange={(v) => f.setInterestType(v as typeof f.interestType)}
-                              options={[
-                                { value: 'none', label: 'Sin interes' },
-                                { value: 'percentage', label: 'Porcentual (%)' },
-                                { value: 'fixed', label: 'Monto fijo' },
-                              ]}
-                            />
-                          </FormField>
-                          {f.interestType !== 'none' && (
-                            <FormField
-                              label={
-                                f.interestType === 'percentage'
-                                  ? 'Tasa de interes (%)'
-                                  : 'Monto de interes'
-                              }
-                            >
+                    <div className="flex flex-col gap-6 mt-2">
+                      {f.financingSchemes.map((scheme: any, idx: number) => (
+                        <div
+                          key={scheme.id}
+                          className="flex flex-col gap-4 border border-gray-100 bg-gray-50/30 rounded-2xl p-5 relative transition-all duration-200 hover:border-gray-200"
+                        >
+                          <div className="flex items-center justify-between border-b border-gray-100/70 pb-3">
+                            <div className="flex-1 max-w-xs">
                               <Input
-                                type="number"
-                                value={String(f.interestRate)}
-                                onChange={(e) => f.setInterestRate(Number(e.target.value))}
-                                min={0}
-                                step={0.01}
+                                type="text"
+                                placeholder="Nombre del Plan (ej: Plan Contado)"
+                                value={scheme.name}
+                                onChange={(e) => f.updFinancingScheme(scheme.id, 'name', e.target.value)}
+                                className="font-semibold text-sm border-none bg-transparent hover:bg-gray-100 focus:bg-white rounded px-2 py-1"
                               />
-                            </FormField>
+                            </div>
+                            {f.financingSchemes.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => f.remFinancingScheme(scheme.id)}
+                                className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer"
+                              >
+                                Eliminar plan
+                              </button>
+                            )}
+                          </div>
+
+                          <FormField label="Modalidad de pago" required>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {[
+                                { value: 'cash', label: 'Contado', desc: 'Pago unico inmediato.' },
+                                { value: 'quota', label: 'Cuotas', desc: 'Financiamiento periodico.' },
+                                { value: 'mixed', label: 'Mixto', desc: 'Pago inicial + cuotas.' },
+                              ].map((mode) => {
+                                const isSel = scheme.paymentMode === mode.value
+                                return (
+                                  <button
+                                    key={mode.value}
+                                    type="button"
+                                    onClick={() => f.updFinancingScheme(scheme.id, 'paymentMode', mode.value)}
+                                    className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all duration-200 cursor-pointer ${
+                                      isSel
+                                        ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
+                                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                                    }`}
+                                  >
+                                    <span
+                                      className={`text-xs font-semibold ${isSel ? 'text-secondary' : 'text-body'}`}
+                                    >
+                                      {mode.label}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400 font-normal">{mode.desc}</span>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </FormField>
+
+                          {scheme.paymentMode !== 'cash' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                              <FormField label="Frecuencia / Periodo">
+                                <Select
+                                  value={scheme.paymentPeriod || 'monthly'}
+                                  onChange={(v) => f.updFinancingScheme(scheme.id, 'paymentPeriod', v)}
+                                  options={[
+                                    { value: 'daily', label: 'Diario' },
+                                    { value: 'biweekly', label: 'Quincenal' },
+                                    { value: 'monthly', label: 'Mensual' },
+                                    { value: 'quarterly', label: 'Trimestral' },
+                                    { value: 'semiannually', label: 'Semestral' },
+                                    { value: 'annually', label: 'Anual' },
+                                  ]}
+                                />
+                              </FormField>
+                              <FormField label="Cuotas maximas">
+                                <Input
+                                  type="number"
+                                  value={String(scheme.maxQuotas)}
+                                  onChange={(e) => f.updFinancingScheme(scheme.id, 'maxQuotas', Number(e.target.value))}
+                                  min={1}
+                                />
+                              </FormField>
+                              <FormField label="Pago inicial (Cuota inicial)">
+                                <Input
+                                  type="number"
+                                  value={String(scheme.initialPayment)}
+                                  onChange={(e) => f.updFinancingScheme(scheme.id, 'initialPayment', Number(e.target.value))}
+                                  min={0}
+                                  placeholder="Ej: 50"
+                                />
+                              </FormField>
+                            </div>
                           )}
                         </div>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 mt-2">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 block mb-1">
+                        Configuracion de Intereses del Producto
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField label="Tipo de interes">
+                          <Select
+                            value={f.interestType}
+                            onChange={(v) => f.setInterestType(v as typeof f.interestType)}
+                            options={[
+                              { value: 'none', label: 'Sin interes' },
+                              { value: 'percentage', label: 'Porcentual (%)' },
+                              { value: 'fixed', label: 'Monto fijo' },
+                            ]}
+                          />
+                        </FormField>
+                        {f.interestType !== 'none' && (
+                          <FormField
+                            label={
+                              f.interestType === 'percentage'
+                                ? 'Tasa de interes (%)'
+                                : 'Monto de interes'
+                            }
+                          >
+                            <Input
+                              type="number"
+                              value={String(f.interestRate)}
+                              onChange={(e) => f.setInterestRate(Number(e.target.value))}
+                              min={0}
+                              step={0.01}
+                            />
+                          </FormField>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </>
                 )}
               </div>
@@ -649,7 +693,7 @@ export function ProductForm() {
               {f.usesThirdParty &&
                 !f.usesProviderManagedPayment &&
                 !f.isThirdPartyProviderPending &&
-                f.paymentMode !== 'cash' && (
+                f.financingSchemes.some((s: any) => s.paymentMode !== 'cash') && (
                   <p className="text-xs text-body-muted bg-amber-50 rounded-lg px-3 py-2">
                     Cuando se usa precio de terceros, las cuotas se calculan sobre el monto
                     sincronizado. Si el tercero actualiza el precio, las cuotas se recalculan

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   CreditCard,
@@ -53,6 +54,34 @@ export default function EnterpriseShopPage() {
     embeddedFormUrl,
     closeEmbeddedForm,
   } = useEnterpriseShop()
+
+  const [selectedProductForScheme, setSelectedProductForScheme] = useState<any | null>(null)
+  const [showSchemeSelectorModal, setShowSchemeSelectorModal] = useState(false)
+
+  const handleStartPurchaseClick = (product: any) => {
+    if (product.financingSchemes && product.financingSchemes.length > 1) {
+      setSelectedProductForScheme(product)
+      setShowSchemeSelectorModal(true)
+    } else {
+      const schemeId = product.financingSchemes?.[0]?.id || 'default'
+      proceedToPurchaseFlow(product, schemeId)
+    }
+  }
+
+  const proceedToPurchaseFlow = (product: any, schemeId: string) => {
+    if (!product.windows || product.windows.length === 0) {
+      window.open(`/dashboard/enterprise/shop/checkout?product=${product.id}&scheme=${schemeId}`, '_blank')
+    } else {
+      startPurchase(product)
+    }
+  }
+
+  const handleSelectSchemeAndProceed = (schemeId: string) => {
+    if (!selectedProductForScheme) return
+    proceedToPurchaseFlow(selectedProductForScheme, schemeId)
+    setShowSchemeSelectorModal(false)
+    setSelectedProductForScheme(null)
+  }
 
   if (loading) {
     return (
@@ -182,9 +211,10 @@ export default function EnterpriseShopPage() {
                   <span className="rounded-lg bg-gray-100 px-2.5 py-1">
                     Categoria: {resolveCategoryName(product.category)}
                   </span>
-                  {!product.usesThirdPartyPricing && (
+                  {!product.usesThirdPartyPricing && product.financingSchemes && (
                     <span className="rounded-lg bg-gray-100 px-2.5 py-1">
-                      Modo de pago: {resolvePaymentModeLabel(product.paymentMode)}
+                      Modo de pago:{' '}
+                      {Array.from(new Set(product.financingSchemes.map((s: any) => resolvePaymentModeLabel(s.paymentMode as any)))).join(' / ')}
                     </span>
                   )}
                 </div>
@@ -196,7 +226,7 @@ export default function EnterpriseShopPage() {
                       : 'Este producto no está disponible temporalmente.'}
                   </p>
                   <Button
-                    onClick={() => startPurchase(product)}
+                    onClick={() => handleStartPurchaseClick(product)}
                     disabled={!product.active}
                     variant={product.active ? 'primary' : 'ghost'}
                   >
@@ -352,6 +382,67 @@ export default function EnterpriseShopPage() {
                   Continuar
                 </Button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {showSchemeSelectorModal && selectedProductForScheme && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/35 backdrop-blur-sm" onClick={() => {
+            setShowSchemeSelectorModal(false)
+            setSelectedProductForScheme(null)
+          }} />
+          <div className="relative z-10 w-full max-w-lg rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.18)] animate-in fade-in zoom-in-95 duration-200">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
+                Selección de Pago
+              </p>
+              <h3 className="mt-2 text-xl font-bold text-body">
+                Selecciona la modalidad de pago
+              </h3>
+              <p className="mt-1 text-xs text-body-muted">
+                Este producto ofrece múltiples planes de financiamiento. Elige el de tu preferencia para continuar.
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 max-h-[50vh] overflow-y-auto pr-1">
+              {selectedProductForScheme.financingSchemes.map((scheme: any) => {
+                const isCash = scheme.paymentMode === 'cash'
+                return (
+                  <button
+                    key={scheme.id}
+                    type="button"
+                    onClick={() => handleSelectSchemeAndProceed(scheme.id)}
+                    className="w-full text-left p-4 border border-gray-200 hover:border-secondary/40 hover:bg-secondary/[0.02] rounded-2xl transition-all duration-200 cursor-pointer flex flex-col gap-1 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-body group-hover:text-secondary transition-colors">
+                        {scheme.name}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+                        {isCash ? 'Contado' : 'Crédito'}
+                      </span>
+                    </div>
+                    <span className="text-xs text-body-muted">
+                      {isCash 
+                        ? 'Pago único completo e inmediato.'
+                        : `Financiamiento en hasta ${scheme.maxQuotas} cuotas ${
+                            scheme.paymentPeriod === 'monthly' ? 'mensuales' : 'periódicas'
+                          }${scheme.initialPayment > 0 ? ` con inicial de ${scheme.initialPayment}%` : ''}.`
+                      }
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="mt-6">
+              <Button variant="ghost" fullWidth onClick={() => {
+                setShowSchemeSelectorModal(false)
+                setSelectedProductForScheme(null)
+              }}>
+                Cancelar
+              </Button>
             </div>
           </div>
         </div>

@@ -188,7 +188,13 @@ export function useLoginForm(onLoginSuccess?: () => void) {
       if (onLoginSuccess) {
         onLoginSuccess()
       } else {
-        router.push('/dashboard')
+        const searchParams = new URLSearchParams(window.location.search)
+        const redirect = searchParams.get('redirect')
+        if (redirect) {
+          router.push(redirect)
+        } else {
+          router.push('/dashboard')
+        }
       }
     } catch (err) {
       setAlert({

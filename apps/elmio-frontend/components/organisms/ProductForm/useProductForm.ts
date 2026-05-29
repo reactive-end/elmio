@@ -123,13 +123,21 @@ export function useProductForm() {
   const [usesThirdParty, setUsesThirdParty] = useState(false)
   const [globalThirdPartyProvider, setGlobalThirdPartyProvider] = useState('')
 
-  // Step 4: Payment
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>('cash')
-  const [paymentPeriod, setPaymentPeriod] = useState<string>('monthly')
-  const [maxQuotas, setMaxQuotas] = useState(1)
+  // Step 4: Payment / Financing Schemes
+  const [financingSchemes, setFinancingSchemes] = useState<any[]>([
+    { id: crypto.randomUUID(), name: 'Plan Contado', paymentMode: 'cash', paymentPeriod: 'monthly', maxQuotas: 1, initialPayment: 0 }
+  ])
   const [interestType, setInterestType] = useState<'none' | 'percentage' | 'fixed'>('none')
   const [interestRate, setInterestRate] = useState(0)
-  const [initialPayment, setInitialPayment] = useState(0)
+
+  const addFinancingScheme = () =>
+    setFinancingSchemes((p) => [
+      ...p,
+      { id: crypto.randomUUID(), name: `Plan ${p.length + 1}`, paymentMode: 'quota', paymentPeriod: 'monthly', maxQuotas: 12, initialPayment: 0 }
+    ])
+  const updFinancingScheme = (id: string, field: string, value: any) =>
+    setFinancingSchemes((p) => p.map((s) => (s.id === id ? { ...s, [field]: value } : s)))
+  const remFinancingScheme = (id: string) => setFinancingSchemes((p) => p.filter((s) => s.id !== id))
 
   const [isSubmitBlocked, setIsSubmitBlocked] = useState(false)
 
@@ -190,12 +198,31 @@ export function useProductForm() {
 
         setUsesThirdParty(product.usesThirdPartyPricing)
         setGlobalThirdPartyProvider(product.globalThirdPartyProvider || '')
-        setPaymentMode(product.paymentMode)
-        setPaymentPeriod(product.paymentPeriod || 'monthly')
-        setMaxQuotas(product.maxQuotas)
         setInterestType(product.interestType)
         setInterestRate(product.interestRate)
-        setInitialPayment(product.initialPayment)
+        if (product.financingSchemes && product.financingSchemes.length > 0) {
+          setFinancingSchemes(
+            product.financingSchemes.map((s) => ({
+              id: s.id || crypto.randomUUID(),
+              name: s.name || 'Plan',
+              paymentMode: s.paymentMode,
+              paymentPeriod: s.paymentPeriod || 'monthly',
+              maxQuotas: s.maxQuotas || 1,
+              initialPayment: s.initialPayment || 0,
+            }))
+          )
+        } else {
+          setFinancingSchemes([
+            {
+              id: crypto.randomUUID(),
+              name: 'Plan Contado',
+              paymentMode: (product as any).paymentMode || 'cash',
+              paymentPeriod: (product as any).paymentPeriod || 'monthly',
+              maxQuotas: (product as any).maxQuotas || 1,
+              initialPayment: (product as any).initialPayment || 0,
+            }
+          ])
+        }
 
         setWindows(
           product.windows.slice(0, MAX_WINDOWS).map((w) => ({
@@ -388,12 +415,27 @@ export function useProductForm() {
               percentage: d.percentage,
               description: d.description,
             })),
-        paymentMode: usesProviderManagedPayment ? 'cash' : paymentMode,
-        paymentPeriod: usesProviderManagedPayment || paymentMode === 'cash' ? null : paymentPeriod,
-        maxQuotas: usesProviderManagedPayment ? 1 : maxQuotas,
+        financingSchemes: usesProviderManagedPayment
+          ? [
+              {
+                id: crypto.randomUUID(),
+                name: 'Plan Contado',
+                paymentMode: 'cash',
+                paymentPeriod: 'monthly',
+                maxQuotas: 1,
+                initialPayment: 0,
+              }
+            ]
+          : financingSchemes.map((s) => ({
+              id: s.id,
+              name: s.name.trim() || 'Plan de Financiamiento',
+              paymentMode: s.paymentMode,
+              paymentPeriod: s.paymentMode === 'cash' ? 'monthly' : s.paymentPeriod,
+              maxQuotas: s.paymentMode === 'cash' ? 1 : s.maxQuotas,
+              initialPayment: s.initialPayment,
+            })),
         interestType: usesProviderManagedPayment ? 'none' : interestType,
         interestRate: usesProviderManagedPayment ? 0 : interestType === 'none' ? 0 : interestRate,
-        initialPayment: usesProviderManagedPayment ? 0 : initialPayment,
         usesThirdPartyPricing: usesThirdParty,
         globalThirdPartyProvider: usesThirdParty ? globalThirdPartyProvider : null,
         windows: windows.slice(0, MAX_WINDOWS).map((w) => {
@@ -499,18 +541,14 @@ export function useProductForm() {
     usesProviderManagedPayment,
     isThirdPartyProviderPending,
     setGlobalThirdPartyProvider,
-    paymentMode,
-    setPaymentMode,
-    paymentPeriod,
-    setPaymentPeriod,
-    maxQuotas,
-    setMaxQuotas,
+    financingSchemes,
+    addFinancingScheme,
+    updFinancingScheme,
+    remFinancingScheme,
     interestType,
     setInterestType,
     interestRate,
     setInterestRate,
-    initialPayment,
-    setInitialPayment,
     isSubmitBlocked,
     windows,
     addWindow,

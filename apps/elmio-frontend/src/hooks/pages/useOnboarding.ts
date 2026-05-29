@@ -9,6 +9,7 @@ import {
   type CollaboratorInput,
   type Shareholder,
   type BankAccount,
+  type AdditionalLegalRep,
 } from '@/src/services/empresa.service'
 
 type OnboardingStep =
@@ -29,6 +30,7 @@ export interface UploadingStates {
   legalRepDocumentPhoto?: boolean
   accountManagerDocumentPhoto?: boolean
   shareholders?: Record<number, boolean>
+  additionalReps?: Record<number, boolean>
 }
 
 interface UseOnboardingReturn {
@@ -51,6 +53,11 @@ interface UseOnboardingReturn {
   legalRep: LegalRepForm
   setLegalRep: (data: LegalRepForm) => void
   submitLegalRep: () => Promise<void>
+  additionalLegalReps: AdditionalLegalRep[]
+  addAdditionalLegalRep: () => void
+  updateAdditionalLegalRep: (index: number, field: keyof AdditionalLegalRep, value: string) => void
+  removeAdditionalLegalRep: (index: number) => void
+  uploadAdditionalRepFile: (file: File, index: number) => Promise<void>
 
   // Paso 4: Accionistas
   shareholderCount: number
@@ -103,6 +110,15 @@ interface LegalRepForm {
 }
 
 const EMPTY_SHAREHOLDER: Shareholder = {
+  name: '',
+  lastName: '',
+  documentId: '',
+  documentPhoto: '',
+  phone: '',
+  email: '',
+}
+
+const EMPTY_ADDITIONAL_LEGAL_REP: AdditionalLegalRep = {
   name: '',
   lastName: '',
   documentId: '',
@@ -166,6 +182,22 @@ export function useOnboarding(): UseOnboardingReturn {
     socialMediaOther: '',
   })
 
+  const [additionalLegalReps, setAdditionalLegalReps] = useState<AdditionalLegalRep[]>([])
+
+  const addAdditionalLegalRep = () =>
+    setAdditionalLegalReps(prev => [...prev, { ...EMPTY_ADDITIONAL_LEGAL_REP }])
+  const updateAdditionalLegalRep = (index: number, field: keyof AdditionalLegalRep, value: string) => {
+    setAdditionalLegalReps(prev => {
+      const copy = [...prev]
+      if (copy[index]) {
+        copy[index] = { ...copy[index], [field]: value }
+      }
+      return copy
+    })
+  }
+  const removeAdditionalLegalRep = (index: number) =>
+    setAdditionalLegalReps(prev => prev.filter((_, i) => i !== index))
+
   const [shareholderCount, setShareholderCount] = useState(1)
   const [shareholders, setShareholders] = useState<Shareholder[]>([{ ...EMPTY_SHAREHOLDER }])
 
@@ -214,6 +246,9 @@ export function useOnboarding(): UseOnboardingReturn {
             socialMediaTiktok: emp.socialMedia?.tiktok || '',
             socialMediaOther: emp.socialMedia?.other || '',
           })
+        }
+        if (emp.additionalLegalReps && emp.additionalLegalReps.length > 0) {
+          setAdditionalLegalReps(emp.additionalLegalReps)
         }
         if (emp.shareholders && emp.shareholders.length > 0) {
           setShareholders(emp.shareholders)
@@ -306,12 +341,15 @@ export function useOnboarding(): UseOnboardingReturn {
           tiktok: legalRep.socialMediaTiktok,
           other: legalRep.socialMediaOther,
         },
+        additionalLegalReps: additionalLegalReps.filter(
+          (rep) => rep.name.trim() || rep.lastName.trim() || rep.documentId.trim()
+        ),
       }
       const updated = await enterpriseService.updateEnterprise(enterprise.id, updateData)
       setEnterprise(updated)
       setStep('shareholders')
     })
-  }, [enterprise, legalRep, withLoading])
+  }, [enterprise, legalRep, additionalLegalReps, withLoading])
 
   const submitShareholders = useCallback(async () => {
     if (!enterprise) return
@@ -441,6 +479,32 @@ export function useOnboarding(): UseOnboardingReturn {
     }
   }, [enterprise])
 
+  const uploadAdditionalRepFile = useCallback(async (file: File, index: number) => {
+    if (!enterprise) return
+    try {
+      setUploading(prev => ({
+        ...prev,
+        additionalReps: { ...(prev.additionalReps || {}), [index]: true }
+      }))
+      setError(null)
+      const res = await enterpriseService.uploadDocument(enterprise.id, file)
+      setAdditionalLegalReps(prev => {
+        const copy = [...prev]
+        if (copy[index]) {
+          copy[index] = { ...copy[index], documentPhoto: res.url }
+        }
+        return copy
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al subir cedula de representante adicional')
+    } finally {
+      setUploading(prev => ({
+        ...prev,
+        additionalReps: { ...(prev.additionalReps || {}), [index]: false }
+      }))
+    }
+  }, [enterprise])
+
   useEffect(() => {
     void init()
   }, [init])
@@ -459,6 +523,11 @@ export function useOnboarding(): UseOnboardingReturn {
     legalRep,
     setLegalRep,
     submitLegalRep,
+    additionalLegalReps,
+    addAdditionalLegalRep,
+    updateAdditionalLegalRep,
+    removeAdditionalLegalRep,
+    uploadAdditionalRepFile,
     shareholderCount,
     setShareholderCount,
     shareholders,

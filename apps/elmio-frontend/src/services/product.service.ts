@@ -6,6 +6,15 @@ import { authService } from './auth.service'
 
 export type ProductType = 'PRODUCT' | 'SERVICE' | 'KIT' | 'LOAN'
 export type PaymentMode = 'cash' | 'quota' | 'mixed'
+
+export interface FinancingScheme {
+  id: string
+  name: string
+  paymentMode: PaymentMode
+  paymentPeriod: string
+  maxQuotas: number
+  initialPayment: number
+}
 export type PriceSource = 'manual' | 'third-party'
 export type WindowActionType =
   | 'payment-form'
@@ -93,12 +102,9 @@ export interface Product {
   attributes: ProductAttribute[]
   priceLists: PriceList[]
   discounts: DiscountPeriod[]
-  paymentMode: PaymentMode
-  paymentPeriod?: string | null
-  maxQuotas: number
+  financingSchemes: FinancingScheme[]
   interestType: 'none' | 'percentage' | 'fixed'
   interestRate: number
-  initialPayment: number
   usesThirdPartyPricing: boolean
   globalThirdPartyProvider: string | null
   windows: ProductWindow[]
@@ -125,12 +131,9 @@ export interface CreateProductInput {
   attributes: ProductAttribute[]
   priceLists: Omit<PriceList, 'id'>[]
   discounts: Omit<DiscountPeriod, 'id'>[]
-  paymentMode: PaymentMode
-  paymentPeriod?: string | null
-  maxQuotas: number
+  financingSchemes: FinancingScheme[]
   interestType?: 'none' | 'percentage' | 'fixed'
   interestRate: number
-  initialPayment?: number
   usesThirdPartyPricing: boolean
   globalThirdPartyProvider?: string | null
   windows: Omit<ProductWindow, 'id'>[]

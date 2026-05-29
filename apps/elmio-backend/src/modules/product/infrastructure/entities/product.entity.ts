@@ -5,6 +5,7 @@ import {
   DiscountPeriod,
   ProductWindow,
   ProductAction,
+  FinancingScheme,
 } from '../../domain/product';
 import { MarketplaceEntity } from '@/modules/marketplace/infrastructure/entities/marketplace.entity';
 
@@ -85,23 +86,18 @@ export class ProductEntity {
   })
   discounts!: DiscountPeriod[];
 
-  @Column({ type: 'varchar', length: 50 })
-  paymentMode!: string;
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  paymentPeriod!: string | null;
-
-  @Column({ type: 'int', default: 0 })
-  maxQuotas!: number;
+  @Column({
+    type: 'text',
+    transformer: jsonTransformer,
+    nullable: true,
+  })
+  financingSchemes!: FinancingScheme[];
 
   @Column({ type: 'varchar', length: 50, default: 'none' })
   interestType!: string;
 
   @Column({ type: 'float', default: 0 })
   interestRate!: number;
-
-  @Column({ type: 'float', default: 0 })
-  initialPayment!: number;
 
   @Column({ type: 'boolean', default: false })
   usesThirdPartyPricing!: boolean;
