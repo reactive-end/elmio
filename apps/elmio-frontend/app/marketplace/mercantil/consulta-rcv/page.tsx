@@ -7,7 +7,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMercantilConsultaRCV } from '@/src/hooks/pages/useMercantilConsultaRCV';
 import { Step1InsuredData } from '@/components/molecules/MercantilRCVSteps/Step1InsuredData';
 import { Step2VehicleData } from '@/components/molecules/MercantilRCVSteps/Step2VehicleData';
@@ -64,18 +64,50 @@ function StepsProgressBar({ currentStep }: { currentStep: number }) {
 }
 
 /**
+ * Notifica al contenedor padre que el flujo embebido finalizó o fue cancelado.
+ * @param {'completed' | 'cancelled'} type - Tipo de evento a comunicar.
+ * @param {{ amount?: number; policyCount?: number; shopcartId?: string }} [payload] - Datos adicionales del flujo.
+ */
+function notifyEmbeddedParent(
+  type: 'completed' | 'cancelled',
+  payload?: { amount?: number; policyCount?: number; shopcartId?: string },
+) {
+  if (typeof window === 'undefined' || window.parent === window) return;
+
+  window.parent.postMessage(
+    {
+      source: 'mercantil-consulta',
+      type,
+      ...payload,
+    },
+    window.location.origin,
+  );
+}
+
+/**
  * Contenedor reactivo del asistente de consulta RCV de Mercantil.
  */
 function MercantilConsultaRCVContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEmbedded = searchParams.get('embedded') === '1';
   const m = useMercantilConsultaRCV();
 
   const handleCompletion = () => {
+    if (isEmbedded) {
+      notifyEmbeddedParent('completed', {
+        amount: m.totalEstimatedPrime || 0,
+        policyCount: m.policyData?.length ?? 0,
+        shopcartId: m.shopcartId ?? undefined,
+      });
+      return;
+    }
+
     router.push('/dashboard/enterprise/shop');
   };
 
   return (
-    <main className="min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center animate-fadeIn">
+    <main className={`min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fadeIn ${isEmbedded ? 'py-6' : 'py-12'}`}>
       {/* OVERLAY DE CARGA DURANTE EL POLLING DE EMISIÓN */}
       {(m.emissionStatus === 'emitting' || m.emissionStatus === 'polling') && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">

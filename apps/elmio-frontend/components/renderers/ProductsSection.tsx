@@ -109,6 +109,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           'elmio:mercantil-vida': 'life',
           'elmio:mercantil-accidentes': 'personalAccidents',
           'elmio:mercantil-funeraria': 'funerary',
+          'elmio:mercantil-rcv': 'rcv',
         }
 
         // Mapear los productos reales al formato compatible de ElementoSeccion

@@ -56,6 +56,7 @@ const MANAGED_PAYMENT_PROVIDERS = new Set([
   'elmio:mercantil-vida',
   'elmio:mercantil-accidentes',
   'elmio:mercantil-funeraria',
+  'elmio:mercantil-rcv',
 ])
 const MAX_WINDOWS = 1
 

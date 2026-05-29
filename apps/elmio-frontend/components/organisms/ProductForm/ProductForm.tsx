@@ -529,6 +529,10 @@ export function ProductForm() {
                             value: 'elmio:mercantil-funeraria',
                             label: 'Mercantil Servicios Funerarios',
                           },
+                          {
+                            value: 'elmio:mercantil-rcv',
+                            label: 'Mercantil RCV (Responsabilidad Civil Vehicular)',
+                          },
                         ]}
                         placeholder="Selecciona un proveedor de terceros"
                       />

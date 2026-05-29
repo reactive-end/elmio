@@ -12,6 +12,7 @@ const MERCANTIL_PROVIDER_SLUGS: Record<string, string> = {
   'elmio:mercantil-vida': 'life',
   'elmio:mercantil-accidentes': 'personalAccidents',
   'elmio:mercantil-funeraria': 'funerary',
+  'elmio:mercantil-rcv': 'rcv',
 }
 
 interface MercantilEmbeddedMessage {
@@ -72,10 +73,11 @@ function buildMercantilEmbeddedUrl(product: Product): string {
 
 /**
  * Construye la URL embebida del flujo RCV Mercantil.
+ * @param {Product} product - Producto actualmente en compra.
  * @returns {string} Ruta relativa lista para ser usada en un iframe.
  */
-function buildMercantilRCVEmbeddedUrl(): string {
-  const params = new URLSearchParams({ embedded: '1' })
+function buildMercantilRCVEmbeddedUrl(product: Product): string {
+  const params = new URLSearchParams({ embedded: '1', productId: product.id })
   return `/marketplace/mercantil/consulta-rcv?${params.toString()}`
 }
 
@@ -246,7 +248,7 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
       }
 
       setError(null)
-      setEmbeddedFormUrl(buildMercantilRCVEmbeddedUrl())
+      setEmbeddedFormUrl(buildMercantilRCVEmbeddedUrl(purchaseDraft.product))
       return
     }
 
