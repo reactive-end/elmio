@@ -184,35 +184,10 @@ export default function CheckoutPage() {
         }
         setSelectedScheme(scheme || null)
 
-        // Cargar perfil de persona para pre-poblar datos
+        // Cargar perfil de persona para obtener el nombre del pagador pero NO pre-rellenar datos
         try {
           const prof = await enterpriseService.getMyProfile()
           setProfile(prof)
-          if (prof.documentId) {
-            const match = prof.documentId.match(/^([VEJGP])(\d+)$/i)
-            if (match) {
-              setCedulaValue({ letter: match[1].toUpperCase() as CedulaLetter, digits: match[2] })
-            } else {
-              setCedulaValue({ letter: 'V', digits: prof.documentId.replace(/\D/g, '') })
-            }
-          }
-          if (prof.phone) {
-            const cleanPhone = prof.phone.replace(/^\+58|^0/, '')
-            const prefix = cleanPhone.substring(0, 3) as OperatorPrefix
-            const digits = cleanPhone.substring(3)
-            if (['412', '422', '414', '424', '416', '426'].includes(prefix)) {
-              setPhoneOperatorPrefix(prefix)
-              phoneFormat.setRawDigits(digits)
-            } else {
-              phoneFormat.setRawDigits(cleanPhone)
-            }
-          }
-
-          // Pre-cargar cuenta de banco debito guardada si existe
-          if (prof.debitCard) {
-            setSelectedBank(prof.debitCard.bank)
-            setAccountNumber(prof.debitCard.cardNumber)
-          }
         } catch {
           // Ignorar si el usuario no tiene un perfil personal creado aún
         }
@@ -636,7 +611,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5">
                     <FormField label="Cédula de Identidad" required>
                       <CedulaInput
                         value={cedulaValue}
@@ -762,15 +737,15 @@ export default function CheckoutPage() {
                         </div>
                         <div className="shrink-0 w-full sm:w-auto">
                           {isRequestingOtp ? (
-                            <Button disabled className="w-full h-10 py-0 flex items-center justify-center gap-2">
-                              <Spinner size="sm" /> Solicitando...
+                            <Button disabled className="w-full">
+                              Solicitando...
                             </Button>
                           ) : (
                             <Button
                               type="button"
                               onClick={handleRequestOtp}
                               variant={otpSent ? "ghost" : "primary"}
-                              className="w-full h-10 py-0 font-bold"
+                              className="w-full"
                             >
                               {otpSent ? "Re-solicitar OTP" : "Solicitar OTP"}
                             </Button>
