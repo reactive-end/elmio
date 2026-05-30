@@ -35,7 +35,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
               <div className="flex flex-col gap-5" style={{ textAlign: alignValue, alignItems: flexAlignValue }}>
                 <h2
                   className="font-bold tracking-tight"
-                  style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor || '#111827' }}
+                  style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor || '#111827', fontWeight: estilo.tituloPeso }}
                 >
                   {titulo}
                 </h2>
@@ -106,7 +106,7 @@ export function BannerSection({ seccion }: BannerSectionProps) {
               <div className="flex flex-col gap-5" style={{ textAlign: alignValue, alignItems: flexAlignValue }}>
                 <h2
                   className="font-bold tracking-tight"
-                  style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor || '#111827' }}
+                  style={{ fontSize: estilo.tituloTamano, color: estilo.tituloColor || '#111827', fontWeight: estilo.tituloPeso }}
                 >
                   {titulo}
                 </h2>

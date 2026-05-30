@@ -23,6 +23,7 @@ export function InfoTextSection({ seccion }: InfoTextSectionProps) {
               color: estilo.tituloColor,
               fontSize: estilo.tituloTamano,
               textAlign: estilo.tituloAlineacion as never,
+              fontWeight: estilo.tituloPeso,
             }}
           >
             {contenido.titulo}

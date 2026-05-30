@@ -239,7 +239,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           {contenido.titulo && (
             <h2
               className="mb-8 text-3xl font-bold"
-              style={{ color: estilo.tituloColor, textAlign: estilo.tituloAlineacion as never }}
+              style={{ color: estilo.tituloColor, textAlign: estilo.tituloAlineacion as never, fontWeight: estilo.tituloPeso }}
             >
               {contenido.titulo}
             </h2>

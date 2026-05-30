@@ -39,7 +39,7 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
             {contenido.titulo && (
               <h2
                 className="mb-2 text-2xl font-bold md:text-3xl"
-                style={{ color: estilo.tituloColor }}
+                style={{ color: estilo.tituloColor, fontWeight: estilo.tituloPeso }}
               >
                 {contenido.titulo}
               </h2>

@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Check } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import type { FontSelectProps } from './FontSelect.d'
 
 const FUENTES = [
@@ -36,87 +35,31 @@ const categorias = ['Sin serifa', 'Con serifa', 'Monoespaciada']
  * no afecta el espacio físico en el DOM.
  */
 export function FontSelect({ label, value, onChange }: FontSelectProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  const [abrirHaciaArriba, setAbrirHaciaArriba] = useState(false)
-  const selectedFont = FUENTES.find((f) => f.value === value) || { value, label: value, category: 'Sin serifa' }
-
-  useEffect(() => {
-    if (isOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect()
-      const espacioAbajo = window.innerHeight - rect.bottom
-      // Si hay menos de 260px de espacio debajo del componente, abrimos el selector hacia arriba
-      setAbrirHaciaArriba(espacioAbajo < 260)
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   return (
-    <div className="flex flex-col gap-1 w-full relative" ref={containerRef}>
+    <div className="flex flex-col gap-1 w-full">
       <label className="text-[10px] font-medium text-gray-400">{label}</label>
       
       <div className="relative">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-body transition-all duration-200 outline-none hover:border-gray-300 focus:border-border-focus focus:ring-2 focus:ring-ring/20 cursor-pointer shadow-sm"
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-body transition-all duration-200 outline-none hover:border-gray-300 focus:border-border-focus focus:ring-2 focus:ring-ring/20 cursor-pointer shadow-sm font-medium"
+          style={{ fontFamily: value }}
         >
-          <span style={{ fontFamily: selectedFont.value }} className="font-medium">
-            {selectedFont.label}
-          </span>
-          <ChevronDown
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
-            strokeWidth={1.5}
-          />
-        </button>
-
-        {isOpen && (
-          <div 
-            className={`absolute left-0 right-0 rounded-xl border border-gray-200 bg-white shadow-xl max-h-64 overflow-y-auto z-50 animate-fadeIn divide-y divide-gray-50 py-1 ${
-              abrirHaciaArriba ? 'bottom-full mb-2' : 'top-full mt-1'
-            }`}
-          >
-            {categorias.map((cat) => (
-              <div key={cat} className="py-1">
-                <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50">
-                  {cat}
-                </div>
-                <div className="flex flex-col">
-                  {FUENTES.filter((f) => f.category === cat).map((f) => {
-                    const isSelected = f.value === value
-                    return (
-                      <button
-                        key={f.value}
-                        type="button"
-                        onClick={() => {
-                          onChange(f.value)
-                          setIsOpen(false)
-                        }}
-                        className={`w-full flex items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${
-                          isSelected ? 'bg-secondary/5 text-secondary font-semibold' : 'text-body'
-                        }`}
-                        style={{ fontFamily: f.value }}
-                      >
-                        <span>{f.label}</span>
-                        {isSelected && <Check className="w-4 h-4 text-secondary shrink-0" strokeWidth={2} />}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          {categorias.map((cat) => (
+            <optgroup key={cat} label={cat.toUpperCase()} className="text-[10px] font-bold text-gray-400">
+              {FUENTES.filter((f) => f.category === cat).map((f) => (
+                <option key={f.value} value={f.value} style={{ fontFamily: f.value }} className="text-body text-sm py-1">
+                  {f.label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <ChevronDown
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+          strokeWidth={1.5}
+        />
       </div>
 
       {/* Preview */}

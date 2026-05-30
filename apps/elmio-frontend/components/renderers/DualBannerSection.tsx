@@ -96,7 +96,10 @@ export function DualBannerSection({ seccion }: DualBannerSectionProps) {
                   alignItems: flexAlignValue,
                 }}
               >
-                <h3 className="text-xl font-bold md:text-2xl tracking-tight leading-tight">
+                <h3
+                  className="text-xl font-bold md:text-2xl tracking-tight leading-tight"
+                  style={{ fontWeight: estilo.tituloPeso }}
+                >
                   {banner.titulo}
                 </h3>
                 {banner.descripcion && (
