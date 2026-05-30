@@ -180,13 +180,10 @@ function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
+      <div className="relative z-10 flex h-[75vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
-              Consulta embebida
-            </p>
-            <h3 className="mt-2 text-xl font-semibold text-body">Mercantil Seguros</h3>
+            <h3 className="text-xl font-semibold text-body">Mercantil Seguros</h3>
             <p className="mt-1 text-sm text-body-muted">
               Completa el proceso de consulta mercantil dentro de esta ventana para registrar tu
               compra.
@@ -222,13 +219,10 @@ function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => v
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
+      <div className="relative z-10 flex h-[75vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
-              Consulta RCV embebida
-            </p>
-            <h3 className="mt-2 text-xl font-semibold text-body">Mercantil Seguros RCV</h3>
+            <h3 className="text-xl font-semibold text-body">Mercantil Seguros RCV</h3>
             <p className="mt-1 text-sm text-body-muted">
               Completa el proceso de consulta RCV mercantil dentro de esta ventana para registrar tu
               compra.
