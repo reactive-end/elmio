@@ -95,6 +95,32 @@ export function HeaderSection({ seccion, carritoActivo = true }: HeaderSectionPr
   const menuAbierto = menu.find((m) => m.id === menuAbiertoId)
   const tieneSubmenuAbierto = menuAbierto && menuAbierto.submenus && menuAbierto.submenus.length > 0
 
+const GOOGLE_FONTS_MAP: Record<string, string> = {
+  WixMadeforText: 'Wix Madefor Text',
+  Inter: 'Inter',
+  Geist: 'Geist',
+  Roboto: 'Roboto',
+  'Open Sans': 'Open Sans',
+  Lato: 'Lato',
+  Poppins: 'Poppins',
+  Montserrat: 'Montserrat',
+  Nunito: 'Nunito',
+  Raleway: 'Raleway',
+  Ubuntu: 'Ubuntu',
+  Merriweather: 'Merriweather',
+  'Playfair Display': 'Playfair Display',
+  Lora: 'Lora',
+  'PT Serif': 'PT Serif',
+  'Source Code Pro': 'Source Code Pro',
+  'JetBrains Mono': 'JetBrains Mono',
+  'Fira Code': 'Fira Code',
+  'DM Sans': 'DM Sans',
+  'Work Sans': 'Work Sans',
+  Quicksand: 'Quicksand',
+}
+
+  const navbarFont = estilo.fontFamily ? (GOOGLE_FONTS_MAP[estilo.fontFamily] || estilo.fontFamily) : undefined
+
   return (
     <SectionContainer
       overflowVisible={true}
@@ -107,7 +133,11 @@ export function HeaderSection({ seccion, carritoActivo = true }: HeaderSectionPr
         paddingIzquierdo: 0,
       }}
     >
-      <div ref={navRef} className="sticky top-0 z-50 bg-white">
+      <div 
+        ref={navRef} 
+        className="sticky top-0 z-50 bg-white"
+        style={{ fontFamily: navbarFont ? `'${navbarFont}', sans-serif` : undefined }}
+      >
         {/* ── Barra principal ── */}
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3">

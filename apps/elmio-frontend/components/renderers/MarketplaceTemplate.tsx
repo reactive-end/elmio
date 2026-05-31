@@ -47,6 +47,28 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
     ? `https://fonts.googleapis.com/css2?family=${googleFontName.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
     : null
 
+  // Cargar fuentes adicionales para Navbar y Promo Bar si son distintas a la fuente global
+  const principalSeccion = datos.secciones.find((s) => s.tipo === 'principal')
+  const extraFonts = new Set<string>()
+
+  if (cabecera?.estilo?.fontFamily) {
+    const f = GOOGLE_FONTS_MAP[cabecera.estilo.fontFamily] || cabecera.estilo.fontFamily
+    if (f !== 'Geist' && f !== googleFontName) {
+      extraFonts.add(f)
+    }
+  }
+
+  if (principalSeccion?.estilo?.promoBarFontFamily) {
+    const f = GOOGLE_FONTS_MAP[principalSeccion.estilo.promoBarFontFamily] || principalSeccion.estilo.promoBarFontFamily
+    if (f !== 'Geist' && f !== googleFontName) {
+      extraFonts.add(f)
+    }
+  }
+
+  const extraFontUrls = Array.from(extraFonts).map(
+    (f) => `https://fonts.googleapis.com/css2?family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
+  )
+
   return (
     <div
       className="min-h-screen"
@@ -55,6 +77,9 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
       {fontUrl && (
         <link rel="stylesheet" href={fontUrl} />
       )}
+      {extraFontUrls.map((url, idx) => (
+        <link key={idx} rel="stylesheet" href={url} />
+      ))}
 
       {cabecera && <HeaderSection seccion={cabecera} carritoActivo={datos.carrito?.activo ?? true} />}
 
