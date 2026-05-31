@@ -10,6 +10,31 @@ interface VistaPreviaTabProps {
   seleccionadaId: string | null
   onSeccionClick: (id: string) => void
   carritoActivo?: boolean
+  fuente?: string
+}
+
+const GOOGLE_FONTS_MAP: Record<string, string> = {
+  WixMadeforText: 'Wix Madefor Text',
+  Inter: 'Inter',
+  Geist: 'Geist',
+  Roboto: 'Roboto',
+  'Open Sans': 'Open Sans',
+  Lato: 'Lato',
+  Poppins: 'Poppins',
+  Montserrat: 'Montserrat',
+  Nunito: 'Nunito',
+  Raleway: 'Raleway',
+  Ubuntu: 'Ubuntu',
+  Merriweather: 'Merriweather',
+  'Playfair Display': 'Playfair Display',
+  Lora: 'Lora',
+  'PT Serif': 'PT Serif',
+  'Source Code Pro': 'Source Code Pro',
+  'JetBrains Mono': 'JetBrains Mono',
+  'Fira Code': 'Fira Code',
+  'DM Sans': 'DM Sans',
+  'Work Sans': 'Work Sans',
+  Quicksand: 'Quicksand',
 }
 
 /**
@@ -21,10 +46,22 @@ export function VistaPreviaTab({
   seleccionadaId,
   onSeccionClick,
   carritoActivo = true,
+  fuente = 'Inter',
 }: VistaPreviaTabProps) {
+  const googleFontName = GOOGLE_FONTS_MAP[fuente] || fuente
+  const fontUrl = googleFontName !== 'Geist'
+    ? `https://fonts.googleapis.com/css2?family=${googleFontName.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
+    : null
+
   return (
     <MarketplaceActionProvider>
-      <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+      <div
+        className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col"
+        style={{ fontFamily: `'${googleFontName}', sans-serif` }}
+      >
+        {fontUrl && (
+          <link rel="stylesheet" href={fontUrl} />
+        )}
         <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 flex-shrink-0">
           <Eye className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -50,3 +87,4 @@ export function VistaPreviaTab({
     </MarketplaceActionProvider>
   )
 }
+

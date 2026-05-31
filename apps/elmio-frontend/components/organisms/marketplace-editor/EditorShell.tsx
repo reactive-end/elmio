@@ -188,6 +188,7 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
               editor.setPestana('edicion')
             }}
             carritoActivo={editor.marketplace.carrito?.activo ?? true}
+            fuente={editor.marketplace.tema.fuente}
           />
         )}
 
