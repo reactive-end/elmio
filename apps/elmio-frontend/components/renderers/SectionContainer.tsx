@@ -11,6 +11,30 @@ interface SectionContainerProps {
   overflowVisible?: boolean
 }
 
+const GOOGLE_FONTS_MAP: Record<string, string> = {
+  WixMadeforText: 'Wix Madefor Text',
+  Inter: 'Inter',
+  Geist: 'Geist',
+  Roboto: 'Roboto',
+  'Open Sans': 'Open Sans',
+  Lato: 'Lato',
+  Poppins: 'Poppins',
+  Montserrat: 'Montserrat',
+  Nunito: 'Nunito',
+  Raleway: 'Raleway',
+  Ubuntu: 'Ubuntu',
+  Merriweather: 'Merriweather',
+  'Playfair Display': 'Playfair Display',
+  Lora: 'Lora',
+  'PT Serif': 'PT Serif',
+  'Source Code Pro': 'Source Code Pro',
+  'JetBrains Mono': 'JetBrains Mono',
+  'Fira Code': 'Fira Code',
+  'DM Sans': 'DM Sans',
+  'Work Sans': 'Work Sans',
+  Quicksand: 'Quicksand',
+}
+
 /**
  * Contenedor visual de seccion que aplica estilos de padding, margen y fondo desde la config.
  */
@@ -19,6 +43,10 @@ export function SectionContainer({ estilo, children, className = '', id, overflo
   if (estilo.gradienteFondo) bgStyle.backgroundImage = estilo.gradienteFondo
   else if (estilo.colorFondo !== 'transparente') bgStyle.backgroundColor = estilo.colorFondo
   if (estilo.imagenFondo) bgStyle.backgroundImage = estilo.imagenFondo
+
+  const fontFamilyValue = estilo.fontFamily
+    ? `'${GOOGLE_FONTS_MAP[estilo.fontFamily] || estilo.fontFamily}', sans-serif`
+    : undefined
 
   return (
     <section
@@ -36,6 +64,7 @@ export function SectionContainer({ estilo, children, className = '', id, overflo
         borderColor: estilo.colorBorde,
         borderRadius: estilo.radioBorde,
         borderStyle: estilo.estiloBorde || 'solid',
+        fontFamily: fontFamilyValue,
       }}
     >
       {/* Overlay de oscurecimiento para imágenes de fondo */}

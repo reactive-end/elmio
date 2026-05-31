@@ -474,7 +474,7 @@ export function EstilosEditor({
               />
               <FontSelect
                 label="Fuente Navbar"
-                value={seccion.estilo.fontFamily || fuente}
+                value={seccion.estilo.fontFamily || ''}
                 onChange={(f) => actualizarEstilo('fontFamily', f)}
               />
             </div>
@@ -713,7 +713,7 @@ export function EstilosEditor({
       )}
 
       <CardGroup title="Tipografia" Icon={CaseSensitive}>
-        <FontSelect label="Fuente" value={fuente} onChange={onFuenteChange} />
+        <FontSelect label="Fuente" value={seccion.estilo.fontFamily || ''} onChange={(f) => actualizarEstilo('fontFamily', f)} />
       </CardGroup>
     </div>
   )

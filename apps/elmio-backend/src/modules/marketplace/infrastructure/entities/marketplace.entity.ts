@@ -46,6 +46,33 @@ export class MarketplaceEntity {
 
   @Column({
     type: 'text',
+    nullable: true,
+    transformer: jsonTransformer,
+  })
+  whatsapp?: {
+    activo: boolean;
+    telefono: string;
+    mensaje: string;
+    textoTooltip: string;
+    colorFlotante?: string;
+    posicion?: 'izquierda' | 'derecha';
+    delayMostrar?: number;
+  } | null;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: jsonTransformer,
+  })
+  carrito?: {
+    activo: boolean;
+    textoBoton?: string;
+    colorBadge?: string;
+    permitirInvitados?: boolean;
+  } | null;
+
+  @Column({
+    type: 'text',
     transformer: jsonArrayTransformer,
   })
   sections!: MarketplaceSection[];

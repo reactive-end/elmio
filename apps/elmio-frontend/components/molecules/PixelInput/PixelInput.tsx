@@ -16,12 +16,14 @@ export function PixelInput({
   step = 1,
 }: PixelInputProps) {
   const decrement = () => {
-    const next = value - step
+    const valNum = typeof value === 'number' ? value : 0
+    const next = valNum - step
     if (next >= min) onChange(next)
   }
 
   const increment = () => {
-    const next = value + step
+    const valNum = typeof value === 'number' ? value : 0
+    const next = valNum + step
     if (next <= max) onChange(next)
   }
 
@@ -38,10 +40,17 @@ export function PixelInput({
         </button>
         <input
           type="number"
-          value={value}
+          value={value === '' ? '' : value}
           onChange={(e) => {
-            const v = Number(e.target.value)
-            if (!isNaN(v)) onChange(Math.min(max, Math.max(min, v)))
+            const valStr = e.target.value
+            if (valStr === '') {
+              onChange('')
+            } else {
+              const v = Number(valStr)
+              if (!isNaN(v)) {
+                onChange(Math.min(max, Math.max(min, v)))
+              }
+            }
           }}
           min={min}
           max={max}

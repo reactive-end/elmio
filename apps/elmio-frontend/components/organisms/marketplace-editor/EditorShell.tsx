@@ -189,6 +189,7 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
             }}
             carritoActivo={editor.marketplace.carrito?.activo ?? true}
             fuente={editor.marketplace.tema.fuente}
+            whatsapp={editor.marketplace.whatsapp}
           />
         )}
 
@@ -255,10 +256,6 @@ function EditorInterno({ datosIniciales }: EditorInternoProps) {
             whatsapp={editor.marketplace.whatsapp}
             onChangeWhatsapp={(ws) =>
               editor.setMarketplace({ ...editor.marketplace, whatsapp: ws })
-            }
-            carrito={editor.marketplace.carrito}
-            onChangeCarrito={(cart) =>
-              editor.setMarketplace({ ...editor.marketplace, carrito: cart })
             }
           />
         )}

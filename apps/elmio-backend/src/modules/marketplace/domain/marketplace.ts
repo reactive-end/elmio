@@ -15,6 +15,21 @@ export interface Marketplace {
     secondaryColor: string;
     font: string;
   };
+  whatsapp?: {
+    activo: boolean;
+    telefono: string;
+    mensaje: string;
+    textoTooltip: string;
+    colorFlotante?: string;
+    posicion?: 'izquierda' | 'derecha';
+    delayMostrar?: number;
+  } | null;
+  carrito?: {
+    activo: boolean;
+    textoBoton?: string;
+    colorBadge?: string;
+    permitirInvitados?: boolean;
+  } | null;
   sections: MarketplaceSection[];
 }
 

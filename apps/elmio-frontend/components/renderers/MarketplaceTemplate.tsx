@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
 import { HeaderSection } from '@/components/renderers/HeaderSection'
 import { FooterSection } from '@/components/renderers/FooterSection'
 import { SectionRenderer } from '@/components/renderers/SectionRenderer'
+import { WhatsAppFloatingButton } from '@/components/molecules/WhatsAppFloatingButton/WhatsAppFloatingButton'
 import type { DatosMarketplace } from '@/src/utils/editor-types.d'
 
 interface MarketplaceTemplateProps {
@@ -43,44 +45,41 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
 
   const fontName = datos.tema?.fuente || 'Inter'
   const googleFontName = GOOGLE_FONTS_MAP[fontName] || fontName
-  const fontUrl = googleFontName !== 'Geist'
-    ? `https://fonts.googleapis.com/css2?family=${googleFontName.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
-    : null
 
-  // Cargar fuentes adicionales para Navbar y Promo Bar si son distintas a la fuente global
-  const principalSeccion = datos.secciones.find((s) => s.tipo === 'principal')
-  const extraFonts = new Set<string>()
+  const fontsToLoad = new Set<string>()
+  fontsToLoad.add(googleFontName)
 
-  if (cabecera?.estilo?.fontFamily) {
-    const f = GOOGLE_FONTS_MAP[cabecera.estilo.fontFamily] || cabecera.estilo.fontFamily
-    if (f !== 'Geist' && f !== googleFontName) {
-      extraFonts.add(f)
+  datos.secciones.forEach((s) => {
+    if (s.estilo?.fontFamily) {
+      fontsToLoad.add(GOOGLE_FONTS_MAP[s.estilo.fontFamily] || s.estilo.fontFamily)
     }
-  }
-
-  if (principalSeccion?.estilo?.promoBarFontFamily) {
-    const f = GOOGLE_FONTS_MAP[principalSeccion.estilo.promoBarFontFamily] || principalSeccion.estilo.promoBarFontFamily
-    if (f !== 'Geist' && f !== googleFontName) {
-      extraFonts.add(f)
+    if (s.estilo?.promoBarFontFamily) {
+      fontsToLoad.add(GOOGLE_FONTS_MAP[s.estilo.promoBarFontFamily] || s.estilo.promoBarFontFamily)
     }
-  }
+  })
 
-  const extraFontUrls = Array.from(extraFonts).map(
-    (f) => `https://fonts.googleapis.com/css2?family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
-  )
+  const fontUrls = Array.from(fontsToLoad)
+    .filter((f) => f && f !== 'Geist')
+    .map(
+      (f) => `https://fonts.googleapis.com/css2?family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
+    )
+
+  useEffect(() => {
+    fontUrls.forEach((url) => {
+      if (!document.querySelector(`link[href="${url}"]`)) {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        document.head.appendChild(link)
+      }
+    })
+  }, [fontUrls])
 
   return (
     <div
       className="min-h-screen"
       style={{ fontFamily: `'${googleFontName}', sans-serif` }}
     >
-      {fontUrl && (
-        <link rel="stylesheet" href={fontUrl} />
-      )}
-      {extraFontUrls.map((url, idx) => (
-        <link key={idx} rel="stylesheet" href={url} />
-      ))}
-
       {cabecera && <HeaderSection seccion={cabecera} carritoActivo={datos.carrito?.activo ?? true} />}
 
       {datos.secciones
@@ -91,6 +90,8 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
         ))}
 
       {pie && <FooterSection seccion={pie} />}
+
+      <WhatsAppFloatingButton config={datos.whatsapp} />
     </div>
   )
 }

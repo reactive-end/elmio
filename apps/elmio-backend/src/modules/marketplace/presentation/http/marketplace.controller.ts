@@ -148,6 +148,9 @@ export class MarketplaceController {
     @Body() body: UpdateMarketplaceDto,
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
+    console.log('[MarketplaceController] UPDATE ID:', id);
+    console.log('[MarketplaceController] UPDATE BODY WHATSAPP:', JSON.stringify(body.whatsapp, null, 2));
+
     if (session.role === 'COMPANY') {
       throw new ForbiddenException(
         'Las empresas no pueden gestionar marketplaces desde el dashboard.',

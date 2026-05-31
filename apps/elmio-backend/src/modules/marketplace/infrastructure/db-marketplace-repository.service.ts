@@ -22,6 +22,8 @@ export class DbMarketplaceRepositoryService implements MarketplaceRepositoryPort
       owner: entity.owner,
       logo: entity.logo || '',
       theme: entity.theme,
+      whatsapp: entity.whatsapp,
+      carrito: entity.carrito,
       sections: entity.sections,
     };
   }
@@ -36,6 +38,8 @@ export class DbMarketplaceRepositoryService implements MarketplaceRepositoryPort
     entity.owner = domain.owner;
     entity.logo = domain.logo;
     entity.theme = domain.theme;
+    entity.whatsapp = domain.whatsapp;
+    entity.carrito = domain.carrito;
     entity.sections = domain.sections;
     return entity;
   }
@@ -62,7 +66,9 @@ export class DbMarketplaceRepositoryService implements MarketplaceRepositoryPort
   }
 
   async update(id: string, marketplace: Marketplace): Promise<Marketplace> {
+    console.log('[DbMarketplaceRepositoryService] UPDATE DOMAIN WHATSAPP:', JSON.stringify(marketplace.whatsapp, null, 2));
     const entity = this.toPersistence(marketplace);
+    console.log('[DbMarketplaceRepositoryService] UPDATE ENTITY WHATSAPP:', JSON.stringify(entity.whatsapp, null, 2));
     entity.id = id;
     await this.repo.save(entity);
     return marketplace;

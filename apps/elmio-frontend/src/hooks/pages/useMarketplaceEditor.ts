@@ -15,7 +15,7 @@ type PestanaEditor = 'vista-previa' | 'edicion' | 'secciones' | 'general'
 type PestanaPropiedades = 'contenido' | 'estilos' | 'elementos'
 
 interface AlertaState {
-  type: 'success' | 'info'
+  type: 'success' | 'info' | 'error' | 'warning'
   message: string
 }
 
@@ -271,6 +271,23 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
   }
 
   const guardar = async () => {
+    // Validar campos de estilo numéricos vacíos
+    for (const seccion of secciones) {
+      const defaultEstilo = estiloPorDefecto(seccion.tipo)
+      const camposVacios = Object.entries(seccion.estilo).filter(
+        ([key, val]) => val === '' && typeof defaultEstilo[key as keyof EstiloSeccion] === 'number'
+      )
+
+      if (camposVacios.length > 0) {
+        setAlerta({
+          type: 'error',
+          message: `No se pueden guardar los cambios. La sección "${seccion.nombre}" tiene campos numéricos vacíos en sus estilos.`,
+        })
+        setTimeout(() => setAlerta(null), 5000)
+        return
+      }
+    }
+
     try {
       setGuardando(true)
       const datosGuardar: DatosMarketplace = {

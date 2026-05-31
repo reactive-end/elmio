@@ -1,9 +1,11 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Eye } from 'lucide-react'
 import { SectionRenderer } from '@/components/renderers/SectionRenderer'
 import { MarketplaceActionProvider } from '@/src/providers/MarketplaceActionProvider'
-import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
+import { WhatsAppFloatingButton } from '@/components/molecules/WhatsAppFloatingButton/WhatsAppFloatingButton'
+import type { SeccionMarketplace, ConfiguracionWhatsApp } from '@/src/utils/editor-types.d'
 
 interface VistaPreviaTabProps {
   secciones: SeccionMarketplace[]
@@ -11,6 +13,7 @@ interface VistaPreviaTabProps {
   onSeccionClick: (id: string) => void
   carritoActivo?: boolean
   fuente?: string
+  whatsapp?: ConfiguracionWhatsApp
 }
 
 const GOOGLE_FONTS_MAP: Record<string, string> = {
@@ -47,11 +50,38 @@ export function VistaPreviaTab({
   onSeccionClick,
   carritoActivo = true,
   fuente = 'Inter',
+  whatsapp,
 }: VistaPreviaTabProps) {
   const googleFontName = GOOGLE_FONTS_MAP[fuente] || fuente
-  const fontUrl = googleFontName !== 'Geist'
-    ? `https://fonts.googleapis.com/css2?family=${googleFontName.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
-    : null
+
+  const fontsToLoad = new Set<string>()
+  fontsToLoad.add(googleFontName)
+
+  secciones.forEach((s) => {
+    if (s.estilo?.fontFamily) {
+      fontsToLoad.add(GOOGLE_FONTS_MAP[s.estilo.fontFamily] || s.estilo.fontFamily)
+    }
+    if (s.estilo?.promoBarFontFamily) {
+      fontsToLoad.add(GOOGLE_FONTS_MAP[s.estilo.promoBarFontFamily] || s.estilo.promoBarFontFamily)
+    }
+  })
+
+  const fontUrls = Array.from(fontsToLoad)
+    .filter((f) => f && f !== 'Geist')
+    .map(
+      (f) => `https://fonts.googleapis.com/css2?family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
+    )
+
+  useEffect(() => {
+    fontUrls.forEach((url) => {
+      if (!document.querySelector(`link[href="${url}"]`)) {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        document.head.appendChild(link)
+      }
+    })
+  }, [fontUrls])
 
   return (
     <MarketplaceActionProvider>
@@ -59,9 +89,6 @@ export function VistaPreviaTab({
         className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col"
         style={{ fontFamily: `'${googleFontName}', sans-serif` }}
       >
-        {fontUrl && (
-          <link rel="stylesheet" href={fontUrl} />
-        )}
         <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 flex-shrink-0">
           <Eye className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -84,6 +111,7 @@ export function VistaPreviaTab({
             ))}
         </div>
       </div>
+      <WhatsAppFloatingButton config={whatsapp} />
     </MarketplaceActionProvider>
   )
 }

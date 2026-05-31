@@ -59,8 +59,8 @@ const categorias = ['Sin serifa', 'Con serifa', 'Monoespaciada']
  * no afecta el espacio físico en el DOM.
  */
 export function FontSelect({ label, value, onChange }: FontSelectProps) {
-  const googleFontName = GOOGLE_FONTS_MAP[value] || value
-  const fontUrl = googleFontName !== 'Geist'
+  const googleFontName = value ? (GOOGLE_FONTS_MAP[value] || value) : 'Inter'
+  const fontUrl = value && googleFontName !== 'Geist'
     ? `https://fonts.googleapis.com/css2?family=${googleFontName.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`
     : null
 
@@ -73,11 +73,14 @@ export function FontSelect({ label, value, onChange }: FontSelectProps) {
       
       <div className="relative">
         <select
-          value={value}
+          value={value || ''}
           onChange={(e) => onChange(e.target.value)}
           className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-body transition-all duration-200 outline-none hover:border-gray-300 focus:border-border-focus focus:ring-2 focus:ring-ring/20 cursor-pointer shadow-sm font-medium"
-          style={{ fontFamily: `'${googleFontName}', sans-serif` }}
+          style={{ fontFamily: value ? `'${googleFontName}', sans-serif` : undefined }}
         >
+          <option value="" className="text-body text-sm py-1">
+            Por defecto (Heredar de la landing)
+          </option>
           {categorias.map((cat) => (
             <optgroup key={cat} label={cat.toUpperCase()} className="text-[10px] font-bold text-gray-400">
               {FUENTES.filter((f) => f.category === cat).map((f) => {

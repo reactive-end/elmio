@@ -1,27 +1,39 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/atoms/Input/Input'
 import { ColorInput } from '@/components/molecules/ColorInput/ColorInput'
 import { Select } from '@/components/atoms/Select/Select'
-import { SwitchField } from '@/components/molecules/SwitchField/SwitchField'
-import type { ConfiguracionWhatsApp, ConfiguracionCarrito } from '@/src/utils/editor-types.d'
+import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
+import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
+import { formatPhoneDisplay, stripPhoneFormat } from '@/src/utils/phoneFormat'
+import type { ConfiguracionWhatsApp } from '@/src/utils/editor-types.d'
+
+const COUNTRY_CODES: CountryCode[] = [
+  { code: 'VE', dial: '+58', flag: '🇻🇪', name: 'Venezuela' },
+  { code: 'CO', dial: '+57', flag: '🇨🇴', name: 'Colombia' },
+  { code: 'MX', dial: '+52', flag: '🇲🇽', name: 'Mexico' },
+  { code: 'US', dial: '+1', flag: '🇺🇸', name: 'Estados Unidos' },
+  { code: 'ES', dial: '+34', flag: '🇪🇸', name: 'Espana' },
+  { code: 'AR', dial: '+54', flag: '🇦🇷', name: 'Argentina' },
+  { code: 'CL', dial: '+56', flag: '🇨🇱', name: 'Chile' },
+  { code: 'PE', dial: '+51', flag: '🇵🇪', name: 'Peru' },
+]
+
+const OPERATOR_PREFIXES: OperatorPrefix[] = ['412', '422', '414', '424', '416', '426']
 
 interface ConfiguracionGeneralTabProps {
   whatsapp?: ConfiguracionWhatsApp
   onChangeWhatsapp: (data: ConfiguracionWhatsApp) => void
-  carrito?: ConfiguracionCarrito
-  onChangeCarrito: (data: ConfiguracionCarrito) => void
 }
 
 /**
  * Pestaña de configuración general del marketplace.
- * Administra integraciones externas como el botón de WhatsApp flotante y el carrito de compras.
+ * Administra integraciones externas como el botón de WhatsApp flotante.
  */
 export function ConfiguracionGeneralTab({
   whatsapp,
   onChangeWhatsapp,
-  carrito,
-  onChangeCarrito,
 }: ConfiguracionGeneralTabProps) {
   const ws = whatsapp ?? {
     activo: false,
@@ -33,19 +45,73 @@ export function ConfiguracionGeneralTab({
     delayMostrar: 3,
   }
 
-  const cart = carrito ?? {
-    activo: true,
-    textoBoton: 'Añadir al carrito',
-    colorBadge: '#ef4444',
-    permitirInvitados: true,
+  const [countryCode, setCountryCode] = useState<CountryCode>({
+    code: 'VE',
+    dial: '+58',
+    flag: '🇻🇪',
+    name: 'Venezuela',
+  })
+  const [operatorPrefix, setOperatorPrefix] = useState<OperatorPrefix>('412')
+  const [rawDigits, setRawDigits] = useState('')
+
+  useEffect(() => {
+    if (!ws.telefono) {
+      setRawDigits('')
+      return
+    }
+
+    // Encuentra el dial que coincide
+    let dialEncontrado = '+58'
+    let codeEncontrado = 'VE'
+    let flagEncontrado = '🇻🇪'
+    let nameEncontrado = 'Venezuela'
+
+    for (const c of COUNTRY_CODES) {
+      if (ws.telefono.startsWith(c.dial)) {
+        dialEncontrado = c.dial
+        codeEncontrado = c.code
+        flagEncontrado = c.flag
+        nameEncontrado = c.name
+        break
+      }
+    }
+
+    setCountryCode({
+      code: codeEncontrado,
+      dial: dialEncontrado,
+      flag: flagEncontrado,
+      name: nameEncontrado,
+    })
+
+    const resto = ws.telefono.slice(dialEncontrado.length)
+
+    // Intenta encontrar un prefijo
+    let prefijoEncontrado: OperatorPrefix = '412'
+    let digitosRestantes = resto
+
+    for (const p of OPERATOR_PREFIXES) {
+      if (resto.startsWith(p)) {
+        prefijoEncontrado = p
+        digitosRestantes = resto.slice(p.length)
+        break
+      }
+    }
+
+    setOperatorPrefix(prefijoEncontrado)
+    setRawDigits(digitosRestantes.slice(0, 7)) // limita a 7 digitos
+  }, [ws.telefono])
+
+  const handlePhoneChange = (
+    newCountry: CountryCode,
+    newPrefix: OperatorPrefix,
+    newDigits: string
+  ) => {
+    const combined = `${newCountry.dial}${newPrefix}${newDigits}`
+    onChangeWhatsapp({ ...ws, telefono: combined })
   }
 
   const handleUpdateWhatsapp = (campo: keyof ConfiguracionWhatsApp, valor: string | boolean | number) => {
     onChangeWhatsapp({ ...ws, [campo]: valor })
-  }
-
-  const handleUpdateCarrito = (campo: keyof ConfiguracionCarrito, valor: string | boolean) => {
-    onChangeCarrito({ ...cart, [campo]: valor })
   }
 
   return (
@@ -80,14 +146,27 @@ export function ConfiguracionGeneralTab({
 
           {ws.activo && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-gray-100 space-y-2 md:space-y-0">
-              <div className="space-y-2">
+              <div className="col-span-full space-y-2">
                 <label className="text-sm font-medium text-gray-700">Número de teléfono</label>
-                <Input
-                  value={ws.telefono}
-                  onChange={(e) => handleUpdateWhatsapp('telefono', e.target.value)}
-                  placeholder="Ej: +584141234567"
+                <PhoneInput
+                  displayValue={formatPhoneDisplay(rawDigits)}
+                  onChange={(e) => {
+                    const digits = stripPhoneFormat(e.target.value).slice(0, 7)
+                    setRawDigits(digits)
+                    handlePhoneChange(countryCode, operatorPrefix, digits)
+                  }}
+                  countryCode={countryCode}
+                  onCountryCodeChange={(code) => {
+                    setCountryCode(code)
+                    handlePhoneChange(code, operatorPrefix, rawDigits)
+                  }}
+                  operatorPrefix={operatorPrefix}
+                  onOperatorPrefixChange={(prefix) => {
+                    setOperatorPrefix(prefix)
+                    handlePhoneChange(countryCode, prefix, rawDigits)
+                  }}
                 />
-                <p className="text-xs text-gray-500">Incluye el código de área internacional.</p>
+                <p className="text-xs text-gray-500">Selecciona el código de país, operadora e introduce los 7 dígitos de tu número de WhatsApp.</p>
               </div>
 
               <div className="space-y-2">
@@ -129,66 +208,6 @@ export function ConfiguracionGeneralTab({
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Retardo de visualización (segundos)</label>
-                <Input
-                  type="number"
-                  value={String(ws.delayMostrar || 3)}
-                  onChange={(e) => handleUpdateWhatsapp('delayMostrar', Number(e.target.value) || 0)}
-                  placeholder="3"
-                />
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Sección: Carrito de Compras */}
-        <section className="space-y-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl">
-            <div>
-              <h3 className="font-semibold text-gray-900">Carrito de Compras</h3>
-              <p className="text-sm text-gray-500">
-                Habilita o deshabilita la compra y almacenamiento local del carrito.
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={cart.activo}
-                onChange={(e) => handleUpdateCarrito('activo', e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0f4ece]"></div>
-            </label>
-          </div>
-
-          {cart.activo && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-gray-100 space-y-2 md:space-y-0">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Texto del botón Añadir</label>
-                <Input
-                  value={cart.textoBoton}
-                  onChange={(e) => handleUpdateCarrito('textoBoton', e.target.value)}
-                  placeholder="Ej: Añadir al carrito"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Color del badge de contador</label>
-                <ColorInput
-                  label="Color del badge"
-                  value={cart.colorBadge || '#ef4444'}
-                  onChange={(c) => handleUpdateCarrito('colorBadge', c)}
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <SwitchField
-                  label="Permitir compras a invitados (sin registro previo)"
-                  checked={cart.permitirInvitados ?? true}
-                  onChange={(v) => handleUpdateCarrito('permitirInvitados', v)}
-                />
-              </div>
             </div>
           )}
         </section>
@@ -196,4 +215,3 @@ export function ConfiguracionGeneralTab({
     </div>
   )
 }
-
