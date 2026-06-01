@@ -36,6 +36,7 @@ import { ManageLoanRequestsUseCase } from '../../application/manage-loan-request
 import { GetAccountStatementUseCase } from '../../application/get-account-statement.use-case';
 import { CreateTransactionUseCase } from '../../application/create-transaction.use-case';
 import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
+import { ExecuteBillingCutoffUseCase, type BillingCutoffResult } from '../../application/execute-billing-cutoff.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
 import {
   CreateEnterpriseDto,
@@ -71,6 +72,7 @@ export class EnterpriseController {
     private readonly getAccountStatement: GetAccountStatementUseCase,
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly manageContracts: ManageContractsUseCase,
+    private readonly executeBillingCutoff: ExecuteBillingCutoffUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
     private readonly documentStorage: DocumentStorageService,
@@ -472,5 +474,13 @@ export class EnterpriseController {
 
     res.type(doc.mimeType);
     res.send(doc.buffer);
+  }
+
+  /** POST /api/enterprises/billing/execute-cutoff - Ejecuta el cobro y facturación consolidada a empresas y personas naturales para una fecha de corte específica. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('billing/execute-cutoff')
+  async executeCutoff(@Body('date') date?: string): Promise<BillingCutoffResult> {
+    return this.executeBillingCutoff.execute(date);
   }
 }

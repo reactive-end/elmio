@@ -335,6 +335,7 @@ export interface CreateTransactionInput {
   concept: string
   amount: number
   status?: 'paid' | 'pending' | 'failed'
+  date?: string
 }
 
 export interface LoanSummary {

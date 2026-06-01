@@ -177,6 +177,7 @@ export class CreateTransactionDto {
   concept!: string;
   amount!: number;
   status?: 'paid' | 'pending' | 'failed';
+  date?: string;
 }
 
 /**

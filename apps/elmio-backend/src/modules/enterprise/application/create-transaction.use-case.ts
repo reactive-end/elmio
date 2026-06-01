@@ -17,6 +17,7 @@ interface CreateTransactionInput {
   concept: string;
   amount: number;
   status?: 'paid' | 'pending' | 'failed';
+  date?: string;
 }
 
 /**
@@ -81,7 +82,7 @@ export class CreateTransactionUseCase {
       concept,
       amount: Math.round(input.amount * 100) / 100,
       status: input.status ?? 'pending',
-      date: new Date().toISOString(),
+      date: input.date ?? new Date().toISOString(),
     });
 
     if (isMarketplacePurchase && collaboratorId && enterpriseId) {

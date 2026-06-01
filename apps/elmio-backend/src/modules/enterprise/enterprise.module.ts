@@ -13,6 +13,7 @@ import { GetAccountStatementUseCase } from './application/get-account-statement.
 import { CreateTransactionUseCase } from './application/create-transaction.use-case';
 import { ManageContractsUseCase } from './application/manage-contracts.use-case';
 import { ManageProfileUseCase } from './application/manage-profile.use-case';
+import { ExecuteBillingCutoffUseCase } from './application/execute-billing-cutoff.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
 import { DbEnterpriseRepositoryService } from './infrastructure/db-enterprise-repository.service';
 import { DocumentStorageService } from './infrastructure/document-storage.service';
@@ -63,6 +64,7 @@ import { ProductModule } from '../product/product.module';
     CreateTransactionUseCase,
     ManageContractsUseCase,
     ManageProfileUseCase,
+    ExecuteBillingCutoffUseCase,
     DbEnterpriseRepositoryService,
     DocumentStorageService,
     {

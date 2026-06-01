@@ -296,6 +296,32 @@ export default function CheckoutPage() {
     }
   }
 
+  const getNextBillingCutoffDate = (baseDate: Date): Date => {
+    const year = baseDate.getFullYear()
+    const month = baseDate.getMonth()
+    const day = baseDate.getDate()
+
+    if (day < 15) {
+      return new Date(year, month, 15, 23, 59, 59, 999)
+    } else {
+      return new Date(year, month + 1, 0, 23, 59, 59, 999) // Último día del mes actual
+    }
+  }
+
+  const getQuotaDueDates = (count: number, startDate: Date = new Date()): string[] => {
+    const dates: string[] = []
+    let current = new Date(startDate)
+
+    for (let i = 0; i < count; i++) {
+      const nextCutoff = getNextBillingCutoffDate(current)
+      dates.push(nextCutoff.toISOString())
+      // Mover dos días después del corte para que caiga en el siguiente periodo
+      current = new Date(nextCutoff)
+      current.setDate(current.getDate() + 2)
+    }
+    return dates
+  }
+
   // Confirmar la compra real y debitar con R4
   const handleConfirmPurchase = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -399,22 +425,91 @@ export default function CheckoutPage() {
 
       // 4. Registrar la transacción en el backend de ElMio
       const isCompany = session?.role === 'COMPANY'
-      const transactionConcept = `Compra Marketplace R4: ${product.name} (Esquema: ${selectedScheme.name}) - Ref: ${referenceStr}`
+      const collaboratorNameStr = profile ? `${profile.name} ${profile.lastName}` : 'Colaborador'
 
-      if (isCompany && enterprise) {
-        await enterpriseService.createTransaction(enterprise.id, {
-          kind: 'charge',
-          concept: transactionConcept,
-          amount: originalPrice, // Monto base de compra
-          status: 'paid',
-        })
+      if (isCorporateRequest) {
+        // Para solicitudes corporativas: el cargo se registra como pendiente (se cobrará a la empresa en fechas de corte)
+        const corpConcept = `Cargo Corporativo Adquisición: ${product.name} (Colaborador: ${collaboratorNameStr}) - Ref: ${referenceStr}`
+        if (isCompany && enterprise) {
+          await enterpriseService.createTransaction(enterprise.id, {
+            kind: 'charge',
+            concept: corpConcept,
+            amount: originalPrice,
+            status: 'pending',
+          })
+        } else {
+          await enterpriseService.createMyTransaction({
+            kind: 'charge',
+            concept: corpConcept,
+            amount: originalPrice,
+            status: 'pending',
+          })
+        }
+      } else if (!isCorporateRequest && (selectedScheme.paymentMode === 'quota' || selectedScheme.paymentMode === 'mixed')) {
+        // Para personas naturales con cuotas (financiamiento)
+        const dueDates = getQuotaDueDates(quotaCount)
+
+        // Registrar el pago inicial si hay
+        if (selectedScheme.paymentMode === 'mixed' && selectedScheme.initialPayment > 0) {
+          const initialConcept = `Compra Marketplace R4 (Pago Inicial): ${product.name} - Ref: ${referenceStr}`
+          if (isCompany && enterprise) {
+            await enterpriseService.createTransaction(enterprise.id, {
+              kind: 'charge',
+              concept: initialConcept,
+              amount: selectedScheme.initialPayment,
+              status: 'paid',
+            })
+          } else {
+            await enterpriseService.createMyTransaction({
+              kind: 'charge',
+              concept: initialConcept,
+              amount: selectedScheme.initialPayment,
+              status: 'paid',
+            })
+          }
+        }
+
+        // Registrar cada cuota como cargo pendiente con su fecha fija de vencimiento (15 o fin de mes)
+        for (let i = 0; i < quotaCount; i++) {
+          const quotaConcept = `Compra Cuota ${i + 1}/${quotaCount}: ${product.name} (Esquema: ${selectedScheme.name}) - Ref: ${referenceStr}`
+          const quotaAmountVal = quotaAmount
+
+          if (isCompany && enterprise) {
+            await enterpriseService.createTransaction(enterprise.id, {
+              kind: 'charge',
+              concept: quotaConcept,
+              amount: quotaAmountVal,
+              status: 'pending',
+              date: dueDates[i],
+            })
+          } else {
+            await enterpriseService.createMyTransaction({
+              kind: 'charge',
+              concept: quotaConcept,
+              amount: quotaAmountVal,
+              status: 'pending',
+              date: dueDates[i],
+            })
+          }
+        }
       } else {
-        await enterpriseService.createMyTransaction({
-          kind: 'charge',
-          concept: transactionConcept,
-          amount: originalPrice,
-          status: 'paid',
-        })
+        // Pago de contado para personas naturales
+        const transactionConcept = `Compra Marketplace R4: ${product.name} (Esquema: ${selectedScheme.name}) - Ref: ${referenceStr}`
+        if (isCompany && enterprise) {
+          await enterpriseService.createTransaction(enterprise.id, {
+            kind: 'charge',
+            concept: transactionConcept,
+            amount: originalPrice,
+            status: 'paid',
+          })
+        } else {
+          await enterpriseService.createMyTransaction({
+            kind: 'charge',
+            concept: transactionConcept,
+            amount: originalPrice,
+            status: 'paid',
+          })
+        }
       }
 
       if (isCorporateRequest && requestId) {
