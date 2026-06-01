@@ -220,7 +220,7 @@ export class ManageLoanRequestsUseCase {
 
           // Ejecutar transferencia inmediata (Banco Exterior)
           await this.paymentProcessorService.executeImmediateTransfer({
-            companyAccountId: 'GLOBAL_R4_FALLBACK', // O el id de cuenta que corresponda
+            companyAccountId: product.alternativeBankAccountId || 'GLOBAL_R4_FALLBACK',
             idClient: 'GLOBAL_CLIENT_ID', // El repositorio ya sobreescribe con context.clientId si corresponde
             sessionId: idSesion,
             channelId: 1, // idCanal entero

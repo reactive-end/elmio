@@ -4604,7 +4604,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         IdConsumidor: data.datosPeticion.idConsumidor, // Atención a la 'I' mayúscula
       },
       transferenciaInmediata: {
-        ctaPagadora: data.transferenciaInmediata.ctaPagadora,
+        ctaPagadora: context.account?.accountNumber || data.transferenciaInmediata.ctaPagadora,
         ctaReceptora: data.transferenciaInmediata.ctaReceptora,
         codigobancoReceptor: data.transferenciaInmediata.codigobancoReceptor, // Atención a la 'b' minúscula
         telefonoReceptor: data.transferenciaInmediata.telefonoReceptor, // String(11) ej. 04146949977
@@ -5148,27 +5148,73 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
   private async getExteriorContext(
     companyAccountId?: string,
   ): Promise<ExteriorContext> {
-    const resolvedCompanyAccountId =
-      this.resolveExteriorCompanyAccountId(companyAccountId)
+    let resolvedCompanyAccountId = companyAccountId?.trim()
+    let account: BankAccount | null = null
+    let activeKey: ApiKey | null = null
 
-    const account = await this.bankAccountRepository.findOne({
-      where: { id: resolvedCompanyAccountId },
-    })
+    if (resolvedCompanyAccountId && resolvedCompanyAccountId !== 'GLOBAL_R4_FALLBACK') {
+      try {
+        account = await this.bankAccountRepository.findOne({
+          where: { id: resolvedCompanyAccountId },
+        })
+        if (account) {
+          activeKey = await this.apiKeyRepository.findOne({
+            where: {
+              bankAccount: { id: resolvedCompanyAccountId },
+              isActive: true,
+            },
+            order: { createdAt: 'DESC' },
+            relations: ['bankAccount'],
+          })
+        }
+      } catch (e) {
+        // Ignorar error al buscar cuenta específica para intentar con el fallback general
+      }
+    }
+
+    // Si no se encontró la cuenta o no tiene credenciales activas, buscar CUALQUIER cuenta con credenciales activas para Banco Exterior
+    if (!account || !activeKey) {
+      const activeKeys = await this.apiKeyRepository.find({
+        where: { isActive: true },
+        relations: ['bankAccount', 'bankAccount.bank'],
+        order: { createdAt: 'DESC' },
+      })
+
+      for (const key of activeKeys) {
+        const bankAcc = key.bankAccount
+        if (bankAcc && key.commerceKey && key.secretKey && key.extraKey) {
+          const isExterior =
+            (bankAcc.bank?.code === '0115') ||
+            (bankAcc.accountNumber && bankAcc.accountNumber.startsWith('0115'))
+          
+          if (isExterior) {
+            account = bankAcc
+            activeKey = key
+            resolvedCompanyAccountId = bankAcc.id
+            break
+          }
+        }
+      }
+
+      // Si no hay ninguna con código/número Exterior pero hay alguna con 3 keys (común en Exterior), usarla
+      if (!account || !activeKey) {
+        for (const key of activeKeys) {
+          const bankAcc = key.bankAccount
+          if (bankAcc && key.commerceKey && key.secretKey && key.extraKey) {
+            account = bankAcc
+            activeKey = key
+            resolvedCompanyAccountId = bankAcc.id
+            break
+          }
+        }
+      }
+    }
 
     if (!account) {
       throw new NotFoundException(
-        'No se encontro la cuenta indicada para Banco Exterior.',
+        'No se encontro ninguna cuenta bancaria activa y valida para Banco Exterior en el sistema.',
       )
     }
-
-    const activeKey = await this.apiKeyRepository.findOne({
-      where: {
-        bankAccount: { id: resolvedCompanyAccountId },
-        isActive: true,
-      },
-      order: { createdAt: 'DESC' },
-      relations: ['bankAccount'],
-    })
 
     if (
       !activeKey?.commerceKey ||
@@ -5176,7 +5222,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       !activeKey?.extraKey
     ) {
       throw new InternalServerErrorException(
-        'No hay credenciales activas completas para la cuenta indicada de Banco Exterior.',
+        'No hay credenciales activas completas para la cuenta de Banco Exterior.',
       )
     }
 
@@ -5192,12 +5238,12 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
 
     if (!decryptedApiKey || !decryptedClientSecret || !decryptedMasterKey) {
       throw new InternalServerErrorException(
-        'No se pudieron descifrar credenciales activas para la cuenta indicada de Banco Exterior.',
+        'No se pudieron descifrar credenciales activas para la cuenta de Banco Exterior.',
       )
     }
 
     return {
-      companyAccountId: resolvedCompanyAccountId,
+      companyAccountId: resolvedCompanyAccountId!,
       account,
       apiKey: decryptedApiKey,
       clientSecret: decryptedClientSecret,
