@@ -59,6 +59,7 @@ import {
       useClass: DbCategoryRepositoryService,
     },
   ],
+  exports: [PRODUCT_REPOSITORY_PORT],
 })
 export class ProductModule {}
 

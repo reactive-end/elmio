@@ -312,7 +312,7 @@ export interface LoanRequest {
   type: 'advance' | 'loan' | 'permission' | 'other'
   amount: number
   description: string
-  status: 'pending' | 'company_approved' | 'approved' | 'denied'
+  status: 'pending' | 'company_approved' | 'approved' | 'acquired' | 'denied'
   denialReason: string | null
   createdAt: string
   updatedAt: string
@@ -519,11 +519,20 @@ export const enterpriseService = {
     return (await res.json()) as LoanRequest
   },
 
-  async listMyRequests(status?: 'pending' | 'approved' | 'denied'): Promise<LoanRequest[]> {
+  async listMyRequests(status?: 'pending' | 'approved' | 'acquired' | 'denied'): Promise<LoanRequest[]> {
     const query = status ? `?status=${status}` : ''
     const res = await authedFetch(`/profile/me/requests${query}`)
     if (!res.ok) throw new Error('Error al listar tus solicitudes.')
     return (await res.json()) as LoanRequest[]
+  },
+
+  async acquireRequest(requestId: string, productId: string): Promise<LoanRequest> {
+    const res = await authedFetch(`/profile/me/requests/${requestId}/acquire`, {
+      method: 'PATCH',
+      body: JSON.stringify({ productId }),
+    })
+    if (!res.ok) throw new Error('Error al registrar la adquisición de la solicitud.')
+    return (await res.json()) as LoanRequest
   },
 
   // --- Account Statement ---

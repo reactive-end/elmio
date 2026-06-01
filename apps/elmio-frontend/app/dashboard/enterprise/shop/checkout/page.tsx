@@ -417,6 +417,11 @@ export default function CheckoutPage() {
         })
       }
 
+      if (isCorporateRequest && requestId) {
+        setProcessingStep('Registrando adquisición de solicitud...')
+        await enterpriseService.acquireRequest(requestId, product.id)
+      }
+
       setPaymentReference(referenceStr)
       setSuccess(true)
       setStep(3) // Avanzar al Paso 3 de Éxito

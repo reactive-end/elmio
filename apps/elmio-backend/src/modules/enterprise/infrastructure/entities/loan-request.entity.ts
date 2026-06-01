@@ -34,7 +34,7 @@ export class LoanRequestEntity {
   description!: string;
 
   @Column({ type: 'varchar', length: 50, default: 'pending' })
-  status!: 'pending' | 'company_approved' | 'approved' | 'denied';
+  status!: 'pending' | 'company_approved' | 'approved' | 'acquired' | 'denied';
 
   @Column({ type: 'text', nullable: true })
   denialReason!: string | null;

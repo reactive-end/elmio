@@ -9,6 +9,8 @@ import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../domain/ports/enterprise-repository.port';
+import { PRODUCT_REPOSITORY_PORT, type ProductRepositoryPort } from '../../product/domain/ports/product-repository.port';
+import { PaymentProcessorService } from '../../payment-processor/application/services/payment-processor.service';
 
 /**
  * Gestiona la resolucion de solicitudes de prestamo.
@@ -18,6 +20,9 @@ export class ManageLoanRequestsUseCase {
   constructor(
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly repository: EnterpriseRepositoryPort,
+    @Inject(PRODUCT_REPOSITORY_PORT)
+    private readonly productRepository: ProductRepositoryPort,
+    private readonly paymentProcessorService: PaymentProcessorService,
   ) {}
 
   /**
@@ -134,6 +139,107 @@ export class ManageLoanRequestsUseCase {
       }
     } catch (e) {
       // Ignorar fallas al sincronizar transacción asociada
+    }
+
+    return savedRequest;
+  }
+
+  /**
+   * Marca una solicitud de préstamo como adquirida y ejecuta las acciones postventa del producto.
+   * @param requestId ID de la solicitud de préstamo.
+   * @param productId ID del producto que se está adquiriendo.
+   * @returns La solicitud actualizada.
+   */
+  async acquire(requestId: string, productId: string): Promise<LoanRequest> {
+    const request = await this.repository.findRequestById(requestId);
+
+    if (!request) {
+      throw new NotFoundException('Solicitud no encontrada.');
+    }
+
+    if (request.status !== 'approved') {
+      throw new BadRequestException(
+        'Solo se pueden adquirir solicitudes aprobadas.',
+      );
+    }
+
+    request.status = 'acquired';
+    request.updatedAt = new Date().toISOString();
+
+    const savedRequest = await this.repository.saveRequest(request);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Acción de postventa: Desembolso de fondos (disburse_funds)
+    // ─────────────────────────────────────────────────────────────────────────
+    try {
+      const product = await this.productRepository.findById(productId);
+      if (product && product.actions) {
+        const disburseAction = product.actions.find(
+          (act) => act.type === 'disburse_funds' && act.active,
+        );
+
+        if (disburseAction) {
+          // Buscar perfil del colaborador para obtener sus datos bancarios
+          const profile = await this.repository.findCollaboratorById(
+            request.collaboratorId,
+          );
+
+          if (!profile) {
+            throw new Error('No se encontró el perfil del colaborador para procesar el desembolso.');
+          }
+
+          if (!profile.debitCard || !profile.debitCard.cardNumber || !profile.debitCard.bank) {
+            throw new Error('El colaborador no posee datos de cuenta bancaria registrados en su perfil.');
+          }
+
+          // Obtener exchange rate
+          let exchangeRate = 1;
+          try {
+            const rateObj = await this.paymentProcessorService.getLastExchangeRate();
+            if (rateObj && rateObj.bolivaresPerUsd) {
+              exchangeRate = Number(rateObj.bolivaresPerUsd);
+            }
+          } catch (e) {
+            // Ignorar y dejar en 1 o lanzar error
+          }
+
+          // Determinar el monto en USD (de la acción o de la solicitud como fallback)
+          const amountUsd = Number(disburseAction.config.amountUsd ?? request.amount);
+          const amountVES = Number((amountUsd * exchangeRate).toFixed(2));
+
+          // Generar idSesion de 16 caracteres: aaaaMMddhhmmSSss
+          const now = new Date();
+          const idSesion =
+            now.getFullYear().toString() +
+            (now.getMonth() + 1).toString().padStart(2, '0') +
+            now.getDate().toString().padStart(2, '0') +
+            now.getHours().toString().padStart(2, '0') +
+            now.getMinutes().toString().padStart(2, '0') +
+            now.getSeconds().toString().padStart(2, '0') +
+            (now.getMilliseconds() % 100).toString().padStart(2, '0');
+
+          // Ejecutar transferencia inmediata (Banco Exterior)
+          await this.paymentProcessorService.executeImmediateTransfer({
+            companyAccountId: 'GLOBAL_R4_FALLBACK', // O el id de cuenta que corresponda
+            idClient: 'GLOBAL_CLIENT_ID', // El repositorio ya sobreescribe con context.clientId si corresponde
+            sessionId: idSesion,
+            channelId: 1, // idCanal entero
+            userId: 'elmio-system',
+            terminalId: 'elmio-backend',
+            consumerId: 'ElMio',
+            payerAccount: '01150010100000000000', // ctaPagadora
+            receiverAccount: profile.debitCard.cardNumber,
+            receiverBankCode: profile.debitCard.bank,
+            receiverPhone: profile.phone,
+            receiverId: `${profile.documentType || 'V'}${profile.documentId}`,
+            amount: amountVES,
+            beneficiaryName: `${profile.name} ${profile.lastName}`,
+            concept: `Desembolso prestamo: ${product.name}`,
+          } as any);
+        }
+      }
+    } catch (error) {
+      console.error('Error al ejecutar la acción de postventa disburse_funds:', error);
     }
 
     return savedRequest;

@@ -12,11 +12,12 @@ import { Button } from '@/components/atoms/Button/Button'
 
 const STATUS_BADGE: Record<
   LoanRequest['status'],
-  { bg: string; text: string; icon: typeof Clock; label: string }
+  { bg: string; text: string; icon: any; label: string }
 > = {
   pending: { bg: 'bg-amber-50', text: 'text-amber-700', icon: Clock, label: 'Pendiente' },
   company_approved: { bg: 'bg-blue-50', text: 'text-blue-700', icon: Clock, label: 'Por Finanzas' },
   approved: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle2, label: 'Aprobada' },
+  acquired: { bg: 'bg-purple-50', text: 'text-purple-700', icon: FileCheck, label: 'Adquirido' },
   denied: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle, label: 'Denegada' },
 }
 

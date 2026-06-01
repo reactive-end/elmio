@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -96,5 +97,18 @@ export class ProfileController {
       ...body,
       collaboratorId: profile.id,
     });
+  }
+
+  /** PATCH /api/profile/me/requests/:requestId/acquire - Marca una solicitud de préstamo como adquirida y ejecuta las acciones postventa del producto. */
+  @Patch('me/requests/:requestId/acquire')
+  async acquireRequest(
+    @Req() req: Request,
+    @Param('requestId') requestId: string,
+    @Body('productId') productId: string,
+  ) {
+    if (!productId) {
+      throw new BadRequestException('El productId es requerido para adquirir la solicitud.');
+    }
+    return this.manageRequests.acquire(requestId, productId);
   }
 }
