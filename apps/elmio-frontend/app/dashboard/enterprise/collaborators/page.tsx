@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import {
   Users,
@@ -21,6 +21,11 @@ import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { useCollaborators } from '@/src/hooks/pages/useColaboradores'
 import type { CollaboratorInput, PersonProfile } from '@/src/services/empresa.service'
+import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
+import type { CedulaValue, CedulaLetter } from '@/components/molecules/CedulaInput/CedulaInput.d'
+import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
+import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
+import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 
 const STATUS_BADGE: Record<PersonProfile['status'], { bg: string; text: string; label: string }> = {
   active: { bg: 'bg-green-50', text: 'text-green-700', label: 'Activo' },
@@ -437,10 +442,78 @@ function CollaboratorModal({
   const upd = <K extends keyof CollaboratorInput>(key: K, val: CollaboratorInput[K]) =>
     setForm((p) => ({ ...p, [key]: val }))
 
+  const [cedulaVal, setCedulaVal] = useState<CedulaValue>({
+    letter: (initialData?.documentType as CedulaLetter) || 'V',
+    digits: initialData?.documentId || '',
+  })
+
+  // Teléfono usando PhoneInput y hook usePhoneFormat
+  const phoneFormat = usePhoneFormat()
+  const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>({
+    code: 'VE',
+    dial: '+58',
+    flag: '🇻🇪',
+    name: 'Venezuela',
+  })
+  const [phoneOperatorPrefix, setPhoneOperatorPrefix] = useState<OperatorPrefix>('412')
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({ ...initialData })
+      setCedulaVal({
+        letter: (initialData.documentType as CedulaLetter) || 'V',
+        digits: initialData.documentId || '',
+      })
+      if (initialData.phone) {
+        const cleanPhone = initialData.phone.replaceAll(/\D/g, '')
+        const prefix = cleanPhone.slice(0, 3) as OperatorPrefix
+        if (['412', '422', '414', '424', '416', '426'].includes(prefix)) {
+          setPhoneOperatorPrefix(prefix)
+          phoneFormat.setRawDigits(cleanPhone.slice(3))
+        } else {
+          phoneFormat.setRawDigits(cleanPhone)
+        }
+      }
+    } else {
+      setForm({ ...EMPTY_COLLABORATOR })
+      setCedulaVal({ letter: 'V', digits: '' })
+      phoneFormat.setRawDigits('')
+      setPhoneOperatorPrefix('412')
+    }
+  }, [initialData])
+
+  const handleCedulaChange = (newVal: CedulaValue) => {
+    setCedulaVal(newVal)
+    setForm((p) => ({
+      ...p,
+      documentType: newVal.letter,
+      documentId: newVal.digits
+    }))
+  }
+
   const handle = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    await onSubmit(form)
+
+    if (!cedulaVal.digits.trim()) {
+      alert('Por favor ingresa tu número de cédula de identidad.')
+      setSubmitting(false)
+      return
+    }
+    if (!phoneFormat.rawDigits.trim() || phoneFormat.rawDigits.length !== 7) {
+      alert('Por favor ingresa un número de teléfono celular de 7 dígitos.')
+      setSubmitting(false)
+      return
+    }
+
+    const payload: CollaboratorInput = {
+      ...form,
+      documentType: cedulaVal.letter,
+      documentId: cedulaVal.digits,
+      phone: `0${phoneOperatorPrefix}${phoneFormat.rawDigits}`,
+    }
+
+    await onSubmit(payload)
     setSubmitting(false)
   }
 
@@ -451,27 +524,18 @@ function CollaboratorModal({
         <h3 className="text-lg font-semibold text-body mb-5">{title}</h3>
         <form onSubmit={(e) => void handle(e)} className="flex flex-col gap-4">
           <p className="text-xs font-medium text-body-muted uppercase tracking-wider">Identidad</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <FormField label="Tipo documento" required>
-              <Select
-                options={[
-                  { value: 'V', label: 'V' },
-                  { value: 'E', label: 'E' },
-                  { value: 'J', label: 'J' },
-                  { value: 'P', label: 'P' },
-                ]}
-                value={form.documentType}
-                onChange={(v) => upd('documentType', v)}
-              />
-            </FormField>
-            <FormField label="Cedula" required>
-              <Input
-                value={form.documentId}
-                onChange={(e) => upd('documentId', e.target.value)}
-                required
+          
+          {/* Cédula especializada en su propia fila */}
+          <div className="grid grid-cols-1 gap-3">
+            <FormField label="Cédula de Identidad" required>
+              <CedulaInput
+                value={cedulaVal}
+                onChange={handleCedulaChange}
+                allowedLetters={['V', 'E', 'G', 'J', 'P'] as any}
               />
             </FormField>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Nombre" required>
               <Input value={form.name} onChange={(e) => upd('name', e.target.value)} required />
@@ -484,7 +548,8 @@ function CollaboratorModal({
               />
             </FormField>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+          <div className="grid grid-cols-1 gap-3">
             <FormField label="Email" required>
               <Input
                 type="email"
@@ -493,8 +558,19 @@ function CollaboratorModal({
                 required
               />
             </FormField>
-            <FormField label="Telefono" required>
-              <Input value={form.phone} onChange={(e) => upd('phone', e.target.value)} required />
+          </div>
+
+          {/* Teléfono especializado en su propia fila */}
+          <div className="grid grid-cols-1 gap-3">
+            <FormField label="Teléfono de Contacto" required>
+              <PhoneInput
+                displayValue={phoneFormat.displayValue}
+                onChange={phoneFormat.handleChange}
+                countryCode={phoneCountryCode}
+                onCountryCodeChange={setPhoneCountryCode}
+                operatorPrefix={phoneOperatorPrefix}
+                onOperatorPrefixChange={setPhoneOperatorPrefix}
+              />
             </FormField>
           </div>
 

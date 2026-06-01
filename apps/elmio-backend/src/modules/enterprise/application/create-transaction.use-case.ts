@@ -31,17 +31,19 @@ export class CreateTransactionUseCase {
 
   /**
    * Crea una transaccion para la empresa indicada.
-   * @param enterpriseId ID de la empresa.
+   * @param enterpriseId ID de la empresa (puede ser null para administradores o personas naturales directas).
    * @param input Datos del movimiento a registrar.
    * @returns Transaccion persistida.
    */
   async execute(
-    enterpriseId: string,
+    enterpriseId: string | null,
     input: CreateTransactionInput,
   ): Promise<Transaction> {
-    const enterprise = await this.repository.findEnterpriseById(enterpriseId);
-    if (!enterprise) {
-      throw new NotFoundException('Empresa no encontrada.');
+    if (enterpriseId) {
+      const enterprise = await this.repository.findEnterpriseById(enterpriseId);
+      if (!enterprise) {
+        throw new NotFoundException('Empresa no encontrada.');
+      }
     }
 
     const concept = input.concept.trim();
@@ -59,9 +61,9 @@ export class CreateTransactionUseCase {
       const collaborator = await this.repository.findCollaboratorById(
         input.collaboratorId,
       );
-      if (!collaborator || collaborator.enterpriseId !== enterpriseId) {
+      if (!collaborator || (enterpriseId && collaborator.enterpriseId !== enterpriseId)) {
         throw new BadRequestException(
-          'El colaborador indicado no pertenece a la empresa.',
+          'El colaborador indicado no pertenece a la empresa especificada.',
         );
       }
       collaboratorId = collaborator.id;
@@ -82,7 +84,7 @@ export class CreateTransactionUseCase {
       date: new Date().toISOString(),
     });
 
-    if (isMarketplacePurchase && collaboratorId) {
+    if (isMarketplacePurchase && collaboratorId && enterpriseId) {
       try {
         await this.repository.saveRequest({
           id: transactionId, // Compartimos el mismo ID para vincularlas 1:1

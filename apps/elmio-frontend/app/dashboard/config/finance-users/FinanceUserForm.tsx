@@ -12,6 +12,8 @@ import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
 import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
 import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 import { financeUsersService } from '@/src/services/finance-users.service'
+import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
+import type { CedulaValue, CedulaLetter } from '@/components/molecules/CedulaInput/CedulaInput.d'
 
 interface FinanceUserFormProps {
   readonly mode: 'create' | 'edit'
@@ -27,9 +29,16 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   // Campos de formulario
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [cedula, setCedula] = useState('')
+  const [cedulaValue, setCedulaValue] = useState<CedulaValue>({ letter: 'V', digits: '' })
   const [email, setEmail] = useState('')
+
+  const handleCedulaChange = (newVal: CedulaValue) => {
+    setCedulaValue(newVal)
+    setCedula(`${newVal.letter}${newVal.digits}`)
+  }
 
   // Teléfono usando PhoneInput y hook usePhoneFormat
   const phoneFormat = usePhoneFormat()
@@ -52,8 +61,24 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
       try {
         setLoadingData(true)
         const user = await financeUsersService.getById(id)
-        setName(user.name)
-        setCedula(user.slug || '')
+        // Separar nombre y apellido al cargar
+        const nameParts = (user.name || '').trim().split(' ')
+        setFirstName(nameParts[0] || '')
+        setLastName(nameParts.slice(1).join(' ') || '')
+        const rawCedula = user.slug || ''
+        setCedula(rawCedula)
+        const letterMatch = rawCedula.match(/^([VEGJP])(.*)$/i)
+        if (letterMatch) {
+          setCedulaValue({
+            letter: letterMatch[1].toUpperCase() as CedulaLetter,
+            digits: letterMatch[2],
+          })
+        } else {
+          setCedulaValue({
+            letter: 'V',
+            digits: rawCedula,
+          })
+        }
         setEmail(user.email || '')
 
         // Inicializar código de país del teléfono
@@ -89,7 +114,8 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
   const validateForm = async (): Promise<boolean> => {
     const errors: Record<string, boolean> = {}
 
-    if (!name.trim()) errors.name = true
+    if (!firstName.trim()) errors.firstName = true
+    if (!lastName.trim()) errors.lastName = true
     if (!cedula.trim()) errors.cedula = true
     if (!phoneFormat.rawDigits || phoneFormat.rawDigits.length < 7) errors.phone = true
     if (!email.trim() || !email.includes('@')) errors.email = true
@@ -129,7 +155,7 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
     }
 
     const payload = {
-      name: name.trim(),
+      name: `${firstName.trim()} ${lastName.trim()}`,
       cedula: cedula.trim(),
       countryCode: phoneCountryCode.dial.replace('+', ''), // Enviamos solo el número ej: '58'
       phone: `${phoneOperatorPrefix}${phoneFormat.rawDigits}`, // Prefijo operador + resto de dígitos
@@ -184,44 +210,40 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nombre Completo */}
-            <FormField label="Nombre completo del Usuario" required>
+            {/* Nombre */}
+            <FormField label="Nombre" required>
               <Input
-                id="finance-form-name"
+                id="finance-form-first-name"
                 type="text"
-                placeholder="Ej. Juan Pérez"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                hasError={validationErrors.name}
+                placeholder="Ej. Juan"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                hasError={validationErrors.firstName}
                 required
               />
             </FormField>
 
-            {/* Cédula */}
-            <FormField label="Cédula de Identidad" required>
+            {/* Apellido */}
+            <FormField label="Apellido" required>
               <Input
-                id="finance-form-cedula"
+                id="finance-form-last-name"
                 type="text"
-                placeholder="Ej. 12345678"
-                value={cedula}
-                onChange={(e) => setCedula(e.target.value)}
-                hasError={validationErrors.cedula}
+                placeholder="Ej. Pérez"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                hasError={validationErrors.lastName}
                 required
               />
             </FormField>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Teléfono con PhoneInput */}
-            <FormField label="Teléfono de Contacto" required>
-              <PhoneInput
-                displayValue={phoneFormat.displayValue}
-                onChange={phoneFormat.handleChange}
-                countryCode={phoneCountryCode}
-                onCountryCodeChange={setPhoneCountryCode}
-                operatorPrefix={phoneOperatorPrefix}
-                onOperatorPrefixChange={setPhoneOperatorPrefix}
-                hasError={validationErrors.phone}
+            {/* Cédula */}
+            <FormField label="Cédula de Identidad" required>
+              <CedulaInput
+                value={cedulaValue}
+                onChange={handleCedulaChange}
+                allowedLetters={['V', 'E', 'G', 'J', 'P'] as any}
               />
             </FormField>
 
@@ -235,6 +257,21 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 hasError={validationErrors.email}
                 required
+              />
+            </FormField>
+          </div>
+
+          {/* Teléfono en fila completa */}
+          <div className="grid grid-cols-1 gap-4">
+            <FormField label="Teléfono de Contacto" required>
+              <PhoneInput
+                displayValue={phoneFormat.displayValue}
+                onChange={phoneFormat.handleChange}
+                countryCode={phoneCountryCode}
+                onCountryCodeChange={setPhoneCountryCode}
+                operatorPrefix={phoneOperatorPrefix}
+                onOperatorPrefixChange={setPhoneOperatorPrefix}
+                hasError={validationErrors.phone}
               />
             </FormField>
           </div>

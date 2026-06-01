@@ -7,12 +7,12 @@ export class TransactionEntity {
   @PrimaryColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => EnterpriseEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => EnterpriseEntity, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'enterpriseId' })
-  enterprise!: EnterpriseEntity;
+  enterprise!: EnterpriseEntity | null;
 
-  @Column({ type: 'uuid' })
-  enterpriseId!: string;
+  @Column({ type: 'uuid', nullable: true })
+  enterpriseId!: string | null;
 
   @ManyToOne(() => PersonProfileEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'collaboratorId' })

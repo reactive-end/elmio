@@ -91,11 +91,6 @@ export class ProfileController {
     const profile = await this.manageProfile.getOrCreateProfile(
       req.session!.userId,
     );
-    if (!profile.enterpriseId) {
-      throw new BadRequestException(
-        'Tu perfil no esta asociado a una empresa para registrar movimientos.',
-      );
-    }
 
     return this.createTransactionUseCase.execute(profile.enterpriseId, {
       ...body,

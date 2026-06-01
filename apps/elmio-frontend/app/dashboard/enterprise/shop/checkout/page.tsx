@@ -78,6 +78,8 @@ export default function CheckoutPage() {
 
   const productId = searchParams.get('product')
   const schemeId = searchParams.get('scheme')
+  const requestId = searchParams.get('requestId')
+  const isCorporateRequest = Boolean(requestId)
 
   // Estados de sesión y autenticación
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
@@ -316,12 +318,12 @@ export default function CheckoutPage() {
     const hasInitial = selectedScheme.paymentMode === 'mixed' && selectedScheme.initialPayment > 0
     const needsImmediatePayment = isCash || hasInitial
 
-    if (needsImmediatePayment && (!otpValue || otpValue.trim().length !== 8)) {
+    if (!isCorporateRequest && needsImmediatePayment && (!otpValue || otpValue.trim().length !== 8)) {
       setError('Por favor ingresa la clave OTP / C2P completa de 8 dígitos.')
       return
     }
 
-    const needsDomiciliation = selectedScheme.paymentMode === 'quota' || selectedScheme.paymentMode === 'mixed'
+    const needsDomiciliation = !isCorporateRequest && (selectedScheme.paymentMode === 'quota' || selectedScheme.paymentMode === 'mixed')
     if (needsDomiciliation && !authorizedDomiciliation) {
       setError('Debes autorizar expresamente la domiciliación de pagos periódicos para continuar.')
       return
@@ -340,7 +342,11 @@ export default function CheckoutPage() {
       let referenceStr = 'REF-LOCAL'
       let transactionIdStr = `TRX-${Date.now()}`
 
-      if (needsImmediatePayment) {
+      if (isCorporateRequest) {
+        // Solicitud corporativa aprobada: no cobrar al colaborador vía R4
+        referenceStr = `CORP-${requestId}`
+        transactionIdStr = `CORP-TRX-${Date.now()}`
+      } else if (needsImmediatePayment) {
         setProcessingStep('Conectando de forma segura con Banco R4...')
         // 1. Debitar en caliente C2P mediante R4
         const immediateDebitRes = await r4PaymentService.immediateDebit({
@@ -362,7 +368,7 @@ export default function CheckoutPage() {
         transactionIdStr = immediateDebitRes.id || `TRX-${Date.now()}`
       }
 
-      if (needsDomiciliation) {
+      if (!isCorporateRequest && needsDomiciliation) {
         setProcessingStep('Registrando acuerdo de domiciliación de cuotas en R4...')
         // 2. Establecer acuerdo de domiciliación electrónica en R4
         const domiciliationRes = await r4PaymentService.directDebitAccount({
@@ -725,8 +731,8 @@ export default function CheckoutPage() {
                     </FormField>
                   </div>
 
-                  {/* Sección de Débito Inmediato (OTP) */}
-                  {selectedScheme && needsImmediate && (
+                  {/* Sección de Débito Inmediato (OTP) — solo para pagos personales, no solicitudes corporativas */}
+                  {selectedScheme && needsImmediate && !isCorporateRequest && (
                     <div className="rounded-2xl border border-secondary/15 bg-secondary/[0.02] p-5 shadow-sm space-y-4">
                       <div className="flex items-start gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary/10 text-secondary shrink-0">
@@ -794,8 +800,8 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Sección de Domiciliación de Cuotas */}
-                  {selectedScheme && (selectedScheme.paymentMode === 'quota' || selectedScheme.paymentMode === 'mixed') && (
+                  {/* Sección de Domiciliación de Cuotas — solo para pagos personales */}
+                  {!isCorporateRequest && selectedScheme && (selectedScheme.paymentMode === 'quota' || selectedScheme.paymentMode === 'mixed') && (
                     <div className="rounded-2xl border border-purple-100 bg-purple-50/20 p-5 shadow-sm">
                       <div className="flex items-start gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-100 text-purple-700 shrink-0">
@@ -863,7 +869,7 @@ export default function CheckoutPage() {
                         fullWidth
                         className="py-2.5 font-bold shadow-lg shadow-secondary/10"
                       >
-                        Confirmar y Pagar {fmtBs(immediateUsd)}
+                        {isCorporateRequest ? 'Confirmar y Finalizar' : `Confirmar y Pagar ${fmtBs(immediateUsd)}`}
                       </Button>
                     )}
                   </div>

@@ -228,8 +228,8 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
       window.type === 'custom-form' &&
       window.config.redirectUrl === MERCANTIL_CUSTOM_FORM_ACTION
     ) {
-      if (session?.role !== 'COMPANY') {
-        setError('La consulta Mercantil embebida solo esta disponible para empresas por ahora.')
+      if (session?.role !== 'COMPANY' && session?.role !== 'EMPLOYEE') {
+        setError('La consulta Mercantil embebida solo esta disponible para usuarios autenticados.')
         return
       }
 
@@ -242,8 +242,8 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
       window.type === 'custom-form' &&
       window.config.redirectUrl === MERCANTIL_RCV_CUSTOM_FORM_ACTION
     ) {
-      if (session?.role !== 'COMPANY') {
-        setError('La consulta RCV Mercantil embebida solo esta disponible para empresas por ahora.')
+      if (session?.role !== 'COMPANY' && session?.role !== 'EMPLOYEE') {
+        setError('La consulta RCV Mercantil embebida solo esta disponible para usuarios autenticados.')
         return
       }
 

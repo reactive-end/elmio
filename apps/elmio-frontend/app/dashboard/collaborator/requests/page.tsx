@@ -67,14 +67,9 @@ export default function CollaboratorRequestsPage() {
       }
 
       const schemeId = matchedProduct.financingSchemes?.[0]?.id || 'default'
-
-      if (!matchedProduct.windows || matchedProduct.windows.length === 0) {
-        router.push(
-          `/dashboard/enterprise/shop/checkout?product=${matchedProduct.id}&scheme=${schemeId}&requestId=${request.id}`
-        )
-      } else {
-        router.push(`/dashboard/collaborator/shop?product=${matchedProduct.id}&continue=true`)
-      }
+      router.push(
+        `/dashboard/enterprise/shop/checkout?product=${matchedProduct.id}&scheme=${schemeId}&requestId=${request.id}`
+      )
     } catch (err) {
       console.error(err)
       alert('No se pudo completar la adquisición en este momento.')

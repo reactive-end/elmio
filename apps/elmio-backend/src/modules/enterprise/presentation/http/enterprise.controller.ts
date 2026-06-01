@@ -265,10 +265,12 @@ export class EnterpriseController {
       }
 
       // 3. Buscar la empresa
-      let enterpriseName = 'Empresa del Sistema';
-      const enterprise = await this.enterpriseRepository.findEnterpriseById(tx.enterpriseId);
-      if (enterprise) {
-        enterpriseName = enterprise.companyName;
+      let enterpriseName = 'Consumidor Directo / Sistema';
+      if (tx.enterpriseId) {
+        const enterprise = await this.enterpriseRepository.findEnterpriseById(tx.enterpriseId);
+        if (enterprise) {
+          enterpriseName = enterprise.companyName;
+        }
       }
 
       // 4. Determinar si es un Seguro Mercantil

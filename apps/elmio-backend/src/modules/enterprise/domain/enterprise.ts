@@ -133,7 +133,7 @@ export interface LoanRequest {
  */
 export interface Transaction {
   id: string;
-  enterpriseId: string;
+  enterpriseId: string | null;
   collaboratorId: string | null;
   kind: 'payment' | 'charge';
   concept: string;

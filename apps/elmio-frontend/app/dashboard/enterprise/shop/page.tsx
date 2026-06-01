@@ -181,7 +181,6 @@ export default function EnterpriseShopPage() {
       {error && <Alert type="error" message={error} />}
       {successMessage && <Alert type="success" message={successMessage} />}
       {requestError && <Alert type="error" message={requestError} />}
-      {requestSuccess && <Alert type="success" message={requestSuccess} />}
       {requestSending && (
         <div className="rounded-xl bg-blue-50 border border-blue-100 p-3 text-xs text-blue-700 font-medium">
           ⌛ Enviando solicitud de compra y registrando en el estado de cuenta... por favor espera.
@@ -543,6 +542,31 @@ export default function EnterpriseShopPage() {
                 allow="clipboard-write"
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {requestSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setRequestSuccess(null)} />
+          <div className="relative z-10 w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col items-center gap-5">
+            <div className="p-4 bg-green-50 text-green-500 rounded-full shadow-sm">
+              <Sparkles className="h-10 w-10 text-green-500" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-body">¡Solicitud de Compra Enviada!</h3>
+              <p className="mt-2 text-sm text-body-muted leading-relaxed">
+                {requestSuccess}
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => setRequestSuccess(null)}
+              className="py-3 font-semibold mt-2"
+            >
+              Entendido
+            </Button>
           </div>
         </div>
       )}

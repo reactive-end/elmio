@@ -75,20 +75,20 @@ export class FinanceUsersAdminController {
     const emailLower = body.email.trim().toLowerCase();
     const cedulaClean = body.cedula.trim().toLowerCase();
 
-    // Validar email único
+    // Validar email único dentro del rol FINANCE
     const existingEmail = await this.userRepo.findOne({
-      where: { email: emailLower },
+      where: { email: emailLower, role: UserRole.FINANCE },
     });
     if (existingEmail) {
-      throw new ConflictException('El correo electrónico ya está registrado.');
+      throw new ConflictException('Este correo electrónico ya está registrado para un usuario de finanzas.');
     }
 
-    // Validar cédula única (usamos la columna slug)
+    // Validar cédula única dentro del rol FINANCE (usamos la columna slug)
     const existingCedula = await this.userRepo.findOne({
-      where: { slug: cedulaClean },
+      where: { slug: cedulaClean, role: UserRole.FINANCE },
     });
     if (existingCedula) {
-      throw new ConflictException('La cédula ingresada ya está registrada por otro usuario.');
+      throw new ConflictException('La cédula ingresada ya está registrada para otro usuario de finanzas.');
     }
 
     const userId = randomUUID();
@@ -128,17 +128,17 @@ export class FinanceUsersAdminController {
     const cedulaClean = body.cedula.trim().toLowerCase();
 
     const existingWithEmail = await this.userRepo.findOne({
-      where: { email: emailLower },
+      where: { email: emailLower, role: UserRole.FINANCE },
     });
     if (existingWithEmail && existingWithEmail.id !== id) {
-      throw new ConflictException('El correo electrónico ya está registrado por otro usuario.');
+      throw new ConflictException('Este correo electrónico ya está registrado para otro usuario de finanzas.');
     }
 
     const existingWithCedula = await this.userRepo.findOne({
-      where: { slug: cedulaClean },
+      where: { slug: cedulaClean, role: UserRole.FINANCE },
     });
     if (existingWithCedula && existingWithCedula.id !== id) {
-      throw new ConflictException('La cédula ingresada ya está registrada por otro usuario.');
+      throw new ConflictException('La cédula ingresada ya está registrada para otro usuario de finanzas.');
     }
 
     user.name = body.name.trim();
