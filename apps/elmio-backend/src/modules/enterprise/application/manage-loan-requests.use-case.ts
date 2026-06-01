@@ -218,24 +218,18 @@ export class ManageLoanRequestsUseCase {
             now.getSeconds().toString().padStart(2, '0') +
             (now.getMilliseconds() % 100).toString().padStart(2, '0');
 
-          // Ejecutar transferencia inmediata (Banco Exterior)
-          await this.paymentProcessorService.executeImmediateTransfer({
+          // Desembolso mediante Banco Plaza por defecto
+          await this.paymentProcessorService.initiateTransfer({
             companyAccountId: product.alternativeBankAccountId || 'GLOBAL_R4_FALLBACK',
-            idClient: 'GLOBAL_CLIENT_ID', // El repositorio ya sobreescribe con context.clientId si corresponde
-            sessionId: idSesion,
-            channelId: 1, // idCanal entero
-            userId: 'elmio-system',
-            terminalId: 'elmio-backend',
-            consumerId: 'ElMio',
-            payerAccount: '01150010100000000000', // ctaPagadora
-            receiverAccount: profile.debitCard.cardNumber,
-            receiverBankCode: profile.debitCard.bank,
-            receiverPhone: profile.phone,
-            receiverId: `${profile.documentType || 'V'}${profile.documentId}`,
-            amount: amountVES,
+            provider: 'PLAZA',
             beneficiaryName: `${profile.name} ${profile.lastName}`,
+            beneficiaryId: `${profile.documentType || 'V'}${profile.documentId}`,
+            beneficiaryBankCode: profile.debitCard.bank,
+            amount: amountVES,
             concept: `Desembolso prestamo: ${product.name}`,
-          } as any);
+            beneficiaryAccount: profile.debitCard.cardNumber,
+            userIp: '127.0.0.1',
+          }, { sub: 'elmio-system' } as any);
         }
       }
     } catch (error) {

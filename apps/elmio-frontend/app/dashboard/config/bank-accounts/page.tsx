@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, notFound } from 'next/navigation'
 import { Plus, Pencil, Trash2, Landmark, DollarSign } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { bankAccountsAdminService, BankAccountItem } from '@/src/services/bank-accounts-admin.service'
 
 export default function BankAccountsPage() {
+  notFound()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [accounts, setAccounts] = useState<BankAccountItem[]>([])
@@ -86,11 +87,11 @@ export default function BankAccountsPage() {
       </div>
 
       {success && (
-        <Alert type="success" message={success} onDismiss={() => setSuccess(null)} />
+        <Alert type="success" message={success || ''} onDismiss={() => setSuccess(null)} />
       )}
 
       {error && (
-        <Alert type="error" message={error} onDismiss={() => setError(null)} />
+        <Alert type="error" message={error || ''} onDismiss={() => setError(null)} />
       )}
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-scaleIn">

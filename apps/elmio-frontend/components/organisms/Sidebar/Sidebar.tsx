@@ -203,12 +203,14 @@ const NAV: NavGroup[] = [
         href: '/dashboard/config/whatsapp',
         icon: MessageSquare,
       },
+      /*
       {
         key: 'config-api-keys',
         label: 'API Keys',
         href: '/dashboard/config/api-keys',
         icon: KeyRound,
       },
+      */
       {
         key: 'config-enterprise-interest-rates',
         label: 'Tasas por empresa',
@@ -234,12 +236,14 @@ const NAV: NavGroup[] = [
     label: 'Finanzas',
     icon: Landmark,
     children: [
+      /*
       {
         key: 'config-bank-accounts',
         label: 'Cuentas bancarias',
         href: '/dashboard/config/bank-accounts',
         icon: Landmark,
       },
+      */
       {
         key: 'config-currencies',
         label: 'Monedas',

@@ -17,10 +17,13 @@ const ENVIRONMENT_OPTIONS = [
   { value: 'production', label: 'Produccion' },
 ]
 
+import { notFound } from 'next/navigation'
+
 /**
  * Pantalla admin para gestionar API keys por banco.
  */
 export default function ApiKeysConfigPage() {
+  notFound()
   const [showAlert, setShowAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
 

@@ -5445,59 +5445,93 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
     companyAccountId?: string,
     withBank = false,
   ): Promise<PlazaContext> {
-    const resolvedCompanyAccountId =
-      this.resolveCompanyAccountId(companyAccountId)
+    let resolvedCompanyAccountId = 'PLAZA_ENV_FALLBACK';
+    try {
+      resolvedCompanyAccountId = this.resolveCompanyAccountId(companyAccountId);
+      if (resolvedCompanyAccountId === 'GLOBAL_R4_FALLBACK') {
+        resolvedCompanyAccountId = process.env.PLAZA_DEFAULT_COMPANY_ACCOUNT_ID?.trim() || 'PLAZA_ENV_FALLBACK';
+      }
+    } catch (e) {
+      resolvedCompanyAccountId = process.env.PLAZA_DEFAULT_COMPANY_ACCOUNT_ID?.trim() || 'PLAZA_ENV_FALLBACK';
+    }
 
-    const account = await this.bankAccountRepository.findOne({
+    let account = await this.bankAccountRepository.findOne({
       where: { id: resolvedCompanyAccountId },
       relations: withBank ? ['bank'] : [],
-    })
+    }).catch(() => null);
+
+    // Fallback: Si no existe la cuenta en BD, crear un stub usando variables de entorno
+    if (!account) {
+      const envAccountNum = process.env.PLAZA_COMPANY_ACCOUNT_NUMBER;
+      const envDocType = process.env.PLAZA_COMPANY_DOCUMENT_TYPE;
+      const envDocNum = process.env.PLAZA_COMPANY_DOCUMENT_NUMBER;
+      const envName = process.env.PLAZA_COMPANY_BUSINESS_NAME || 'Comercio Plaza';
+
+      if (envAccountNum && envDocType && envDocNum) {
+        account = {
+          id: resolvedCompanyAccountId,
+          accountNumber: envAccountNum,
+          documentType: envDocType,
+          documentNumber: envDocNum,
+          businessName: envName,
+          bank: {
+            bankCode: envAccountNum.slice(0, 4),
+            code: envAccountNum.slice(0, 4),
+          } as any,
+        } as BankAccount;
+      }
+    }
 
     if (!account) {
       throw new NotFoundException(
-        'No se encontro la cuenta indicada para Banco Plaza.',
-      )
+        'No se encontro la cuenta de Banco Plaza en Base de Datos ni en Variables de Entorno.',
+      );
     }
 
+    // Buscar API Key en BD
     const activeKey = await this.apiKeyRepository.findOne({
       where: {
         bankAccount: { id: resolvedCompanyAccountId },
         isActive: true,
       },
       order: { createdAt: 'DESC' },
-      relations: ['bankAccount'],
-    })
+    }).catch(() => null);
 
-    if (!activeKey?.commerceKey || !activeKey?.secretKey) {
-      throw new InternalServerErrorException(
-        'No hay credenciales activas para la cuenta indicada.',
-      )
+    let decryptedCommerceKey: string | null = null;
+    let decryptedSecretKey: string | null = null;
+
+    if (activeKey?.commerceKey) {
+      try {
+        decryptedCommerceKey = ApiKeyCipher.decryptIfEncrypted(activeKey.commerceKey);
+      } catch (e) {
+        // Ignorar fallo de descifrado
+      }
+    }
+    if (activeKey?.secretKey) {
+      try {
+        decryptedSecretKey = ApiKeyCipher.decryptIfEncrypted(activeKey.secretKey);
+      } catch (e) {
+        // Ignorar fallo de descifrado
+      }
     }
 
-    const decryptedCommerceKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.commerceKey,
-    )
-    const decryptedSecretKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.secretKey,
-    )
+    // Fallback: Si no hay credenciales en BD, usar variables de entorno de QA
+    if (!decryptedCommerceKey || !decryptedSecretKey) {
+      decryptedCommerceKey = process.env.PLAZA_API_KEY || process.env.PLAZA_COMMERCE_KEY || null;
+      decryptedSecretKey = process.env.PLAZA_API_SECRET || process.env.PLAZA_SECRET_KEY || null;
+    }
 
     if (!decryptedCommerceKey || !decryptedSecretKey) {
       throw new InternalServerErrorException(
-        'No se pudieron descifrar credenciales activas para la cuenta indicada.',
-      )
+        'No se encontraron credenciales de Banco Plaza (ni en Base de Datos ni en Variables de Entorno).',
+      );
     }
 
-    const documentType = (account.documentType || '').trim().toUpperCase()
-    const documentNumber = (account.documentNumber || '').trim()
-    const accountNumber = (account.accountNumber || '').trim()
+    const documentType = (account.documentType || '').trim().toUpperCase();
+    const documentNumber = (account.documentNumber || '').trim();
+    const accountNumber = (account.accountNumber || '').trim();
 
-    if (!documentType || !documentNumber || !accountNumber) {
-      throw new InternalServerErrorException(
-        'La cuenta no tiene datos completos para operar con Banco Plaza.',
-      )
-    }
-
-    const vesCurrency = await this.requireVesCurrency()
+    const vesCurrency = await this.requireVesCurrency();
 
     return {
       companyAccountId: resolvedCompanyAccountId,
@@ -5507,7 +5541,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       apiKey: decryptedCommerceKey,
       apiSecret: decryptedSecretKey,
       vesCurrency,
-    }
+    };
   }
 
   private buildInternalAccountStub(accountId?: string): BankAccount | null {
