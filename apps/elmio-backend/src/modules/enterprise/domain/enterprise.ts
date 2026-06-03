@@ -124,6 +124,7 @@ export interface LoanRequest {
   denialReason: string | null;
   createdAt: string;
   updatedAt: string;
+  productId: string | null;
 }
 
 // ── Transaccion y Estado de cuenta ───────────────────────────────────────────

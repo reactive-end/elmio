@@ -18,6 +18,7 @@ interface CreateTransactionInput {
   amount: number;
   status?: 'paid' | 'pending' | 'failed';
   date?: string;
+  productId?: string | null;
 }
 
 /**
@@ -88,7 +89,7 @@ export class CreateTransactionUseCase {
     if (isMarketplacePurchase && collaboratorId && enterpriseId) {
       try {
         await this.repository.saveRequest({
-          id: transactionId, // Compartimos el mismo ID para vincularlas 1:1
+          id: transactionId,
           enterpriseId,
           collaboratorId,
           collaboratorName,
@@ -99,6 +100,7 @@ export class CreateTransactionUseCase {
           denialReason: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          productId: input.productId ?? null,
         });
       } catch (err) {
         // Ignorar o loggear si falla la creación de la solicitud asociada para no romper la compra

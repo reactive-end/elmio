@@ -244,6 +244,7 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
       denialReason: entity.denialReason,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      productId: entity.productId ?? null,
     };
   }
 
@@ -260,6 +261,7 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     entity.denialReason = domain.denialReason;
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;
+    entity.productId = domain.productId ?? null;
     return entity;
   }
 

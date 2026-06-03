@@ -297,6 +297,7 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
           concept: `Compra marketplace: ${purchaseDraft.product.name}`,
           amount,
           status: 'pending',
+          productId: purchaseDraft.product.id,
         })
       } else {
         await enterpriseService.createMyTransaction({
@@ -304,6 +305,7 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
           concept: `Compra marketplace: ${purchaseDraft.product.name}`,
           amount,
           status: 'pending',
+          productId: purchaseDraft.product.id,
         })
       }
 

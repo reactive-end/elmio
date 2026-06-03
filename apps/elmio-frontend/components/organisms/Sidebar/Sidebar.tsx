@@ -232,10 +232,22 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    key: 'banks-currencies',
+    key: 'finance-desk',
     label: 'Finanzas',
     icon: Landmark,
     children: [
+      {
+        key: 'finance-requests',
+        label: 'Aprobar Solicitudes',
+        href: '/dashboard/finance/requests',
+        icon: Landmark,
+      },
+      {
+        key: 'finance-purchases',
+        label: 'Control de Compras',
+        href: '/dashboard/finance/purchases',
+        icon: List,
+      },
       {
         key: 'config-bank-accounts',
         label: 'Cuentas bancarias',
@@ -253,25 +265,6 @@ const NAV: NavGroup[] = [
         label: 'Monedas',
         href: '/dashboard/config/currencies',
         icon: DollarSign,
-      },
-    ],
-  },
-  {
-    key: 'finance-desk',
-    label: 'Finanzas',
-    icon: Landmark,
-    children: [
-      {
-        key: 'finance-requests',
-        label: 'Aprobar Solicitudes',
-        href: '/dashboard/finance/requests',
-        icon: Landmark,
-      },
-      {
-        key: 'finance-purchases',
-        label: 'Control de Compras',
-        href: '/dashboard/finance/purchases',
-        icon: List,
       },
     ],
   },
@@ -379,13 +372,13 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
             return false
           }
 
-          // Si el rol es FINANCE, ocultamos todos los menús excepto la mesa de control de finanzas y el catálogo de finanzas
-          if (role === 'FINANCE' && group.key !== 'finance-desk' && group.key !== 'banks-currencies') {
+          // Si el rol es FINANCE, ocultamos todos los menús excepto la mesa de control de finanzas
+          if (role === 'FINANCE' && group.key !== 'finance-desk') {
             return false
           }
 
-          // Si no es FINANCE, ocultamos el menú de finanzas de mesa de control
-          if (role !== 'FINANCE' && group.key === 'finance-desk') {
+          // La mesa de finanzas (operaciones + configuración) aplica a ADMIN y FINANCE
+          if (group.key === 'finance-desk' && role !== 'ADMIN' && role !== 'FINANCE') {
             return false
           }
 
@@ -413,11 +406,6 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
           // Ocultar Configuracion para roles que no sean ADMIN
           if (group.key === 'config' && role !== 'ADMIN') {
-            return false
-          }
-
-          // Ocultar Finanzas (bancos, monedas, cuentas, usuarios finanzas) para roles que no sean ADMIN ni FINANCE
-          if (group.key === 'banks-currencies' && role !== 'ADMIN' && role !== 'FINANCE') {
             return false
           }
 
@@ -460,7 +448,7 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
                 <div className="ml-4 mt-0.5 border-l border-white/15 pl-3 flex flex-col gap-0.5">
                   {visibleChildren
                     .filter((child) => {
-                      if (group.key === 'banks-currencies' && child.key === 'config-finance-users' && role !== 'ADMIN') {
+                      if (group.key === 'finance-desk' && child.key === 'config-finance-users' && role !== 'ADMIN') {
                         return false
                       }
                       return true

@@ -75,9 +75,7 @@ export default function FinanceRequestsPage() {
       setActionLoading(disburseRequest.id)
       setDisburseError(null)
 
-      // 1. Aprobar
-      await enterpriseService.resolveFinanceRequest(disburseRequest.id, 'approved')
-      // 2. Desembolsar
+      // Desembolsar (el use case se encarga de marcar el estado de la solicitud)
       await enterpriseService.disburseRequest(disburseRequest.id)
 
       setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
@@ -200,16 +198,18 @@ export default function FinanceRequestsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          onClick={() => void handleApprove(req.id)}
-                          variant="primary"
-                          className="bg-green-600 hover:bg-green-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
-                          disabled={actionLoading !== null}
-                          isLoading={actionLoading === req.id}
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          Aprobar
-                        </Button>
+                        {!req.requiresManualDisburse && (
+                          <Button
+                            onClick={() => void handleApprove(req.id)}
+                            variant="primary"
+                            className="bg-green-600 hover:bg-green-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
+                            disabled={actionLoading !== null}
+                            isLoading={actionLoading === req.id}
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            Aprobar
+                          </Button>
+                        )}
                         <Button
                           onClick={() => openDisburseModal(req)}
                           variant="primary"

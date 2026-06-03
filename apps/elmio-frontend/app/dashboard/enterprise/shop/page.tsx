@@ -94,6 +94,7 @@ export default function EnterpriseShopPage() {
           concept,
           amount,
           status: 'pending',
+          productId: product.id,
         })
       } else {
         await enterpriseService.createMyTransaction({
@@ -101,6 +102,7 @@ export default function EnterpriseShopPage() {
           concept,
           amount,
           status: 'pending',
+          productId: product.id,
         })
       }
 

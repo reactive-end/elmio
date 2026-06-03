@@ -327,6 +327,8 @@ export interface LoanRequest {
   denialReason: string | null
   createdAt: string
   updatedAt: string
+  productId: string | null
+  requiresManualDisburse?: boolean
 }
 
 export interface Transaction {
@@ -347,6 +349,7 @@ export interface CreateTransactionInput {
   amount: number
   status?: 'paid' | 'pending' | 'failed'
   date?: string
+  productId?: string | null
 }
 
 export interface LoanSummary {

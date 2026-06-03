@@ -884,7 +884,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
 
     return this.exchangeRateRepository.findOne({
       where: {},
-      relations: ['currency'],
+      relations: { currency: true },
       order: {
         effectiveDate: 'DESC',
         createdAt: 'DESC',

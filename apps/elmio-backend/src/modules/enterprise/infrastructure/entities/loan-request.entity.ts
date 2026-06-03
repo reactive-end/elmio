@@ -44,4 +44,7 @@ export class LoanRequestEntity {
 
   @Column({ type: 'varchar', length: 100 })
   updatedAt!: string;
+
+  @Column({ type: 'varchar', length: 36, nullable: true })
+  productId!: string | null;
 }

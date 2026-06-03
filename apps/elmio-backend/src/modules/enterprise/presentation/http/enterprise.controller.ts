@@ -53,6 +53,11 @@ import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../../domain/ports/enterprise-repository.port';
+import {
+  PRODUCT_REPOSITORY_PORT,
+  type ProductRepositoryPort,
+} from '../../../product/domain/ports/product-repository.port';
+import type { Product } from '../../../product/domain/product';
 import { DocumentStorageService } from '../../infrastructure/document-storage.service';
 import type { ArchivoSubido } from '../../../gallery/domain/gallery-image';
 
@@ -77,6 +82,8 @@ export class EnterpriseController {
     private readonly manageDisburse: ManageDisburseUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
+    @Inject(PRODUCT_REPOSITORY_PORT)
+    private readonly productRepository: ProductRepositoryPort,
     private readonly documentStorage: DocumentStorageService,
     private readonly mercantilStorageService: MercantilStorageService,
   ) {}
@@ -225,7 +232,25 @@ export class EnterpriseController {
   @Roles(UserRole.FINANCE)
   @Get('requests/finance-pending')
   async listFinancePendingRequests() {
-    return this.enterpriseRepository.findAllRequests('company_approved');
+    const requests = await this.enterpriseRepository.findAllRequests('company_approved');
+
+    // Resolver si cada solicitud requiere desembolso manual (manual_disburse)
+    // segun la configuracion del producto asociado.
+    const productIds = [...new Set(requests.map((r: LoanRequest) => r.productId).filter(Boolean) as string[])];
+    const products = await Promise.all(
+      productIds.map((id: string) => this.productRepository.findById(id)),
+    );
+    const productMap = new Map<string, Product>(
+      products.filter((p): p is Product => p !== null).map((p) => [p.id, p]),
+    );
+
+    return requests.map((req: LoanRequest) => {
+      const product = req.productId ? productMap.get(req.productId) : undefined;
+      const requiresManualDisburse =
+        product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'manual_disburse' && a.active) ?? false;
+
+      return { ...req, requiresManualDisburse };
+    });
   }
 
   /** PATCH /api/enterprises/requests/:reqId/finance-resolve - Finanzas aprueba/deniega. */

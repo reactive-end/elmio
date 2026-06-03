@@ -38,8 +38,8 @@ export class ManageDisburseUseCase {
     const request = await this.repository.findRequestById(requestId)
     if (!request) throw new NotFoundException('Solicitud no encontrada.')
 
-    if (request.status !== 'approved') {
-      throw new BadRequestException('La solicitud debe estar aprobada para desembolsar.')
+    if (request.status !== 'approved' && request.status !== 'company_approved') {
+      throw new BadRequestException('La solicitud debe estar aprobada (por la empresa o finanzas) para desembolsar.')
     }
 
     // Buscar perfil del colaborador
@@ -151,12 +151,15 @@ export class ManageDisburseUseCase {
 
     await this.repository.saveDisbursement(disbursement)
 
-    // Actualizar estado de la solicitud
-    request.status = isSuccess ? 'disbursed' : 'approved'
-    const savedRequest = await this.repository.saveRequest(request)
+    // Actualizar estado de la solicitud solo si el desembolso fue exitoso
+    if (isSuccess) {
+      request.status = 'disbursed'
+      request.updatedAt = new Date().toISOString()
+      await this.repository.saveRequest(request)
+    }
 
     return {
-      request: savedRequest,
+      request,
       disbursement,
       creditResult: {
         code: creditResult.code,
