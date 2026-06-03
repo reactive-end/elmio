@@ -102,7 +102,7 @@ export class ManageDisburseUseCase {
     let definitiveCode = creditResult.code
 
     // Si R4 responde AC00 (Operacion en Espera de Respuesta del Receptor),
-    // hacer polling inmediato para obtener el estado definitivo.
+    // hacer polling para obtener el estado definitivo.
     if (creditResult.code === 'AC00' && creditResult.reference) {
       const MAX_POLL_ATTEMPTS = 3
       const POLL_INTERVAL_MS = 60000
@@ -116,8 +116,8 @@ export class ManageDisburseUseCase {
             reference: creditResult.reference,
           })
 
-          if (statusResult.code && statusResult.code !== 'AC00') {
-            definitiveCode = statusResult.code
+          if (statusResult.success) {
+            definitiveCode = 'ACCP'
             break
           }
         } catch {

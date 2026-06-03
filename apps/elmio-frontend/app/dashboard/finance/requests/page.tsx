@@ -210,15 +210,17 @@ export default function FinanceRequestsPage() {
                             Aprobar
                           </Button>
                         )}
-                        <Button
-                          onClick={() => openDisburseModal(req)}
-                          variant="primary"
-                          className="bg-blue-600 hover:bg-blue-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
-                          disabled={actionLoading !== null}
-                        >
-                          <Send className="w-3.5 h-3.5" />
-                          Despachar
-                        </Button>
+                        {req.requiresManualDisburse && (
+                          <Button
+                            onClick={() => openDisburseModal(req)}
+                            variant="primary"
+                            className="bg-blue-600 hover:bg-blue-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
+                            disabled={actionLoading !== null}
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            Despachar
+                          </Button>
+                        )}
                         <Button
                           onClick={() => openRejectModal(req.id)}
                           variant="ghost"
