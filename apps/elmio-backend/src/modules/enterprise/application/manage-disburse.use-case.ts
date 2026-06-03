@@ -55,15 +55,29 @@ export class ManageDisburseUseCase {
       throw new BadRequestException('El colaborador no tiene cuenta bancaria registrada.')
     }
 
-    // Obtener tasa de cambio BCV de R4
-    let exchangeRate = 1
-    try {
-      const rateObj = await this.paymentProcessorService.getLastExchangeRate()
-      if (rateObj && rateObj.bolivaresPerUsd) {
-        exchangeRate = Number(rateObj.bolivaresPerUsd)
+    // Obtener tasa de cambio BCV. Primero busca en la BD local,
+    // y si no hay dato reciente consulta directamente el endpoint de R4.
+    let exchangeRate: number
+
+    const dbRate = await this.paymentProcessorService.getLastExchangeRate()
+    if (dbRate && dbRate.bolivaresPerUsd) {
+      exchangeRate = Number(dbRate.bolivaresPerUsd)
+    } else {
+      const today = new Date().toISOString().split('T')[0]
+
+      const rateResponse = await this.paymentProcessorService.getExchangeRate({
+        companyAccountId: 'GLOBAL_R4_FALLBACK',
+        date: today,
+        currency: 'USD',
+      })
+
+      if (!rateResponse || !rateResponse.exchangeRate) {
+        throw new BadRequestException(
+          'No se pudo obtener la tasa de cambio BCV para calcular el monto en bolivares.',
+        )
       }
-    } catch {
-      // Usar tasa 1 como fallback
+
+      exchangeRate = rateResponse.exchangeRate
     }
 
     // Calcular monto en Bs
@@ -85,7 +99,34 @@ export class ManageDisburseUseCase {
       concept,
     } as any)
 
-    const isSuccess = creditResult.code === 'ACCP'
+    let definitiveCode = creditResult.code
+
+    // Si R4 responde AC00 (Operacion en Espera de Respuesta del Receptor),
+    // hacer polling inmediato para obtener el estado definitivo.
+    if (creditResult.code === 'AC00' && creditResult.reference) {
+      const MAX_POLL_ATTEMPTS = 5
+      const POLL_INTERVAL_MS = 3000
+
+      for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+
+        try {
+          const statusResult = await this.paymentProcessorService.queryOperationR4({
+            companyAccountId: 'GLOBAL_R4_FALLBACK',
+            reference: creditResult.reference,
+          })
+
+          if (statusResult.code && statusResult.code !== 'AC00') {
+            definitiveCode = statusResult.code
+            break
+          }
+        } catch {
+          // Si la consulta falla, reintentar en el siguiente ciclo
+        }
+      }
+    }
+
+    const isSuccess = definitiveCode === 'ACCP'
 
     // Persistir registro de desembolso
     const disbursement: Disbursement = {
