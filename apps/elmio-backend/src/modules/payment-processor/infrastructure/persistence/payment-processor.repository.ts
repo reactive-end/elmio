@@ -3416,7 +3416,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         }),
       )
 
-      if (response.status !== HttpStatus.OK) {
+      if (response.status !== HttpStatus.OK && response.status !== HttpStatus.ACCEPTED) {
         throw new InternalServerErrorException(
           'Respuesta HTTP inválida de Banco R4',
         )
@@ -3483,7 +3483,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         }),
       )
 
-      if (response.status !== HttpStatus.OK) {
+      if (response.status !== HttpStatus.OK && response.status !== HttpStatus.ACCEPTED) {
         throw new InternalServerErrorException(
           'Respuesta HTTP inválida de Banco R4',
         )
@@ -3628,7 +3628,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         )}`,
       )
 
-      if (response.status !== HttpStatus.OK) {
+      if (response.status !== HttpStatus.OK && response.status !== HttpStatus.ACCEPTED) {
         throw new InternalServerErrorException(
           'Respuesta HTTP invalida de Banco R4',
         )
@@ -3832,7 +3832,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         )}`,
       )
 
-      if (response.status !== HttpStatus.OK) {
+      if (response.status !== HttpStatus.OK && response.status !== HttpStatus.ACCEPTED) {
         throw new InternalServerErrorException(
           'Respuesta HTTP invalida de Banco R4',
         )
