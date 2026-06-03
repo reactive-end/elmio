@@ -104,8 +104,8 @@ export class ManageDisburseUseCase {
     // Si R4 responde AC00 (Operacion en Espera de Respuesta del Receptor),
     // hacer polling inmediato para obtener el estado definitivo.
     if (creditResult.code === 'AC00' && creditResult.reference) {
-      const MAX_POLL_ATTEMPTS = 5
-      const POLL_INTERVAL_MS = 3000
+      const MAX_POLL_ATTEMPTS = 3
+      const POLL_INTERVAL_MS = 60000
 
       for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
