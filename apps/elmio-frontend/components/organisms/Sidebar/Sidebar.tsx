@@ -22,6 +22,7 @@ import {
   MessageSquare,
   KeyRound,
   Percent,
+  Shield,
 } from 'lucide-react'
 import { Logo } from '@/components/atoms/Logo/Logo'
 import { useRouter } from 'next/navigation'
@@ -229,6 +230,12 @@ const NAV: NavGroup[] = [
         href: '/dashboard/config/allies',
         icon: Users,
       },
+      {
+        key: 'config-rbac',
+        label: 'RBAC',
+        href: '/dashboard/config/rbac',
+        icon: Shield,
+      },
     ],
   },
   {
@@ -296,6 +303,7 @@ const NAV: NavGroup[] = [
  */
 export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: SidebarProps) {
   const [role, setRole] = useState<string | null>(null)
+  const [rbacPermissions, setRbacPermissions] = useState<Record<string, boolean> | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -304,6 +312,24 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
       setRole(session.role)
     }
   }, [])
+
+  useEffect(() => {
+    if (!role) return
+    void (async () => {
+      try {
+        const res = await fetch('/api/rbac/permissions', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+        })
+        if (!res.ok) return
+        const data = (await res.json()) as Record<string, Record<string, boolean>>
+        if (data[role]) {
+          setRbacPermissions(data[role])
+        }
+      } catch {
+        // Silencioso — usar defaults si falla
+      }
+    })()
+  }, [role])
 
   const handleLogout = () => {
     authService.clearToken()
@@ -367,6 +393,11 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
       <nav className="relative z-10 flex-1 overflow-y-auto py-4 px-2">
         {NAV.filter((group) => {
+          // Si el admin configuro permisos RBAC para este rol, usarlos (override)
+          if (rbacPermissions && group.key in rbacPermissions) {
+            return rbacPermissions[group.key]
+          }
+
           // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN), colaboradores (EMPLOYEE), aliados (ALLIED) y clientes (CLIENT)
           if (group.key === 'enterprise' && (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'ALLIED' || role === 'CLIENT' || role === 'FINANCE')) {
             return false

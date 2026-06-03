@@ -7,6 +7,8 @@ import { AddRoleToBankAccountMigration } from './0005_add_role_to_bank_account';
 import { CreatePersonBankAccountsMigration } from './0006_create_person_bank_accounts';
 import { CreateDisbursementTableMigration } from './0007_create_disbursement_table';
 import { AddProductIdToLoanRequestsMigration } from './0008_add_product_id_to_loan_requests';
+import { CreateRolePermissionsTableMigration } from './0009_create_role_permissions_table';
+import { AddIsActiveToUsersMigration } from './0010_add_is_active_to_users';
 
 export const customMigrations: CustomMigration[] = [
   new AddActionsToProductsMigration(),
@@ -17,6 +19,8 @@ export const customMigrations: CustomMigration[] = [
   new CreatePersonBankAccountsMigration(),
   new CreateDisbursementTableMigration(),
   new AddProductIdToLoanRequestsMigration(),
+  new CreateRolePermissionsTableMigration(),
+  new AddIsActiveToUsersMigration(),
 ];
 
 

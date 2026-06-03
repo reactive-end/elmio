@@ -43,7 +43,7 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
     entity.role = domain.role;
     entity.owner = domain.owner;
     entity.createdAt = domain.createdAt;
-    entity.requirePasswordChange = domain.requirePasswordChange;
+    entity.requirePasswordChange = domain.requirePasswordChange ?? false;
     entity.slug = domain.slug ?? null;
     entity.countryCode = domain.countryCode ?? '+58';
     entity.phone = domain.phone ?? '';

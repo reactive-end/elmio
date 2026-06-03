@@ -16,6 +16,7 @@ import { PaymentProcessorModule } from './modules/payment-processor/payment-proc
 import { IntegrationApiKeysModule } from './modules/integration-api-keys/integration-api-keys.module';
 import { EnterpriseInterestConfigModule } from './modules/enterprise-interest-config/enterprise-interest-config.module';
 import { MigrationModule } from './modules/migration/migration.module';
+import { RbacModule } from './modules/rbac/rbac.module';
 
 /**
  * Modulo raiz de la aplicacion NestJS.
@@ -57,6 +58,7 @@ import { MigrationModule } from './modules/migration/migration.module';
     IntegrationApiKeysModule,
     EnterpriseInterestConfigModule,
     MigrationModule,
+    RbacModule,
   ],
 })
 export class AppModule {}

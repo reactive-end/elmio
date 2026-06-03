@@ -37,5 +37,8 @@ export class UserEntity {
   createdAt!: string;
 
   @Column({ type: 'boolean', default: false })
-  requirePasswordChange?: boolean;
+  requirePasswordChange!: boolean;
+
+  @Column({ type: 'boolean', default: true })
+  isActive!: boolean;
 }
