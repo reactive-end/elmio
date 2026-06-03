@@ -19,7 +19,14 @@ interface RbacUserFormProps {
   user?: RbacUser
 }
 
-const ROLES = ['ADMIN', 'FINANCE', 'COMPANY', 'EMPLOYEE', 'CLIENT', 'ALLIED']
+const ROLES: Array<{ key: string; label: string }> = [
+  { key: 'ADMIN', label: 'Administrador' },
+  { key: 'FINANCE', label: 'Finanzas' },
+  { key: 'COMPANY', label: 'Empresa' },
+  { key: 'EMPLOYEE', label: 'Colaborador' },
+  { key: 'CLIENT', label: 'Cliente' },
+  { key: 'ALLIED', label: 'Aliado' },
+]
 
 export function RbacUserForm({ mode, user }: RbacUserFormProps) {
   const router = useRouter()
@@ -123,8 +130,8 @@ export function RbacUserForm({ mode, user }: RbacUserFormProps) {
             <FormField label="Rol" required>
               <Select value={role} onChange={(e) => setRole(e.target.value)}>
                 {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
+                  <option key={r.key} value={r.key}>
+                    {r.label}
                   </option>
                 ))}
               </Select>

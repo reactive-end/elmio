@@ -3,8 +3,12 @@
  */
 export const RBAC_REPOSITORY_PORT = Symbol('RBAC_REPOSITORY_PORT');
 
-import type { RolePermission } from '../../domain/role-permission';
-import type { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
+import type { RolePermission } from '@/modules/rbac/domain/role-permission';
+import type { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
+
+export interface EnrichedUser extends UserEntity {
+  profilePhone?: string | null;
+}
 
 export interface RbacRepositoryPort {
   /** Obtiene todos los permisos configurados. */
@@ -19,14 +23,14 @@ export interface RbacRepositoryPort {
     permissions: Array<{ groupKey: string; visible: boolean }>,
   ): Promise<RolePermission[]>;
 
-  /** Lista usuarios paginados por rol, con búsqueda opcional. */
+  /** Lista usuarios paginados por rol, con busqueda opcional. */
   listUsersByRole(params: {
     role: string;
     page: number;
     perPage: number;
     search?: string;
     includeInactive?: boolean;
-  }): Promise<{ items: UserEntity[]; total: number }>;
+  }): Promise<{ items: EnrichedUser[]; total: number }>;
 
   /** Busca un usuario por ID. */
   findUserById(id: string): Promise<UserEntity | null>;

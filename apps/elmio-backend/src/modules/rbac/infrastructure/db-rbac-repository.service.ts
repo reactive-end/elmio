@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, Not, IsNull } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import type { RbacRepositoryPort } from '@/modules/rbac/domain/ports/rbac-repository.port';
 import type { RolePermission } from '@/modules/rbac/domain/role-permission';
 import { RolePermissionEntity } from '@/modules/rbac/infrastructure/entities/role-permission.entity';
 import { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
+import { PersonProfileEntity } from '@/modules/enterprise/infrastructure/entities/person-profile.entity';
+
+export interface EnrichedUser extends UserEntity {
+  profilePhone?: string | null;
+}
 
 @Injectable()
 export class DbRbacRepositoryService implements RbacRepositoryPort {
@@ -13,6 +18,8 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     private readonly permRepo: Repository<RolePermissionEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(PersonProfileEntity)
+    private readonly profileRepo: Repository<PersonProfileEntity>,
   ) {}
 
   async findAllPermissions(): Promise<RolePermission[]> {
@@ -62,36 +69,42 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     perPage: number;
     search?: string;
     includeInactive?: boolean;
-  }): Promise<{ items: UserEntity[]; total: number }> {
+  }): Promise<{ items: EnrichedUser[]; total: number }> {
     const { role, page, perPage, search, includeInactive } = params;
     const skip = (page - 1) * perPage;
 
-    const where: Record<string, unknown> = { role };
+    const qb = this.userRepo.createQueryBuilder('user')
+      .leftJoinAndMapOne(
+        'user.profile',
+        PersonProfileEntity,
+        'profile',
+        'profile.userId = user.id',
+      )
+      .where('user.role = :role', { role });
 
     if (!includeInactive) {
-      where.isActive = true;
+      qb.andWhere('user.isActive = :isActive', { isActive: true });
     }
 
     if (search) {
-      const [items, total] = await this.userRepo.findAndCount({
-        where: [
-          { ...where, name: ILike(`%${search}%`) },
-          { ...where, email: ILike(`%${search}%`) },
-          { ...where, slug: ILike(`%${search}%`) },
-          { ...where, phone: ILike(`%${search}%`) },
-        ],
-        skip,
-        take: perPage,
-        order: { createdAt: 'DESC' },
-      });
-      return { items, total };
+      qb.andWhere(
+        '(user.name ILIKE :search OR user.email ILIKE :search OR user.slug ILIKE :search OR user.phone ILIKE :search OR profile.phone ILIKE :search)',
+        { search: `%${search}%` },
+      );
     }
 
-    const [items, total] = await this.userRepo.findAndCount({
-      where: where as Record<string, unknown>,
-      skip,
-      take: perPage,
-      order: { createdAt: 'DESC' },
+    qb.orderBy('user.createdAt', 'DESC')
+      .skip(skip)
+      .take(perPage);
+
+    const [rawItems, total] = await qb.getManyAndCount();
+
+    const items = rawItems.map((user) => {
+      const profile = (user as unknown as Record<string, unknown>).profile as PersonProfileEntity | undefined;
+      return {
+        ...user,
+        profilePhone: profile?.phone ?? null,
+      } as EnrichedUser;
     });
 
     return { items, total };

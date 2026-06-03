@@ -232,7 +232,7 @@ const NAV: NavGroup[] = [
       },
       {
         key: 'config-rbac',
-        label: 'RBAC',
+        label: 'Permisología',
         href: '/dashboard/config/rbac',
         icon: Shield,
       },
@@ -397,9 +397,15 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
       <nav className="relative z-10 flex-1 overflow-y-auto py-4 px-2">
         {NAV.filter((group) => {
-          // Si el admin configuro permisos RBAC para este rol, usarlos (override)
-          if (rbacPermissions && group.key in rbacPermissions) {
-            return rbacPermissions[group.key]
+          // Si hay permisos RBAC configurados, verificar que al menos un hijo sea visible
+          if (rbacPermissions) {
+            const children = getVisibleChildren(group, role)
+            const rbacConfigured = children.some((c) => c.key in rbacPermissions)
+            if (rbacConfigured) {
+              // Si algun hijo fue configurado por RBAC, filtrar los que estan visibles
+              // El grupo se muestra solo si al menos un hijo RBAC-configurado esta visible
+              return children.some((c) => rbacPermissions[c.key] !== false)
+            }
           }
 
           // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN), colaboradores (EMPLOYEE), aliados (ALLIED) y clientes (CLIENT)
@@ -483,6 +489,10 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
                 <div className="ml-4 mt-0.5 border-l border-white/15 pl-3 flex flex-col gap-0.5">
                   {visibleChildren
                     .filter((child) => {
+                      // RBAC: si este hijo tiene un permiso configurado, respetarlo
+                      if (rbacPermissions && child.key in rbacPermissions) {
+                        return rbacPermissions[child.key] === true
+                      }
                       if (group.key === 'finance-desk' && child.key === 'config-finance-users' && role !== 'ADMIN') {
                         return false
                       }

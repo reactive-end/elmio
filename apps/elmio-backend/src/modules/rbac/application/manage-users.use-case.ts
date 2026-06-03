@@ -2,6 +2,7 @@ import { Injectable, Inject, BadRequestException, NotFoundException } from '@nes
 import {
   RBAC_REPOSITORY_PORT,
   type RbacRepositoryPort,
+  type EnrichedUser,
 } from '@/modules/rbac/domain/ports/rbac-repository.port';
 import type { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
 import { UserRole } from '@/modules/auth/domain/user';
@@ -62,7 +63,7 @@ export class ManageUsersUseCase {
     });
 
     return {
-      items: result.items.map(this.stripSensitive),
+      items: result.items.map((u) => this.stripUser(u)),
       total: result.total,
       page,
       perPage,
@@ -70,15 +71,15 @@ export class ManageUsersUseCase {
     };
   }
 
-  async findById(id: string): Promise<Partial<UserEntity>> {
+  async findById(id: string): Promise<ReturnType<typeof this.stripUser>> {
     const user = await this.repository.findUserById(id);
     if (!user) {
       throw new NotFoundException('Usuario no encontrado.');
     }
-    return this.stripSensitive(user);
+    return this.stripUser(user);
   }
 
-  async create(input: CreateUserInput): Promise<Partial<UserEntity>> {
+  async create(input: CreateUserInput): Promise<ReturnType<typeof this.stripUser>> {
     const user = await this.repository.createUser({
       name: input.name,
       email: input.email,
@@ -89,13 +90,13 @@ export class ManageUsersUseCase {
       countryCode: input.countryCode ?? '+58',
       owner: input.owner ?? 'admin',
     });
-    return this.stripSensitive(user);
+    return this.stripUser(user);
   }
 
   async update(
     id: string,
     input: UpdateUserInput,
-  ): Promise<Partial<UserEntity>> {
+  ): Promise<ReturnType<typeof this.stripUser>> {
     const existing = await this.repository.findUserById(id);
     if (!existing) {
       throw new NotFoundException('Usuario no encontrado.');
@@ -110,7 +111,7 @@ export class ManageUsersUseCase {
       countryCode: input.countryCode,
       isActive: input.isActive,
     });
-    return this.stripSensitive(user);
+    return this.stripUser(user);
   }
 
   async deactivate(id: string): Promise<void> {
@@ -121,14 +122,14 @@ export class ManageUsersUseCase {
     await this.repository.deactivateUser(id);
   }
 
-  private stripSensitive(user: UserEntity): Partial<UserEntity> {
+  private stripUser(user: UserEntity | EnrichedUser) {
     return {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       slug: user.slug,
-      phone: user.phone,
+      phone: (user as EnrichedUser).profilePhone || user.phone || '',
       countryCode: user.countryCode,
       owner: user.owner,
       isActive: user.isActive,
