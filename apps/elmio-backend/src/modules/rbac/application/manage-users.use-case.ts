@@ -123,13 +123,21 @@ export class ManageUsersUseCase {
   }
 
   private stripUser(user: UserEntity | EnrichedUser) {
+    const rawPhone = (user as EnrichedUser).profilePhone || user.phone || '';
+    const cc = user.countryCode || '+58';
+
+    const displayPhone =
+      rawPhone && !rawPhone.startsWith('+')
+        ? `${cc}${rawPhone}`
+        : rawPhone;
+
     return {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       slug: user.slug,
-      phone: (user as EnrichedUser).profilePhone || user.phone || '',
+      phone: displayPhone,
       countryCode: user.countryCode,
       owner: user.owner,
       isActive: user.isActive,
