@@ -6,9 +6,11 @@ import type { RolePermission } from '@/modules/rbac/domain/role-permission';
 import { RolePermissionEntity } from '@/modules/rbac/infrastructure/entities/role-permission.entity';
 import { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
 import { PersonProfileEntity } from '@/modules/enterprise/infrastructure/entities/person-profile.entity';
+import { EnterpriseEntity } from '@/modules/enterprise/infrastructure/entities/enterprise.entity';
 
 export interface EnrichedUser extends UserEntity {
   profilePhone?: string | null;
+  enterprisePhone?: string | null;
 }
 
 @Injectable()
@@ -20,6 +22,8 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(PersonProfileEntity)
     private readonly profileRepo: Repository<PersonProfileEntity>,
+    @InjectRepository(EnterpriseEntity)
+    private readonly enterpriseRepo: Repository<EnterpriseEntity>,
   ) {}
 
   async findAllPermissions(): Promise<RolePermission[]> {
@@ -80,6 +84,12 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
         'profile',
         'profile.userId = user.id',
       )
+      .leftJoinAndMapOne(
+        'user.enterprise',
+        EnterpriseEntity,
+        'enterprise',
+        'enterprise.userId = user.id',
+      )
       .where('user.role = :role', { role });
 
     if (!includeInactive) {
@@ -88,7 +98,7 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
 
     if (search) {
       qb.andWhere(
-        '(user.name ILIKE :search OR user.email ILIKE :search OR user.slug ILIKE :search OR user.phone ILIKE :search OR profile.phone ILIKE :search)',
+        '(user.name ILIKE :search OR user.email ILIKE :search OR user.slug ILIKE :search OR user.phone ILIKE :search OR profile.phone ILIKE :search OR enterprise.phone ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -100,10 +110,13 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     const [rawItems, total] = await qb.getManyAndCount();
 
     const items = rawItems.map((user) => {
-      const profile = (user as unknown as Record<string, unknown>).profile as PersonProfileEntity | undefined;
+      const raw = user as unknown as Record<string, unknown>;
+      const profile = raw.profile as PersonProfileEntity | undefined;
+      const enterprise = raw.enterprise as EnterpriseEntity | undefined;
       return {
         ...user,
         profilePhone: profile?.phone ?? null,
+        enterprisePhone: enterprise?.phone ?? null,
       } as EnrichedUser;
     });
 

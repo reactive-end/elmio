@@ -8,6 +8,7 @@ import type { UserEntity } from '@/modules/auth/infrastructure/entities/user.ent
 
 export interface EnrichedUser extends UserEntity {
   profilePhone?: string | null;
+  enterprisePhone?: string | null;
 }
 
 export interface RbacRepositoryPort {
