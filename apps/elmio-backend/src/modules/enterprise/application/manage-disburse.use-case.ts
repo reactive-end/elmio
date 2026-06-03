@@ -7,6 +7,7 @@ import {
 import { randomUUID } from 'node:crypto'
 import { ENTERPRISE_REPOSITORY_PORT, type EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port'
 import { PaymentProcessorService } from '../../payment-processor/application/services/payment-processor.service'
+import { normalizePhoneToR4 } from '@/shared/utils/phone'
 import type { Disbursement } from '../domain/disbursement'
 
 export interface DisburseRequestDto {
@@ -79,7 +80,7 @@ export class ManageDisburseUseCase {
       companyAccountId: 'GLOBAL_R4_FALLBACK',
       bankCode: primaryAccount.bankCode,
       amount: amountBs,
-      phoneNumber: primaryAccount.phoneNumber,
+      phoneNumber: normalizePhoneToR4(primaryAccount.phoneNumber),
       nationalId: primaryAccount.documentId,
       concept,
     } as any)
