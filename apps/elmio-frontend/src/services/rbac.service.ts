@@ -1,4 +1,15 @@
-import { authedFetch } from '@/utils/auth'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
+
+import { authService } from './auth.service'
+
+async function authedFetch(path: string, init?: RequestInit): Promise<Response> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...authService.getAuthHeaders(),
+    ...(init?.headers as Record<string, string> | undefined),
+  }
+  return fetch(`${API_BASE}${path}`, { ...init, headers })
+}
 
 export interface RbacPermissionGroup {
   [groupKey: string]: boolean

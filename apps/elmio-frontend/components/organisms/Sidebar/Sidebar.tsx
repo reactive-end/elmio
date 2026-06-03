@@ -315,10 +315,14 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
   useEffect(() => {
     if (!role) return
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
     void (async () => {
       try {
-        const res = await fetch('/api/rbac/permissions', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+        const res = await fetch(`${apiBase}/rbac/permissions`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...authService.getAuthHeaders(),
+          },
         })
         if (!res.ok) return
         const data = (await res.json()) as Record<string, Record<string, boolean>>
