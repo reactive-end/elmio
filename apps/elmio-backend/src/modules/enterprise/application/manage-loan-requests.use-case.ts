@@ -130,15 +130,16 @@ export class ManageLoanRequestsUseCase {
 
     const savedRequest = await this.repository.saveRequest(request);
 
-    // Sincronizar el estado definitivo de la transacción asociada
+    // Sincronizar el estado de la transaccion asociada
+    // Ya no se marca como paid porque el pago real ocurre cuando finanzas desembolsa
     try {
       const transaction = await this.repository.findTransactionById(requestId);
       if (transaction) {
-        transaction.status = decision === 'approved' ? 'paid' : 'failed';
+        transaction.status = decision === 'approved' ? 'pending' : 'failed';
         await this.repository.saveTransaction(transaction);
       }
     } catch (e) {
-      // Ignorar fallas al sincronizar transacción asociada
+      // Ignorar fallas al sincronizar transaccion asociada
     }
 
     return savedRequest;
@@ -175,7 +176,7 @@ export class ManageLoanRequestsUseCase {
       const product = await this.productRepository.findById(productId);
       if (product && product.actions) {
         const disburseAction = product.actions.find(
-          (act) => act.type === 'disburse_funds' && act.active,
+          (act) => (act.type === 'manual_disburse' || act.type === 'disburse_funds') && act.active,
         );
 
         if (disburseAction) {
@@ -188,7 +189,10 @@ export class ManageLoanRequestsUseCase {
             throw new Error('No se encontró el perfil del colaborador para procesar el desembolso.');
           }
 
-          if (!profile.debitCard || !profile.debitCard.cardNumber || !profile.debitCard.bank) {
+          const bankAccounts = await this.repository.findBankAccountsByPersonProfileId(profile.id);
+          const primaryAccount = bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
+
+          if (!primaryAccount) {
             throw new Error('El colaborador no posee datos de cuenta bancaria registrados en su perfil.');
           }
 
@@ -224,10 +228,10 @@ export class ManageLoanRequestsUseCase {
             provider: 'PLAZA',
             beneficiaryName: `${profile.name} ${profile.lastName}`,
             beneficiaryId: `${profile.documentType || 'V'}${profile.documentId}`,
-            beneficiaryBankCode: profile.debitCard.bank,
+            beneficiaryBankCode: primaryAccount.bankCode,
             amount: amountVES,
             concept: `Desembolso prestamo: ${product.name}`,
-            beneficiaryAccount: profile.debitCard.cardNumber,
+            beneficiaryAccount: primaryAccount.accountNumber,
             userIp: '127.0.0.1',
           }, { sub: 'elmio-system' } as any);
         }

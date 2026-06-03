@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, KeyRound } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Input } from '@/components/atoms/Input/Input'
 import { Select } from '@/components/atoms/Select/Select'
@@ -12,6 +12,7 @@ import { FormField } from '@/components/molecules/FormField/FormField'
 import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
 import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
 import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
+import { SwitchField } from '@/components/molecules/SwitchField/SwitchField'
 import type { CedulaValue, CedulaLetter } from '@/components/molecules/CedulaInput/CedulaInput.d'
 import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 import {
@@ -51,6 +52,13 @@ const VENEZUELAN_BANKS = [
   { code: '0191', label: 'Banco Nacional de Crédito (0191)' },
 ]
 
+/** Bancos que requieren credenciales de API para operar como emisores. */
+const PROVIDER_BANK_CODES = ['0138', '0105', '0169', '0115']
+
+function isProviderBank(bankCode: string): boolean {
+  return PROVIDER_BANK_CODES.includes(bankCode)
+}
+
 interface BankAccountFormProps {
   readonly mode: 'create' | 'edit'
   readonly id?: string
@@ -72,7 +80,8 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
   // Campos de formulario
   const [bankId, setBankId] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
-  
+  const [role, setRole] = useState<'EMISOR' | 'RECEPTOR' | 'AMBOS'>('RECEPTOR')
+
   // Cédula usando componente CedulaInput
   const [cedulaValue, setCedulaValue] = useState<CedulaValue>({ letter: 'V', digits: '' })
 
@@ -101,8 +110,19 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
   const [description, setDescription] = useState('')
   const [currencyId, setCurrencyId] = useState('')
 
+  // Credenciales API
+  const [configureApiKeys, setConfigureApiKeys] = useState(false)
+  const [apiKeyMeta, setApiKeyMeta] = useState<{ exists: boolean; isActive: boolean } | null>(null)
+  const [commerceKey, setCommerceKey] = useState('')
+  const [secretKey, setSecretKey] = useState('')
+  const [extraKey, setExtraKey] = useState('')
+
   // Control de errores de validación visuales
   const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({})
+
+  const selectedBankCode = banks.find((b) => b.id === bankId)?.bankCode ?? ''
+  const isProvider = isProviderBank(selectedBankCode)
+  const providerName = VENEZUELAN_BANKS.find((b) => b.code === selectedBankCode)?.label ?? ''
 
   // Cargar catálogos iniciales
   useEffect(() => {
@@ -134,6 +154,7 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
         const account = await bankAccountsAdminService.getById(id)
         setBankId(account.bank.id)
         setAccountNumber(account.accountNumber)
+        setRole((account.role as 'EMISOR' | 'RECEPTOR') || 'RECEPTOR')
         setBusinessName(account.businessName || '')
         setAccountTypeId(account.accountType.id)
         setDescription(account.description)
@@ -189,6 +210,15 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
         } else {
           validationPhoneFormat.setRawDigits(cleanValPhone)
         }
+
+        // Cargar metadata de API key
+        try {
+          const meta = await bankAccountsAdminService.getApiKeyMeta(id)
+          setApiKeyMeta(meta)
+          setConfigureApiKeys(meta.exists)
+        } catch {
+          setApiKeyMeta({ exists: false, isActive: false })
+        }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Error al cargar los datos de la cuenta.'
         setError(message)
@@ -208,6 +238,17 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
     if (!phoneFormat.rawDigits || phoneFormat.rawDigits.length < 7) errors.phoneNumber = true
     if (!accountTypeId) errors.accountTypeId = true
     if (!currencyId) errors.currencyId = true
+
+    // Validar credenciales si el toggle está activo y es banco proveedor
+    if (isProvider && configureApiKeys) {
+      if (!commerceKey.trim()) errors.commerceKey = true
+      if (isProvider && (selectedBankCode === '0105' || selectedBankCode === '0115')) {
+        if (!secretKey.trim()) errors.secretKey = true
+        if (!extraKey.trim()) errors.extraKey = true
+      } else if (isProvider) {
+        if (!secretKey.trim()) errors.secretKey = true
+      }
+    }
 
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
@@ -238,19 +279,34 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
       accountTypeId,
       description,
       currencyId,
+      role,
     }
 
     try {
       setSaving(true)
+      let accountId = id
+
       if (isEdit && id) {
         await bankAccountsAdminService.update(id, payload)
-        router.push('/dashboard/config/bank-accounts?success=updated')
-        router.refresh()
       } else {
-        await bankAccountsAdminService.create(payload)
-        router.push('/dashboard/config/bank-accounts?success=created')
-        router.refresh()
+        const created = await bankAccountsAdminService.create(payload)
+        accountId = created.id
       }
+
+      // Guardar credenciales API si aplica
+      if (isProvider && configureApiKeys && accountId) {
+        await bankAccountsAdminService.saveApiKey(accountId, {
+          commerceKey,
+          secretKey: secretKey || undefined,
+          extraKey: extraKey || undefined,
+        })
+      } else if (isProvider && !configureApiKeys && isEdit && accountId && apiKeyMeta?.exists) {
+        // Si se desactivó el toggle y antes existían credenciales, desactivarlas
+        await bankAccountsAdminService.toggleApiKey(accountId)
+      }
+
+      router.push(`/dashboard/config/bank-accounts?success=${isEdit ? 'updated' : 'created'}`)
+      router.refresh()
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error al guardar la cuenta bancaria.'
       setError(message)
@@ -324,6 +380,33 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Rol */}
+            <FormField label="Rol de la cuenta" required>
+              <Select
+                value={role}
+                onChange={(v) => setRole(v as 'EMISOR' | 'RECEPTOR' | 'AMBOS')}
+                placeholder="Selecciona un rol"
+                options={[
+                  { value: 'EMISOR', label: 'Emisor (envía pagos)' },
+                  { value: 'RECEPTOR', label: 'Receptor (recibe pagos)' },
+                  { value: 'AMBOS', label: 'Emisor y Receptor' },
+                ]}
+              />
+            </FormField>
+
+            {/* Tipo de Cuenta */}
+            <FormField label="Tipo de cuenta bancaria" required>
+              <Select
+                value={accountTypeId}
+                onChange={setAccountTypeId}
+                placeholder="Selecciona tipo de cuenta"
+                options={accountTypes.map((t) => ({ value: t.id, label: t.accountType }))}
+                hasError={validationErrors.accountTypeId}
+              />
+            </FormField>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Cédula usando CedulaInput */}
             <FormField label="Documento de Identidad (Titular)" required>
               <CedulaInput
@@ -360,19 +443,6 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
               />
             </FormField>
 
-            {/* Tipo de Cuenta */}
-            <FormField label="Tipo de cuenta bancaria" required>
-              <Select
-                value={accountTypeId}
-                onChange={setAccountTypeId}
-                placeholder="Selecciona tipo de cuenta"
-                options={accountTypes.map((t) => ({ value: t.id, label: t.accountType }))}
-                hasError={validationErrors.accountTypeId}
-              />
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Moneda */}
             <FormField label="Moneda" required>
               <Select
@@ -383,7 +453,9 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
                 hasError={validationErrors.currencyId}
               />
             </FormField>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Razón Social */}
             <FormField label="Titular de la cuenta / Razón social (opcional)">
               <Input
@@ -393,18 +465,102 @@ export function BankAccountForm({ mode, id }: BankAccountFormProps) {
                 onChange={(e) => setBusinessName(e.target.value)}
               />
             </FormField>
+
+            {/* Descripción */}
+            <FormField label="Descripción / Alias (opcional)">
+              <Input
+                type="text"
+                placeholder="Ej. Cuenta Recaudadora Principal"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                hasError={validationErrors.description}
+              />
+            </FormField>
           </div>
 
-          {/* Descripción */}
-          <FormField label="Descripción / Alias (opcional)">
-            <Input
-              type="text"
-              placeholder="Ej. Cuenta Recaudadora Principal"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              hasError={validationErrors.description}
-            />
-          </FormField>
+          {/* Sección condicional de credenciales API */}
+          {isProvider && (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 mb-1">
+                <KeyRound className="w-4 h-4 text-secondary" strokeWidth={1.5} />
+                <span className="text-sm font-semibold text-body">Credenciales de API</span>
+                <span className="text-[10px] bg-secondary/10 text-secondary rounded-full px-2 py-0.5 font-medium">
+                  {providerName}
+                </span>
+              </div>
+
+              <SwitchField
+                label="Configurar credenciales de API para este banco"
+                checked={configureApiKeys}
+                onChange={setConfigureApiKeys}
+              />
+
+              {configureApiKeys && (
+                <div className="flex flex-col gap-4 p-5 rounded-xl border border-gray-100 bg-gray-50/30">
+                  {(selectedBankCode === '0138' || selectedBankCode === '0169') && (
+                    <>
+                      <FormField label="Commerce Key / API Key" required error={validationErrors.commerceKey ? 'Campo requerido' : undefined}>
+                        <Input
+                          type="password"
+                          placeholder="Ingresa la clave de comercio"
+                          value={commerceKey}
+                          onChange={(e) => setCommerceKey(e.target.value)}
+                          hasError={validationErrors.commerceKey}
+                        />
+                      </FormField>
+                      <FormField label="Secret Key / API Secret" required error={validationErrors.secretKey ? 'Campo requerido' : undefined}>
+                        <Input
+                          type="password"
+                          placeholder="Ingresa el secreto"
+                          value={secretKey}
+                          onChange={(e) => setSecretKey(e.target.value)}
+                          hasError={validationErrors.secretKey}
+                        />
+                      </FormField>
+                    </>
+                  )}
+
+                  {(selectedBankCode === '0105' || selectedBankCode === '0115') && (
+                    <>
+                      <FormField label="Master Key / API Key" required error={validationErrors.commerceKey ? 'Campo requerido' : undefined}>
+                        <Input
+                          type="password"
+                          placeholder="Ingresa la master key"
+                          value={commerceKey}
+                          onChange={(e) => setCommerceKey(e.target.value)}
+                          hasError={validationErrors.commerceKey}
+                        />
+                      </FormField>
+                      <FormField label="Secret Key" required error={validationErrors.secretKey ? 'Campo requerido' : undefined}>
+                        <Input
+                          type="password"
+                          placeholder="Ingresa el secret key"
+                          value={secretKey}
+                          onChange={(e) => setSecretKey(e.target.value)}
+                          hasError={validationErrors.secretKey}
+                        />
+                      </FormField>
+                      <FormField label="Client ID / Extra Key" required error={validationErrors.extraKey ? 'Campo requerido' : undefined}>
+                        <Input
+                          type="password"
+                          placeholder="Ingresa el client ID"
+                          value={extraKey}
+                          onChange={(e) => setExtraKey(e.target.value)}
+                          hasError={validationErrors.extraKey}
+                        />
+                      </FormField>
+                    </>
+                  )}
+
+                  {isEdit && apiKeyMeta?.exists && (
+                    <p className="text-[10px] text-gray-400 italic">
+                      * Si dejas los campos vacíos se conservarán las credenciales actuales. Si ingresas valores, se reemplazarán por completo.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4 border-t border-gray-50 justify-end">
             <Link href="/dashboard/config/bank-accounts">

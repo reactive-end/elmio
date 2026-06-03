@@ -153,7 +153,10 @@ export class ExecuteBillingCutoffUseCase {
           throw new Error('No se encontró el perfil de cliente en el sistema.');
         }
 
-        if (!profile.debitCard?.cardNumber || !profile.debitCard?.bank) {
+        const bankAccounts = await this.repository.findBankAccountsByPersonProfileId(profile.id);
+        const primaryAccount = bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
+
+        if (!primaryAccount) {
           throw new Error('El cliente no tiene datos de cuenta bancaria registrados para la domiciliación.');
         }
 
@@ -164,7 +167,7 @@ export class ExecuteBillingCutoffUseCase {
           companyAccountId: 'GLOBAL_R4_FALLBACK',
           documentId: `${profile.documentType || 'V'}${profile.documentId}`,
           fullName: `${profile.name} ${profile.lastName}`,
-          accountNumber: profile.debitCard.cardNumber,
+          accountNumber: primaryAccount.accountNumber,
           amount: tx.amount,
           concept: `ElMio - ${tx.concept}`,
         } as any);

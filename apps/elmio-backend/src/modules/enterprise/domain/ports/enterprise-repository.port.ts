@@ -7,6 +7,8 @@ import type {
   ContractFile,
 } from '../enterprise';
 import type { PersonProfile } from '../person-profile';
+import type { PersonBankAccount } from '../person-bank-account';
+import type { Disbursement } from '../disbursement';
 
 export const ENTERPRISE_REPOSITORY_PORT = Symbol('ENTERPRISE_REPOSITORY_PORT');
 
@@ -73,6 +75,51 @@ export interface EnterpriseRepositoryPort {
    * @returns Colaboradores creados.
    */
   saveCollaborators(collaborators: PersonProfile[]): Promise<PersonProfile[]>;
+
+  // --- Person Bank Accounts ---
+
+  /**
+   * Lista las cuentas bancarias de un perfil de persona.
+   * @param personProfileId ID del perfil.
+   * @returns Lista de cuentas bancarias.
+   */
+  findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]>;
+
+  /**
+   * Busca una cuenta bancaria por su ID.
+   * @param id ID de la cuenta.
+   * @returns Cuenta bancaria o null.
+   */
+  findBankAccountById(id: string): Promise<PersonBankAccount | null>;
+
+  /**
+   * Guarda una cuenta bancaria de persona.
+   * @param account Datos de la cuenta.
+   * @returns Cuenta guardada.
+   */
+  saveBankAccount(account: PersonBankAccount): Promise<PersonBankAccount>;
+
+  /**
+   * Elimina una cuenta bancaria por ID.
+   * @param id ID de la cuenta.
+   */
+  deleteBankAccount(id: string): Promise<void>;
+
+  // --- Disbursements ---
+
+  /**
+   * Guarda un registro de desembolso.
+   * @param disbursement Datos del desembolso.
+   * @returns Desembolso guardado.
+   */
+  saveDisbursement(disbursement: Disbursement): Promise<Disbursement>;
+
+  /**
+   * Busca un desembolso por ID de solicitud.
+   * @param loanRequestId ID de la solicitud.
+   * @returns Desembolso o null.
+   */
+  findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null>;
 
   // --- Loan Requests ---
 

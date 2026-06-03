@@ -5,7 +5,6 @@ import type {
   AdditionalLegalRep,
 } from '../../../domain/enterprise';
 import type {
-  CardInfo,
   PersonalReference,
 } from '../../../domain/person-profile';
 
@@ -150,10 +149,6 @@ export class UpdatePersonProfileDto {
   nationalBank2?: string;
   nationalBank3?: string;
   internationalBank?: string;
-
-  // Tarjetas
-  creditCard?: CardInfo | null;
-  debitCard?: CardInfo | null;
 
   // Referencias
   personalReferences?: PersonalReference[];

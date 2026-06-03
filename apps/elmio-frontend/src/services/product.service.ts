@@ -77,7 +77,7 @@ export interface ProductWindow {
 
 export interface ProductAction {
   id: string
-  type: 'disburse_funds' | 'send_email_voucher' | 'custom_webhook'
+  type: 'manual_disburse' | 'disburse_funds' | 'send_email_voucher' | 'custom_webhook'
   name: string
   active: boolean
   config: Record<string, any>

@@ -24,6 +24,7 @@ import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4
 import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto'
 import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto'
 import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto'
+import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto'
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
 import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto'
 
@@ -77,6 +78,7 @@ export interface PaymentProcessorRepositoryPort {
   ): Promise<any>
   processAccountDirectDebitR4(dto: AccountDirectDebitDto): Promise<any>
   processPhoneDirectDebitR4(dto: PhoneDirectDebitDto): Promise<any>
+  processImmediateCreditR4(dto: ImmediateCreditRequestDto): Promise<any>
   processImmediateDebitR4(dto: ImmediateDebitRequestDto): Promise<any>
   queryOperationR4(dto: QueryOperationRequestDto): Promise<any>
 

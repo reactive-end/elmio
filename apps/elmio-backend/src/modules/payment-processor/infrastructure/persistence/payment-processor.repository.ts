@@ -44,6 +44,10 @@ import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4
 import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto'
 import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto'
 import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto'
+import {
+  ImmediateCreditRequestDto,
+  ImmediateCreditResponseDto,
+} from '../../presentation/dtos/banco-r4/immediate-credit.dto'
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
 import {
   QueryOperationRequestDto,
@@ -982,6 +986,10 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
 
   async processPhoneDirectDebitR4(dto: PhoneDirectDebitDto) {
     return this.r4ProcessPhoneDirectDebit(dto)
+  }
+
+  async processImmediateCreditR4(dto: ImmediateCreditRequestDto) {
+    return this.r4ProcessImmediateCredit(dto)
   }
 
   async processImmediateDebitR4(dto: ImmediateDebitRequestDto) {
@@ -3169,6 +3177,18 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
     return crypto.createHmac('sha256', secretKey).update(raw).digest('hex')
   }
 
+  private generateImmediateCreditHash(
+    bankCode: string,
+    nationalId: string,
+    phoneNumber: string,
+    amount: string,
+    commerceKey: string,
+  ): string {
+    const raw = `${bankCode}${nationalId}${phoneNumber}${amount}`
+
+    return crypto.createHmac('sha256', commerceKey).update(raw).digest('hex')
+  }
+
   private mapDirectDebitError(error: any, fallbackMessage: string): never {
     if (error instanceof HttpException) {
       throw error
@@ -3737,6 +3757,170 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       this.mapDirectDebitError(
         error,
         'Error procesando Debito Inmediato en Banco R4',
+      )
+    }
+  }
+
+  async r4ProcessImmediateCredit(
+    dto: ImmediateCreditRequestDto,
+  ): Promise<ImmediateCreditResponseDto> {
+    try {
+      const context = await this.getR4Context(dto.companyAccountId)
+
+      if (!context.commerceKey || !this.BASE_URL) {
+        throw new InternalServerErrorException(
+          'Configuración incompleta de banco R4',
+        )
+      }
+
+      const endpoint = `${this.BASE_URL}/CreditoInmediato`
+      const amountValue = Number(dto.amount)
+
+      if (Number.isNaN(amountValue) || amountValue <= 0) {
+        throw new BadRequestException('Monto invalido para Credito Inmediato')
+      }
+
+      const formattedAmount = amountValue.toFixed(2)
+      const normalizedNationalId = String(dto.nationalId || '')
+        .trim()
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toUpperCase()
+      const normalizedPhone = String(dto.phoneNumber || '')
+        .trim()
+        .replace(/\D/g, '')
+
+      const authorization = this.generateImmediateCreditHash(
+        dto.bankCode,
+        normalizedNationalId,
+        normalizedPhone,
+        formattedAmount,
+        context.commerceKey,
+      )
+
+      const payload = {
+        Banco: dto.bankCode,
+        Cedula: normalizedNationalId,
+        Telefono: normalizedPhone,
+        Monto: formattedAmount,
+        Concepto: dto.concept,
+      }
+
+      this.logger.debug(`[R4][CreditoInmediato] Endpoint: ${endpoint}`)
+      this.logger.debug(
+        `[R4][CreditoInmediato] Request payload: ${JSON.stringify(payload)}`,
+      )
+      this.logger.debug(
+        `[R4][CreditoInmediato] Request headers: ${JSON.stringify({
+          Commerce: context.commerceKey,
+          Authorization: authorization,
+        })}`,
+      )
+
+      const response = await firstValueFrom(
+        this.httpService.post(endpoint, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            Commerce: context.commerceKey,
+            Authorization: authorization,
+          },
+        }),
+      )
+
+      this.logger.debug(
+        `[R4][CreditoInmediato] HTTP status: ${response.status} - Response body: ${JSON.stringify(
+          response.data,
+        )}`,
+      )
+
+      if (response.status !== HttpStatus.OK) {
+        throw new InternalServerErrorException(
+          'Respuesta HTTP invalida de Banco R4',
+        )
+      }
+
+      const code = String(response.data?.code ?? '')
+      const message =
+        response.data?.message ||
+        response.data?.mensaje ||
+        'Respuesta invalida de Banco R4'
+
+      const bankReference = String(response.data?.reference ?? '')
+      const bankOperationId = String(response.data?.id ?? '')
+
+      // Persistir Payment para trazabilidad
+      try {
+        const vesCurrency = await this.requireVesCurrency()
+
+        const payment = new Payment()
+
+        // Datos del beneficiario (destino externo)
+        payment.externalDestBankCode = dto.bankCode || null
+        payment.externalDestAccount = null
+        payment.externalDestPhone = normalizedPhone || null
+        payment.externalDestDocType = normalizedNationalId.match(/^[A-Z]/)
+          ? normalizedNationalId[0]
+          : null
+        payment.externalDestDoc = normalizedNationalId.replace(/^[A-Z]/, '') || null
+
+        // Origen interno (cuenta R4 del comercio)
+        payment.internalSourceAccount = context.account ?? null
+        payment.externalSourceBankCode = null
+        payment.externalSourceAccount = null
+        payment.externalSourcePhone = null
+        payment.externalSourceDocType = null
+        payment.externalSourceDoc = null
+
+        payment.amountBs = amountValue
+        payment.amountUsd = 0
+        payment.reference = bankReference || null
+        payment.billingId = bankOperationId || `${Date.now().toString().slice(-8)}`
+        payment.internalDestinationAccount = null
+        payment.payerUserId = null
+        payment.payerName = dto.concept || null
+        payment.enterpriseId = null
+        payment.paymentStatusId = code === 'ACCP' ? 1 : 2
+        payment.paymentMethodId = 5
+        payment.paymentTypeId = 3
+        payment.paymentDate = new Date()
+        payment.currency = vesCurrency
+
+        const saved = await this.paymentRepository.save(payment)
+
+        this.logger.log(
+          `[R4][CreditoInmediato] Pago registrado internamente (id=${saved.id}, reference=${bankReference})`,
+        )
+
+        return {
+          code,
+          message,
+          reference: bankReference,
+          id: bankOperationId,
+          internalPaymentId: saved.id,
+          rawResponse: response.data,
+        }
+      } catch (persistError) {
+        this.logger.error(
+          'Error al persistir pago de Credito Inmediato R4',
+          persistError as Error,
+        )
+        return {
+          code,
+          message,
+          reference: bankReference,
+          id: bankOperationId,
+          rawResponse: response.data,
+        }
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error en Credito Inmediato R4: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+
+      this.mapDirectDebitError(
+        error,
+        'Error procesando Credito Inmediato en Banco R4',
       )
     }
   }
@@ -5210,36 +5394,31 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       }
     }
 
-    if (!account) {
-      throw new NotFoundException(
-        'No se encontro ninguna cuenta bancaria activa y valida para Banco Exterior en el sistema.',
-      )
+    let decryptedApiKey: string | null = null
+    let decryptedClientSecret: string | null = null
+    let decryptedMasterKey: string | null = null
+
+    if (account && activeKey?.commerceKey && activeKey?.secretKey && activeKey?.extraKey) {
+      decryptedApiKey = ApiKeyCipher.decryptIfEncrypted(activeKey.commerceKey)
+      decryptedClientSecret = ApiKeyCipher.decryptIfEncrypted(activeKey.secretKey)
+      decryptedMasterKey = ApiKeyCipher.decryptIfEncrypted(activeKey.extraKey)
     }
 
-    if (
-      !activeKey?.commerceKey ||
-      !activeKey?.secretKey ||
-      !activeKey?.extraKey
-    ) {
-      throw new InternalServerErrorException(
-        'No hay credenciales activas completas para la cuenta de Banco Exterior.',
-      )
-    }
-
-    const decryptedApiKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.commerceKey,
-    )
-    const decryptedClientSecret = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.secretKey,
-    )
-    const decryptedMasterKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.extraKey,
-    )
-
+    // Fallback a variables de entorno si no hay credenciales en BD
     if (!decryptedApiKey || !decryptedClientSecret || !decryptedMasterKey) {
-      throw new InternalServerErrorException(
-        'No se pudieron descifrar credenciales activas para la cuenta de Banco Exterior.',
-      )
+      const envApiKey = process.env.EXTERIOR_API_KEY?.trim()
+      const envClientSecret = process.env.EXTERIOR_CLIENT_SECRET?.trim()
+      const envMasterKey = process.env.EXTERIOR_MASTER_KEY?.trim()
+
+      if (!envApiKey || !envClientSecret || !envMasterKey) {
+        throw new InternalServerErrorException(
+          'No hay credenciales activas completas para Banco Exterior ni variables de entorno EXTERIOR_API_KEY / EXTERIOR_CLIENT_SECRET / EXTERIOR_MASTER_KEY configuradas.',
+        )
+      }
+
+      decryptedApiKey = envApiKey
+      decryptedClientSecret = envClientSecret
+      decryptedMasterKey = envMasterKey
     }
 
     return {
@@ -5248,7 +5427,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       apiKey: decryptedApiKey,
       clientSecret: decryptedClientSecret,
       masterKey: decryptedMasterKey,
-      clientId: this.buildExteriorClientId(account),
+      clientId: account ? this.buildExteriorClientId(account) : '',
     }
   }
 
@@ -5391,30 +5570,31 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       relations: ['bankAccount'],
     })
 
-    if (
-      !activeKey?.commerceKey ||
-      !activeKey?.secretKey ||
-      !activeKey?.extraKey
-    ) {
-      throw new InternalServerErrorException(
-        'No hay credenciales activas completas para la cuenta indicada de Banco Mercantil.',
-      )
+    let decryptedMasterKey: string | null = null
+    let decryptedSecretKey: string | null = null
+    let decryptedClientId: string | null = null
+
+    if (activeKey?.commerceKey && activeKey?.secretKey && activeKey?.extraKey) {
+      decryptedMasterKey = ApiKeyCipher.decryptIfEncrypted(activeKey.commerceKey)
+      decryptedSecretKey = ApiKeyCipher.decryptIfEncrypted(activeKey.secretKey)
+      decryptedClientId = ApiKeyCipher.decryptIfEncrypted(activeKey.extraKey)
     }
 
-    const decryptedMasterKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.commerceKey,
-    )
-    const decryptedSecretKey = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.secretKey,
-    )
-    const decryptedClientId = ApiKeyCipher.decryptIfEncrypted(
-      activeKey.extraKey,
-    )
-
+    // Fallback a variables de entorno si no hay credenciales en BD
     if (!decryptedMasterKey || !decryptedSecretKey || !decryptedClientId) {
-      throw new InternalServerErrorException(
-        'No se pudieron descifrar credenciales activas para la cuenta indicada de Banco Mercantil.',
-      )
+      const envMasterKey = process.env.MERCANTIL_MASTER_KEY?.trim()
+      const envSecretKey = process.env.MERCANTIL_SECRET_KEY?.trim()
+      const envClientId = process.env.MERCANTIL_CLIENT_ID?.trim()
+
+      if (!envMasterKey || !envSecretKey || !envClientId) {
+        throw new InternalServerErrorException(
+          'No hay credenciales activas completas para la cuenta indicada de Banco Mercantil ni variables de entorno MERCANTIL_MASTER_KEY / MERCANTIL_SECRET_KEY / MERCANTIL_CLIENT_ID configuradas.',
+        )
+      }
+
+      decryptedMasterKey = envMasterKey
+      decryptedSecretKey = envSecretKey
+      decryptedClientId = envClientId
     }
 
     return {

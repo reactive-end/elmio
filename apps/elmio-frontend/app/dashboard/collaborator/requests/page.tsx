@@ -198,19 +198,6 @@ export default function CollaboratorRequestsPage() {
                           >
                             <Eye className="h-4 w-4 text-body-muted" strokeWidth={1.5} />
                           </button>
-                          
-                          {request.status === 'approved' && (
-                            <Button
-                              onClick={() => void handleCompleteAcquisition(request)}
-                              variant="primary"
-                              className="text-[11px] font-bold px-3 py-1.5 flex items-center gap-1 cursor-pointer bg-secondary hover:bg-secondary/95 border-none shadow-sm rounded-lg text-white"
-                              disabled={redirectingId !== null}
-                              isLoading={redirectingId === request.id}
-                            >
-                              Adquirir
-                              <ArrowRight className="w-3 h-3" />
-                            </Button>
-                          )}
                         </div>
                       </td>
                     </tr>

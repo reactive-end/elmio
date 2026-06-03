@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { CardInfo, PersonalReference } from '../../domain/person-profile';
+import { PersonalReference } from '../../domain/person-profile';
 import { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
 import { EnterpriseEntity } from './enterprise.entity';
 
@@ -178,22 +178,7 @@ export class PersonProfileEntity {
   @Column({ type: 'varchar', length: 100 })
   internationalBank!: string;
 
-  // — Grupo 7: Tarjetas —
-  @Column({
-    type: 'text',
-    nullable: true,
-    transformer: jsonTransformer,
-  })
-  creditCard!: CardInfo | null;
-
-  @Column({
-    type: 'text',
-    nullable: true,
-    transformer: jsonTransformer,
-  })
-  debitCard!: CardInfo | null;
-
-  // — Grupo 8: Referencias Personales —
+  // — Grupo 7: Referencias Personales —
   @Column({
     type: 'text',
     transformer: jsonArrayTransformer,

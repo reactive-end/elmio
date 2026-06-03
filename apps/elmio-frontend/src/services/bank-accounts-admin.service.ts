@@ -35,6 +35,7 @@ export interface BankAccountItem {
   accountType: BankAccountTypeItem
   description: string
   currency: CurrencyItem
+  role: string
   createdAt: string
   updatedAt: string
 }
@@ -50,6 +51,18 @@ export interface SaveBankAccountInput {
   accountTypeId: string
   description?: string
   currencyId: string
+  role?: 'EMISOR' | 'RECEPTOR' | 'AMBOS'
+}
+
+export interface BankAccountApiKeyMeta {
+  exists: boolean
+  isActive: boolean
+}
+
+export interface UpsertBankAccountApiKeyInput {
+  commerceKey: string
+  secretKey?: string
+  extraKey?: string
 }
 
 type ErrorResponse = { message?: string }
@@ -122,6 +135,47 @@ export const bankAccountsAdminService = {
       method: 'DELETE',
     })
   },
+
+  /* ── API Key endpoints ───────────────────────────────────────────── */
+
+  /**
+   * Obtiene la metadata de la API key asociada a una cuenta bancaria.
+   */
+  async getApiKeyMeta(id: string): Promise<BankAccountApiKeyMeta> {
+    return apiFetch<BankAccountApiKeyMeta>(`/bank-accounts/${encodeURIComponent(id)}/api-key`, {
+      method: 'GET',
+    })
+  },
+
+  /**
+   * Crea o reemplaza la API key de una cuenta bancaria.
+   */
+  async saveApiKey(id: string, input: UpsertBankAccountApiKeyInput): Promise<{ success: boolean }> {
+    return apiFetch<{ success: boolean }>(`/bank-accounts/${encodeURIComponent(id)}/api-key`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  },
+
+  /**
+   * Activa o desactiva la API key de una cuenta bancaria.
+   */
+  async toggleApiKey(id: string): Promise<{ success: boolean; isActive: boolean }> {
+    return apiFetch<{ success: boolean; isActive: boolean }>(`/bank-accounts/${encodeURIComponent(id)}/api-key/toggle`, {
+      method: 'PATCH',
+    })
+  },
+
+  /**
+   * Elimina la API key de una cuenta bancaria.
+   */
+  async deleteApiKey(id: string): Promise<{ success: boolean }> {
+    return apiFetch<{ success: boolean }>(`/bank-accounts/${encodeURIComponent(id)}/api-key`, {
+      method: 'DELETE',
+    })
+  },
+
+  /* ── Catalogs ────────────────────────────────────────────────────── */
 
   /**
    * Obtiene el catálogo de bancos activos.

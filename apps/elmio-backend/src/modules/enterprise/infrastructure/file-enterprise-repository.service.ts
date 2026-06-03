@@ -10,11 +10,15 @@ import type {
   ContractFile,
 } from '../domain/enterprise';
 import type { PersonProfile } from '../domain/person-profile';
+import type { PersonBankAccount } from '../domain/person-bank-account';
+import type { Disbursement } from '../domain/disbursement';
 import type { EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
 
 interface StorageData {
   enterprises: Enterprise[];
   collaborators: PersonProfile[];
+  personBankAccounts: PersonBankAccount[];
+  disbursements: Disbursement[];
   requests: LoanRequest[];
   transactions: Transaction[];
   contracts: Contract[];
@@ -52,6 +56,8 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
       return {
         enterprises: parsed.enterprises ?? [],
         collaborators: parsed.collaborators ?? [],
+        personBankAccounts: parsed.personBankAccounts ?? [],
+        disbursements: parsed.disbursements ?? [],
         requests: parsed.requests ?? [],
         transactions: parsed.transactions ?? [],
         contracts: parsed.contracts ?? [],
@@ -62,6 +68,8 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
       return {
         enterprises: [],
         collaborators: [],
+        personBankAccounts: [],
+        disbursements: [],
         requests: [],
         transactions: [],
         contracts: [],
@@ -338,5 +346,54 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     data.platformConfig = config;
     await this.write(data);
     return config;
+  }
+
+  // --- Person Bank Accounts ---
+
+  async findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]> {
+    const data = await this.read();
+    return data.personBankAccounts.filter((a) => a.personProfileId === personProfileId);
+  }
+
+  async findBankAccountById(id: string): Promise<PersonBankAccount | null> {
+    const data = await this.read();
+    return data.personBankAccounts.find((a) => a.id === id) ?? null;
+  }
+
+  async saveBankAccount(account: PersonBankAccount): Promise<PersonBankAccount> {
+    const data = await this.read();
+    const idx = data.personBankAccounts.findIndex((a) => a.id === account.id);
+    if (idx >= 0) {
+      data.personBankAccounts[idx] = account;
+    } else {
+      data.personBankAccounts.push(account);
+    }
+    await this.write(data);
+    return account;
+  }
+
+  async deleteBankAccount(id: string): Promise<void> {
+    const data = await this.read();
+    data.personBankAccounts = data.personBankAccounts.filter((a) => a.id !== id);
+    await this.write(data);
+  }
+
+  // --- Disbursements ---
+
+  async saveDisbursement(disbursement: Disbursement): Promise<Disbursement> {
+    const data = await this.read();
+    const idx = data.disbursements.findIndex((d) => d.id === disbursement.id);
+    if (idx >= 0) {
+      data.disbursements[idx] = disbursement;
+    } else {
+      data.disbursements.push(disbursement);
+    }
+    await this.write(data);
+    return disbursement;
+  }
+
+  async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
+    const data = await this.read();
+    return data.disbursements.find((d) => d.loanRequestId === loanRequestId) ?? null;
   }
 }

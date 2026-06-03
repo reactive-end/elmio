@@ -105,11 +105,7 @@ export interface PersonProfile {
   nationalBank3: string;
   internationalBank: string;
 
-  // — Grupo 7: Tarjetas —
-  creditCard: CardInfo | null;
-  debitCard: CardInfo | null;
-
-  // — Grupo 8: Referencias Personales —
+  // — Grupo 7: Referencias Personales —
   personalReferences: PersonalReference[];
 
   // — Metadatos —

@@ -169,6 +169,12 @@ const NAV: NavGroup[] = [
         href: '/dashboard/collaborator/requests',
         icon: FileText,
       },
+      {
+        key: 'employee-bank',
+        label: 'Mis datos bancarios',
+        href: '/dashboard/collaborator/bank-data',
+        icon: Landmark,
+      },
     ],
   },
   {
@@ -223,12 +229,6 @@ const NAV: NavGroup[] = [
         href: '/dashboard/config/allies',
         icon: Users,
       },
-      {
-        key: 'config-finance-users',
-        label: 'Usuarios Finanzas',
-        href: '/dashboard/config/finance-users',
-        icon: Landmark,
-      },
     ],
   },
   {
@@ -236,14 +236,18 @@ const NAV: NavGroup[] = [
     label: 'Finanzas',
     icon: Landmark,
     children: [
-      /*
       {
         key: 'config-bank-accounts',
         label: 'Cuentas bancarias',
         href: '/dashboard/config/bank-accounts',
         icon: Landmark,
       },
-      */
+      {
+        key: 'config-finance-users',
+        label: 'Usuarios Finanzas',
+        href: '/dashboard/config/finance-users',
+        icon: Users,
+      },
       {
         key: 'config-currencies',
         label: 'Monedas',
@@ -281,6 +285,12 @@ const NAV: NavGroup[] = [
         label: 'Mis compras',
         href: '/dashboard/collaborator/purchases',
         icon: List,
+      },
+      {
+        key: 'client-bank',
+        label: 'Mis datos bancarios',
+        href: '/dashboard/collaborator/bank-data',
+        icon: Landmark,
       },
     ],
   },
@@ -369,8 +379,8 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
             return false
           }
 
-          // Si el rol es FINANCE, ocultamos todos los menús excepto la mesa de control de finanzas
-          if (role === 'FINANCE' && group.key !== 'finance-desk') {
+          // Si el rol es FINANCE, ocultamos todos los menús excepto la mesa de control de finanzas y el catálogo de finanzas
+          if (role === 'FINANCE' && group.key !== 'finance-desk' && group.key !== 'banks-currencies') {
             return false
           }
 
@@ -406,8 +416,8 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
             return false
           }
 
-          // Ocultar Bancos y Monedas para roles que no sean ADMIN
-          if (group.key === 'banks-currencies' && role !== 'ADMIN') {
+          // Ocultar Finanzas (bancos, monedas, cuentas, usuarios finanzas) para roles que no sean ADMIN ni FINANCE
+          if (group.key === 'banks-currencies' && role !== 'ADMIN' && role !== 'FINANCE') {
             return false
           }
 
@@ -448,7 +458,14 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
 
               {!collapsed && open && (
                 <div className="ml-4 mt-0.5 border-l border-white/15 pl-3 flex flex-col gap-0.5">
-                  {visibleChildren.map((child) => (
+                  {visibleChildren
+                    .filter((child) => {
+                      if (group.key === 'banks-currencies' && child.key === 'config-finance-users' && role !== 'ADMIN') {
+                        return false
+                      }
+                      return true
+                    })
+                    .map((child) => (
                     <Link
                       key={child.key}
                       href={child.href}

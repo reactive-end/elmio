@@ -13,12 +13,16 @@ import { GetAccountStatementUseCase } from './application/get-account-statement.
 import { CreateTransactionUseCase } from './application/create-transaction.use-case';
 import { ManageContractsUseCase } from './application/manage-contracts.use-case';
 import { ManageProfileUseCase } from './application/manage-profile.use-case';
+import { ManagePersonBankAccountsUseCase } from './application/manage-person-bank-accounts.use-case';
+import { ManageDisburseUseCase } from './application/manage-disburse.use-case';
 import { ExecuteBillingCutoffUseCase } from './application/execute-billing-cutoff.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
 import { DbEnterpriseRepositoryService } from './infrastructure/db-enterprise-repository.service';
 import { DocumentStorageService } from './infrastructure/document-storage.service';
 import { EnterpriseEntity } from './infrastructure/entities/enterprise.entity';
 import { PersonProfileEntity } from './infrastructure/entities/person-profile.entity';
+import { PersonBankAccountEntity } from './infrastructure/entities/person-bank-account.entity';
+import { DisbursementEntity } from './infrastructure/entities/disbursement.entity';
 import { LoanRequestEntity } from './infrastructure/entities/loan-request.entity';
 import { TransactionEntity } from './infrastructure/entities/transaction.entity';
 import { PlatformConfigEntity } from './infrastructure/entities/platform-config.entity';
@@ -44,6 +48,8 @@ import { ProductModule } from '../product/product.module';
     TypeOrmModule.forFeature([
       EnterpriseEntity,
       PersonProfileEntity,
+      PersonBankAccountEntity,
+      DisbursementEntity,
       LoanRequestEntity,
       TransactionEntity,
       PlatformConfigEntity,
@@ -64,6 +70,8 @@ import { ProductModule } from '../product/product.module';
     CreateTransactionUseCase,
     ManageContractsUseCase,
     ManageProfileUseCase,
+    ManagePersonBankAccountsUseCase,
+    ManageDisburseUseCase,
     ExecuteBillingCutoffUseCase,
     DbEnterpriseRepositoryService,
     DocumentStorageService,

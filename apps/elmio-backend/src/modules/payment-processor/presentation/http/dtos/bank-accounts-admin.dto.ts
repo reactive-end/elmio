@@ -12,6 +12,7 @@ export class CreateBankAccountDto {
   accountTypeId!: string
   description?: string
   currencyId!: string
+  role?: 'EMISOR' | 'RECEPTOR' | 'AMBOS'
 }
 
 /**
@@ -28,6 +29,16 @@ export class UpdateBankAccountDto {
   accountTypeId?: string
   description?: string
   currencyId?: string
+  role?: 'EMISOR' | 'RECEPTOR' | 'AMBOS'
+}
+
+/**
+ * DTO para crear o actualizar las credenciales API de una cuenta bancaria.
+ */
+export class UpsertBankAccountApiKeyDto {
+  commerceKey!: string
+  secretKey?: string
+  extraKey?: string
 }
 
 /**
@@ -48,5 +59,3 @@ export class UpdateCurrencyDto {
   symbol?: string
   exchangeRate?: number
 }
-
-

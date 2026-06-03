@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Check, X, ShieldCheck, AlertCircle, RefreshCw, Landmark, MessageSquare } from 'lucide-react'
+import { Check, X, ShieldCheck, AlertCircle, RefreshCw, Landmark, MessageSquare, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Input } from '@/components/atoms/Input/Input'
@@ -19,6 +19,11 @@ export default function FinanceRequestsPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [denialReason, setDenialReason] = useState('')
   const [rejectError, setRejectError] = useState<string | null>(null)
+
+  // Estados para Modal de Despacho
+  const [isDisburseModalOpen, setIsDisburseModalOpen] = useState(false)
+  const [disburseRequest, setDisburseRequest] = useState<LoanRequest | null>(null)
+  const [disburseError, setDisburseError] = useState<string | null>(null)
 
   const loadRequests = async () => {
     try {
@@ -46,14 +51,40 @@ export default function FinanceRequestsPage() {
       setActionLoading(id)
       setAlert(null)
       await enterpriseService.resolveFinanceRequest(id, 'approved')
-      setAlert({ type: 'success', message: 'Desembolso y préstamo autorizados con éxito.' })
-      // Remover de la lista local
+      setAlert({ type: 'success', message: 'Desembolso y prestamo autorizados con exito.' })
       setRequests((prev) => prev.filter((r) => r.id !== id))
     } catch (err) {
       setAlert({
         type: 'error',
         message: err instanceof Error ? err.message : 'Error al autorizar el desembolso.',
       })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const openDisburseModal = (req: LoanRequest) => {
+    setDisburseRequest(req)
+    setDisburseError(null)
+    setIsDisburseModalOpen(true)
+  }
+
+  const handleDisburse = async () => {
+    if (!disburseRequest) return
+    try {
+      setActionLoading(disburseRequest.id)
+      setDisburseError(null)
+
+      // 1. Aprobar
+      await enterpriseService.resolveFinanceRequest(disburseRequest.id, 'approved')
+      // 2. Desembolsar
+      await enterpriseService.disburseRequest(disburseRequest.id)
+
+      setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
+      setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
+      setIsDisburseModalOpen(false)
+    } catch (err) {
+      setDisburseError(err instanceof Error ? err.message : 'Error al desembolsar.')
     } finally {
       setActionLoading(null)
     }
@@ -78,7 +109,7 @@ export default function FinanceRequestsPage() {
       setActionLoading(selectedRequestId)
       setRejectError(null)
       await enterpriseService.resolveFinanceRequest(selectedRequestId, 'denied', denialReason.trim())
-      setAlert({ type: 'success', message: 'Solicitud denegada y cancelada con éxito.' })
+      setAlert({ type: 'success', message: 'Solicitud denegada y cancelada con exito.' })
       setRequests((prev) => prev.filter((r) => r.id !== selectedRequestId))
       setIsRejectModalOpen(false)
     } catch (err) {
@@ -90,7 +121,6 @@ export default function FinanceRequestsPage() {
 
   return (
     <div className="w-full flex flex-col gap-6 p-6 max-w-6xl mx-auto">
-      {/* Encabezado Premium */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between border-b border-gray-100 pb-5">
         <div>
           <div className="flex items-center gap-2">
@@ -98,7 +128,7 @@ export default function FinanceRequestsPage() {
             <h1 className="text-2xl font-bold tracking-tight text-body">Mesa de Control y Finanzas</h1>
           </div>
           <p className="text-xs text-body-muted mt-1 leading-relaxed">
-            Autoriza o deniega desembolsos interbancarios de capital en Bolívares para las solicitudes aprobadas previamente por las empresas.
+            Autoriza o deniega desembolsos interbancarios de capital en Bolivares para las solicitudes aprobadas previamente por las empresas.
           </p>
         </div>
         <Button
@@ -116,7 +146,6 @@ export default function FinanceRequestsPage() {
         <Alert type={alert.type} message={alert.message} />
       )}
 
-      {/* Listado de Solicitudes */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-200">
         {isLoading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3">
@@ -156,7 +185,7 @@ export default function FinanceRequestsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-medium bg-secondary/10 text-secondary px-2.5 py-1 rounded-full capitalize">
-                        {req.type === 'loan' ? 'Préstamo' : req.type === 'advance' ? 'Adelanto' : req.type}
+                        {req.type === 'loan' ? 'Prestamo' : req.type === 'advance' ? 'Adelanto' : req.type}
                       </span>
                       <span className="text-xs text-body-muted block mt-1.5 line-clamp-1 max-w-xs">{req.description}</span>
                     </td>
@@ -182,6 +211,15 @@ export default function FinanceRequestsPage() {
                           Aprobar
                         </Button>
                         <Button
+                          onClick={() => openDisburseModal(req)}
+                          variant="primary"
+                          className="bg-blue-600 hover:bg-blue-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
+                          disabled={actionLoading !== null}
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Despachar
+                        </Button>
+                        <Button
                           onClick={() => openRejectModal(req.id)}
                           variant="ghost"
                           className="text-red-500 hover:bg-red-50 px-3.5 py-2 flex items-center gap-1.5 text-xs font-semibold cursor-pointer border border-red-100 rounded-xl"
@@ -200,7 +238,7 @@ export default function FinanceRequestsPage() {
         )}
       </div>
 
-      {/* Modal Interactivo de Rechazo Premium */}
+      {/* Modal de Rechazo */}
       {isRejectModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 w-full max-w-md flex flex-col gap-4 animate-scale-up">
@@ -209,48 +247,62 @@ export default function FinanceRequestsPage() {
                 <MessageSquare className="text-red-500 w-5 h-5" />
                 <h3 className="text-base font-bold text-body">Rechazar Solicitud de Desembolso</h3>
               </div>
-              <button
-                onClick={() => setIsRejectModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
-              >
-                ✕
-              </button>
+              <button onClick={() => setIsRejectModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-
-            {rejectError && (
-              <Alert type="error" message={rejectError} />
-            )}
-
+            {rejectError && <Alert type="error" message={rejectError} />}
             <form onSubmit={handleRejectSubmit} className="flex flex-col gap-4">
               <FormField label="Motivo del Rechazo de Fondos" required>
-                <textarea
-                  value={denialReason}
-                  onChange={(e) => setDenialReason(e.target.value)}
-                  placeholder="Explica la razón detalladamente por la cual se deniega el préstamo o desembolso (ej: la empresa no posee fondos suficientes en su cuenta central)..."
-                  className="w-full min-h-[100px] border border-gray-200 focus:border-secondary focus:ring-1 focus:ring-secondary rounded-2xl p-3 text-xs leading-relaxed outline-none"
-                  rows={4}
-                />
+                <textarea value={denialReason} onChange={(e) => setDenialReason(e.target.value)} placeholder="Explica la razon..." className="w-full min-h-[100px] border border-gray-200 focus:border-secondary focus:ring-1 focus:ring-secondary rounded-2xl p-3 text-xs leading-relaxed outline-none" rows={4} />
               </FormField>
-
               <div className="flex gap-3 justify-end mt-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsRejectModalOpen(false)}
-                  className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer"
-                  disabled={actionLoading !== null}
-                  isLoading={actionLoading !== null}
-                >
-                  Confirmar Rechazo
-                </Button>
+                <Button type="button" variant="ghost" onClick={() => setIsRejectModalOpen(false)} className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl">Cancelar</Button>
+                <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer" disabled={actionLoading !== null} isLoading={actionLoading !== null}>Confirmar Rechazo</Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Despacho */}
+      {isDisburseModalOpen && disburseRequest && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 w-full max-w-lg flex flex-col gap-4 animate-scale-up">
+            <div className="flex items-start justify-between border-b border-gray-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Send className="text-blue-600 w-5 h-5" />
+                <h3 className="text-base font-bold text-body">Despachar Desembolso</h3>
+              </div>
+              <button onClick={() => setIsDisburseModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            {disburseError && <Alert type="error" message={disburseError} />}
+
+            <div className="flex flex-col gap-3 bg-gray-50 rounded-xl p-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-body-muted">Beneficiario</span>
+                <span className="font-semibold text-body">{disburseRequest.collaboratorName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-body-muted">Concepto</span>
+                <span className="font-semibold text-body">{disburseRequest.description}</span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-3">
+                <span className="text-body-muted">Monto a desembolsar</span>
+                <span className="font-bold text-lg text-body">{`$${Number(disburseRequest.amount).toFixed(2)} USD`}</span>
+              </div>
+              <p className="text-xs text-body-muted mt-1">Los datos bancarios del colaborador seran usados automaticamente para la transferencia via Credito Inmediato R4.</p>
+            </div>
+
+            <div className="flex gap-3 justify-end mt-2">
+              <Button type="button" variant="ghost" onClick={() => setIsDisburseModalOpen(false)} className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl">Cancelar</Button>
+              <Button onClick={() => void handleDisburse()} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-2" disabled={actionLoading !== null}>
+                {actionLoading === disburseRequest.id ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Despachando...</>
+                ) : (
+                  <><Send className="w-3.5 h-3.5" /> Confirmar Despacho</>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       )}

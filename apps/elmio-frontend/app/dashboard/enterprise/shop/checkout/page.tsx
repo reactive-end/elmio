@@ -412,16 +412,22 @@ export default function CheckoutPage() {
       }
 
       setProcessingStep('Conciliando transacciones y finalizando compra...')
-      // 3. Persistir datos bancarios en el perfil de ElMio
-      await enterpriseService.updateMyProfile({
-        documentId: documentIdStr,
-        phone: phoneStr,
-        debitCard: {
-          bank: selectedBank,
-          cardNumber: accountNumber,
-          limit: null,
-        },
-      })
+      // 3. Persistir datos bancarios como cuenta bancaria personal
+      try {
+        const bankAccounts = await enterpriseService.listMyBankAccounts()
+        if (bankAccounts.length === 0) {
+          await enterpriseService.createMyBankAccount({
+            bankCode: selectedBank,
+            bankName: selectedBank,
+            accountNumber,
+            phoneNumber: phoneStr,
+            documentId: documentIdStr,
+            isPrimary: true,
+          })
+        }
+      } catch {
+        // Si falla la creación de cuenta bancaria, no bloquear el checkout
+      }
 
       // 4. Registrar la transacción en el backend de ElMio
       const isCompany = session?.role === 'COMPANY'

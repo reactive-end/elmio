@@ -22,7 +22,9 @@ import { Bank } from '../../infrastructure/persistence/entities/bank.entity'
 import { Currency } from '../../infrastructure/persistence/entities/currency.entity'
 import { BankAccountType } from '../../infrastructure/persistence/entities/bank-account-type.entity'
 import { ExchangeRate } from '../../infrastructure/persistence/entities/exchange-rate.entity'
-import { CreateBankAccountDto, UpdateBankAccountDto, CreateCurrencyDto, UpdateCurrencyDto } from './dtos/bank-accounts-admin.dto'
+import { ApiKey } from '../../infrastructure/persistence/entities/api-key.entity'
+import { ApiKeyCipher } from '../../infrastructure/persistence/api-key-cipher.util'
+import { CreateBankAccountDto, UpdateBankAccountDto, CreateCurrencyDto, UpdateCurrencyDto, UpsertBankAccountApiKeyDto } from './dtos/bank-accounts-admin.dto'
 
 /**
  * Controlador administrativo para la gestión de cuentas bancarias y catálogos asociados.
@@ -43,6 +45,8 @@ export class BankAccountsAdminController implements OnModuleInit {
     private readonly bankAccountTypeRepo: Repository<BankAccountType>,
     @InjectRepository(ExchangeRate)
     private readonly exchangeRateRepo: Repository<ExchangeRate>,
+    @InjectRepository(ApiKey)
+    private readonly apiKeyRepo: Repository<ApiKey>,
   ) {}
 
   /**
@@ -175,6 +179,7 @@ export class BankAccountsAdminController implements OnModuleInit {
     account.accountType = accountType
     account.description = body.description ?? ''
     account.currency = currency
+    account.role = body.role ?? 'RECEPTOR'
 
     return this.bankAccountRepo.save(account)
   }
@@ -239,7 +244,10 @@ export class BankAccountsAdminController implements OnModuleInit {
       account.businessName = body.businessName ?? ''
     }
     if (body.description !== undefined) {
-      account.description = body.description ?? ''
+      account.description = body.description
+    }
+    if (body.role !== undefined) {
+      account.role = body.role
     }
 
     return this.bankAccountRepo.save(account)
@@ -462,6 +470,100 @@ export class BankAccountsAdminController implements OnModuleInit {
     }
 
     await this.currencyRepo.remove(currency)
+    return { success: true }
+  }
+
+  /* ── API Key endpoints ─────────────────────────────────────────────── */
+
+  /**
+   * Obtiene la metadata de la API key activa asociada a una cuenta bancaria.
+   * No expone los valores planos por seguridad.
+   */
+  @Get('bank-accounts/:id/api-key')
+  async getApiKeyMeta(@Param('id') id: string): Promise<{ exists: boolean; isActive: boolean }> {
+    const account = await this.bankAccountRepo.findOneBy({ id })
+    if (!account) {
+      throw new NotFoundException('Cuenta bancaria no encontrada')
+    }
+
+    const key = await this.apiKeyRepo.findOne({
+      where: { bankAccount: { id } },
+      order: { createdAt: 'DESC' },
+    })
+
+    return {
+      exists: !!key,
+      isActive: key?.isActive ?? false,
+    }
+  }
+
+  /**
+   * Crea o reemplaza (upsert) la API key de una cuenta bancaria.
+   * Las claves se encriptan antes de persistirse.
+   */
+  @Post('bank-accounts/:id/api-key')
+  async upsertApiKey(
+    @Param('id') id: string,
+    @Body() body: UpsertBankAccountApiKeyDto,
+  ): Promise<{ success: boolean }> {
+    const account = await this.bankAccountRepo.findOneBy({ id })
+    if (!account) {
+      throw new NotFoundException('Cuenta bancaria no encontrada')
+    }
+
+    // Desactivar cualquier key previa
+    await this.apiKeyRepo.update(
+      { bankAccount: { id } },
+      { isActive: false },
+    )
+
+    const key = new ApiKey()
+    key.bankAccount = account
+    key.commerceKey = ApiKeyCipher.encrypt(body.commerceKey)
+    key.secretKey = body.secretKey ? ApiKeyCipher.encrypt(body.secretKey) : null
+    key.extraKey = body.extraKey ? ApiKeyCipher.encrypt(body.extraKey) : null
+    key.isActive = true
+
+    await this.apiKeyRepo.save(key)
+    return { success: true }
+  }
+
+  /**
+   * Activa o desactiva la API key más reciente de una cuenta bancaria.
+   */
+  @Patch('bank-accounts/:id/api-key/toggle')
+  async toggleApiKey(@Param('id') id: string): Promise<{ success: boolean; isActive: boolean }> {
+    const account = await this.bankAccountRepo.findOneBy({ id })
+    if (!account) {
+      throw new NotFoundException('Cuenta bancaria no encontrada')
+    }
+
+    const key = await this.apiKeyRepo.findOne({
+      where: { bankAccount: { id } },
+      order: { createdAt: 'DESC' },
+    })
+
+    if (!key) {
+      throw new NotFoundException('No hay credenciales API asociadas a esta cuenta')
+    }
+
+    key.isActive = !key.isActive
+    await this.apiKeyRepo.save(key)
+
+    return { success: true, isActive: key.isActive }
+  }
+
+  /**
+   * Elimina todas las credenciales API asociadas a una cuenta bancaria.
+   */
+  @Delete('bank-accounts/:id/api-key')
+  async deleteApiKey(@Param('id') id: string): Promise<{ success: boolean }> {
+    const account = await this.bankAccountRepo.findOneBy({ id })
+    if (!account) {
+      throw new NotFoundException('Cuenta bancaria no encontrada')
+    }
+
+    await this.apiKeyRepo.delete({ bankAccount: { id } })
     return { success: true }
   }
 }

@@ -99,6 +99,23 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
       return
     }
 
+    const checkPersonOnboarding = async () => {
+      try {
+        const bankAccounts = await enterpriseService.listMyBankAccounts()
+        if (bankAccounts.length === 0) {
+          setMustCompleteOnboarding(true)
+          if (pathname !== '/dashboard/person/onboarding') {
+            router.push('/dashboard/person/onboarding')
+          }
+        } else {
+          setMustCompleteOnboarding(false)
+        }
+        setLoadingGate(false)
+      } catch {
+        setLoadingGate(false)
+      }
+    }
+
     if (session?.role === 'COMPANY') {
       enterpriseService
         .getMe()
@@ -129,6 +146,8 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
           }
           setLoadingGate(false)
         })
+    } else if (session?.role === 'CLIENT' || session?.role === 'EMPLOYEE') {
+      checkPersonOnboarding()
     } else {
       setLoadingGate(false)
     }
@@ -164,7 +183,7 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
     window.location.href = '/login'
   }
 
-  if (mustCompleteOnboarding && pathname === '/dashboard/enterprise/onboarding') {
+  if (mustCompleteOnboarding && (pathname === '/dashboard/enterprise/onboarding' || pathname === '/dashboard/person/onboarding')) {
     return (
       <div className="relative flex h-dvh w-full overflow-hidden bg-gray-50">
         {/* Boton flotante premium de Cerrar Sesion */}

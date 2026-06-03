@@ -116,8 +116,6 @@ export class AuthSeedService implements OnApplicationBootstrap {
           profile.nationalBank2 = '';
           profile.nationalBank3 = '';
           profile.internationalBank = '';
-          profile.creditCard = null;
-          profile.debitCard = null;
           profile.personalReferences = [];
           profile.onboardingCompleted = true;
           profile.createdAt = new Date().toISOString();

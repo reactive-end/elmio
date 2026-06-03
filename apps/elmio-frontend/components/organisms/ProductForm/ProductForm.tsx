@@ -30,16 +30,16 @@ const WINDOW_TYPES = [
 export function ProductForm() {
   const f = useProductForm()
 
-  const disburseAction = f.actions.find((a) => a.type === 'disburse_funds')
+  const disburseAction = f.actions.find((a) => a.type === 'manual_disburse')
   const isDisburseActive = disburseAction?.active ?? false
   const disburseAmountUsd = disburseAction?.config?.amountUsd ?? ''
 
   const handleToggleDisburse = () => {
-    const exists = f.actions.some((a) => a.type === 'disburse_funds')
+    const exists = f.actions.some((a) => a.type === 'manual_disburse')
     if (exists) {
       f.setActions(
         f.actions.map((a) =>
-          a.type === 'disburse_funds' ? { ...a, active: !a.active } : a
+          a.type === 'manual_disburse' ? { ...a, active: !a.active } : a
         )
       )
     } else {
@@ -47,8 +47,8 @@ export function ProductForm() {
         ...f.actions,
         {
           id: crypto.randomUUID(),
-          type: 'disburse_funds',
-          name: 'Desembolso Automático de Préstamos',
+          type: 'manual_disburse',
+          name: 'Desembolso Manual de Prestamos',
           active: true,
           config: { amountUsd: 50.0 },
         },
@@ -59,7 +59,7 @@ export function ProductForm() {
   const handleUpdateDisburseAmount = (amount: number) => {
     f.setActions(
       f.actions.map((a) =>
-        a.type === 'disburse_funds'
+        a.type === 'manual_disburse'
           ? { ...a, config: { ...a.config, amountUsd: amount } }
           : a
       )
@@ -925,7 +925,7 @@ export function ProductForm() {
               <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 transition-all duration-200 hover:border-gray-200">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
-                    <span className="text-sm font-semibold text-body block">Desembolso Automático de Préstamos (disburse_funds)</span>
+                    <span className="text-sm font-semibold text-body block">Desembolso Manual de Prestamos (manual_disburse)</span>
                     <p className="text-xs text-body-muted mt-1 leading-relaxed">
                       Al aprobarse la solicitud, el sistema transferirá de forma inmediata el monto configurado en USD (convertido a Bolívares a tasa oficial BCV) a la cuenta destino del usuario.
                     </p>

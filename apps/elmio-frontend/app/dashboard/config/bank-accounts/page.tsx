@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams, notFound } from 'next/navigation'
-import { Plus, Pencil, Trash2, Landmark, DollarSign } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Plus, Pencil, Trash2, Landmark, KeyRound } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { bankAccountsAdminService, BankAccountItem } from '@/src/services/bank-accounts-admin.service'
 
+const PROVIDER_BANK_CODES = ['0138', '0105', '0169', '0115']
+
 export default function BankAccountsPage() {
-  notFound()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [accounts, setAccounts] = useState<BankAccountItem[]>([])
@@ -110,12 +111,13 @@ export default function BankAccountsPage() {
                 <tr className="border-b border-gray-100 bg-gray-50/20">
                   <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Banco</th>
                   <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Número de Cuenta</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Rol</th>
                   <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Titular</th>
                   <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Identificación</th>
-                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Teléfono (Pago móvil)</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Teléfono</th>
                   <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Moneda</th>
                   <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Tipo</th>
-                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Descripción</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">API</th>
                   <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-4">Acciones</th>
                 </tr>
               </thead>
@@ -135,6 +137,22 @@ export default function BankAccountsPage() {
                     </td>
                     <td className="px-6 py-4 font-mono text-xs text-gray-600 font-medium tracking-tight">
                       {account.accountNumber.replace(/(\d{4})(\d{4})(\d{4})(\d{8})/, '$1-$2-$3-$4')}
+                    </td>
+                    <td className="px-6 py-4">
+                      {(() => {
+                        const roleConfig = {
+                          EMISOR: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Emisor' },
+                          RECEPTOR: { bg: 'bg-gray-100', text: 'text-gray-500', dot: 'bg-gray-400', label: 'Receptor' },
+                          AMBOS: { bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500', label: 'Emisor y Receptor' },
+                        }
+                        const config = roleConfig[account.role as keyof typeof roleConfig] || roleConfig.RECEPTOR
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-2.5 py-0.5 ${config.bg} ${config.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                            {config.label}
+                          </span>
+                        )
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate" title={account.businessName || ''}>
                       {account.businessName || '—'}
@@ -164,8 +182,15 @@ export default function BankAccountsPage() {
                         {account.accountType.accountType}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-xs text-gray-400 max-w-[150px] truncate" title={account.description}>
-                      {account.description}
+                    <td className="px-6 py-4">
+                      {PROVIDER_BANK_CODES.includes(account.bank.bankCode) ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-50 text-amber-600 rounded-md px-2 py-0.5 border border-amber-100">
+                          <KeyRound className="w-3 h-3" strokeWidth={1.5} />
+                          Requerido
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-300">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">

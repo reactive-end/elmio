@@ -37,6 +37,7 @@ import { GetAccountStatementUseCase } from '../../application/get-account-statem
 import { CreateTransactionUseCase } from '../../application/create-transaction.use-case';
 import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
 import { ExecuteBillingCutoffUseCase, type BillingCutoffResult } from '../../application/execute-billing-cutoff.use-case';
+import { ManageDisburseUseCase } from '../../application/manage-disburse.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
 import {
   CreateEnterpriseDto,
@@ -73,6 +74,7 @@ export class EnterpriseController {
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly manageContracts: ManageContractsUseCase,
     private readonly executeBillingCutoff: ExecuteBillingCutoffUseCase,
+    private readonly manageDisburse: ManageDisburseUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
     private readonly documentStorage: DocumentStorageService,
@@ -235,6 +237,21 @@ export class EnterpriseController {
     @Body() body: ResolveLoanRequestDto,
   ) {
     return this.manageRequests.resolveByFinance(reqId, body.status, body.denialReason);
+  }
+
+  /** POST /api/enterprises/requests/:reqId/disburse - Finanzas desembolsa via Credito Inmediato R4. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('requests/:reqId/disburse')
+  async disburseRequest(
+    @Req() req: Request,
+    @Param('reqId') reqId: string,
+  ) {
+    const session = req.session!
+    return this.manageDisburse.execute(reqId, {
+      financeUserId: session.userId,
+      financeUserName: session.email || 'Usuario Finanzas',
+    });
   }
 
   /** GET /api/enterprises/finance/purchases - Obtiene todas las compras y cuotas pendientes del sistema. */

@@ -10,9 +10,13 @@ import type {
   ContractFile,
 } from '../domain/enterprise';
 import type { PersonProfile } from '../domain/person-profile';
+import type { PersonBankAccount } from '../domain/person-bank-account';
+import type { Disbursement } from '../domain/disbursement';
 import type { EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
 import { EnterpriseEntity } from './entities/enterprise.entity';
 import { PersonProfileEntity } from './entities/person-profile.entity';
+import { PersonBankAccountEntity } from './entities/person-bank-account.entity';
+import { DisbursementEntity } from './entities/disbursement.entity';
 import { LoanRequestEntity } from './entities/loan-request.entity';
 import { TransactionEntity } from './entities/transaction.entity';
 import { PlatformConfigEntity } from './entities/platform-config.entity';
@@ -28,6 +32,10 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     private readonly enterpriseRepo: Repository<EnterpriseEntity>,
     @InjectRepository(PersonProfileEntity)
     private readonly profileRepo: Repository<PersonProfileEntity>,
+    @InjectRepository(PersonBankAccountEntity)
+    private readonly personBankAccountRepo: Repository<PersonBankAccountEntity>,
+    @InjectRepository(DisbursementEntity)
+    private readonly disbursementRepo: Repository<DisbursementEntity>,
     @InjectRepository(LoanRequestEntity)
     private readonly requestRepo: Repository<LoanRequestEntity>,
     @InjectRepository(TransactionEntity)
@@ -158,8 +166,6 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
       nationalBank2: entity.nationalBank2,
       nationalBank3: entity.nationalBank3,
       internationalBank: entity.internationalBank,
-      creditCard: entity.creditCard,
-      debitCard: entity.debitCard,
       personalReferences: entity.personalReferences,
       onboardingCompleted: entity.onboardingCompleted,
       createdAt: entity.createdAt,
@@ -218,8 +224,6 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     entity.nationalBank2 = domain.nationalBank2;
     entity.nationalBank3 = domain.nationalBank3;
     entity.internationalBank = domain.internationalBank;
-    entity.creditCard = domain.creditCard;
-    entity.debitCard = domain.debitCard;
     entity.personalReferences = domain.personalReferences;
     entity.onboardingCompleted = domain.onboardingCompleted;
     entity.createdAt = domain.createdAt;
@@ -535,5 +539,115 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     entity.serviceFeePercent = config.serviceFeePercent;
     await this.configRepo.save(entity);
     return config;
+  }
+
+  // --- Mapeadores de PersonBankAccount ---
+
+  private bankAccountToDomain(entity: PersonBankAccountEntity): PersonBankAccount {
+    return {
+      id: entity.id,
+      personProfileId: entity.personProfileId,
+      bankCode: entity.bankCode,
+      bankName: entity.bankName,
+      accountNumber: entity.accountNumber,
+      phoneNumber: entity.phoneNumber,
+      documentId: entity.documentId,
+      documentPhoto: entity.documentPhoto,
+      isPrimary: entity.isPrimary,
+      createdAt: entity.createdAt.toISOString(),
+      updatedAt: entity.updatedAt.toISOString(),
+    };
+  }
+
+  private bankAccountToPersistence(domain: PersonBankAccount): PersonBankAccountEntity {
+    const entity = new PersonBankAccountEntity();
+    entity.id = domain.id;
+    entity.personProfileId = domain.personProfileId;
+    entity.bankCode = domain.bankCode;
+    entity.bankName = domain.bankName;
+    entity.accountNumber = domain.accountNumber;
+    entity.phoneNumber = domain.phoneNumber;
+    entity.documentId = domain.documentId;
+    entity.documentPhoto = domain.documentPhoto;
+    entity.isPrimary = domain.isPrimary;
+    return entity;
+  }
+
+  // --- Person Bank Accounts ---
+
+  async findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]> {
+    const entities = await this.personBankAccountRepo.find({
+      where: { personProfileId },
+      order: { isPrimary: 'DESC', createdAt: 'DESC' },
+    });
+    return entities.map((entity) => this.bankAccountToDomain(entity));
+  }
+
+  async findBankAccountById(id: string): Promise<PersonBankAccount | null> {
+    const entity = await this.personBankAccountRepo.findOne({ where: { id } });
+    return entity ? this.bankAccountToDomain(entity) : null;
+  }
+
+  async saveBankAccount(account: PersonBankAccount): Promise<PersonBankAccount> {
+    const entity = this.bankAccountToPersistence(account);
+    await this.personBankAccountRepo.save(entity);
+    return account;
+  }
+
+  async deleteBankAccount(id: string): Promise<void> {
+    await this.personBankAccountRepo.delete({ id });
+  }
+
+  // --- Mapeadores de Disbursement ---
+
+  private disbursementToDomain(entity: DisbursementEntity): Disbursement {
+    return {
+      id: entity.id,
+      loanRequestId: entity.loanRequestId,
+      paymentId: entity.paymentId,
+      financeUserId: entity.financeUserId,
+      financeUserName: entity.financeUserName,
+      amountUsd: entity.amountUsd,
+      amountBs: entity.amountBs,
+      exchangeRate: entity.exchangeRate,
+      bankCode: entity.bankCode,
+      accountNumber: entity.accountNumber,
+      phoneNumber: entity.phoneNumber,
+      documentId: entity.documentId,
+      concept: entity.concept,
+      bankReference: entity.bankReference,
+      bankOperationId: entity.bankOperationId,
+      status: entity.status,
+      createdAt: entity.createdAt.toISOString(),
+    }
+  }
+
+  // --- Disbursements ---
+
+  async saveDisbursement(disbursement: Disbursement): Promise<Disbursement> {
+    const entity = new DisbursementEntity()
+    entity.id = disbursement.id
+    entity.loanRequestId = disbursement.loanRequestId
+    entity.paymentId = disbursement.paymentId
+    entity.financeUserId = disbursement.financeUserId
+    entity.financeUserName = disbursement.financeUserName
+    entity.amountUsd = disbursement.amountUsd
+    entity.amountBs = disbursement.amountBs
+    entity.exchangeRate = disbursement.exchangeRate
+    entity.bankCode = disbursement.bankCode
+    entity.accountNumber = disbursement.accountNumber
+    entity.phoneNumber = disbursement.phoneNumber
+    entity.documentId = disbursement.documentId
+    entity.concept = disbursement.concept
+    entity.bankReference = disbursement.bankReference
+    entity.bankOperationId = disbursement.bankOperationId
+    entity.status = disbursement.status
+    await this.disbursementRepo.save(entity)
+    return disbursement
+  }
+
+  async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
+    const entity = await this.disbursementRepo.findOne({ where: { loanRequestId } })
+    return entity ? this.disbursementToDomain(entity) : null
   }
 }

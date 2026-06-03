@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -16,6 +17,8 @@ import { ManageProfileUseCase } from '../../application/manage-profile.use-case'
 import { ManageLoanRequestsUseCase } from '../../application/manage-loan-requests.use-case';
 import { GetAccountStatementUseCase } from '../../application/get-account-statement.use-case';
 import { CreateTransactionUseCase } from '../../application/create-transaction.use-case';
+import { ManagePersonBankAccountsUseCase } from '../../application/manage-person-bank-accounts.use-case';
+import type { CreatePersonBankAccountDto } from '../../application/manage-person-bank-accounts.use-case';
 import { CreateTransactionDto } from './dto/enterprise.dto';
 import type { LoanRequest } from '../../domain/enterprise';
 
@@ -30,6 +33,7 @@ export class ProfileController {
     private readonly manageRequests: ManageLoanRequestsUseCase,
     private readonly getAccountStatement: GetAccountStatementUseCase,
     private readonly createTransactionUseCase: CreateTransactionUseCase,
+    private readonly manageBankAccounts: ManagePersonBankAccountsUseCase,
   ) {}
 
   /** GET /api/profile/me - Obtiene o crea el perfil del usuario autenticado. */
@@ -110,5 +114,45 @@ export class ProfileController {
       throw new BadRequestException('El productId es requerido para adquirir la solicitud.');
     }
     return this.manageRequests.acquire(requestId, productId);
+  }
+
+  // ── Person Bank Accounts ────────────────────────────────────────────────────
+
+  /** GET /api/profile/me/bank-accounts - Lista las cuentas bancarias del usuario autenticado. */
+  @Get('me/bank-accounts')
+  async listMyBankAccounts(@Req() req: Request) {
+    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    return this.manageBankAccounts.listByPersonProfile(profile.id);
+  }
+
+  /** POST /api/profile/me/bank-accounts - Crea una cuenta bancaria para el usuario autenticado. */
+  @Post('me/bank-accounts')
+  async createMyBankAccount(
+    @Req() req: Request,
+    @Body() dto: CreatePersonBankAccountDto,
+  ) {
+    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    return this.manageBankAccounts.create(profile.id, dto);
+  }
+
+  /** PATCH /api/profile/me/bank-accounts/:accountId - Actualiza una cuenta bancaria del usuario autenticado. */
+  @Patch('me/bank-accounts/:accountId')
+  async updateMyBankAccount(
+    @Req() req: Request,
+    @Param('accountId') accountId: string,
+    @Body() dto: Partial<CreatePersonBankAccountDto>,
+  ) {
+    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    return this.manageBankAccounts.update(accountId, profile.id, dto);
+  }
+
+  /** DELETE /api/profile/me/bank-accounts/:accountId - Elimina una cuenta bancaria del usuario autenticado. */
+  @Delete('me/bank-accounts/:accountId')
+  async deleteMyBankAccount(
+    @Req() req: Request,
+    @Param('accountId') accountId: string,
+  ) {
+    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    return this.manageBankAccounts.delete(accountId, profile.id);
   }
 }

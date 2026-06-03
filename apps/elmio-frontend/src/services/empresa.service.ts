@@ -38,12 +38,6 @@ export interface SocialMediaLinks {
   other: string
 }
 
-export interface CardInfo {
-  bank: string
-  cardNumber: string
-  limit: number | null
-}
-
 export interface PersonalReference {
   name: string
   phone: string
@@ -182,11 +176,6 @@ export interface PersonProfile {
   nationalBank3: string
   internationalBank: string
 
-  // Grupo 7: Tarjetas
-  creditCard: CardInfo | null
-  debitCard: CardInfo | null
-
-  // Grupo 8: Referencias
   personalReferences: PersonalReference[]
 
   // Metadatos
@@ -299,9 +288,31 @@ export interface UpdatePersonProfileInput {
   nationalBank2?: string
   nationalBank3?: string
   internationalBank?: string
-  creditCard?: CardInfo | null
-  debitCard?: CardInfo | null
   personalReferences?: PersonalReference[]
+}
+
+export interface PersonBankAccount {
+  id: string
+  personProfileId: string
+  bankCode: string
+  bankName: string
+  accountNumber: string
+  phoneNumber: string
+  documentId: string
+  documentPhoto: string | null
+  isPrimary: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreatePersonBankAccountInput {
+  bankCode: string
+  bankName: string
+  accountNumber: string
+  phoneNumber: string
+  documentId: string
+  documentPhoto?: string | null
+  isPrimary?: boolean
 }
 
 export interface LoanRequest {
@@ -492,6 +503,39 @@ export const enterpriseService = {
     })
     if (!res.ok) throw new Error('Error al completar onboarding.')
     return (await res.json()) as PersonProfile
+  },
+
+  // --- Person Bank Accounts ---
+
+  async listMyBankAccounts(): Promise<PersonBankAccount[]> {
+    const res = await authedFetch('/profile/me/bank-accounts')
+    if (!res.ok) throw new Error('Error al listar cuentas bancarias.')
+    return (await res.json()) as PersonBankAccount[]
+  },
+
+  async createMyBankAccount(data: CreatePersonBankAccountInput): Promise<PersonBankAccount> {
+    const res = await authedFetch('/profile/me/bank-accounts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('Error al crear cuenta bancaria.')
+    return (await res.json()) as PersonBankAccount
+  },
+
+  async updateMyBankAccount(accountId: string, data: Partial<CreatePersonBankAccountInput>): Promise<PersonBankAccount> {
+    const res = await authedFetch(`/profile/me/bank-accounts/${accountId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('Error al actualizar cuenta bancaria.')
+    return (await res.json()) as PersonBankAccount
+  },
+
+  async deleteMyBankAccount(accountId: string): Promise<void> {
+    const res = await authedFetch(`/profile/me/bank-accounts/${accountId}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Error al eliminar cuenta bancaria.')
   },
 
   // --- Loan Requests ---
@@ -723,5 +767,16 @@ export const enterpriseService = {
       throw new Error(err.message ?? 'Error al resolver la solicitud de finanzas.')
     }
     return (await res.json()) as LoanRequest
+  },
+
+  async disburseRequest(requestId: string): Promise<any> {
+    const res = await authedFetch(`/enterprises/requests/${requestId}/disburse`, {
+      method: 'POST',
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al ejecutar el desembolso.')
+    }
+    return (await res.json())
   },
 }

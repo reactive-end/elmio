@@ -40,6 +40,7 @@ import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4
 import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto';
 import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto';
 import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto';
+import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto';
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto';
 import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto';
 
@@ -424,6 +425,26 @@ export class PaymentProcessorController {
       await this.paymentProcessorService.processImmediateDebitR4(dto);
     this.logger.debug(
       `[banco-r4/immediate-debit] Response returned: ${JSON.stringify(result)}`,
+    );
+    return result;
+  }
+
+  /**
+   * Procesa una solicitud de crédito inmediato en Banco R4.
+   *
+   * @param dto - Parámetros del crédito inmediato.
+   * @returns Resultado del crédito procesado.
+   */
+  @UseGuards(AuthGuard)
+  @Post('banco-r4/immediate-credit')
+  async processImmediateCreditR4(@Body() dto: ImmediateCreditRequestDto) {
+    this.logger.debug(
+      `[banco-r4/immediate-credit] Request received: ${JSON.stringify(dto)}`,
+    );
+    const result =
+      await this.paymentProcessorService.processImmediateCreditR4(dto);
+    this.logger.debug(
+      `[banco-r4/immediate-credit] Response returned: ${JSON.stringify(result)}`,
     );
     return result;
   }

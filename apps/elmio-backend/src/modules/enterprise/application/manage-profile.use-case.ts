@@ -83,10 +83,7 @@ export class ManageProfileUseCase {
       nationalBank2: '',
       nationalBank3: '',
       internationalBank: '',
-      // Grupo 7: Tarjetas
-      creditCard: null,
-      debitCard: null,
-      // Grupo 8: Referencias
+      // Grupo 7: Referencias
       personalReferences: [],
       // Metadatos
       onboardingCompleted: false,

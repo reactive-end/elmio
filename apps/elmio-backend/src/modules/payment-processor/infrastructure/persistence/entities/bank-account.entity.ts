@@ -98,6 +98,9 @@ export class BankAccount {
   @JoinColumn({ name: 'currency_id' })
   currency: Currency
 
+  @Column({ name: 'role', type: 'varchar', length: 20, default: 'RECEPTOR' })
+  role: string
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date
 

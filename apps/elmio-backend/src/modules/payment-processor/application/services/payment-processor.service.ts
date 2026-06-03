@@ -19,6 +19,7 @@ import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4
 import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto'
 import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto'
 import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto'
+import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto'
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
 import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto'
 
@@ -155,6 +156,23 @@ export class PaymentProcessorService {
 
   async processPhoneDirectDebitR4(dto: PhoneDirectDebitDto) {
     return this.paymentProcessorRepository.processPhoneDirectDebitR4(dto)
+  }
+
+  async processImmediateCreditR4(dto: ImmediateCreditRequestDto) {
+    this.logger.log('[Service] processImmediateCreditR4 - incoming request')
+    this.logger.debug(`[Service] DTO: ${JSON.stringify(dto)}`)
+
+    const result = await this.paymentProcessorRepository.processImmediateCreditR4(
+      dto,
+    )
+
+    this.logger.debug(
+      `[Service] processImmediateCreditR4 - repository response: ${JSON.stringify(
+        result,
+      )}`,
+    )
+
+    return result
   }
 
   async processImmediateDebitR4(dto: ImmediateDebitRequestDto) {
