@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Check, X, ShieldCheck, AlertCircle, RefreshCw, Landmark, MessageSquare, Send, Loader2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Check, X, ShieldCheck, AlertCircle, RefreshCw, Landmark, MessageSquare, Send, Loader2, Clock } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Input } from '@/components/atoms/Input/Input'
@@ -24,6 +24,10 @@ export default function FinanceRequestsPage() {
   const [isDisburseModalOpen, setIsDisburseModalOpen] = useState(false)
   const [disburseRequest, setDisburseRequest] = useState<LoanRequest | null>(null)
   const [disburseError, setDisburseError] = useState<string | null>(null)
+  const [disburseProgress, setDisburseProgress] = useState(0)
+  const [disburseAttempt, setDisburseAttempt] = useState(0)
+  const [disburseStep, setDisburseStep] = useState<'idle' | 'crediting' | 'verifying' | 'success' | 'failed'>('idle')
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadRequests = async () => {
     try {
@@ -66,6 +70,9 @@ export default function FinanceRequestsPage() {
   const openDisburseModal = (req: LoanRequest) => {
     setDisburseRequest(req)
     setDisburseError(null)
+    setDisburseProgress(0)
+    setDisburseAttempt(0)
+    setDisburseStep('idle')
     setIsDisburseModalOpen(true)
   }
 
@@ -74,17 +81,39 @@ export default function FinanceRequestsPage() {
     try {
       setActionLoading(disburseRequest.id)
       setDisburseError(null)
+      setDisburseStep('crediting')
+      setDisburseProgress(0)
+      setDisburseAttempt(1)
 
-      // Desembolsar (el use case se encarga de marcar el estado de la solicitud)
+      // Barra de progreso estimada: 3 intentos x 60s = 180s total
+      const startTime = Date.now()
+      const totalMs = 180_000
+      progressRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime
+        const pct = Math.min(99, Math.round((elapsed / totalMs) * 100))
+        const attempt = Math.min(3, Math.floor(elapsed / 60_000) + 1)
+        setDisburseProgress(pct)
+        setDisburseAttempt(attempt)
+        if (attempt > 1) setDisburseStep('verifying')
+      }, 500)
+
       await enterpriseService.disburseRequest(disburseRequest.id)
 
+      // Éxito
+      if (progressRef.current) clearInterval(progressRef.current)
+      setDisburseProgress(100)
+      setDisburseStep('success')
+      setActionLoading(null)
+      await new Promise((r) => setTimeout(r, 1000))
       setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
       setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
       setIsDisburseModalOpen(false)
     } catch (err) {
-      setDisburseError(err instanceof Error ? err.message : 'Error al desembolsar.')
-    } finally {
+      if (progressRef.current) clearInterval(progressRef.current)
+      setDisburseProgress(100)
+      setDisburseStep('failed')
       setActionLoading(null)
+      setDisburseError(err instanceof Error ? err.message : 'Error al desembolsar.')
     }
   }
 
@@ -271,14 +300,62 @@ export default function FinanceRequestsPage() {
           <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 w-full max-w-lg flex flex-col gap-4 animate-scale-up">
             <div className="flex items-start justify-between border-b border-gray-100 pb-3">
               <div className="flex items-center gap-2">
-                <Send className="text-blue-600 w-5 h-5" />
-                <h3 className="text-base font-bold text-body">Despachar Desembolso</h3>
+                {disburseStep === 'success' ? (
+                  <Check className="text-green-600 w-5 h-5" />
+                ) : disburseStep === 'failed' ? (
+                  <AlertCircle className="text-red-600 w-5 h-5" />
+                ) : (
+                  <Send className="text-blue-600 w-5 h-5" />
+                )}
+                <h3 className="text-base font-bold text-body">
+                  {disburseStep === 'success'
+                    ? 'Desembolso Completado'
+                    : disburseStep === 'failed'
+                    ? 'Desembolso Fallido'
+                    : 'Despachar Desembolso'}
+                </h3>
               </div>
-              <button onClick={() => setIsDisburseModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              {(disburseStep === 'success' || disburseStep === 'failed') && (
+                <button onClick={() => {
+                  if (disburseStep === 'success') {
+                    setIsDisburseModalOpen(false)
+                  } else {
+                    setDisburseStep('idle')
+                    setDisburseError(null)
+                    setDisburseProgress(0)
+                    setDisburseAttempt(0)
+                    setIsDisburseModalOpen(false)
+                  }
+                }} className="text-gray-400 hover:text-gray-600">✕</button>
+              )}
             </div>
 
             {disburseError && <Alert type="error" message={disburseError} />}
 
+            {/* Barra de progreso */}
+            {disburseStep !== 'idle' && disburseStep !== 'success' && disburseStep !== 'failed' && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    {disburseStep === 'crediting'
+                      ? 'Enviando credito a R4...'
+                      : `Verificando estado — intento ${disburseAttempt} de 3`}
+                  </span>
+                  <span className="text-gray-400 font-medium">{disburseProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ease-linear ${
+                      disburseStep === 'verifying' ? 'bg-amber-500' : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${disburseProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Informacion del desembolso */}
             <div className="flex flex-col gap-3 bg-gray-50 rounded-xl p-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-body-muted">Beneficiario</span>
@@ -296,14 +373,30 @@ export default function FinanceRequestsPage() {
             </div>
 
             <div className="flex gap-3 justify-end mt-2">
-              <Button type="button" variant="ghost" onClick={() => setIsDisburseModalOpen(false)} className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl">Cancelar</Button>
-              <Button onClick={() => void handleDisburse()} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-2" disabled={actionLoading !== null}>
-                {actionLoading === disburseRequest.id ? (
-                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Despachando...</>
-                ) : (
-                  <><Send className="w-3.5 h-3.5" /> Confirmar Despacho</>
-                )}
-              </Button>
+              {(disburseStep === 'idle' || disburseStep === 'failed') && (
+                <Button type="button" variant="ghost" onClick={() => {
+                  setDisburseStep('idle')
+                  setDisburseError(null)
+                  setDisburseProgress(0)
+                  setDisburseAttempt(0)
+                  setIsDisburseModalOpen(false)
+                }} className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl">
+                  {disburseStep === 'failed' ? 'Cerrar' : 'Cancelar'}
+                </Button>
+              )}
+              {disburseStep === 'success' ? (
+                <Button onClick={() => setIsDisburseModalOpen(false)} className="bg-green-600 hover:bg-green-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer">
+                  <Check className="w-3.5 h-3.5" /> Cerrar
+                </Button>
+              ) : disburseStep !== 'failed' && (
+                <Button onClick={() => void handleDisburse()} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-2" disabled={disburseStep !== 'idle'}>
+                  {disburseStep !== 'idle' ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Procesando...</>
+                  ) : (
+                    <><Send className="w-3.5 h-3.5" /> Confirmar Despacho</>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>

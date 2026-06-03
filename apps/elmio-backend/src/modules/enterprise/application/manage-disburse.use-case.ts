@@ -128,7 +128,7 @@ export class ManageDisburseUseCase {
 
     const isSuccess = definitiveCode === 'ACCP'
 
-    // Persistir registro de desembolso
+    // Persistir registro de desembolso (para auditoria)
     const disbursement: Disbursement = {
       id: randomUUID(),
       loanRequestId: requestId,
@@ -151,18 +151,25 @@ export class ManageDisburseUseCase {
 
     await this.repository.saveDisbursement(disbursement)
 
-    // Actualizar estado de la solicitud solo si el desembolso fue exitoso
-    if (isSuccess) {
-      request.status = 'disbursed'
-      request.updatedAt = new Date().toISOString()
-      await this.repository.saveRequest(request)
+    if (!isSuccess) {
+      throw new BadRequestException(
+        `El desembolso no pudo completarse. ` +
+        `Estado definitivo: ${definitiveCode || 'AC00'}. ` +
+        `Se realizaron hasta 3 intentos de verificacion cada 60s. ` +
+        `Referencia: ${creditResult.reference || 'N/A'}`,
+      )
     }
+
+    // Actualizar estado de la solicitud a desembolsada
+    request.status = 'disbursed'
+    request.updatedAt = new Date().toISOString()
+    await this.repository.saveRequest(request)
 
     return {
       request,
       disbursement,
       creditResult: {
-        code: creditResult.code,
+        code: definitiveCode,
         message: creditResult.message,
         reference: creditResult.reference,
         id: creditResult.id,
