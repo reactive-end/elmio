@@ -7,9 +7,10 @@ import { RBAC_REPOSITORY_PORT } from '@/modules/rbac/domain/ports/rbac-repositor
 import { ManagePermissionsUseCase } from '@/modules/rbac/application/manage-permissions.use-case';
 import { ManageUsersUseCase } from '@/modules/rbac/application/manage-users.use-case';
 import { RbacAdminController } from '@/modules/rbac/presentation/http/rbac-admin.controller';
+import { AuthModule } from '@/modules/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RolePermissionEntity, UserEntity])],
+  imports: [TypeOrmModule.forFeature([RolePermissionEntity, UserEntity]), AuthModule],
   controllers: [RbacAdminController],
   providers: [
     { provide: RBAC_REPOSITORY_PORT, useClass: DbRbacRepositoryService },
