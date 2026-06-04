@@ -4,7 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { LoanRequest } from '../domain/enterprise';
+import type { Disbursement } from '../domain/disbursement';
+import type { Purchase } from '../domain/purchase';
 import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
@@ -234,6 +237,57 @@ export class ManageLoanRequestsUseCase {
             beneficiaryAccount: primaryAccount.accountNumber,
             userIp: '127.0.0.1',
           }, { sub: 'elmio-system' } as any);
+
+          // Registrar Disbursement para trazabilidad (Plaza no se registraba antes).
+          const disbursement: Disbursement = {
+            id: randomUUID(),
+            loanRequestId: requestId,
+            paymentId: randomUUID(),
+            financeUserId: 'plaza-auto',
+            financeUserName: 'Auto-Desembolso Plaza',
+            amountUsd,
+            amountBs: amountVES,
+            exchangeRate,
+            bankCode: primaryAccount.bankCode,
+            accountNumber: primaryAccount.accountNumber,
+            phoneNumber: primaryAccount.phoneNumber,
+            documentId: primaryAccount.documentId,
+            concept: `Desembolso prestamo: ${product.name}`,
+            bankReference: null,
+            bankOperationId: null,
+            status: 'success',
+            createdAt: new Date().toISOString(),
+          }
+          await this.repository.saveDisbursement(disbursement)
+
+          // Registrar Purchase para trazabilidad de orden.
+          const purchase: Purchase = {
+            id: randomUUID(),
+            purchaserType: 'collaborator',
+            purchaserId: request.collaboratorId,
+            purchaserName: request.collaboratorName,
+            purchaserEmail: profile.email,
+            purchaserDocument: profile.documentId,
+            productId: productId,
+            productName: product.name,
+            productSku: product.sku,
+            marketplaceId: product.marketplaceId,
+            marketplaceName: null,
+            amountUsd,
+            amountVes: amountVES,
+            exchangeRate,
+            isFinanced: true,
+            installments: 6,
+            interestRate: product.interestRate,
+            channel: 'loan_request',
+            transactionId: request.id,
+            loanRequestId: requestId,
+            disbursementId: disbursement.id,
+            status: 'disbursed',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+          await this.repository.savePurchase(purchase)
         }
       }
     } catch (error) {

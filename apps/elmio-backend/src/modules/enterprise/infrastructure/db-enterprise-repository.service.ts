@@ -12,6 +12,7 @@ import type {
 import type { PersonProfile } from '../domain/person-profile';
 import type { PersonBankAccount } from '../domain/person-bank-account';
 import type { Disbursement } from '../domain/disbursement';
+import type { Purchase } from '../domain/purchase';
 import type { EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
 import { EnterpriseEntity } from './entities/enterprise.entity';
 import { PersonProfileEntity } from './entities/person-profile.entity';
@@ -22,6 +23,7 @@ import { TransactionEntity } from './entities/transaction.entity';
 import { PlatformConfigEntity } from './entities/platform-config.entity';
 import { ContractEntity } from './entities/contract.entity';
 import { ContractFileEntity } from './entities/contract-file.entity';
+import { PurchaseEntity } from './entities/purchase.entity';
 
 const DEFAULT_CONFIG: PlatformConfig = { serviceFeePercent: 5 };
 
@@ -46,6 +48,8 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     private readonly contractRepo: Repository<ContractEntity>,
     @InjectRepository(ContractFileEntity)
     private readonly contractFileRepo: Repository<ContractFileEntity>,
+    @InjectRepository(PurchaseEntity)
+    private readonly purchaseRepo: Repository<PurchaseEntity>,
   ) {}
 
   // --- Mapeadores de Enterprise ---
@@ -651,5 +655,94 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
   async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
     const entity = await this.disbursementRepo.findOne({ where: { loanRequestId } })
     return entity ? this.disbursementToDomain(entity) : null
+  }
+
+  // --- Purchases ---
+
+  private purchaseToDomain(entity: PurchaseEntity): Purchase {
+    return {
+      id: entity.id,
+      purchaserType: entity.purchaserType,
+      purchaserId: entity.purchaserId,
+      purchaserName: entity.purchaserName,
+      purchaserEmail: entity.purchaserEmail,
+      purchaserDocument: entity.purchaserDocument,
+      productId: entity.productId,
+      productName: entity.productName,
+      productSku: entity.productSku,
+      marketplaceId: entity.marketplaceId,
+      marketplaceName: entity.marketplaceName,
+      amountUsd: Number(entity.amountUsd),
+      amountVes: entity.amountVes !== null ? Number(entity.amountVes) : null,
+      exchangeRate: entity.exchangeRate !== null ? Number(entity.exchangeRate) : null,
+      isFinanced: entity.isFinanced,
+      installments: entity.installments,
+      interestRate: entity.interestRate !== null ? Number(entity.interestRate) : null,
+      channel: entity.channel,
+      transactionId: entity.transactionId,
+      loanRequestId: entity.loanRequestId,
+      disbursementId: entity.disbursementId,
+      status: entity.status,
+      createdAt: entity.createdAt.toISOString(),
+      updatedAt: entity.updatedAt.toISOString(),
+    }
+  }
+
+  private purchaseToEntity(purchase: Purchase): PurchaseEntity {
+    const entity = new PurchaseEntity()
+    entity.id = purchase.id
+    entity.purchaserType = purchase.purchaserType
+    entity.purchaserId = purchase.purchaserId
+    entity.purchaserName = purchase.purchaserName
+    entity.purchaserEmail = purchase.purchaserEmail
+    entity.purchaserDocument = purchase.purchaserDocument
+    entity.productId = purchase.productId
+    entity.productName = purchase.productName
+    entity.productSku = purchase.productSku
+    entity.marketplaceId = purchase.marketplaceId
+    entity.marketplaceName = purchase.marketplaceName
+    entity.amountUsd = purchase.amountUsd
+    entity.amountVes = purchase.amountVes
+    entity.exchangeRate = purchase.exchangeRate
+    entity.isFinanced = purchase.isFinanced
+    entity.installments = purchase.installments
+    entity.interestRate = purchase.interestRate
+    entity.channel = purchase.channel
+    entity.transactionId = purchase.transactionId
+    entity.loanRequestId = purchase.loanRequestId
+    entity.disbursementId = purchase.disbursementId
+    entity.status = purchase.status
+    return entity
+  }
+
+  async savePurchase(purchase: Purchase): Promise<Purchase> {
+    const entity = this.purchaseToEntity(purchase)
+    const saved = await this.purchaseRepo.save(entity)
+    return this.purchaseToDomain(saved)
+  }
+
+  async findPurchaseById(id: string): Promise<Purchase | null> {
+    const entity = await this.purchaseRepo.findOne({ where: { id } })
+    return entity ? this.purchaseToDomain(entity) : null
+  }
+
+  async findAllPurchases(channel?: Purchase['channel']): Promise<Purchase[]> {
+    const where = channel ? { channel } : {}
+    const entities = await this.purchaseRepo.find({
+      where,
+      order: { createdAt: 'DESC' },
+    })
+    return entities.map((e) => this.purchaseToDomain(e))
+  }
+
+  async findPurchasesByPurchaser(
+    purchaserType: Purchase['purchaserType'],
+    purchaserId: string,
+  ): Promise<Purchase[]> {
+    const entities = await this.purchaseRepo.find({
+      where: { purchaserType, purchaserId },
+      order: { createdAt: 'DESC' },
+    })
+    return entities.map((e) => this.purchaseToDomain(e))
   }
 }

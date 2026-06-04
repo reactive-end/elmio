@@ -183,6 +183,28 @@ export class CreateContractDto {
 }
 
 /**
+ * DTO para registrar una compra/orden desde el checkout del marketplace.
+ */
+export class CreatePurchaseDto {
+  purchaserType!: 'natural_client' | 'collaborator' | 'enterprise';
+  purchaserId!: string;
+  purchaserName!: string;
+  purchaserEmail?: string;
+  purchaserDocument?: string;
+  productId?: string;
+  productName!: string;
+  productSku?: string;
+  marketplaceId?: string;
+  amountUsd!: number;
+  isFinanced!: boolean;
+  installments?: number;
+  interestRate?: number;
+  channel!: 'marketplace' | 'loan_request' | 'insurance';
+  transactionId?: string;
+  status?: 'pending' | 'paid' | 'financed' | 'disbursed' | 'cancelled';
+}
+
+/**
  * DTO para editar un contrato empresarial.
  */
 export class UpdateContractDto {

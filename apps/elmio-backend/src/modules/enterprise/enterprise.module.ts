@@ -15,6 +15,7 @@ import { ManageContractsUseCase } from './application/manage-contracts.use-case'
 import { ManageProfileUseCase } from './application/manage-profile.use-case';
 import { ManagePersonBankAccountsUseCase } from './application/manage-person-bank-accounts.use-case';
 import { ManageDisburseUseCase } from './application/manage-disburse.use-case';
+import { ManagePurchasesUseCase } from './application/manage-purchases.use-case';
 import { ExecuteBillingCutoffUseCase } from './application/execute-billing-cutoff.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
 import { DbEnterpriseRepositoryService } from './infrastructure/db-enterprise-repository.service';
@@ -23,6 +24,7 @@ import { EnterpriseEntity } from './infrastructure/entities/enterprise.entity';
 import { PersonProfileEntity } from './infrastructure/entities/person-profile.entity';
 import { PersonBankAccountEntity } from './infrastructure/entities/person-bank-account.entity';
 import { DisbursementEntity } from './infrastructure/entities/disbursement.entity';
+import { PurchaseEntity } from './infrastructure/entities/purchase.entity';
 import { LoanRequestEntity } from './infrastructure/entities/loan-request.entity';
 import { TransactionEntity } from './infrastructure/entities/transaction.entity';
 import { PlatformConfigEntity } from './infrastructure/entities/platform-config.entity';
@@ -56,6 +58,7 @@ import { ProductModule } from '../product/product.module';
       ContractEntity,
       ContractFileEntity,
       EnterpriseInterestConfigEntity,
+      PurchaseEntity,
     ]),
   ],
   controllers: [EnterpriseController, ProfileController],
@@ -72,6 +75,7 @@ import { ProductModule } from '../product/product.module';
     ManageProfileUseCase,
     ManagePersonBankAccountsUseCase,
     ManageDisburseUseCase,
+    ManagePurchasesUseCase,
     ExecuteBillingCutoffUseCase,
     DbEnterpriseRepositoryService,
     DocumentStorageService,

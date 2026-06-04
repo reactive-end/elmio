@@ -38,6 +38,7 @@ import { CreateTransactionUseCase } from '../../application/create-transaction.u
 import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
 import { ExecuteBillingCutoffUseCase, type BillingCutoffResult } from '../../application/execute-billing-cutoff.use-case';
 import { ManageDisburseUseCase } from '../../application/manage-disburse.use-case';
+import { ManagePurchasesUseCase } from '../../application/manage-purchases.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
 import {
   CreateEnterpriseDto,
@@ -48,6 +49,7 @@ import {
   CreateTransactionDto,
   CreateContractDto,
   UpdateContractDto,
+  CreatePurchaseDto,
 } from './dto/enterprise.dto';
 import {
   ENTERPRISE_REPOSITORY_PORT,
@@ -80,6 +82,7 @@ export class EnterpriseController {
     private readonly manageContracts: ManageContractsUseCase,
     private readonly executeBillingCutoff: ExecuteBillingCutoffUseCase,
     private readonly manageDisburse: ManageDisburseUseCase,
+    private readonly managePurchases: ManagePurchasesUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
     @Inject(PRODUCT_REPOSITORY_PORT)
@@ -287,6 +290,39 @@ export class EnterpriseController {
     @Param('reqId') reqId: string,
   ) {
     return this.manageDisburse.verifyDisburse(reqId);
+  }
+
+  // --- Purchases ---
+
+  /** POST /api/enterprises/purchases - Crea una compra/orden desde el checkout del marketplace. */
+  @Post('purchases')
+  async createPurchase(@Body() body: CreatePurchaseDto) {
+    return this.managePurchases.execute({
+      purchaserType: body.purchaserType,
+      purchaserId: body.purchaserId,
+      purchaserName: body.purchaserName,
+      purchaserEmail: body.purchaserEmail,
+      purchaserDocument: body.purchaserDocument,
+      productId: body.productId,
+      productName: body.productName,
+      productSku: body.productSku,
+      marketplaceId: body.marketplaceId,
+      amountUsd: body.amountUsd,
+      isFinanced: body.isFinanced,
+      installments: body.installments,
+      interestRate: body.interestRate,
+      channel: body.channel,
+      transactionId: body.transactionId,
+      status: body.status,
+    });
+  }
+
+  /** GET /api/enterprises/purchases - Lista todas las compras del sistema (solo finanzas). */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Get('purchases')
+  async listAllPurchases() {
+    return this.enterpriseRepository.findAllPurchases();
   }
 
   /** GET /api/enterprises/finance/purchases - Obtiene todas las compras y cuotas pendientes del sistema. */

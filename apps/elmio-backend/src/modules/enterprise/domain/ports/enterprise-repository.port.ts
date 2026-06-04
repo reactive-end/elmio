@@ -9,6 +9,7 @@ import type {
 import type { PersonProfile } from '../person-profile';
 import type { PersonBankAccount } from '../person-bank-account';
 import type { Disbursement } from '../disbursement';
+import type { Purchase } from '../purchase';
 
 export const ENTERPRISE_REPOSITORY_PORT = Symbol('ENTERPRISE_REPOSITORY_PORT');
 
@@ -120,6 +121,40 @@ export interface EnterpriseRepositoryPort {
    * @returns Desembolso o null.
    */
   findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null>;
+
+  // --- Purchases ---
+
+  /**
+   * Guarda una compra/orden.
+   * @param purchase Datos de la compra.
+   * @returns Compra guardada.
+   */
+  savePurchase(purchase: Purchase): Promise<Purchase>;
+
+  /**
+   * Busca una compra por ID.
+   * @param id ID de la compra.
+   * @returns Compra o null.
+   */
+  findPurchaseById(id: string): Promise<Purchase | null>;
+
+  /**
+   * Lista todas las compras del sistema (solo para finanzas).
+   * @param channel Filtro opcional por canal.
+   * @returns Lista de compras.
+   */
+  findAllPurchases(channel?: Purchase['channel']): Promise<Purchase[]>;
+
+  /**
+   * Lista las compras de un comprador especifico.
+   * @param purchaserType Tipo de comprador.
+   * @param purchaserId ID del comprador.
+   * @returns Lista de compras.
+   */
+  findPurchasesByPurchaser(
+    purchaserType: Purchase['purchaserType'],
+    purchaserId: string,
+  ): Promise<Purchase[]>;
 
   // --- Loan Requests ---
 

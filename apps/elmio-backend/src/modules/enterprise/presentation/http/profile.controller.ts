@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -21,6 +22,10 @@ import { ManagePersonBankAccountsUseCase } from '../../application/manage-person
 import type { CreatePersonBankAccountDto } from '../../application/manage-person-bank-accounts.use-case';
 import { CreateTransactionDto } from './dto/enterprise.dto';
 import type { LoanRequest } from '../../domain/enterprise';
+import {
+  ENTERPRISE_REPOSITORY_PORT,
+  type EnterpriseRepositoryPort,
+} from '../../domain/ports/enterprise-repository.port';
 
 /**
  * Controlador HTTP del perfil de persona (CLIENT / EMPLOYEE).
@@ -34,6 +39,8 @@ export class ProfileController {
     private readonly getAccountStatement: GetAccountStatementUseCase,
     private readonly createTransactionUseCase: CreateTransactionUseCase,
     private readonly manageBankAccounts: ManagePersonBankAccountsUseCase,
+    @Inject(ENTERPRISE_REPOSITORY_PORT)
+    private readonly enterpriseRepository: EnterpriseRepositoryPort,
   ) {}
 
   /** GET /api/profile/me - Obtiene o crea el perfil del usuario autenticado. */
@@ -114,6 +121,13 @@ export class ProfileController {
       throw new BadRequestException('El productId es requerido para adquirir la solicitud.');
     }
     return this.manageRequests.acquire(requestId, productId);
+  }
+
+  /** GET /api/profile/me/purchases - Lista las compras/ordenes del usuario autenticado. */
+  @Get('me/purchases')
+  async listMyPurchases(@Req() req: Request) {
+    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    return this.enterpriseRepository.findPurchasesByPurchaser('collaborator', profile.id);
   }
 
   // ── Person Bank Accounts ────────────────────────────────────────────────────

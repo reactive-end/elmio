@@ -12,6 +12,7 @@ import type {
 import type { PersonProfile } from '../domain/person-profile';
 import type { PersonBankAccount } from '../domain/person-bank-account';
 import type { Disbursement } from '../domain/disbursement';
+import type { Purchase } from '../domain/purchase';
 import type { EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
 
 interface StorageData {
@@ -23,6 +24,7 @@ interface StorageData {
   transactions: Transaction[];
   contracts: Contract[];
   contractFiles: ContractFile[];
+  purchases: Purchase[];
   platformConfig: PlatformConfig;
 }
 
@@ -62,6 +64,7 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
         transactions: parsed.transactions ?? [],
         contracts: parsed.contracts ?? [],
         contractFiles: parsed.contractFiles ?? [],
+        purchases: parsed.purchases ?? [],
         platformConfig: parsed.platformConfig ?? { ...DEFAULT_CONFIG },
       };
     } catch {
@@ -74,6 +77,7 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
         transactions: [],
         contracts: [],
         contractFiles: [],
+        purchases: [],
         platformConfig: { ...DEFAULT_CONFIG },
       };
     }
@@ -395,5 +399,42 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
   async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
     const data = await this.read();
     return data.disbursements.find((d) => d.loanRequestId === loanRequestId) ?? null;
+  }
+
+  // --- Purchases ---
+
+  async savePurchase(purchase: Purchase): Promise<Purchase> {
+    const data = await this.read();
+    const index = data.purchases.findIndex((p) => p.id === purchase.id);
+    if (index >= 0) {
+      data.purchases[index] = purchase;
+    } else {
+      data.purchases.push(purchase);
+    }
+    await this.write(data);
+    return purchase;
+  }
+
+  async findPurchaseById(id: string): Promise<Purchase | null> {
+    const data = await this.read();
+    return data.purchases.find((p) => p.id === id) ?? null;
+  }
+
+  async findAllPurchases(channel?: Purchase['channel']): Promise<Purchase[]> {
+    const data = await this.read();
+    const filtered = channel ? data.purchases.filter((p) => p.channel === channel) : data.purchases;
+    return [...filtered].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }
+
+  async findPurchasesByPurchaser(
+    purchaserType: Purchase['purchaserType'],
+    purchaserId: string,
+  ): Promise<Purchase[]> {
+    const data = await this.read();
+    return data.purchases
+      .filter((p) => p.purchaserType === purchaserType && p.purchaserId === purchaserId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 }

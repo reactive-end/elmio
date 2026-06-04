@@ -433,23 +433,28 @@ export default function CheckoutPage() {
       const isCompany = session?.role === 'COMPANY'
       const collaboratorNameStr = profile ? `${profile.name} ${profile.lastName}` : 'Colaborador'
 
+      // Capturamos la primera transaccion creada para asociarla al Purchase.
+      let firstTransactionId: string | null = null
+
       if (isCorporateRequest) {
         // Para solicitudes corporativas: el cargo se registra como pendiente (se cobrará a la empresa en fechas de corte)
         const corpConcept = `Cargo Corporativo Adquisición: ${product.name} (Colaborador: ${collaboratorNameStr}) - Ref: ${referenceStr}`
         if (isCompany && enterprise) {
-          await enterpriseService.createTransaction(enterprise.id, {
+          const tx = await enterpriseService.createTransaction(enterprise.id, {
             kind: 'charge',
             concept: corpConcept,
             amount: originalPrice,
             status: 'pending',
           })
+          firstTransactionId = tx.id
         } else {
-          await enterpriseService.createMyTransaction({
+          const tx = await enterpriseService.createMyTransaction({
             kind: 'charge',
             concept: corpConcept,
             amount: originalPrice,
             status: 'pending',
           })
+          firstTransactionId = tx.id
         }
       } else if (!isCorporateRequest && (selectedScheme.paymentMode === 'quota' || selectedScheme.paymentMode === 'mixed')) {
         // Para personas naturales con cuotas (financiamiento)
@@ -459,19 +464,21 @@ export default function CheckoutPage() {
         if (selectedScheme.paymentMode === 'mixed' && selectedScheme.initialPayment > 0) {
           const initialConcept = `Compra Marketplace R4 (Pago Inicial): ${product.name} - Ref: ${referenceStr}`
           if (isCompany && enterprise) {
-            await enterpriseService.createTransaction(enterprise.id, {
+            const tx = await enterpriseService.createTransaction(enterprise.id, {
               kind: 'charge',
               concept: initialConcept,
               amount: selectedScheme.initialPayment,
               status: 'paid',
             })
+            if (!firstTransactionId) firstTransactionId = tx.id
           } else {
-            await enterpriseService.createMyTransaction({
+            const tx = await enterpriseService.createMyTransaction({
               kind: 'charge',
               concept: initialConcept,
               amount: selectedScheme.initialPayment,
               status: 'paid',
             })
+            if (!firstTransactionId) firstTransactionId = tx.id
           }
         }
 
@@ -481,46 +488,87 @@ export default function CheckoutPage() {
           const quotaAmountVal = quotaAmount
 
           if (isCompany && enterprise) {
-            await enterpriseService.createTransaction(enterprise.id, {
+            const tx = await enterpriseService.createTransaction(enterprise.id, {
               kind: 'charge',
               concept: quotaConcept,
               amount: quotaAmountVal,
               status: 'pending',
               date: dueDates[i],
             })
+            if (!firstTransactionId) firstTransactionId = tx.id
           } else {
-            await enterpriseService.createMyTransaction({
+            const tx = await enterpriseService.createMyTransaction({
               kind: 'charge',
               concept: quotaConcept,
               amount: quotaAmountVal,
               status: 'pending',
               date: dueDates[i],
             })
+            if (!firstTransactionId) firstTransactionId = tx.id
           }
         }
       } else {
         // Pago de contado para personas naturales
         const transactionConcept = `Compra Marketplace R4: ${product.name} (Esquema: ${selectedScheme.name}) - Ref: ${referenceStr}`
         if (isCompany && enterprise) {
-          await enterpriseService.createTransaction(enterprise.id, {
+          const tx = await enterpriseService.createTransaction(enterprise.id, {
             kind: 'charge',
             concept: transactionConcept,
             amount: originalPrice,
             status: 'paid',
           })
+          firstTransactionId = tx.id
         } else {
-          await enterpriseService.createMyTransaction({
+          const tx = await enterpriseService.createMyTransaction({
             kind: 'charge',
             concept: transactionConcept,
             amount: originalPrice,
             status: 'paid',
           })
+          firstTransactionId = tx.id
         }
       }
 
       if (isCorporateRequest && requestId) {
         setProcessingStep('Registrando adquisición de solicitud...')
         await enterpriseService.acquireRequest(requestId, product.id)
+      }
+
+      // T1: Registrar la compra/orden en la tabla `purchases` para trazabilidad.
+      // El backend calcula la tasa de cambio BCV (de R4) y completa amountVes/exchangeRate.
+      try {
+        const purchaserType = isCorporateRequest && enterprise
+          ? 'enterprise'
+          : profile
+            ? 'collaborator'
+            : 'natural_client'
+        const purchaserId = profile?.id || enterprise?.id || ''
+        const purchaserName = profile
+          ? `${profile.name} ${profile.lastName}`
+          : enterprise?.companyName || 'Cliente'
+
+        await enterpriseService.createPurchase({
+          purchaserType,
+          purchaserId,
+          purchaserName,
+          purchaserEmail: profile?.email || enterprise?.email,
+          purchaserDocument: profile?.documentId || enterprise?.taxId || undefined,
+          productId: product.id,
+          productName: product.name,
+          productSku: product.sku ?? undefined,
+          marketplaceId: product.marketplaceId ?? undefined,
+          amountUsd: originalPrice,
+          isFinanced: selectedScheme.paymentMode !== 'cash',
+          installments: selectedScheme.paymentMode === 'cash' ? undefined : quotaCount,
+          interestRate: product.interestRate,
+          channel: 'marketplace',
+          transactionId: firstTransactionId || undefined,
+          status: isCorporateRequest ? 'pending' : (selectedScheme.paymentMode === 'cash' ? 'paid' : 'financed'),
+        })
+      } catch (purchaseErr) {
+        // No fallar el checkout si el registro de Purchase falla; el desembolso
+        // ya quedo registrado en la transaccion original.
+        console.error('Error al registrar Purchase:', purchaseErr)
       }
 
       setPaymentReference(referenceStr)
