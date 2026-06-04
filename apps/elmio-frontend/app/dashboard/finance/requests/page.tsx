@@ -122,6 +122,8 @@ export default function FinanceRequestsPage() {
 
       await new Promise((r) => setTimeout(r, FIRST_WAIT_MS))
 
+      let lastR4Code: string | null = null
+
       for (let attempt = 1; attempt <= 3; attempt++) {
         if (attempt > 1) {
           await new Promise((r) => setTimeout(r, RETRY_MS))
@@ -142,12 +144,16 @@ export default function FinanceRequestsPage() {
           return
         }
 
-        if (verifyResult.status === 'failed') {
-          throw new Error(verifyResult.message ?? 'R4 rechazo la operacion.')
-        }
+        lastR4Code = verifyResult.lastCode ?? null
       }
 
-      throw new Error('Se agotaron los intentos de verificacion. Intente nuevamente mas tarde.')
+      throw new Error(
+        `Se agotaron los intentos de verificacion. ` +
+          (lastR4Code && lastR4Code !== 'AC00'
+            ? `R4 devolvio codigo: ${lastR4Code}.`
+            : 'R4 sigue en espera (AC00).') +
+          ` Intente nuevamente mas tarde.`,
+      )
     } catch (err) {
       if (progressRef.current) clearInterval(progressRef.current)
       setDisburseProgress(100)

@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common'
 import { randomUUID } from 'node:crypto'
 import { ENTERPRISE_REPOSITORY_PORT, type EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port'
+import { PRODUCT_REPOSITORY_PORT, type ProductRepositoryPort } from '../../product/domain/ports/product-repository.port'
 import { PaymentProcessorService } from '../../payment-processor/application/services/payment-processor.service'
 import { normalizePhoneToR4 } from '@/shared/utils/phone'
 import type { Disbursement } from '../domain/disbursement'
+import type { Purchase } from '../domain/purchase'
 
 export interface DisburseRequestDto {
   /** ID del usuario de finanzas que ejecuta (viene de la sesion) */
@@ -27,8 +29,7 @@ export type DisburseExecuteResult =
 
 export type VerifyDisburseResult =
   | { status: 'disbursed'; reference: string | null }
-  | { status: 'pending' }
-  | { status: 'failed'; message: string }
+  | { status: 'pending'; lastCode?: string }
 
 /**
  * Orquesta el desembolso manual de una solicitud aprobada via Credito Inmediato R4.
@@ -38,6 +39,8 @@ export class ManageDisburseUseCase {
   constructor(
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly repository: EnterpriseRepositoryPort,
+    @Inject(PRODUCT_REPOSITORY_PORT)
+    private readonly productRepository: ProductRepositoryPort,
     private readonly paymentProcessorService: PaymentProcessorService,
   ) {}
 
@@ -212,6 +215,14 @@ export class ManageDisburseUseCase {
     request.updatedAt = new Date().toISOString()
     await this.repository.saveRequest(request)
 
+    await this.savePurchaseForDisbursement({
+      requestId,
+      amountUsd,
+      amountVes: amountBs,
+      exchangeRate,
+      disbursementId: disbursement.id,
+    })
+
     return { status: 'disbursed', request, disbursement }
   }
 
@@ -219,8 +230,9 @@ export class ManageDisburseUseCase {
    * Verifica el estado de un desembolso que quedo pendiente (R4 respondio AC00).
    * Llama a ConsultarOperaciones en R4. Si la operacion ya esta aceptada
    * (ACCP), actualiza el desembolso a 'success' y la solicitud a 'disbursed'.
-   * Si sigue AC00, retorna 'pending' para que el frontend siga esperando.
-   * Si fallo, marca el desembolso como 'failed'.
+   * Si sigue AC00 o cualquier otro codigo, retorna 'pending' para que el
+   * frontend siga reintentando. La decision de rendirse despues de N intentos
+   * la toma el frontend, no este metodo.
    * @param requestId ID de la solicitud con desembolso pendiente.
    * @returns Estado actual del desembolso.
    */
@@ -232,10 +244,10 @@ export class ManageDisburseUseCase {
     if (disbursement.status === 'success') {
       return { status: 'disbursed', reference: disbursement.bankReference }
     }
-    if (disbursement.status === 'failed') {
-      return { status: 'failed', message: 'El desembolso ya fue marcado como fallido.' }
-    }
 
+    // Siempre re-consultamos a R4. No cortocircuitamos aunque el status local
+    // diga 'failed', porque queremos que el frontend pueda reintentar varias
+    // veces antes de darse por vencido.
     const reference = disbursement.bankReference
     if (!reference) {
       throw new BadRequestException(
@@ -252,8 +264,6 @@ export class ManageDisburseUseCase {
         reference,
       } as any)) as { success: boolean; reference?: string; code?: string }
     } catch (err) {
-      // Si la consulta falla transitoriamente, lo tratamos como pendiente para
-      // que el frontend siga intentando.
       return { status: 'pending' }
     }
 
@@ -269,18 +279,23 @@ export class ManageDisburseUseCase {
         request.status = 'disbursed'
         request.updatedAt = new Date().toISOString()
         await this.repository.saveRequest(request)
+
+        await this.savePurchaseForDisbursement({
+          requestId,
+          amountUsd: disbursement.amountUsd,
+          amountVes: disbursement.amountBs,
+          exchangeRate: disbursement.exchangeRate,
+          disbursementId: disbursement.id,
+        })
       }
 
       return { status: 'disbursed', reference: disbursement.bankReference }
     }
 
-    if (queryResult?.code && queryResult.code !== 'AC00') {
-      disbursement.status = 'failed'
-      await this.repository.saveDisbursement(disbursement)
-      return { status: 'failed', message: `R4 devolvio codigo: ${queryResult.code}` }
-    }
-
-    return { status: 'pending' }
+    // Cualquier respuesta distinta a ACCP (sea AC00, codigo de rechazo, o lo
+    // que sea) se trata como pendiente. El frontend es quien decide cuantos
+    // reintentos hace antes de mostrar error al usuario.
+    return { status: 'pending', lastCode: queryResult?.code }
   }
 
   /**
@@ -317,6 +332,64 @@ export class ManageDisburseUseCase {
       bankOperationId,
       status,
       createdAt: new Date().toISOString(),
+    }
+  }
+
+  /**
+   * Crea un Purchase para registrar la compra/orden desembolsada.
+   * @param params Datos del desembolso y la solicitud.
+   */
+  private async savePurchaseForDisbursement(params: {
+    requestId: string
+    amountUsd: number
+    amountVes: number
+    exchangeRate: number
+    disbursementId: string
+  }): Promise<void> {
+    try {
+      const request = await this.repository.findRequestById(params.requestId)
+      if (!request) return
+
+      const profile = await this.repository.findCollaboratorById(request.collaboratorId)
+      const product = request.productId
+        ? await this.productRepository.findById(request.productId)
+        : null
+
+      const now = new Date().toISOString()
+      const purchase: Purchase = {
+        id: randomUUID(),
+        purchaserType: 'collaborator',
+        purchaserId: request.collaboratorId,
+        purchaserName: request.collaboratorName,
+        purchaserEmail: profile?.email ?? null,
+        purchaserDocument: profile?.documentId ?? null,
+        productId: request.productId,
+        productName: product?.name ?? request.description ?? 'Prestamo',
+        productSku: product?.sku ?? null,
+        marketplaceId: product?.marketplaceId ?? null,
+        marketplaceName: null,
+        amountUsd: params.amountUsd,
+        amountVes: params.amountVes,
+        exchangeRate: params.exchangeRate,
+        isFinanced: true,
+        installments: 6,
+        interestRate: product?.interestRate ?? null,
+        channel: 'loan_request',
+        transactionId: request.id,
+        loanRequestId: request.id,
+        disbursementId: params.disbursementId,
+        status: 'disbursed',
+        createdAt: now,
+        updatedAt: now,
+      }
+
+      await this.repository.savePurchase(purchase)
+    } catch (err) {
+      // No romper el desembolso si falla la creacion del Purchase.
+      // El desembolso ya quedo registrado; el Purchase puede regenerarse
+      // en un job posterior si se requiere.
+      // eslint-disable-next-line no-console
+      console.error('Error al guardar Purchase para desembolso:', err)
     }
   }
 }

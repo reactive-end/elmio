@@ -336,9 +336,55 @@ export interface DisburseResponse {
 }
 
 export interface DisburseVerifyResponse {
-  status: 'disbursed' | 'pending' | 'failed'
+  status: 'disbursed' | 'pending'
   reference?: string
-  message?: string
+  lastCode?: string
+}
+
+export interface Purchase {
+  id: string
+  purchaserType: 'natural_client' | 'collaborator' | 'enterprise'
+  purchaserId: string
+  purchaserName: string
+  purchaserEmail: string | null
+  purchaserDocument: string | null
+  productId: string | null
+  productName: string
+  productSku: string | null
+  marketplaceId: string | null
+  marketplaceName: string | null
+  amountUsd: number
+  amountVes: number | null
+  exchangeRate: number | null
+  isFinanced: boolean
+  installments: number | null
+  interestRate: number | null
+  channel: 'marketplace' | 'loan_request' | 'insurance'
+  transactionId: string | null
+  loanRequestId: string | null
+  disbursementId: string | null
+  status: 'pending' | 'paid' | 'financed' | 'disbursed' | 'cancelled'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreatePurchaseInput {
+  purchaserType: 'natural_client' | 'collaborator' | 'enterprise'
+  purchaserId: string
+  purchaserName: string
+  purchaserEmail?: string
+  purchaserDocument?: string
+  productId?: string
+  productName: string
+  productSku?: string
+  marketplaceId?: string
+  amountUsd: number
+  isFinanced: boolean
+  installments?: number
+  interestRate?: number
+  channel: 'marketplace' | 'loan_request' | 'insurance'
+  transactionId?: string
+  status?: 'pending' | 'paid' | 'financed' | 'disbursed' | 'cancelled'
 }
 
 export interface Transaction {
@@ -802,5 +848,31 @@ export const enterpriseService = {
       throw new Error(err.message ?? 'Error al verificar el desembolso.')
     }
     return (await res.json()) as DisburseVerifyResponse
+  },
+
+  // --- Purchases ---
+
+  async createPurchase(input: CreatePurchaseInput): Promise<Purchase> {
+    const res = await authedFetch('/enterprises/purchases', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al registrar la compra.')
+    }
+    return (await res.json()) as Purchase
+  },
+
+  async listAllPurchaseOrders(): Promise<Purchase[]> {
+    const res = await authedFetch('/enterprises/purchases')
+    if (!res.ok) throw new Error('Error al listar las compras del sistema.')
+    return (await res.json()) as Purchase[]
+  },
+
+  async listMyPurchases(): Promise<Purchase[]> {
+    const res = await authedFetch('/profile/me/purchases')
+    if (!res.ok) throw new Error('Error al listar tus compras.')
+    return (await res.json()) as Purchase[]
   },
 }
