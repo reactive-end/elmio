@@ -3844,7 +3844,7 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
         response.data?.mensaje ||
         'Respuesta invalida de Banco R4'
 
-      const bankReference = String(response.data?.reference || response.data?.id ?? '')
+      const bankReference = String(response.data?.reference || (response.data?.id ?? ''))
       const bankOperationId = String(response.data?.id ?? '')
 
       // Persistir Payment para trazabilidad
