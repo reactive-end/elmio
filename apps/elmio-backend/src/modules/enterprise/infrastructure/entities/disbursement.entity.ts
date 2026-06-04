@@ -58,7 +58,7 @@ export class DisbursementEntity {
   bankOperationId!: string | null
 
   @Column({ type: 'varchar', length: 20, default: 'success' })
-  status!: 'success' | 'failed'
+  status!: 'success' | 'failed' | 'pending'
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt!: Date

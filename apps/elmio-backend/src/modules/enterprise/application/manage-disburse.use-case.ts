@@ -17,6 +17,19 @@ export interface DisburseRequestDto {
   financeUserName: string
 }
 
+export type DisburseExecuteResult =
+  | {
+      status: 'disbursed'
+      request: Awaited<ReturnType<EnterpriseRepositoryPort['findRequestById']>>
+      disbursement: Disbursement
+    }
+  | { status: 'pending'; requestId: string }
+
+export type VerifyDisburseResult =
+  | { status: 'disbursed'; reference: string | null }
+  | { status: 'pending' }
+  | { status: 'failed'; message: string }
+
 /**
  * Orquesta el desembolso manual de una solicitud aprobada via Credito Inmediato R4.
  */
@@ -29,17 +42,32 @@ export class ManageDisburseUseCase {
   ) {}
 
   /**
-   * Ejecuta el desembolso de una solicitud de prestamo aprobada.
+   * Inicia el desembolso de una solicitud de prestamo aprobada.
+   * Llama a Credito Inmediato R4. Si R4 responde ACCP se completa el desembolso
+   * en este mismo metodo. Si responde AC00 guarda el desembolso como 'pending'
+   * y NO cambia el estado de la solicitud: la verificacion posterior se hace
+   * via {@link verifyDisburse} para evitar timeouts de Nginx.
+   * Si ya existe un disbursement 'pending' para esta solicitud (reapertura de
+   * navegador), retorna 'pending' sin volver a llamar a R4.
    * @param requestId ID de la solicitud.
    * @param dto Datos del usuario de finanzas que ejecuta.
-   * @returns Resumen del desembolso.
+   * @returns Resultado de la fase de inicio.
    */
-  async execute(requestId: string, dto: DisburseRequestDto) {
+  async execute(requestId: string, dto: DisburseRequestDto): Promise<DisburseExecuteResult> {
     const request = await this.repository.findRequestById(requestId)
     if (!request) throw new NotFoundException('Solicitud no encontrada.')
 
     if (request.status !== 'approved' && request.status !== 'company_approved') {
-      throw new BadRequestException('La solicitud debe estar aprobada (por la empresa o finanzas) para desembolsar.')
+      throw new BadRequestException(
+        'La solicitud debe estar aprobada (por la empresa o finanzas) para desembolsar.',
+      )
+    }
+
+    // Si ya hay un desembolso pendiente para esta solicitud, reanudar sin
+    // volver a llamar a R4 (evita credito duplicado si el usuario reabre la UI).
+    const existing = await this.repository.findDisbursementByLoanRequestId(requestId)
+    if (existing && existing.status === 'pending') {
+      return { status: 'pending', requestId }
     }
 
     // Buscar perfil del colaborador
@@ -85,60 +113,193 @@ export class ManageDisburseUseCase {
     const amountBs = Number((amountUsd * exchangeRate).toFixed(2))
 
     const concept = `Desembolso prestamo: ${request.description || 'Prestamo'}`
-    const fullName = profile.name && profile.lastName
-      ? `${profile.name} ${profile.lastName}`
-      : (request.collaboratorName || 'Beneficiario')
 
     // Ejecutar Credito Inmediato en R4
-    const creditResult = await this.paymentProcessorService.processImmediateCreditR4({
+    const creditResult = (await this.paymentProcessorService.processImmediateCreditR4({
       companyAccountId: 'GLOBAL_R4_FALLBACK',
       bankCode: primaryAccount.bankCode,
       amount: amountBs,
       phoneNumber: normalizePhoneToR4(primaryAccount.phoneNumber),
       nationalId: primaryAccount.documentId,
       concept,
-    } as any)
-
-    let definitiveCode = creditResult.code
-    let bankRef: string | null = creditResult.reference || null
-
-    // Si R4 responde AC00 (Operacion en Espera de Respuesta del Receptor),
-    // hacer polling para obtener el estado definitivo.
-    // El tiempo minimo de la transaccion R4 es de 120s antes de la primera consulta.
-    if (creditResult.code === 'AC00' && creditResult.id) {
-      const FIRST_DELAY_MS = 120_000
-      const RETRY_DELAY_MS = 60_000
-      const MAX_ATTEMPTS = 3
-
-      // Primera espera: 120s (tiempo minimo de la transaccion R4)
-      await new Promise((resolve) => setTimeout(resolve, FIRST_DELAY_MS))
-
-      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        if (attempt > 0) {
-          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
-        }
-
-        try {
-          const statusResult = await this.paymentProcessorService.queryOperationR4({
-            companyAccountId: 'GLOBAL_R4_FALLBACK',
-            reference: creditResult.reference || creditResult.id,
-          })
-
-          if (statusResult.success) {
-            definitiveCode = 'ACCP'
-            bankRef = statusResult.reference || null
-            break
-          }
-        } catch {
-          // Si la consulta falla, reintentar en el siguiente ciclo
-        }
-      }
+    } as any)) as {
+      code: string
+      message?: string
+      reference?: string
+      id?: string
+      internalPaymentId?: string
     }
 
-    const isSuccess = definitiveCode === 'ACCP'
+    // AC00 sin id: no hay forma de consultar despues. Marcamos failed.
+    if (creditResult.code === 'AC00' && !creditResult.id) {
+      const disbursement = this.buildDisbursement(
+        requestId,
+        dto,
+        amountUsd,
+        amountBs,
+        exchangeRate,
+        primaryAccount,
+        concept,
+        null,
+        null,
+        'failed',
+        creditResult,
+      )
+      await this.repository.saveDisbursement(disbursement)
+      throw new BadRequestException(
+        'R4 respondio AC00 sin ID de operacion. No se puede verificar el resultado del credito.',
+      )
+    }
 
-    // Persistir registro de desembolso (para auditoria)
-    const disbursement: Disbursement = {
+    // AC00 con id: desembolso queda en 'pending' y se verifica luego via /disburse/verify.
+    if (creditResult.code === 'AC00' && creditResult.id) {
+      const disbursement = this.buildDisbursement(
+        requestId,
+        dto,
+        amountUsd,
+        amountBs,
+        exchangeRate,
+        primaryAccount,
+        concept,
+        creditResult.reference || creditResult.id,
+        creditResult.id,
+        'pending',
+        creditResult,
+      )
+      await this.repository.saveDisbursement(disbursement)
+      return { status: 'pending', requestId }
+    }
+
+    // Cualquier otro codigo distinto a ACCP/AC00: desembolso fallido.
+    if (creditResult.code !== 'ACCP') {
+      const disbursement = this.buildDisbursement(
+        requestId,
+        dto,
+        amountUsd,
+        amountBs,
+        exchangeRate,
+        primaryAccount,
+        concept,
+        creditResult.reference || null,
+        creditResult.id || null,
+        'failed',
+        creditResult,
+      )
+      await this.repository.saveDisbursement(disbursement)
+      throw new BadRequestException(
+        `R4 rechazo la operacion. Codigo: ${creditResult.code || 'N/A'}. ` +
+          `Mensaje: ${creditResult.message || ''}`,
+      )
+    }
+
+    // ACCP: desembolso exitoso, guardar y actualizar solicitud.
+    const disbursement = this.buildDisbursement(
+      requestId,
+      dto,
+      amountUsd,
+      amountBs,
+      exchangeRate,
+      primaryAccount,
+      concept,
+      creditResult.reference || null,
+      creditResult.id || null,
+      'success',
+      creditResult,
+    )
+    await this.repository.saveDisbursement(disbursement)
+
+    request.status = 'disbursed'
+    request.updatedAt = new Date().toISOString()
+    await this.repository.saveRequest(request)
+
+    return { status: 'disbursed', request, disbursement }
+  }
+
+  /**
+   * Verifica el estado de un desembolso que quedo pendiente (R4 respondio AC00).
+   * Llama a ConsultarOperaciones en R4. Si la operacion ya esta aceptada
+   * (ACCP), actualiza el desembolso a 'success' y la solicitud a 'disbursed'.
+   * Si sigue AC00, retorna 'pending' para que el frontend siga esperando.
+   * Si fallo, marca el desembolso como 'failed'.
+   * @param requestId ID de la solicitud con desembolso pendiente.
+   * @returns Estado actual del desembolso.
+   */
+  async verifyDisburse(requestId: string): Promise<VerifyDisburseResult> {
+    const disbursement = await this.repository.findDisbursementByLoanRequestId(requestId)
+    if (!disbursement) {
+      throw new NotFoundException('No hay un desembolso registrado para esta solicitud.')
+    }
+    if (disbursement.status === 'success') {
+      return { status: 'disbursed', reference: disbursement.bankReference }
+    }
+    if (disbursement.status === 'failed') {
+      return { status: 'failed', message: 'El desembolso ya fue marcado como fallido.' }
+    }
+
+    const reference = disbursement.bankReference
+    if (!reference) {
+      throw new BadRequestException(
+        'El desembolso pendiente no tiene referencia bancaria para consultar.',
+      )
+    }
+
+    let queryResult:
+      | { success: boolean; reference?: string; code?: string }
+      | undefined
+    try {
+      queryResult = (await this.paymentProcessorService.queryOperationR4({
+        companyAccountId: 'GLOBAL_R4_FALLBACK',
+        reference,
+      } as any)) as { success: boolean; reference?: string; code?: string }
+    } catch (err) {
+      // Si la consulta falla transitoriamente, lo tratamos como pendiente para
+      // que el frontend siga intentando.
+      return { status: 'pending' }
+    }
+
+    if (queryResult?.success) {
+      disbursement.status = 'success'
+      if (queryResult.reference) {
+        disbursement.bankReference = queryResult.reference
+      }
+      await this.repository.saveDisbursement(disbursement)
+
+      const request = await this.repository.findRequestById(requestId)
+      if (request) {
+        request.status = 'disbursed'
+        request.updatedAt = new Date().toISOString()
+        await this.repository.saveRequest(request)
+      }
+
+      return { status: 'disbursed', reference: disbursement.bankReference }
+    }
+
+    if (queryResult?.code && queryResult.code !== 'AC00') {
+      disbursement.status = 'failed'
+      await this.repository.saveDisbursement(disbursement)
+      return { status: 'failed', message: `R4 devolvio codigo: ${queryResult.code}` }
+    }
+
+    return { status: 'pending' }
+  }
+
+  /**
+   * Construye un objeto Disbursement con los campos comunes.
+   */
+  private buildDisbursement(
+    requestId: string,
+    dto: DisburseRequestDto,
+    amountUsd: number,
+    amountBs: number,
+    exchangeRate: number,
+    primaryAccount: { bankCode: string; accountNumber: string; phoneNumber: string; documentId: string },
+    concept: string,
+    bankReference: string | null,
+    bankOperationId: string | null,
+    status: 'success' | 'failed' | 'pending',
+    creditResult: { internalPaymentId?: string },
+  ): Disbursement {
+    return {
       id: randomUUID(),
       loanRequestId: requestId,
       paymentId: creditResult.internalPaymentId || randomUUID(),
@@ -152,37 +313,10 @@ export class ManageDisburseUseCase {
       phoneNumber: primaryAccount.phoneNumber,
       documentId: primaryAccount.documentId,
       concept,
-      bankReference: bankRef,
-      bankOperationId: creditResult.id || null,
-      status: isSuccess ? 'success' : 'failed',
+      bankReference,
+      bankOperationId,
+      status,
       createdAt: new Date().toISOString(),
-    }
-
-    await this.repository.saveDisbursement(disbursement)
-
-    if (!isSuccess) {
-      throw new BadRequestException(
-        `El desembolso no pudo completarse. ` +
-        `Estado definitivo: ${definitiveCode || 'AC00'}. ` +
-        `Se realizaron hasta 3 intentos de verificacion cada 60s. ` +
-        `Referencia: ${creditResult.reference || 'N/A'}`,
-      )
-    }
-
-    // Actualizar estado de la solicitud a desembolsada
-    request.status = 'disbursed'
-    request.updatedAt = new Date().toISOString()
-    await this.repository.saveRequest(request)
-
-    return {
-      request,
-      disbursement,
-      creditResult: {
-        code: definitiveCode,
-        message: creditResult.message,
-        reference: creditResult.reference,
-        id: creditResult.id,
-      },
     }
   }
 }

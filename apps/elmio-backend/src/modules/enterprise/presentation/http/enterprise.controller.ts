@@ -279,6 +279,16 @@ export class EnterpriseController {
     });
   }
 
+  /** POST /api/enterprises/requests/:reqId/disburse/verify - Verifica el resultado de un desembolso pendiente (R4 AC00). */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('requests/:reqId/disburse/verify')
+  async verifyDisburseRequest(
+    @Param('reqId') reqId: string,
+  ) {
+    return this.manageDisburse.verifyDisburse(reqId);
+  }
+
   /** GET /api/enterprises/finance/purchases - Obtiene todas las compras y cuotas pendientes del sistema. */
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)

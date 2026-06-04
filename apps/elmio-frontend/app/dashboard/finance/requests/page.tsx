@@ -85,7 +85,24 @@ export default function FinanceRequestsPage() {
       setDisburseProgress(0)
       setDisburseAttempt(1)
 
-      // Barra de progreso estimada: 120s espera inicial + 2 reintentos x 60s = 240s total
+      // Fase 1: Llamada inicial a /disburse. R4 puede responder ACCP (exito
+      // inmediato) o AC00 (pendiente, requiere verificacion).
+      const result = await enterpriseService.disburseRequest(disburseRequest.id)
+
+      if (result.status === 'disbursed') {
+        if (progressRef.current) clearInterval(progressRef.current)
+        setDisburseProgress(100)
+        setDisburseStep('success')
+        setActionLoading(null)
+        await new Promise((r) => setTimeout(r, 1000))
+        setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
+        setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
+        setIsDisburseModalOpen(false)
+        return
+      }
+
+      // Fase 2: R4 respondio AC00. Esperar 120s (tiempo minimo de la transaccion)
+      // y luego llamar a /disburse/verify hasta 3 veces, con 60s entre intentos.
       const FIRST_WAIT_MS = 120_000
       const RETRY_MS = 60_000
       const TOTAL_MS = FIRST_WAIT_MS + 2 * RETRY_MS
@@ -103,17 +120,34 @@ export default function FinanceRequestsPage() {
         setDisburseProgress(pct)
       }, 500)
 
-      await enterpriseService.disburseRequest(disburseRequest.id)
+      await new Promise((r) => setTimeout(r, FIRST_WAIT_MS))
 
-      // Éxito
-      if (progressRef.current) clearInterval(progressRef.current)
-      setDisburseProgress(100)
-      setDisburseStep('success')
-      setActionLoading(null)
-      await new Promise((r) => setTimeout(r, 1000))
-      setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
-      setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
-      setIsDisburseModalOpen(false)
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        if (attempt > 1) {
+          await new Promise((r) => setTimeout(r, RETRY_MS))
+        }
+        setDisburseAttempt(attempt)
+
+        const verifyResult = await enterpriseService.verifyDisburse(disburseRequest.id)
+
+        if (verifyResult.status === 'disbursed') {
+          if (progressRef.current) clearInterval(progressRef.current)
+          setDisburseProgress(100)
+          setDisburseStep('success')
+          setActionLoading(null)
+          await new Promise((r) => setTimeout(r, 1000))
+          setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
+          setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
+          setIsDisburseModalOpen(false)
+          return
+        }
+
+        if (verifyResult.status === 'failed') {
+          throw new Error(verifyResult.message ?? 'R4 rechazo la operacion.')
+        }
+      }
+
+      throw new Error('Se agotaron los intentos de verificacion. Intente nuevamente mas tarde.')
     } catch (err) {
       if (progressRef.current) clearInterval(progressRef.current)
       setDisburseProgress(100)

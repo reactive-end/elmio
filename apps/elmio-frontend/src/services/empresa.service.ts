@@ -331,6 +331,16 @@ export interface LoanRequest {
   requiresManualDisburse?: boolean
 }
 
+export interface DisburseResponse {
+  status: 'disbursed' | 'pending'
+}
+
+export interface DisburseVerifyResponse {
+  status: 'disbursed' | 'pending' | 'failed'
+  reference?: string
+  message?: string
+}
+
 export interface Transaction {
   id: string
   enterpriseId: string
@@ -772,7 +782,7 @@ export const enterpriseService = {
     return (await res.json()) as LoanRequest
   },
 
-  async disburseRequest(requestId: string): Promise<any> {
+  async disburseRequest(requestId: string): Promise<DisburseResponse> {
     const res = await authedFetch(`/enterprises/requests/${requestId}/disburse`, {
       method: 'POST',
     })
@@ -780,6 +790,17 @@ export const enterpriseService = {
       const err = (await res.json().catch(() => ({}))) as { message?: string }
       throw new Error(err.message ?? 'Error al ejecutar el desembolso.')
     }
-    return (await res.json())
+    return (await res.json()) as DisburseResponse
+  },
+
+  async verifyDisburse(requestId: string): Promise<DisburseVerifyResponse> {
+    const res = await authedFetch(`/enterprises/requests/${requestId}/disburse/verify`, {
+      method: 'POST',
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al verificar el desembolso.')
+    }
+    return (await res.json()) as DisburseVerifyResponse
   },
 }

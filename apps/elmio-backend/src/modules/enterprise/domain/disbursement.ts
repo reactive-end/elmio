@@ -17,6 +17,6 @@ export interface Disbursement {
   concept: string
   bankReference: string | null
   bankOperationId: string | null
-  status: 'success' | 'failed'
+  status: 'success' | 'failed' | 'pending'
   createdAt: string
 }
