@@ -593,6 +593,7 @@ export function useMundialConsultaRCV() {
     genders,
     selectedStateId,
     selectedCityId,
+    setSelectedCityId,
     civilStateId,
     setCivilStateId,
     addressLine,
