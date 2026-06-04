@@ -8,6 +8,7 @@ import { productService, type Product } from '@/src/services/product.service'
 
 const MERCANTIL_CUSTOM_FORM_ACTION = 'mercantil-query-form'
 const MERCANTIL_RCV_CUSTOM_FORM_ACTION = 'mercantil-rcv-query-form'
+const MUNDIAL_RCV_CUSTOM_FORM_ACTION = 'mundial-rcv-query-form'
 const MERCANTIL_PROVIDER_SLUGS: Record<string, string> = {
   'elmio:mercantil-vida': 'life',
   'elmio:mercantil-accidentes': 'personalAccidents',
@@ -79,6 +80,16 @@ function buildMercantilEmbeddedUrl(product: Product): string {
 function buildMercantilRCVEmbeddedUrl(product: Product): string {
   const params = new URLSearchParams({ embedded: '1', productId: product.id })
   return `/marketplace/mercantil/consulta-rcv?${params.toString()}`
+}
+
+/**
+ * Construye la URL embebida del flujo RCV La Mundial.
+ * @param {Product} product - Producto actualmente en compra.
+ * @returns {string} Ruta relativa lista para ser usada en un iframe.
+ */
+function buildMundialRCVEmbeddedUrl(product: Product): string {
+  const params = new URLSearchParams({ embedded: '1', productId: product.id })
+  return `/marketplace/mundial/consulta-rcv?${params.toString()}`
 }
 
 /**
@@ -243,12 +254,30 @@ export function useEnterpriseShop(): UseEnterpriseShopReturn {
       window.config.redirectUrl === MERCANTIL_RCV_CUSTOM_FORM_ACTION
     ) {
       if (session?.role !== 'COMPANY' && session?.role !== 'EMPLOYEE') {
-        setError('La consulta RCV Mercantil embebida solo esta disponible para usuarios autenticados.')
+        setError(
+          'La consulta RCV Mercantil embebida solo esta disponible para usuarios autenticados.',
+        )
         return
       }
 
       setError(null)
       setEmbeddedFormUrl(buildMercantilRCVEmbeddedUrl(purchaseDraft.product))
+      return
+    }
+
+    if (
+      window.type === 'custom-form' &&
+      window.config.redirectUrl === MUNDIAL_RCV_CUSTOM_FORM_ACTION
+    ) {
+      if (session?.role !== 'COMPANY' && session?.role !== 'EMPLOYEE') {
+        setError(
+          'La consulta RCV La Mundial embebida solo esta disponible para usuarios autenticados.',
+        )
+        return
+      }
+
+      setError(null)
+      setEmbeddedFormUrl(buildMundialRCVEmbeddedUrl(purchaseDraft.product))
       return
     }
 

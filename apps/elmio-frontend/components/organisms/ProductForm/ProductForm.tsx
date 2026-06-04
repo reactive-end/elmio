@@ -38,9 +38,7 @@ export function ProductForm() {
     const exists = f.actions.some((a) => a.type === 'manual_disburse')
     if (exists) {
       f.setActions(
-        f.actions.map((a) =>
-          a.type === 'manual_disburse' ? { ...a, active: !a.active } : a
-        )
+        f.actions.map((a) => (a.type === 'manual_disburse' ? { ...a, active: !a.active } : a)),
       )
     } else {
       f.setActions([
@@ -59,10 +57,8 @@ export function ProductForm() {
   const handleUpdateDisburseAmount = (amount: number) => {
     f.setActions(
       f.actions.map((a) =>
-        a.type === 'manual_disburse'
-          ? { ...a, config: { ...a.config, amountUsd: amount } }
-          : a
-      )
+        a.type === 'manual_disburse' ? { ...a, config: { ...a.config, amountUsd: amount } } : a,
+      ),
     )
   }
 
@@ -576,11 +572,7 @@ export function ProductForm() {
                       <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                         Planes de Financiamiento Configurados ({f.financingSchemes.length})
                       </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={f.addFinancingScheme}
-                      >
+                      <Button type="button" variant="ghost" onClick={f.addFinancingScheme}>
                         + Agregar Plan
                       </Button>
                     </div>
@@ -597,7 +589,9 @@ export function ProductForm() {
                                 type="text"
                                 placeholder="Nombre del Plan (ej: Plan Contado)"
                                 value={scheme.name}
-                                onChange={(e) => f.updFinancingScheme(scheme.id, 'name', e.target.value)}
+                                onChange={(e) =>
+                                  f.updFinancingScheme(scheme.id, 'name', e.target.value)
+                                }
                                 className="font-semibold text-sm border-none bg-transparent hover:bg-gray-100 focus:bg-white rounded px-2 py-1"
                               />
                             </div>
@@ -616,7 +610,11 @@ export function ProductForm() {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                               {[
                                 { value: 'cash', label: 'Contado', desc: 'Pago unico inmediato.' },
-                                { value: 'quota', label: 'Cuotas', desc: 'Financiamiento periodico.' },
+                                {
+                                  value: 'quota',
+                                  label: 'Cuotas',
+                                  desc: 'Financiamiento periodico.',
+                                },
                                 { value: 'mixed', label: 'Mixto', desc: 'Pago inicial + cuotas.' },
                               ].map((mode) => {
                                 const isSel = scheme.paymentMode === mode.value
@@ -624,7 +622,9 @@ export function ProductForm() {
                                   <button
                                     key={mode.value}
                                     type="button"
-                                    onClick={() => f.updFinancingScheme(scheme.id, 'paymentMode', mode.value)}
+                                    onClick={() =>
+                                      f.updFinancingScheme(scheme.id, 'paymentMode', mode.value)
+                                    }
                                     className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all duration-200 cursor-pointer ${
                                       isSel
                                         ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
@@ -636,7 +636,9 @@ export function ProductForm() {
                                     >
                                       {mode.label}
                                     </span>
-                                    <span className="text-[10px] text-gray-400 font-normal">{mode.desc}</span>
+                                    <span className="text-[10px] text-gray-400 font-normal">
+                                      {mode.desc}
+                                    </span>
                                   </button>
                                 )
                               })}
@@ -648,7 +650,9 @@ export function ProductForm() {
                               <FormField label="Frecuencia / Periodo">
                                 <Select
                                   value={scheme.paymentPeriod || 'monthly'}
-                                  onChange={(v) => f.updFinancingScheme(scheme.id, 'paymentPeriod', v)}
+                                  onChange={(v) =>
+                                    f.updFinancingScheme(scheme.id, 'paymentPeriod', v)
+                                  }
                                   options={[
                                     { value: 'daily', label: 'Diario' },
                                     { value: 'biweekly', label: 'Quincenal' },
@@ -663,7 +667,13 @@ export function ProductForm() {
                                 <Input
                                   type="number"
                                   value={String(scheme.maxQuotas)}
-                                  onChange={(e) => f.updFinancingScheme(scheme.id, 'maxQuotas', Number(e.target.value))}
+                                  onChange={(e) =>
+                                    f.updFinancingScheme(
+                                      scheme.id,
+                                      'maxQuotas',
+                                      Number(e.target.value),
+                                    )
+                                  }
                                   min={1}
                                 />
                               </FormField>
@@ -671,7 +681,13 @@ export function ProductForm() {
                                 <Input
                                   type="number"
                                   value={String(scheme.initialPayment)}
-                                  onChange={(e) => f.updFinancingScheme(scheme.id, 'initialPayment', Number(e.target.value))}
+                                  onChange={(e) =>
+                                    f.updFinancingScheme(
+                                      scheme.id,
+                                      'initialPayment',
+                                      Number(e.target.value),
+                                    )
+                                  }
                                   min={0}
                                   placeholder="Ej: 50"
                                 />
@@ -745,9 +761,13 @@ export function ProductForm() {
               <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <span className="text-sm font-semibold text-body block">Cuenta Receptora Destino Alternativa</span>
+                    <span className="text-sm font-semibold text-body block">
+                      Cuenta Receptora Destino Alternativa
+                    </span>
                     <p className="text-xs text-body-muted mt-1 leading-relaxed">
-                      Si se habilita, todos los fondos de la venta de este producto se transferirán de forma transparente e inmediata a la cuenta bancaria corporativa seleccionada.
+                      Si se habilita, todos los fondos de la venta de este producto se transferirán
+                      de forma transparente e inmediata a la cuenta bancaria corporativa
+                      seleccionada.
                     </p>
                   </div>
                   <div className="flex items-center gap-3 sm:shrink-0">
@@ -781,14 +801,15 @@ export function ProductForm() {
                         }))}
                         placeholder={
                           f.bankAccountsList.length > 0
-                            ? "Selecciona una cuenta corporativa registrada..."
-                            : "No hay cuentas bancarias registradas en el sistema"
+                            ? 'Selecciona una cuenta corporativa registrada...'
+                            : 'No hay cuentas bancarias registradas en el sistema'
                         }
                       />
                     </FormField>
                     {f.bankAccountsList.length === 0 && (
                       <p className="text-xs text-red-500 mt-2">
-                        ⚠️ Debes registrar primero una cuenta bancaria en la configuración del sistema para poder seleccionarla aquí.
+                        ⚠️ Debes registrar primero una cuenta bancaria en la configuración del
+                        sistema para poder seleccionarla aquí.
                       </p>
                     )}
                   </div>
@@ -806,8 +827,8 @@ export function ProductForm() {
                     Ventana / Accion ({f.windows.length}/1)
                   </span>
                   <p className="text-xs text-body-muted mt-0.5">
-                    Configura una sola accion para la compra: pago, consulta Mercantil o
-                    redireccion externa.
+                    Configura una sola accion para la compra: pago, consulta Mercantil o redireccion
+                    externa.
                   </p>
                 </div>
                 {f.windows.length === 0 && (
@@ -855,10 +876,14 @@ export function ProductForm() {
                     ) : (
                       <FormField label="Accion / Funcion a ejecutar">
                         <Select
-                          value={w.type === 'payment-form' ? '' : (w.actionKey || 'mercantil-query-form')}
+                          value={
+                            w.type === 'payment-form' ? '' : w.actionKey || 'mercantil-query-form'
+                          }
                           onChange={(v) => f.updWindow(w.id, 'actionKey', v)}
                           disabled={w.type === 'payment-form'}
-                          placeholder={w.type === 'payment-form' ? 'Proximamente' : 'Seleccione accion'}
+                          placeholder={
+                            w.type === 'payment-form' ? 'Proximamente' : 'Seleccione accion'
+                          }
                           options={
                             w.type === 'payment-form'
                               ? []
@@ -870,6 +895,10 @@ export function ProductForm() {
                                   {
                                     value: 'mercantil-rcv-query-form',
                                     label: 'Consulta RCV Mercantil (mercantil/consulta-rcv)',
+                                  },
+                                  {
+                                    value: 'mundial-rcv-query-form',
+                                    label: 'Consulta RCV La Mundial (mundial/consulta-rcv)',
                                   },
                                 ]
                           }
@@ -917,7 +946,8 @@ export function ProductForm() {
                   Acciones al finalizar la compra
                 </span>
                 <p className="text-xs text-body-muted mt-0.5">
-                  Configura N acciones automatizadas que se ejecutarán cuando se concrete y apruebe la compra de este producto.
+                  Configura N acciones automatizadas que se ejecutarán cuando se concrete y apruebe
+                  la compra de este producto.
                 </p>
               </div>
 
@@ -925,9 +955,13 @@ export function ProductForm() {
               <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 transition-all duration-200 hover:border-gray-200">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
-                    <span className="text-sm font-semibold text-body block">Desembolso Manual de Prestamos (manual_disburse)</span>
+                    <span className="text-sm font-semibold text-body block">
+                      Desembolso Manual de Prestamos (manual_disburse)
+                    </span>
                     <p className="text-xs text-body-muted mt-1 leading-relaxed">
-                      Al aprobarse la solicitud, el sistema transferirá de forma inmediata el monto configurado en USD (convertido a Bolívares a tasa oficial BCV) a la cuenta destino del usuario.
+                      Al aprobarse la solicitud, el sistema transferirá de forma inmediata el monto
+                      configurado en USD (convertido a Bolívares a tasa oficial BCV) a la cuenta
+                      destino del usuario.
                     </p>
                   </div>
                   <div className="flex items-center gap-3 sm:shrink-0">
@@ -955,7 +989,9 @@ export function ProductForm() {
                       <div className="flex flex-col gap-3">
                         <div className="flex gap-2 items-center">
                           <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
+                              $
+                            </span>
                             <Input
                               type="number"
                               value={String(disburseAmountUsd)}

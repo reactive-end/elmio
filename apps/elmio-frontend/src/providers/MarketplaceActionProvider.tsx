@@ -3,7 +3,14 @@
 import React, { createContext, useContext, useReducer, ReactNode, useState, useEffect } from 'react'
 import { LoginForm } from '@/components/organisms/LoginForm/LoginForm'
 
-export type MarketplaceActionType = 'PAYMENT' | 'INSURANCE_FORM' | 'MERCANTIL-QUERY' | 'MERCANTIL-RCV-QUERY' | 'NONE' | string
+export type MarketplaceActionType =
+  | 'PAYMENT'
+  | 'INSURANCE_FORM'
+  | 'MERCANTIL-QUERY'
+  | 'MERCANTIL-RCV-QUERY'
+  | 'MUNDIAL-RCV-QUERY'
+  | 'NONE'
+  | string
 
 interface ActionState {
   isOpen: boolean
@@ -90,7 +97,7 @@ export function MarketplaceActionProvider({ children }: { children: ReactNode })
   return (
     <MarketplaceActionContext.Provider value={{ state, openAction, closeAction }}>
       {children}
-      
+
       {/* Aqui se renderizan dinamicamente los modales / ventanas */}
       {state.isOpen && state.actionType === 'PAYMENT' && (
         <PaymentModal data={state.actionData} onClose={closeAction} />
@@ -104,6 +111,9 @@ export function MarketplaceActionProvider({ children }: { children: ReactNode })
       {state.isOpen && state.actionType === 'MERCANTIL-RCV-QUERY' && (
         <MercantilRcvQueryModal data={state.actionData} onClose={closeAction} />
       )}
+      {state.isOpen && state.actionType === 'MUNDIAL-RCV-QUERY' && (
+        <MundialRcvQueryModal data={state.actionData} onClose={closeAction} />
+      )}
 
       {/* Modal de Login Premium Superpuesta para el Marketplace */}
       {isLoginOpen && (
@@ -111,13 +121,13 @@ export function MarketplaceActionProvider({ children }: { children: ReactNode })
           onClose={() => setIsLoginOpen(false)}
           onSuccess={() => {
             setIsLoginOpen(false)
-            
+
             // 1. Notificar al iframe de la consulta que la sesión ya está activa
             const iframe = document.querySelector('iframe')
             if (iframe && iframe.contentWindow) {
               iframe.contentWindow.postMessage(
                 { source: 'marketplace-auth', type: 'login-success' },
-                window.location.origin
+                window.location.origin,
               )
             }
 
@@ -149,7 +159,10 @@ function PaymentModal({ data, onClose }: { data: any; onClose: () => void }) {
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="text-xl font-bold mb-4">Procesar Pago</h2>
         <p className="text-gray-600 mb-6">Módulo de pago en construcción...</p>
-        <button onClick={onClose} className="rounded-xl px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+        <button
+          onClick={onClose}
+          className="rounded-xl px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+        >
           Cerrar
         </button>
       </div>
@@ -163,7 +176,10 @@ function InsuranceFormModal({ data, onClose }: { data: any; onClose: () => void 
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="text-xl font-bold mb-4">Formulario de Seguros</h2>
         <p className="text-gray-600 mb-6">Módulo de seguros en construcción...</p>
-        <button onClick={onClose} className="rounded-xl px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+        <button
+          onClick={onClose}
+          className="rounded-xl px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+        >
           Cerrar
         </button>
       </div>
@@ -176,7 +192,7 @@ function InsuranceFormModal({ data, onClose }: { data: any; onClose: () => void 
  */
 function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
   const embeddedUrl = `/marketplace/mercantil/consulta?embedded=1&slug=${data?.slug || ''}&productId=${data?.productId || ''}`
-  
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
@@ -215,7 +231,7 @@ function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void
  */
 function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
   const embeddedUrl = `/marketplace/mercantil/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
-  
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
@@ -239,6 +255,45 @@ function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => v
         <div className="flex-1 bg-gray-50">
           <iframe
             title="Consulta Mercantil RCV embebida"
+            src={embeddedUrl}
+            className="h-full w-full border-0"
+            allow="clipboard-write"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Ventana de consulta RCV de La Mundial idéntica a la tienda empresarial.
+ */
+function MundialRcvQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
+  const embeddedUrl = `/marketplace/mundial/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 flex h-[75vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] animate-in fade-in zoom-in duration-200">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+          <div>
+            <h3 className="text-xl font-semibold text-body">La Mundial Seguros RCV</h3>
+            <p className="mt-1 text-sm text-body-muted">
+              Completa el proceso de consulta RCV La Mundial dentro de esta ventana para registrar
+              tu compra.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          >
+            Cerrar
+          </button>
+        </div>
+
+        <div className="flex-1 bg-gray-50">
+          <iframe
+            title="Consulta La Mundial RCV embebida"
             src={embeddedUrl}
             className="h-full w-full border-0"
             allow="clipboard-write"

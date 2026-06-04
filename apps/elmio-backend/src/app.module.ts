@@ -12,6 +12,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { PasswordRecoveryModule } from './modules/password-recovery/password-recovery.module';
 import { BucketModule } from './modules/bucket/bucket.module';
 import { MercantilModule } from './modules/mercantil/mercantil.module';
+import { MundialModule } from './modules/mundial/mundial.module';
 import { PaymentProcessorModule } from './modules/payment-processor/payment-processor.module';
 import { IntegrationApiKeysModule } from './modules/integration-api-keys/integration-api-keys.module';
 import { EnterpriseInterestConfigModule } from './modules/enterprise-interest-config/enterprise-interest-config.module';
@@ -54,6 +55,7 @@ import { RbacModule } from './modules/rbac/rbac.module';
     PasswordRecoveryModule,
     BucketModule,
     MercantilModule,
+    MundialModule,
     PaymentProcessorModule,
     IntegrationApiKeysModule,
     EnterpriseInterestConfigModule,
