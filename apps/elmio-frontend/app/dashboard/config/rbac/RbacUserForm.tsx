@@ -101,9 +101,7 @@ export function RbacUserForm({ mode, user }: RbacUserFormProps) {
       </div>
 
       {error && (
-        <Alert type="error" title="Error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
+        <Alert type="error" message={error} onDismiss={() => setError(null)} />
       )}
 
       <form onSubmit={handleSubmit}>
@@ -128,13 +126,11 @@ export function RbacUserForm({ mode, user }: RbacUserFormProps) {
             </FormField>
 
             <FormField label="Rol" required>
-              <Select value={role} onChange={(e) => setRole(e.target.value)}>
-                {ROLES.map((r) => (
-                  <option key={r.key} value={r.key}>
-                    {r.label}
-                  </option>
-                ))}
-              </Select>
+              <Select
+                value={role}
+                options={ROLES.map((r) => ({ value: r.key, label: r.label }))}
+                onChange={(value) => setRole(value)}
+              />
             </FormField>
 
             {mode === 'create' && (

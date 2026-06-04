@@ -325,11 +325,9 @@ export default function RbacAdminPage() {
       {alert && (
         <Alert
           type={alert.type}
-          title={alert.type === 'success' ? 'Éxito' : 'Error'}
-          onClose={() => setAlert(null)}
-        >
-          {alert.message}
-        </Alert>
+          message={alert.message}
+          onDismiss={() => setAlert(null)}
+        />
       )}
 
       {/* Header */}
@@ -482,9 +480,7 @@ export default function RbacAdminPage() {
 
         {userError && (
           <div className="px-6 py-3">
-            <Alert type="error" title="Error" onClose={() => setUserError(null)}>
-              {userError}
-            </Alert>
+            <Alert type="error" message={userError} onDismiss={() => setUserError(null)} />
           </div>
         )}
 
@@ -618,17 +614,16 @@ export default function RbacAdminPage() {
       </div>
 
       <ConfirmModal
-        open={confirmOpen}
+        isOpen={confirmOpen}
         title="Desactivar usuario"
         description={`¿Estás seguro de desactivar a ${userToDelete?.name}? El usuario no podrá iniciar sesión hasta que sea reactivado.`}
-        confirmLabel="Desactivar"
+        confirmText="Desactivar"
         onConfirm={() => void handleDelete()}
-        onCancel={() => {
+        onClose={() => {
           setConfirmOpen(false)
           setUserToDelete(null)
         }}
-        loading={deleting}
-        variant="danger"
+        isLoading={deleting}
       />
     </div>
   )
