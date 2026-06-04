@@ -653,7 +653,10 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
   }
 
   async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
-    const entity = await this.disbursementRepo.findOne({ where: { loanRequestId } })
+    const entity = await this.disbursementRepo.findOne({
+      where: { loanRequestId },
+      order: { createdAt: 'DESC' },
+    })
     return entity ? this.disbursementToDomain(entity) : null
   }
 
