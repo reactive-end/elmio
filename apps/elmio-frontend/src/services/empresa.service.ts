@@ -852,6 +852,17 @@ export const enterpriseService = {
     return (await res.json()) as DisburseVerifyResponse
   },
 
+  async completeManualDisburse(requestId: string): Promise<{ success: boolean }> {
+    const res = await authedFetch(`/enterprises/requests/${requestId}/disburse/complete-manual`, {
+      method: 'POST',
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al conciliar manualmente.')
+    }
+    return (await res.json()) as { success: boolean }
+  },
+
   // --- Purchases ---
 
   async createPurchase(input: CreatePurchaseInput): Promise<Purchase> {

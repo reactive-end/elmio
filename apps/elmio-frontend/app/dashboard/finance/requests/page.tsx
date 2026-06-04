@@ -29,6 +29,7 @@ export default function FinanceRequestsPage() {
   const [disburseAttempt, setDisburseAttempt] = useState(0)
   const [disburseStep, setDisburseStep] = useState<'idle' | 'pending_options' | 'crediting' | 'verifying' | 'success' | 'failed'>('idle')
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [isManualConfirmOpen, setIsManualConfirmOpen] = useState(false)
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadRequests = async () => {
@@ -76,6 +77,7 @@ export default function FinanceRequestsPage() {
     setDisburseAttempt(0)
     setDisburseStep(req.hasPendingDisbursement ? 'pending_options' : 'idle')
     setIsConfirmOpen(false)
+    setIsManualConfirmOpen(false)
     setIsDisburseModalOpen(true)
   }
 
@@ -221,6 +223,25 @@ export default function FinanceRequestsPage() {
       setDisburseStep('failed')
       setActionLoading(null)
       setDisburseError(err instanceof Error ? err.message : 'Error al verificar.')
+    }
+  }
+
+  const handleCompleteManual = async () => {
+    if (!disburseRequest) return
+    try {
+      setActionLoading(disburseRequest.id)
+      setDisburseError(null)
+      setIsManualConfirmOpen(false)
+
+      await enterpriseService.completeManualDisburse(disburseRequest.id)
+
+      setAlert({ type: 'success', message: `Desembolso conciliado manualmente con exito para ${disburseRequest.collaboratorName}.` })
+      setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
+      setIsDisburseModalOpen(false)
+    } catch (err) {
+      setDisburseError(err instanceof Error ? err.message : 'Error al conciliar manualmente.')
+    } finally {
+      setActionLoading(null)
     }
   }
 
@@ -465,11 +486,19 @@ export default function FinanceRequestsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2 justify-end mt-1">
+                  <div className="flex gap-2 justify-end mt-1 flex-wrap">
+                    <Button
+                      onClick={() => setIsManualConfirmOpen(true)}
+                      variant="ghost"
+                      className="px-3.5 py-2 text-xs font-semibold cursor-pointer border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 rounded-xl"
+                      disabled={actionLoading !== null}
+                    >
+                      Completar Manualmente
+                    </Button>
                     <Button
                       onClick={() => setIsConfirmOpen(true)}
                       variant="ghost"
-                      className="px-3.5 py-2 text-xs font-semibold cursor-pointer border border-amber-200 text-amber-800 bg-white rounded-xl"
+                      className="px-3.5 py-2 text-xs font-semibold cursor-pointer border border-amber-200 text-amber-800 bg-white hover:bg-amber-50 rounded-xl"
                       disabled={actionLoading !== null}
                     >
                       Nuevo Despacho
@@ -528,6 +557,16 @@ export default function FinanceRequestsPage() {
             </div>
 
             <div className="flex gap-3 justify-end mt-2">
+              {disburseStep === 'failed' && (
+                <Button
+                  onClick={() => setIsManualConfirmOpen(true)}
+                  variant="ghost"
+                  className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 rounded-xl"
+                  disabled={actionLoading !== null}
+                >
+                  Completar Manualmente
+                </Button>
+              )}
               {(disburseStep === 'idle' || disburseStep === 'failed') && (
                 <Button type="button" variant="ghost" onClick={() => {
                   setDisburseStep('idle')
@@ -535,6 +574,7 @@ export default function FinanceRequestsPage() {
                   setDisburseProgress(0)
                   setDisburseAttempt(0)
                   setIsConfirmOpen(false)
+                  setIsManualConfirmOpen(false)
                   setIsDisburseModalOpen(false)
                 }} className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl">
                   {disburseStep === 'failed' ? 'Cerrar' : 'Cancelar'}
@@ -569,6 +609,21 @@ export default function FinanceRequestsPage() {
         title="¿Iniciar nuevo despacho?"
         description="¡Advertencia! Al realizar esta acción, podría incurrir en un doble envío de fondos si la transferencia anterior ya fue procesada o liquidada de forma diferida por el banco. ¿Está seguro de que desea forzar un nuevo despacho de capital?"
         confirmText="Sí, forzar despacho"
+        cancelText="Cancelar"
+        isLoading={actionLoading === disburseRequest?.id}
+      />
+
+      {/* Modal de Confirmación de Conciliación Manual */}
+      <ConfirmModal
+        isOpen={isManualConfirmOpen}
+        onClose={() => setIsManualConfirmOpen(false)}
+        onConfirm={async () => {
+          setIsManualConfirmOpen(false)
+          await handleCompleteManual()
+        }}
+        title="¿Conciliar transacción manualmente?"
+        description="¡Atención! Si completa esta transacción de forma manual en el sistema y los fondos no llegaron efectivamente a la cuenta del beneficiario, este deberá volver a realizar la solicitud y ya no se podrá verificar ni auditar esta transferencia interbancaria. ¿Está seguro de proceder?"
+        confirmText="Sí, conciliar manualmente"
         cancelText="Cancelar"
         isLoading={actionLoading === disburseRequest?.id}
       />

@@ -305,6 +305,44 @@ export class ManageDisburseUseCase {
   }
 
   /**
+   * Completa manualmente un desembolso pendiente, cambiándolo a success
+   * y marcando la solicitud como disbursed.
+   * Se utiliza cuando la transacción se realizó exitosamente pero no se
+   * puede verificar por fallas con el proveedor/banco.
+   * @param requestId ID de la solicitud de préstamo.
+   */
+  async completeManual(requestId: string): Promise<{ success: boolean }> {
+    const disbursement = await this.repository.findDisbursementByLoanRequestId(requestId)
+    if (!disbursement) {
+      throw new NotFoundException('No hay un desembolso registrado para esta solicitud.')
+    }
+
+    if (disbursement.status === 'success') {
+      return { success: true }
+    }
+
+    disbursement.status = 'success'
+    await this.repository.saveDisbursement(disbursement)
+
+    const request = await this.repository.findRequestById(requestId)
+    if (request) {
+      request.status = 'disbursed'
+      request.updatedAt = new Date().toISOString()
+      await this.repository.saveRequest(request)
+
+      await this.savePurchaseForDisbursement({
+        requestId,
+        amountUsd: disbursement.amountUsd,
+        amountVes: disbursement.amountBs,
+        exchangeRate: disbursement.exchangeRate,
+        disbursementId: disbursement.id,
+      })
+    }
+
+    return { success: true }
+  }
+
+  /**
    * Construye un objeto Disbursement con los campos comunes.
    */
   private buildDisbursement(

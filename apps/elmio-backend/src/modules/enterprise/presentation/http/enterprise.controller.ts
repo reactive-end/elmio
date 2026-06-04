@@ -304,6 +304,16 @@ export class EnterpriseController {
     return this.manageDisburse.verifyDisburse(reqId);
   }
 
+  /** POST /api/enterprises/requests/:reqId/disburse/complete-manual - Finanzas concilia y completa el desembolso manualmente. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('requests/:reqId/disburse/complete-manual')
+  async completeManualDisburseRequest(
+    @Param('reqId') reqId: string,
+  ) {
+    return this.manageDisburse.completeManual(reqId);
+  }
+
   // --- Purchases ---
 
   /** POST /api/enterprises/purchases - Crea una compra/orden desde el checkout del marketplace. */
