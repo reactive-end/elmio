@@ -183,6 +183,27 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
     window.location.href = '/login'
   }
 
+  if (mustChangePassword) {
+    return (
+      <div className="relative flex h-dvh w-full overflow-hidden bg-gray-50">
+        {/* Boton flotante premium de Cerrar Sesion */}
+        <div className="absolute top-4 right-4 z-50">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-body hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 transition-all duration-200 shadow-sm shadow-black/5 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Cerrar sesion</span>
+          </button>
+        </div>
+
+        <main className="flex-1 w-full h-full bg-gradient-to-br from-gray-50 to-surface-muted" />
+        <ChangePasswordModal onPasswordChanged={handlePasswordChanged} />
+      </div>
+    )
+  }
+
   if (mustCompleteOnboarding && (pathname === '/dashboard/enterprise/onboarding' || pathname === '/dashboard/person/onboarding')) {
     return (
       <div className="relative flex h-dvh w-full overflow-hidden bg-gray-50">
@@ -201,7 +222,6 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
         <main className="flex-1 overflow-y-auto w-full h-full p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-surface-muted">
           {children}
         </main>
-        {mustChangePassword && <ChangePasswordModal onPasswordChanged={handlePasswordChanged} />}
       </div>
     )
   }
@@ -251,7 +271,6 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 w-full">{children}</main>
       </div>
-      {mustChangePassword && <ChangePasswordModal onPasswordChanged={handlePasswordChanged} />}
     </div>
   )
 }

@@ -104,7 +104,7 @@ export class FinanceUsersAdminController {
     newUser.countryCode = body.countryCode.trim();
     newUser.phone = body.phone.trim();
     newUser.createdAt = new Date().toISOString();
-    newUser.requirePasswordChange = false;
+    newUser.requirePasswordChange = true;
 
     const saved = await this.userRepo.save(newUser);
     const { passwordHash, ...rest } = saved;
