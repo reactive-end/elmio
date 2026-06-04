@@ -329,6 +329,7 @@ export interface LoanRequest {
   updatedAt: string
   productId: string | null
   requiresManualDisburse?: boolean
+  hasPendingDisbursement?: boolean
 }
 
 export interface DisburseResponse {
@@ -828,9 +829,10 @@ export const enterpriseService = {
     return (await res.json()) as LoanRequest
   },
 
-  async disburseRequest(requestId: string): Promise<DisburseResponse> {
+  async disburseRequest(requestId: string, force?: boolean): Promise<DisburseResponse> {
     const res = await authedFetch(`/enterprises/requests/${requestId}/disburse`, {
       method: 'POST',
+      body: JSON.stringify({ force }),
     })
     if (!res.ok) {
       const err = (await res.json().catch(() => ({}))) as { message?: string }

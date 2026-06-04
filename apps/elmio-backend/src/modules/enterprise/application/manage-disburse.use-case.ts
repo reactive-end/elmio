@@ -56,7 +56,7 @@ export class ManageDisburseUseCase {
    * @param dto Datos del usuario de finanzas que ejecuta.
    * @returns Resultado de la fase de inicio.
    */
-  async execute(requestId: string, dto: DisburseRequestDto): Promise<DisburseExecuteResult> {
+  async execute(requestId: string, dto: DisburseRequestDto, force?: boolean): Promise<DisburseExecuteResult> {
     const request = await this.repository.findRequestById(requestId)
     if (!request) throw new NotFoundException('Solicitud no encontrada.')
 
@@ -68,9 +68,15 @@ export class ManageDisburseUseCase {
 
     // Si ya hay un desembolso pendiente para esta solicitud, reanudar sin
     // volver a llamar a R4 (evita credito duplicado si el usuario reabre la UI).
+    // Si force es true, marcamos el pendiente anterior como fallido y procedemos a un nuevo intento.
     const existing = await this.repository.findDisbursementByLoanRequestId(requestId)
     if (existing && existing.status === 'pending') {
-      return { status: 'pending', requestId }
+      if (force) {
+        existing.status = 'failed'
+        await this.repository.saveDisbursement(existing)
+      } else {
+        return { status: 'pending', requestId }
+      }
     }
 
     // Buscar perfil del colaborador

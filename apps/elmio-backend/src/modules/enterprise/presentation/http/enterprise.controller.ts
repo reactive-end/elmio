@@ -247,12 +247,23 @@ export class EnterpriseController {
       products.filter((p): p is Product => p !== null).map((p) => [p.id, p]),
     );
 
+    // Buscar si hay desembolsos asociados
+    const disbursements = await Promise.all(
+      requests.map((r: LoanRequest) => this.enterpriseRepository.findDisbursementByLoanRequestId(r.id))
+    );
+    const disbursementMap = new Map<string, any>(
+      disbursements.filter((d): d is any => d !== null).map((d) => [d.loanRequestId, d])
+    );
+
     return requests.map((req: LoanRequest) => {
       const product = req.productId ? productMap.get(req.productId) : undefined;
       const requiresManualDisburse =
         product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'manual_disburse' && a.active) ?? false;
 
-      return { ...req, requiresManualDisburse };
+      const disbursement = disbursementMap.get(req.id);
+      const hasPendingDisbursement = disbursement?.status === 'pending';
+
+      return { ...req, requiresManualDisburse, hasPendingDisbursement };
     });
   }
 
@@ -274,12 +285,13 @@ export class EnterpriseController {
   async disburseRequest(
     @Req() req: Request,
     @Param('reqId') reqId: string,
+    @Body('force') force?: boolean,
   ) {
     const session = req.session!
     return this.manageDisburse.execute(reqId, {
       financeUserId: session.userId,
       financeUserName: session.email || 'Usuario Finanzas',
-    });
+    }, force);
   }
 
   /** POST /api/enterprises/requests/:reqId/disburse/verify - Verifica el resultado de un desembolso pendiente (R4 AC00). */

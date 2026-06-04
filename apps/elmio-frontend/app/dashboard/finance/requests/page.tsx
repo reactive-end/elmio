@@ -7,6 +7,7 @@ import { Alert } from '@/components/atoms/Alert/Alert'
 import { Input } from '@/components/atoms/Input/Input'
 import { FormField } from '@/components/molecules/FormField/FormField'
 import { enterpriseService, type LoanRequest } from '@/src/services/empresa.service'
+import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
 
 export default function FinanceRequestsPage() {
   const [requests, setRequests] = useState<LoanRequest[]>([])
@@ -26,7 +27,8 @@ export default function FinanceRequestsPage() {
   const [disburseError, setDisburseError] = useState<string | null>(null)
   const [disburseProgress, setDisburseProgress] = useState(0)
   const [disburseAttempt, setDisburseAttempt] = useState(0)
-  const [disburseStep, setDisburseStep] = useState<'idle' | 'crediting' | 'verifying' | 'success' | 'failed'>('idle')
+  const [disburseStep, setDisburseStep] = useState<'idle' | 'pending_options' | 'crediting' | 'verifying' | 'success' | 'failed'>('idle')
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadRequests = async () => {
@@ -72,11 +74,12 @@ export default function FinanceRequestsPage() {
     setDisburseError(null)
     setDisburseProgress(0)
     setDisburseAttempt(0)
-    setDisburseStep('idle')
+    setDisburseStep(req.hasPendingDisbursement ? 'pending_options' : 'idle')
+    setIsConfirmOpen(false)
     setIsDisburseModalOpen(true)
   }
 
-  const handleDisburse = async () => {
+  const handleDisburse = async (force?: boolean) => {
     if (!disburseRequest) return
     try {
       setActionLoading(disburseRequest.id)
@@ -84,10 +87,11 @@ export default function FinanceRequestsPage() {
       setDisburseStep('crediting')
       setDisburseProgress(0)
       setDisburseAttempt(1)
+      setIsConfirmOpen(false)
 
       // Fase 1: Llamada inicial a /disburse. R4 puede responder ACCP (exito
       // inmediato) o AC00 (pendiente, requiere verificacion).
-      const result = await enterpriseService.disburseRequest(disburseRequest.id)
+      const result = await enterpriseService.disburseRequest(disburseRequest.id, force)
 
       if (result.status === 'disbursed') {
         if (progressRef.current) clearInterval(progressRef.current)
@@ -148,11 +152,7 @@ export default function FinanceRequestsPage() {
       }
 
       throw new Error(
-        `Se agotaron los intentos de verificacion. ` +
-          (lastR4Code && lastR4Code !== 'AC00'
-            ? `R4 devolvio codigo: ${lastR4Code}.`
-            : 'R4 sigue en espera (AC00).') +
-          ` Intente nuevamente mas tarde.`,
+        `No hemos podido verificar el estado de esta transaccion, intenta luego.`
       )
     } catch (err) {
       if (progressRef.current) clearInterval(progressRef.current)
@@ -160,6 +160,67 @@ export default function FinanceRequestsPage() {
       setDisburseStep('failed')
       setActionLoading(null)
       setDisburseError(err instanceof Error ? err.message : 'Error al desembolsar.')
+      
+      // Colocar la solicitud en standby localmente con hasPendingDisbursement = true
+      setRequests((prev) =>
+        prev.map((r) => (r.id === disburseRequest.id ? { ...r, hasPendingDisbursement: true } : r))
+      )
+    }
+  }
+
+  const handleVerifyOnly = async () => {
+    if (!disburseRequest) return
+    try {
+      setActionLoading(disburseRequest.id)
+      setDisburseError(null)
+      setDisburseStep('verifying')
+      setDisburseProgress(0)
+      setDisburseAttempt(1)
+
+      // Ejecutar hasta 3 intentos de consulta con verifyDisburse, con 60s entre intentos
+      const RETRY_MS = 60_000
+      const TOTAL_MS = 3 * RETRY_MS
+      const startTime = Date.now()
+      progressRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime
+        const pct = Math.min(99, Math.round((elapsed / TOTAL_MS) * 100))
+        setDisburseProgress(pct)
+      }, 500)
+
+      let lastR4Code: string | null = null
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        if (attempt > 1) {
+          await new Promise((r) => setTimeout(r, RETRY_MS))
+        }
+        setDisburseAttempt(attempt)
+
+        const verifyResult = await enterpriseService.verifyDisburse(disburseRequest.id)
+
+        if (verifyResult.status === 'disbursed') {
+          if (progressRef.current) clearInterval(progressRef.current)
+          setDisburseProgress(100)
+          setDisburseStep('success')
+          setActionLoading(null)
+          await new Promise((r) => setTimeout(r, 1000))
+          setAlert({ type: 'success', message: `Desembolso ejecutado con exito para ${disburseRequest.collaboratorName}.` })
+          setRequests((prev) => prev.filter((r) => r.id !== disburseRequest.id))
+          setIsDisburseModalOpen(false)
+          return
+        }
+
+        lastR4Code = verifyResult.lastCode ?? null
+      }
+
+      throw new Error(
+        `No hemos podido verificar el estado de esta transaccion, intenta luego.`
+      )
+    } catch (err) {
+      if (progressRef.current) clearInterval(progressRef.current)
+      setDisburseProgress(100)
+      setDisburseStep('failed')
+      setActionLoading(null)
+      setDisburseError(err instanceof Error ? err.message : 'Error al verificar.')
     }
   }
 
@@ -286,15 +347,27 @@ export default function FinanceRequestsPage() {
                           </Button>
                         )}
                         {req.requiresManualDisburse && (
-                          <Button
-                            onClick={() => openDisburseModal(req)}
-                            variant="primary"
-                            className="bg-blue-600 hover:bg-blue-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
-                            disabled={actionLoading !== null}
-                          >
-                            <Send className="w-3.5 h-3.5" />
-                            Despachar
-                          </Button>
+                          req.hasPendingDisbursement ? (
+                            <Button
+                              onClick={() => openDisburseModal(req)}
+                              variant="primary"
+                              className="bg-amber-500 hover:bg-amber-600 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
+                              disabled={actionLoading !== null}
+                            >
+                              <Clock className="w-3.5 h-3.5" />
+                              Verificar
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => openDisburseModal(req)}
+                              variant="primary"
+                              className="bg-blue-600 hover:bg-blue-700 border-none px-3.5 py-2 flex items-center gap-1.5 text-xs text-white font-semibold cursor-pointer shadow-sm rounded-xl"
+                              disabled={actionLoading !== null}
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              Despachar
+                            </Button>
+                          )
                         )}
                         <Button
                           onClick={() => openRejectModal(req.id)}
@@ -350,6 +423,8 @@ export default function FinanceRequestsPage() {
                   <Check className="text-green-600 w-5 h-5" />
                 ) : disburseStep === 'failed' ? (
                   <AlertCircle className="text-red-600 w-5 h-5" />
+                ) : disburseStep === 'pending_options' ? (
+                  <Clock className="text-amber-500 w-5 h-5" />
                 ) : (
                   <Send className="text-blue-600 w-5 h-5" />
                 )}
@@ -358,28 +433,62 @@ export default function FinanceRequestsPage() {
                     ? 'Desembolso Completado'
                     : disburseStep === 'failed'
                     ? 'Desembolso Fallido'
+                    : disburseStep === 'pending_options'
+                    ? 'Verificación Pendiente'
                     : 'Despachar Desembolso'}
                 </h3>
               </div>
-              {(disburseStep === 'success' || disburseStep === 'failed') && (
+              {(disburseStep === 'success' || disburseStep === 'failed' || disburseStep === 'pending_options') && (
                 <button onClick={() => {
-                  if (disburseStep === 'success') {
-                    setIsDisburseModalOpen(false)
-                  } else {
-                    setDisburseStep('idle')
-                    setDisburseError(null)
-                    setDisburseProgress(0)
-                    setDisburseAttempt(0)
-                    setIsDisburseModalOpen(false)
-                  }
+                  setDisburseStep('idle')
+                  setDisburseError(null)
+                  setDisburseProgress(0)
+                  setDisburseAttempt(0)
+                  setIsConfirmOpen(false)
+                  setIsDisburseModalOpen(false)
                 }} className="text-gray-400 hover:text-gray-600">✕</button>
               )}
             </div>
 
             {disburseError && <Alert type="error" message={disburseError} />}
 
+            {/* Opciones cuando hay transacciones pendientes */}
+            {disburseStep === 'pending_options' && (
+              <div className="flex flex-col gap-4">
+                <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 flex flex-col gap-3 animate-fade-in">
+                  <div className="flex items-start gap-2.5">
+                    <Clock className="text-amber-600 w-5 h-5 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-bold text-amber-800">Transacción en Proceso</h4>
+                      <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                        Esta solicitud ya posee un proceso de desembolso interbancario diferido/pendiente en R4 que no pudo ser conciliado en los intentos iniciales.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end mt-1">
+                    <Button
+                      onClick={() => setIsConfirmOpen(true)}
+                      variant="ghost"
+                      className="px-3.5 py-2 text-xs font-semibold cursor-pointer border border-amber-200 text-amber-800 bg-white rounded-xl"
+                      disabled={actionLoading !== null}
+                    >
+                      Nuevo Despacho
+                    </Button>
+                    <Button
+                      onClick={() => void handleVerifyOnly()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border-none px-3.5 py-2 rounded-xl cursor-pointer flex items-center gap-1.5"
+                      disabled={actionLoading !== null}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Verificar Estado
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Barra de progreso */}
-            {disburseStep !== 'idle' && disburseStep !== 'success' && disburseStep !== 'failed' && (
+            {disburseStep !== 'idle' && disburseStep !== 'pending_options' && disburseStep !== 'success' && disburseStep !== 'failed' && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500 flex items-center gap-1.5">
@@ -425,6 +534,7 @@ export default function FinanceRequestsPage() {
                   setDisburseError(null)
                   setDisburseProgress(0)
                   setDisburseAttempt(0)
+                  setIsConfirmOpen(false)
                   setIsDisburseModalOpen(false)
                 }} className="px-4 py-2.5 text-xs font-semibold cursor-pointer border border-gray-100 rounded-xl">
                   {disburseStep === 'failed' ? 'Cerrar' : 'Cancelar'}
@@ -434,7 +544,7 @@ export default function FinanceRequestsPage() {
                 <Button onClick={() => setIsDisburseModalOpen(false)} className="bg-green-600 hover:bg-green-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer">
                   <Check className="w-3.5 h-3.5" /> Cerrar
                 </Button>
-              ) : disburseStep !== 'failed' && (
+              ) : (disburseStep !== 'failed' && disburseStep !== 'pending_options') && (
                 <Button onClick={() => void handleDisburse()} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border-none px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-2" disabled={disburseStep !== 'idle'}>
                   {disburseStep !== 'idle' ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Procesando...</>
@@ -447,6 +557,21 @@ export default function FinanceRequestsPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmación de Doble Envío */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={async () => {
+          setIsConfirmOpen(false)
+          await handleDisburse(true)
+        }}
+        title="¿Iniciar nuevo despacho?"
+        description="¡Advertencia! Al realizar esta acción, podría incurrir en un doble envío de fondos si la transferencia anterior ya fue procesada o liquidada de forma diferida por el banco. ¿Está seguro de que desea forzar un nuevo despacho de capital?"
+        confirmText="Sí, forzar despacho"
+        cancelText="Cancelar"
+        isLoading={actionLoading === disburseRequest?.id}
+      />
     </div>
   )
 }
