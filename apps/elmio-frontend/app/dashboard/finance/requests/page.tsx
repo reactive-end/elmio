@@ -85,16 +85,22 @@ export default function FinanceRequestsPage() {
       setDisburseProgress(0)
       setDisburseAttempt(1)
 
-      // Barra de progreso estimada: 3 intentos x 60s = 180s total
+      // Barra de progreso estimada: 120s espera inicial + 2 reintentos x 60s = 240s total
+      const FIRST_WAIT_MS = 120_000
+      const RETRY_MS = 60_000
+      const TOTAL_MS = FIRST_WAIT_MS + 2 * RETRY_MS
       const startTime = Date.now()
-      const totalMs = 180_000
       progressRef.current = setInterval(() => {
         const elapsed = Date.now() - startTime
-        const pct = Math.min(99, Math.round((elapsed / totalMs) * 100))
-        const attempt = Math.min(3, Math.floor(elapsed / 60_000) + 1)
+        const pct = Math.min(99, Math.round((elapsed / TOTAL_MS) * 100))
+
+        if (elapsed >= FIRST_WAIT_MS) {
+          setDisburseStep('verifying')
+          const retryAttempt = Math.floor((elapsed - FIRST_WAIT_MS) / RETRY_MS) + 1
+          setDisburseAttempt(Math.min(3, retryAttempt))
+        }
+
         setDisburseProgress(pct)
-        setDisburseAttempt(attempt)
-        if (attempt > 1) setDisburseStep('verifying')
       }, 500)
 
       await enterpriseService.disburseRequest(disburseRequest.id)

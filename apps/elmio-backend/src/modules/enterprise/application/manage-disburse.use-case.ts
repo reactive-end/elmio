@@ -100,24 +100,33 @@ export class ManageDisburseUseCase {
     } as any)
 
     let definitiveCode = creditResult.code
+    let bankRef: string | null = creditResult.reference || null
 
     // Si R4 responde AC00 (Operacion en Espera de Respuesta del Receptor),
     // hacer polling para obtener el estado definitivo.
-    if (creditResult.code === 'AC00' && creditResult.reference) {
-      const MAX_POLL_ATTEMPTS = 3
-      const POLL_INTERVAL_MS = 60000
+    // El tiempo minimo de la transaccion R4 es de 120s antes de la primera consulta.
+    if (creditResult.code === 'AC00' && creditResult.id) {
+      const FIRST_DELAY_MS = 120_000
+      const RETRY_DELAY_MS = 60_000
+      const MAX_ATTEMPTS = 3
 
-      for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+      // Primera espera: 120s (tiempo minimo de la transaccion R4)
+      await new Promise((resolve) => setTimeout(resolve, FIRST_DELAY_MS))
+
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        if (attempt > 0) {
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+        }
 
         try {
           const statusResult = await this.paymentProcessorService.queryOperationR4({
             companyAccountId: 'GLOBAL_R4_FALLBACK',
-            reference: creditResult.reference,
+            reference: creditResult.reference || creditResult.id,
           })
 
           if (statusResult.success) {
             definitiveCode = 'ACCP'
+            bankRef = statusResult.reference || null
             break
           }
         } catch {
@@ -143,7 +152,7 @@ export class ManageDisburseUseCase {
       phoneNumber: primaryAccount.phoneNumber,
       documentId: primaryAccount.documentId,
       concept,
-      bankReference: creditResult.reference || null,
+      bankReference: bankRef,
       bankOperationId: creditResult.id || null,
       status: isSuccess ? 'success' : 'failed',
       createdAt: new Date().toISOString(),
