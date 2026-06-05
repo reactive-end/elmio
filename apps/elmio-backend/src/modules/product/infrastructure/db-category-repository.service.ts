@@ -64,6 +64,10 @@ export class DbCategoryRepositoryService implements CategoryRepositoryPort {
 
   async delete(id: string): Promise<boolean> {
     const result = await this.repo.delete(id);
-    return result.affected !== undefined && result.affected !== null && result.affected > 0;
+    return (
+      result.affected !== undefined &&
+      result.affected !== null &&
+      result.affected > 0
+    );
   }
 }

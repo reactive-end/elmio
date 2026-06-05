@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Post,
-  Sse,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Inject, Post, Sse, UseGuards } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { AuthGuard } from '../../auth/presentation/guards/auth.guard';
 import { RolesGuard } from '../../auth/presentation/guards/roles.guard';
@@ -17,6 +10,8 @@ import {
 } from '../domain/ports/whatsapp-client.port';
 import type { WhatsAppStatusInfo } from '../domain/types/whatsapp-status-info';
 
+import { RbacGroup } from '../../auth/presentation/guards/rbac-group.decorator';
+
 /**
  * Controlador de administracion de WhatsApp.
  * Solo accesible por usuarios con rol ADMIN.
@@ -25,6 +20,7 @@ import type { WhatsAppStatusInfo } from '../domain/types/whatsapp-status-info';
 @Controller('whatsapp')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@RbacGroup('config-whatsapp')
 export class WhatsAppAdminController {
   constructor(
     @Inject(WHATSAPP_CLIENT_PORT)

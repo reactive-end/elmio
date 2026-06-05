@@ -58,34 +58,148 @@ export class MigrationController {
       row.push(currentField);
       result.push(row);
     }
-    return result.filter(r => r.length > 0 && r.some(cell => cell.trim() !== ''));
+    return result.filter(
+      (r) => r.length > 0 && r.some((cell) => cell.trim() !== ''),
+    );
   }
 
   @Post('run')
   @HttpCode(HttpStatus.OK)
   async runMigration() {
-    this.logger.log('Iniciando proceso de migración de usuarios y marketplaces viejos...');
+    this.logger.log(
+      'Iniciando proceso de migración de usuarios y marketplaces viejos...',
+    );
 
     const rootDir = process.cwd();
-    
+
     // Lista de posibles ubicaciones de los archivos CSV (desarrollo y compilado en dist)
     const possibleUsersPaths = [
-      path.join(rootDir, 'src', 'shared', 'database', 'migrations', 'data', 'usuarios.csv'),
-      path.join(rootDir, 'dist', 'shared', 'database', 'migrations', 'data', 'usuarios.csv'),
-      path.join(rootDir, 'apps', 'elmio-backend', 'src', 'shared', 'database', 'migrations', 'data', 'usuarios.csv'),
-      path.join(rootDir, 'apps', 'elmio-backend', 'dist', 'shared', 'database', 'migrations', 'data', 'usuarios.csv'),
-      path.join(__dirname, '..', '..', '..', 'shared', 'database', 'migrations', 'data', 'usuarios.csv'),
-      path.join(__dirname, '..', '..', 'shared', 'database', 'migrations', 'data', 'usuarios.csv'),
+      path.join(
+        rootDir,
+        'src',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'usuarios.csv',
+      ),
+      path.join(
+        rootDir,
+        'dist',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'usuarios.csv',
+      ),
+      path.join(
+        rootDir,
+        'apps',
+        'elmio-backend',
+        'src',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'usuarios.csv',
+      ),
+      path.join(
+        rootDir,
+        'apps',
+        'elmio-backend',
+        'dist',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'usuarios.csv',
+      ),
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'usuarios.csv',
+      ),
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'usuarios.csv',
+      ),
       path.join(rootDir, 'usuarios.csv'), // Fallback clásico
     ];
 
     const possibleMarketplacesPaths = [
-      path.join(rootDir, 'src', 'shared', 'database', 'migrations', 'data', 'marketplaces.csv'),
-      path.join(rootDir, 'dist', 'shared', 'database', 'migrations', 'data', 'marketplaces.csv'),
-      path.join(rootDir, 'apps', 'elmio-backend', 'src', 'shared', 'database', 'migrations', 'data', 'marketplaces.csv'),
-      path.join(rootDir, 'apps', 'elmio-backend', 'dist', 'shared', 'database', 'migrations', 'data', 'marketplaces.csv'),
-      path.join(__dirname, '..', '..', '..', 'shared', 'database', 'migrations', 'data', 'marketplaces.csv'),
-      path.join(__dirname, '..', '..', 'shared', 'database', 'migrations', 'data', 'marketplaces.csv'),
+      path.join(
+        rootDir,
+        'src',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'marketplaces.csv',
+      ),
+      path.join(
+        rootDir,
+        'dist',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'marketplaces.csv',
+      ),
+      path.join(
+        rootDir,
+        'apps',
+        'elmio-backend',
+        'src',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'marketplaces.csv',
+      ),
+      path.join(
+        rootDir,
+        'apps',
+        'elmio-backend',
+        'dist',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'marketplaces.csv',
+      ),
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'marketplaces.csv',
+      ),
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'shared',
+        'database',
+        'migrations',
+        'data',
+        'marketplaces.csv',
+      ),
       path.join(rootDir, 'marketplaces.csv'), // Fallback clásico
     ];
 
@@ -107,10 +221,14 @@ export class MigrationController {
     }
 
     if (!usersCsvPath) {
-      throw new Error(`El archivo usuarios.csv no se encuentra en las rutas intentadas: ${JSON.stringify(possibleUsersPaths, null, 2)}`);
+      throw new Error(
+        `El archivo usuarios.csv no se encuentra en las rutas intentadas: ${JSON.stringify(possibleUsersPaths, null, 2)}`,
+      );
     }
     if (!marketplacesCsvPath) {
-      throw new Error(`El archivo marketplaces.csv no se encuentra en las rutas intentadas: ${JSON.stringify(possibleMarketplacesPaths, null, 2)}`);
+      throw new Error(
+        `El archivo marketplaces.csv no se encuentra en las rutas intentadas: ${JSON.stringify(possibleMarketplacesPaths, null, 2)}`,
+      );
     }
 
     this.logger.log(`Archivos CSV encontrados con éxito.`);
@@ -123,7 +241,9 @@ export class MigrationController {
     const credentialsPath = process.env.GCS_CREDENTIALS_JSON_PATH?.trim();
 
     if (!bucketName) {
-      throw new Error('La variable de entorno GCS_BUCKET_NAME no está configurada.');
+      throw new Error(
+        'La variable de entorno GCS_BUCKET_NAME no está configurada.',
+      );
     }
 
     let storageClient: Storage;
@@ -157,9 +277,14 @@ export class MigrationController {
     const marketplacesHeader = marketplacesRows.shift();
 
     this.logger.log(`Total filas de usuarios a procesar: ${usersRows.length}`);
-    this.logger.log(`Total filas de marketplaces a procesar: ${marketplacesRows.length}`);
+    this.logger.log(
+      `Total filas de marketplaces a procesar: ${marketplacesRows.length}`,
+    );
 
-    const oldToNewUserIdMap: Record<string, { newUserId: string; slug: string }> = {};
+    const oldToNewUserIdMap: Record<
+      string,
+      { newUserId: string; slug: string }
+    > = {};
     const stats = {
       usersProcessed: 0,
       usersMigrated: 0,
@@ -179,25 +304,34 @@ export class MigrationController {
           slugRaw,
           countryCode,
           phone,
-          emailRaw,
-          , // passwordHash vieja (ignorar)
-          , // isActive
-          , // role_id
+          emailRaw, // passwordHash vieja (ignorar)
+          ,
+          ,
+          ,
+          // isActive
+          // role_id
           createdAtRaw,
         ] = row;
 
         const slug = slugRaw?.trim();
         if (!slug || slug.toLowerCase() === 'null') {
-          this.logger.log(`Ignorando usuario ${name} porque no tiene un slug válido.`);
+          this.logger.log(
+            `Ignorando usuario ${name} porque no tiene un slug válido.`,
+          );
           continue;
         }
 
         const cleanSlug = slug.toLowerCase();
-        const email = emailRaw && emailRaw.toLowerCase() !== 'null' ? emailRaw.trim().toLowerCase() : `${cleanSlug}@elmio.app`;
+        const email =
+          emailRaw && emailRaw.toLowerCase() !== 'null'
+            ? emailRaw.trim().toLowerCase()
+            : `${cleanSlug}@elmio.app`;
 
         // Verificar si ya existe en la nueva DB
-        let existingUser = await userRepo.findOne({ where: { slug: cleanSlug } });
-        let newUserId = existingUser ? existingUser.id : randomUUID();
+        const existingUser = await userRepo.findOne({
+          where: { slug: cleanSlug },
+        });
+        const newUserId = existingUser ? existingUser.id : randomUUID();
 
         if (!existingUser) {
           // El hash para la contraseña Elmio.2026
@@ -211,9 +345,13 @@ export class MigrationController {
           user.role = UserRole.ALLIED;
           user.owner = cleanSlug;
           user.slug = cleanSlug;
-          user.countryCode = countryCode && countryCode !== 'NULL' ? countryCode.trim() : '+58';
+          user.countryCode =
+            countryCode && countryCode !== 'NULL' ? countryCode.trim() : '+58';
           user.phone = phone && phone !== 'NULL' ? phone.trim() : '';
-          user.createdAt = createdAtRaw && createdAtRaw !== 'NULL' ? new Date(createdAtRaw.trim()).toISOString() : new Date().toISOString();
+          user.createdAt =
+            createdAtRaw && createdAtRaw !== 'NULL'
+              ? new Date(createdAtRaw.trim()).toISOString()
+              : new Date().toISOString();
           user.requirePasswordChange = false;
 
           await userRepo.save(user);
@@ -276,9 +414,13 @@ export class MigrationController {
 
           await profileRepo.save(profile);
           stats.usersMigrated++;
-          this.logger.log(`Usuario y Perfil creados con éxito para aliado: ${user.name} (${cleanSlug})`);
+          this.logger.log(
+            `Usuario y Perfil creados con éxito para aliado: ${user.name} (${cleanSlug})`,
+          );
         } else {
-          this.logger.log(`Usuario aliado ya existe en la DB: ${existingUser.name} (${cleanSlug}). Reutilizando su ID.`);
+          this.logger.log(
+            `Usuario aliado ya existe en la DB: ${existingUser.name} (${cleanSlug}). Reutilizando su ID.`,
+          );
         }
 
         oldToNewUserIdMap[oldId] = { newUserId, slug: cleanSlug };
@@ -295,35 +437,48 @@ export class MigrationController {
         stats.marketplacesProcessed++;
         const [
           oldMarketplaceId,
-          nameRaw,
-          , // isActive
-          sectionsRaw,
-          , // whatsapp
-          , // cart
-          , // login
-          , // createdAt
-          , // updatedAt
+          nameRaw, // isActive
+          ,
+          sectionsRaw, // whatsapp
+          ,
+          ,
+          ,
+          ,
+          ,
+          // cart
+          // login
+          // createdAt
+          // updatedAt
           ownerIdRaw,
         ] = row;
 
         const oldOwnerId = ownerIdRaw?.trim();
         if (!oldOwnerId || oldOwnerId.toLowerCase() === 'null') {
-          this.logger.log(`Ignorando marketplace "${nameRaw}" porque no tiene ownerId asociado (es el de la empresa vieja).`);
+          this.logger.log(
+            `Ignorando marketplace "${nameRaw}" porque no tiene ownerId asociado (es el de la empresa vieja).`,
+          );
           continue;
         }
 
         const ownerData = oldToNewUserIdMap[oldOwnerId];
         if (!ownerData) {
-          this.logger.log(`Ignorando marketplace "${nameRaw}" porque su owner viejo ${oldOwnerId} no fue migrado (no tiene slug válido).`);
+          this.logger.log(
+            `Ignorando marketplace "${nameRaw}" porque su owner viejo ${oldOwnerId} no fue migrado (no tiene slug válido).`,
+          );
           continue;
         }
 
         const { newUserId, slug: slugAliado } = ownerData;
 
         // Limpiar el nombre quitando "(importada)" globalmente e insensible
-        const cleanName = nameRaw.replace(/\(importada\)/gi, '').replace(/\s+/g, ' ').trim();
+        const cleanName = nameRaw
+          .replace(/\(importada\)/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
 
-        this.logger.log(`Migrando marketplace "${cleanName}" para el aliado "${slugAliado}"...`);
+        this.logger.log(
+          `Migrando marketplace "${cleanName}" para el aliado "${slugAliado}"...`,
+        );
 
         // Parsear sections
         let sections: any[] = [];
@@ -331,7 +486,9 @@ export class MigrationController {
           try {
             sections = JSON.parse(sectionsRaw);
           } catch (e) {
-            this.logger.warn(`No se pudo parsear el JSON de secciones del marketplace "${cleanName}": ${(e as Error).message}`);
+            this.logger.warn(
+              `No se pudo parsear el JSON de secciones del marketplace "${cleanName}": ${(e as Error).message}`,
+            );
           }
         }
 
@@ -340,7 +497,9 @@ export class MigrationController {
           if (typeof obj === 'string') {
             if (obj.includes('/marketplace/')) {
               // Extraer la ruta física en el bucket
-              const match = obj.match(/https:\/\/storage\.googleapis\.com\/[^\/]+\/(.+)/);
+              const match = obj.match(
+                /https:\/\/storage\.googleapis\.com\/[^\/]+\/(.+)/,
+              );
               if (match) {
                 const oldPathInBucket = decodeURIComponent(match[1]);
 
@@ -351,7 +510,9 @@ export class MigrationController {
                     const [exists] = await sourceFile.exists();
 
                     if (!exists) {
-                      this.logger.warn(`Imagen física no encontrada en el bucket viejo: ${oldPathInBucket}`);
+                      this.logger.warn(
+                        `Imagen física no encontrada en el bucket viejo: ${oldPathInBucket}`,
+                      );
                       return obj;
                     }
 
@@ -359,7 +520,7 @@ export class MigrationController {
                     const parts = oldPathInBucket.split('/');
                     const originalName = parts[parts.length - 1];
                     const extension = originalName.includes('.')
-                      ? originalName.split('.').pop()?.toLowerCase() ?? 'png'
+                      ? (originalName.split('.').pop()?.toLowerCase() ?? 'png')
                       : 'png';
 
                     const newFileName = `${randomUUID()}.${extension}`;
@@ -373,10 +534,14 @@ export class MigrationController {
                     // Obtener metadatos del archivo copiado
                     const [metadata] = await destFile.getMetadata();
                     const size = parseInt(String(metadata.size || '0'), 10);
-                    const mimeType = metadata.contentType || `image/${extension === 'svg' ? 'svg+xml' : extension}`;
+                    const mimeType =
+                      metadata.contentType ||
+                      `image/${extension === 'svg' ? 'svg+xml' : extension}`;
 
                     // Generar un storagePath consistente con GoogleCloudGalleryStorageService
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const timestamp = new Date()
+                      .toISOString()
+                      .replace(/[:.]/g, '-');
                     const safeName = originalName
                       .trim()
                       .toLowerCase()
@@ -398,13 +563,16 @@ export class MigrationController {
                     stats.imagesCopied++;
 
                     // Devolver nueva URL pública
-                    const publicBaseUrl = process.env.GCS_PUBLIC_BASE_URL?.trim();
+                    const publicBaseUrl =
+                      process.env.GCS_PUBLIC_BASE_URL?.trim();
                     if (publicBaseUrl) {
                       return `${publicBaseUrl.replace(/\/$/, '')}/${newObjectKey}`;
                     }
                     return `https://storage.googleapis.com/${bucketName}/${newObjectKey}`;
                   } catch (imgErr) {
-                    this.logger.error(`Error al procesar la imagen física ${oldPathInBucket}: ${(imgErr as Error).message}`);
+                    this.logger.error(
+                      `Error al procesar la imagen física ${oldPathInBucket}: ${(imgErr as Error).message}`,
+                    );
                   }
                 }
               }
@@ -430,7 +598,9 @@ export class MigrationController {
         const migratedSections = await processObjectImages(sections);
 
         // Verificar si ya existe el marketplace en la base de datos
-        let marketplace = await marketplaceRepo.findOne({ where: { slug: slugAliado } });
+        let marketplace = await marketplaceRepo.findOne({
+          where: { slug: slugAliado },
+        });
         if (!marketplace) {
           marketplace = new MarketplaceEntity();
           marketplace.id = randomUUID();
@@ -441,11 +611,14 @@ export class MigrationController {
         marketplace.description = '';
         marketplace.active = true;
         marketplace.owner = slugAliado;
-        
+
         // Obtener el logo del header si está disponible para el logo principal del marketplace
-        const headerSection = migratedSections.find((s: any) => s.type === 'header');
-        marketplace.logo = headerSection?.content?.logoUrl || headerSection?.content?.logo || '';
-        
+        const headerSection = migratedSections.find(
+          (s: any) => s.type === 'header',
+        );
+        marketplace.logo =
+          headerSection?.content?.logoUrl || headerSection?.content?.logo || '';
+
         marketplace.theme = {
           primaryColor: '#0f4ecf',
           secondaryColor: '#ffffff',
@@ -455,7 +628,9 @@ export class MigrationController {
 
         await marketplaceRepo.save(marketplace);
         stats.marketplacesMigrated++;
-        this.logger.log(`Marketplace "${cleanName}" guardado y actualizado con éxito para el aliado: ${slugAliado}`);
+        this.logger.log(
+          `Marketplace "${cleanName}" guardado y actualizado con éxito para el aliado: ${slugAliado}`,
+        );
       } catch (err) {
         const errMsg = `Error al migrar marketplace en fila: ${JSON.stringify(row)}. Detalle: ${(err as Error).message}`;
         this.logger.error(errMsg);

@@ -20,6 +20,8 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
 import { hashPassword } from '../../helpers';
 
+import { RbacGroup } from '../guards/rbac-group.decorator';
+
 export class CreateAlliedDto {
   name!: string;
   slug!: string;
@@ -41,6 +43,7 @@ export class UpdateAlliedDto {
 @Controller('allies')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@RbacGroup('config-allies')
 export class AlliesAdminController {
   constructor(
     @InjectRepository(UserEntity)
@@ -53,7 +56,11 @@ export class AlliesAdminController {
       where: { role: UserRole.ALLIED },
       order: { createdAt: 'DESC' },
     });
-    return allies.map(({ passwordHash, ...user }) => user);
+    return allies.map((user) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passwordHash, ...rest } = user;
+      return rest;
+    });
   }
 
   @Get(':id')
@@ -80,7 +87,9 @@ export class AlliesAdminController {
         where: { email: body.email.trim().toLowerCase() },
       });
       if (existingEmail) {
-        throw new ConflictException('El correo electrónico ya está registrado.');
+        throw new ConflictException(
+          'El correo electrónico ya está registrado.',
+        );
       }
     }
 
@@ -97,7 +106,9 @@ export class AlliesAdminController {
     const newUser = new UserEntity();
     newUser.id = userId;
     newUser.name = body.name.trim();
-    newUser.email = body.email ? body.email.trim().toLowerCase() : `${body.phone}@elmio.com`;
+    newUser.email = body.email
+      ? body.email.trim().toLowerCase()
+      : `${body.phone}@elmio.com`;
     newUser.passwordHash = hashPassword(body.password);
     newUser.role = UserRole.ALLIED;
     newUser.owner = userId;
@@ -131,7 +142,9 @@ export class AlliesAdminController {
         where: { email: body.email.trim().toLowerCase() },
       });
       if (existingWithEmail && existingWithEmail.id !== id) {
-        throw new ConflictException('El correo electrónico ya está registrado por otro usuario.');
+        throw new ConflictException(
+          'El correo electrónico ya está registrado por otro usuario.',
+        );
       }
     }
 
@@ -140,7 +153,9 @@ export class AlliesAdminController {
         where: { slug: body.slug.trim().toLowerCase() },
       });
       if (existingWithSlug && existingWithSlug.id !== id) {
-        throw new ConflictException('El slug del aliado ya está en uso por otro aliado.');
+        throw new ConflictException(
+          'El slug del aliado ya está en uso por otro aliado.',
+        );
       }
     }
 

@@ -63,7 +63,10 @@ export class CreateTransactionUseCase {
       const collaborator = await this.repository.findCollaboratorById(
         input.collaboratorId,
       );
-      if (!collaborator || (enterpriseId && collaborator.enterpriseId !== enterpriseId)) {
+      if (
+        !collaborator ||
+        (enterpriseId && collaborator.enterpriseId !== enterpriseId)
+      ) {
         throw new BadRequestException(
           'El colaborador indicado no pertenece a la empresa especificada.',
         );
@@ -73,7 +76,10 @@ export class CreateTransactionUseCase {
     }
 
     const transactionId = randomUUID();
-    const isMarketplacePurchase = collaboratorId && input.kind === 'charge' && concept.startsWith('Compra marketplace:');
+    const isMarketplacePurchase =
+      collaboratorId &&
+      input.kind === 'charge' &&
+      concept.startsWith('Compra marketplace:');
 
     const savedTx = await this.repository.saveTransaction({
       id: transactionId,

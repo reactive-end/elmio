@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 /**
  * DTO de entrada para consultar una operación R4 usando la referencia interna.
@@ -12,7 +12,7 @@ export class QueryOperationRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  companyAccountId!: string
+  companyAccountId!: string;
 
   @ApiProperty({
     example: '12345678',
@@ -20,7 +20,7 @@ export class QueryOperationRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  reference!: string
+  reference!: string;
 }
 
 /**
@@ -28,18 +28,18 @@ export class QueryOperationRequestDto {
  */
 export class QueryOperationResponseDto {
   @ApiProperty({ example: 'ACCP' })
-  code!: string
+  code!: string;
 
   @ApiProperty({ example: '12345678' })
-  reference!: string
+  reference!: string;
 
   @ApiProperty({ example: true })
-  success!: boolean
+  success!: boolean;
 
   @ApiProperty({
     type: 'object',
     additionalProperties: true,
     description: 'Respuesta original enviada por Banco R4.',
   })
-  rawResponse!: any
+  rawResponse!: any;
 }

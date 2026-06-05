@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Column,
   CreateDateColumn,
@@ -8,9 +8,9 @@ import {
   PrimaryColumn,
   Unique,
   UpdateDateColumn,
-} from 'typeorm'
-import { Bank } from './bank.entity'
-import { PaymentMethod } from './payment-method.entity'
+} from 'typeorm';
+import { Bank } from './bank.entity';
+import { PaymentMethod } from './payment-method.entity';
 
 @Entity({ name: 'bank_payment_method' })
 @Unique('UQ_bank_payment_method_bank_method', ['bank', 'paymentMethod'])
@@ -22,14 +22,14 @@ import { PaymentMethod } from './payment-method.entity'
  */
 export class BankPaymentMethod {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @ManyToOne(() => Bank, (bank) => bank.bankPaymentMethods, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'bank_id' })
-  bank: Bank
+  bank: Bank;
 
   @ManyToOne(
     () => PaymentMethod,
@@ -40,13 +40,13 @@ export class BankPaymentMethod {
     },
   )
   @JoinColumn({ name: 'payment_method_id' })
-  paymentMethod: PaymentMethod
+  paymentMethod: PaymentMethod;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive: boolean
+  isActive: boolean;
 
   @Column({ name: 'is_external', type: 'boolean', default: false })
-  isExternal: boolean
+  isExternal: boolean;
 
   @Column({
     name: 'external_provider',
@@ -54,17 +54,17 @@ export class BankPaymentMethod {
     length: 120,
     nullable: true,
   })
-  externalProvider: string | null
+  externalProvider: string | null;
 
   @Column({ name: 'external_metadata', type: 'jsonb', nullable: true })
-  externalMetadata: Record<string, unknown> | null
+  externalMetadata: Record<string, unknown> | null;
 
   @Column({ name: 'config', type: 'jsonb', nullable: true })
-  config: Record<string, unknown> | null
+  config: Record<string, unknown> | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

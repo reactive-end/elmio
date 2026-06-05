@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Entity,
   PrimaryColumn,
@@ -8,8 +8,8 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
-} from 'typeorm'
-import { Currency } from './currency.entity'
+} from 'typeorm';
+import { Currency } from './currency.entity';
 
 @Entity({ name: 'exchange_rate' })
 @Unique('UQ_exchange_rate_currency_effective_date', [
@@ -24,16 +24,16 @@ import { Currency } from './currency.entity'
  */
 export class ExchangeRate {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @Column({ name: 'effective_date', type: 'date' })
-  effectiveDate: Date
+  effectiveDate: Date;
 
   @ManyToOne(() => Currency, (currency) => currency.exchangeRates, {
     nullable: false,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency: Currency
+  currency: Currency;
 
   @Column({
     name: 'bolivares_per_usd',
@@ -41,14 +41,14 @@ export class ExchangeRate {
     precision: 14,
     scale: 4,
   })
-  bolivaresPerUsd: number
+  bolivaresPerUsd: number;
 
   @Column({ name: 'source', type: 'varchar', length: 50, nullable: true })
-  source: string | null
+  source: string | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

@@ -13,12 +13,15 @@ async function bootstrap() {
 
   // Levantar aplicación en modo standalone (sin puerto HTTP)
   const app = await NestFactory.createApplicationContext(AppModule);
-  
+
   try {
     const migrationController = app.get(MigrationController);
     logger.log('Ejecutando migración...');
     const result = await migrationController.runMigration();
-    logger.log('Migración completada con éxito:', JSON.stringify(result, null, 2));
+    logger.log(
+      'Migración completada con éxito:',
+      JSON.stringify(result, null, 2),
+    );
   } catch (error) {
     logger.error('Error durante la migración CLI:', error);
     process.exit(1);

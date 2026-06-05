@@ -29,7 +29,9 @@ export class PasswordRecoveryController {
    */
   @Post('request')
   @HttpCode(HttpStatus.OK)
-  async requestRecovery(@Body() dto: RequestRecoveryDto): Promise<RequestRecoveryResult> {
+  async requestRecovery(
+    @Body() dto: RequestRecoveryDto,
+  ): Promise<RequestRecoveryResult> {
     return this.requestRecoveryUseCase.execute(dto.email);
   }
 
@@ -51,7 +53,9 @@ export class PasswordRecoveryController {
    */
   @Post('reset')
   @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() dto: ResetPasswordDto): Promise<ResetPasswordResult> {
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+  ): Promise<ResetPasswordResult> {
     return this.resetPasswordUseCase.execute(dto.token, dto.newPassword);
   }
 }

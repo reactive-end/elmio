@@ -13,7 +13,9 @@ import { DataSource } from 'typeorm';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import { OptionalAuthGuard } from '../../../auth/presentation/guards/optional-auth.guard';
 import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
+import { UserRole } from '../../../auth/domain/user';
 import type { UserSession } from '../../../auth/domain/user';
+import { RbacGroup } from '../../../auth/presentation/guards/rbac-group.decorator';
 import { CreateProductUseCase } from '../../application/create-product.use-case';
 import { UpdateProductUseCase } from '../../application/update-product.use-case';
 import {
@@ -43,17 +45,19 @@ export class ProductController {
   /** GET /api/products - Lista todos los productos. */
   @UseGuards(OptionalAuthGuard)
   @Get()
+  @RbacGroup('products-list')
   async list(@CurrentUser() session?: UserSession): Promise<Product[]> {
     const allProducts = await this.listProducts.execute();
 
-    if (session && session.role === 'ALLIED') {
+    if (session && session.role === UserRole.ALLIED) {
       const marketplaces = await this.dataSource
         .getRepository(MarketplaceEntity)
         .find({ where: { owner: session.owner } });
       const alliedMarketplaceIds = marketplaces.map((m) => m.id);
 
       return allProducts.filter(
-        (p) => p.marketplaceId && alliedMarketplaceIds.includes(p.marketplaceId),
+        (p) =>
+          p.marketplaceId && alliedMarketplaceIds.includes(p.marketplaceId),
       );
     }
 
@@ -62,6 +66,7 @@ export class ProductController {
 
   /** GET /api/products/:id - Obtiene un producto por ID. */
   @Get(':id')
+  @RbacGroup('products-list')
   async getById(@Param('id') id: string): Promise<Product> {
     return this.getProductById.execute(id);
   }
@@ -69,25 +74,30 @@ export class ProductController {
   /** POST /api/products - Crea un nuevo producto. */
   @UseGuards(AuthGuard)
   @Post()
+  @RbacGroup('products-new')
   async create(
     @Body() body: CreateProductDto,
     @CurrentUser() session: UserSession,
   ): Promise<Product> {
-    if (session.role === 'COMPANY') {
+    if (session.role === UserRole.COMPANY) {
       throw new ForbiddenException(
         'Las empresas no pueden crear productos desde el dashboard.',
       );
     }
 
-    if (session.role === 'ALLIED') {
+    if (session.role === UserRole.ALLIED) {
       if (!body.marketplaceId) {
-        throw new ForbiddenException('Debes asociar el producto a uno de tus marketplaces.');
+        throw new ForbiddenException(
+          'Debes asociar el producto a uno de tus marketplaces.',
+        );
       }
       const m = await this.dataSource
         .getRepository(MarketplaceEntity)
         .findOne({ where: { id: body.marketplaceId } });
       if (!m || m.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para agregar productos a este marketplace.');
+        throw new ForbiddenException(
+          'No tienes permisos para agregar productos a este marketplace.',
+        );
       }
     }
 
@@ -97,27 +107,32 @@ export class ProductController {
   /** PUT /api/products/:id - Actualiza un producto existente. */
   @UseGuards(AuthGuard)
   @Put(':id')
+  @RbacGroup('products-new')
   async update(
     @Param('id') id: string,
     @Body() body: UpdateProductDto,
     @CurrentUser() session: UserSession,
   ): Promise<Product> {
-    if (session.role === 'COMPANY') {
+    if (session.role === UserRole.COMPANY) {
       throw new ForbiddenException(
         'Las empresas no pueden gestionar productos desde el dashboard.',
       );
     }
 
-    if (session.role === 'ALLIED') {
+    if (session.role === UserRole.ALLIED) {
       const prod = await this.getProductById.execute(id);
       if (!prod.marketplaceId) {
-        throw new ForbiddenException('No tienes permisos para modificar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para modificar este producto.',
+        );
       }
       const m = await this.dataSource
         .getRepository(MarketplaceEntity)
         .findOne({ where: { id: prod.marketplaceId } });
       if (!m || m.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para modificar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para modificar este producto.',
+        );
       }
     }
 
@@ -127,26 +142,31 @@ export class ProductController {
   /** DELETE /api/products/:id - Elimina un producto. */
   @UseGuards(AuthGuard)
   @Delete(':id')
+  @RbacGroup('products-new')
   async remove(
     @Param('id') id: string,
     @CurrentUser() session: UserSession,
   ): Promise<{ success: true }> {
-    if (session.role === 'COMPANY') {
+    if (session.role === UserRole.COMPANY) {
       throw new ForbiddenException(
         'Las empresas no pueden eliminar productos desde el dashboard.',
       );
     }
 
-    if (session.role === 'ALLIED') {
+    if (session.role === UserRole.ALLIED) {
       const prod = await this.getProductById.execute(id);
       if (!prod.marketplaceId) {
-        throw new ForbiddenException('No tienes permisos para eliminar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para eliminar este producto.',
+        );
       }
       const m = await this.dataSource
         .getRepository(MarketplaceEntity)
         .findOne({ where: { id: prod.marketplaceId } });
       if (!m || m.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para eliminar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para eliminar este producto.',
+        );
       }
     }
 

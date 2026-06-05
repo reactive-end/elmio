@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsUUID } from 'class-validator'
+import { IsString, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 /**
  * DTO para consultar el historial de pagos móviles de un cliente.
@@ -10,25 +10,25 @@ export class ConsultMobilePaymentDto {
   /** Id interno de la cuenta de empresa (cuenta origen para este endpoint). */
   @IsUUID()
   @IsNotEmpty()
-  companyAccountId: string
+  companyAccountId: string;
 
   /** Identificador del proveedor (ej. 'PLAZA'). */
   @IsString()
   @IsNotEmpty()
-  provider: string
+  provider: string;
 
   /** RIF o cédula del cliente (se usa en la URL del endpoint). */
   @IsString()
   @IsNotEmpty()
-  payerId: string
+  payerId: string;
 
   /** Fecha opcional para filtrar el historial (formato YYYYMMDD). */
   @IsString()
   @IsOptional()
-  date?: string
+  date?: string;
 
   /** Referencia opcional para filtrar resultados. */
   @IsString()
   @IsOptional()
-  reference?: string
+  reference?: string;
 }

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsNumber, IsString, Matches } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsString, Matches } from 'class-validator';
 
 /**
  * DTO de entrada para Credito Inmediato en Banco R4.
@@ -12,7 +12,7 @@ export class ImmediateCreditRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  companyAccountId!: string
+  companyAccountId!: string;
 
   @ApiProperty({
     example: '0134',
@@ -22,7 +22,7 @@ export class ImmediateCreditRequestDto {
   @Matches(/^\d{3,4}$/, {
     message: 'bankCode debe contener 3 o 4 digitos',
   })
-  bankCode!: string
+  bankCode!: string;
 
   @ApiProperty({
     example: 150.75,
@@ -30,7 +30,7 @@ export class ImmediateCreditRequestDto {
       'Monto de la operacion. Se formatea a 2 decimales en la estrategia.',
   })
   @IsNumber({}, { message: 'amount debe ser un numero valido' })
-  amount!: number
+  amount!: number;
 
   @ApiProperty({
     example: '04141234567',
@@ -40,7 +40,7 @@ export class ImmediateCreditRequestDto {
   @Matches(/^\d{11}$/, {
     message: 'phoneNumber debe contener exactamente 11 digitos',
   })
-  phoneNumber!: string
+  phoneNumber!: string;
 
   @ApiProperty({
     example: 'V12345678',
@@ -48,7 +48,7 @@ export class ImmediateCreditRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  nationalId!: string
+  nationalId!: string;
 
   @ApiProperty({
     example: 'Pago a proveedor',
@@ -56,7 +56,7 @@ export class ImmediateCreditRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  concept!: string
+  concept!: string;
 }
 
 /**
@@ -64,24 +64,24 @@ export class ImmediateCreditRequestDto {
  */
 export class ImmediateCreditResponseDto {
   @ApiProperty({ example: 'ACCP' })
-  code!: string
+  code!: string;
 
   @ApiProperty({ example: 'Operacion Aceptada' })
-  message!: string
+  message!: string;
 
   @ApiProperty({ example: '87882878' })
-  reference!: string
+  reference!: string;
 
   @ApiProperty({ example: 'ce85d97e-2092-49f0-9f7d-3d5921f0b13c' })
-  id!: string
+  id!: string;
 
   @ApiProperty({ example: 'uuid-del-payment-interno' })
-  internalPaymentId?: string
+  internalPaymentId?: string;
 
   @ApiProperty({
     type: 'object',
     additionalProperties: true,
     description: 'Respuesta original enviada por Banco R4.',
   })
-  rawResponse!: any
+  rawResponse!: any;
 }

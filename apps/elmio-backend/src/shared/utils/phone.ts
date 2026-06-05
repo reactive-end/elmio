@@ -27,23 +27,23 @@
  * @returns Cadena de digitos normalizada al formato R4 (vacia si no hay digitos).
  */
 export function normalizePhoneToR4(input: string | null | undefined): string {
-  const digits = String(input ?? '').replace(/\D/g, '')
+  const digits = String(input ?? '').replace(/\D/g, '');
 
   if (!digits) {
-    return ''
+    return '';
   }
 
   if (digits.length > 11) {
-    return `0${digits.slice(-10)}`
+    return `0${digits.slice(-10)}`;
   }
 
   if (digits.length === 11) {
-    return digits
+    return digits;
   }
 
   if (digits.length === 10) {
-    return `0${digits}`
+    return `0${digits}`;
   }
 
-  return digits
+  return digits;
 }

@@ -18,10 +18,7 @@ import { MarketplaceSeedService } from './infrastructure/marketplace-seed.servic
  * Sigue arquitectura hexagonal: domain, application, infrastructure, presentation.
  */
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forFeature([MarketplaceEntity]),
-  ],
+  imports: [AuthModule, TypeOrmModule.forFeature([MarketplaceEntity])],
   controllers: [MarketplaceController],
   providers: [
     ListMarketplacesUseCase,
@@ -39,4 +36,3 @@ import { MarketplaceSeedService } from './infrastructure/marketplace-seed.servic
   ],
 })
 export class MarketplaceModule {}
-

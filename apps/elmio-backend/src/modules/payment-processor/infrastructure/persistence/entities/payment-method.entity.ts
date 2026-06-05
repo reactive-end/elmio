@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Column,
   CreateDateColumn,
@@ -6,8 +6,8 @@ import {
   OneToMany,
   PrimaryColumn,
   UpdateDateColumn,
-} from 'typeorm'
-import { BankPaymentMethod } from './bank-payment-method.entity'
+} from 'typeorm';
+import { BankPaymentMethod } from './bank-payment-method.entity';
 
 @Entity({ name: 'payment_method' })
 /**
@@ -18,29 +18,29 @@ import { BankPaymentMethod } from './bank-payment-method.entity'
  */
 export class PaymentMethod {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @Column({ name: 'code', type: 'varchar', length: 40, unique: true })
-  code: string
+  code: string;
 
   @Column({ name: 'name', type: 'varchar', length: 120 })
-  name: string
+  name: string;
 
   @Column({ name: 'description', type: 'text', nullable: true })
-  description: string | null
+  description: string | null;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive: boolean
+  isActive: boolean;
 
   @OneToMany(
     () => BankPaymentMethod,
     (bankPaymentMethod) => bankPaymentMethod.paymentMethod,
   )
-  bankPaymentMethods: BankPaymentMethod[]
+  bankPaymentMethods: BankPaymentMethod[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

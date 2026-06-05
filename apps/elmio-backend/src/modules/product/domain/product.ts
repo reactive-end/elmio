@@ -126,7 +126,12 @@ export interface FormField {
  */
 export interface ProductAction {
   id: string;
-  type: 'manual_disburse' | 'disburse_funds' | 'send_email_voucher' | 'custom_webhook' | 'r4_vuelto';
+  type:
+    | 'manual_disburse'
+    | 'disburse_funds'
+    | 'send_email_voucher'
+    | 'custom_webhook'
+    | 'r4_vuelto';
   name: string;
   active: boolean;
   config: Record<string, any>;

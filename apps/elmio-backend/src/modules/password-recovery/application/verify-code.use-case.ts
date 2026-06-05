@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH_REPOSITORY_PORT } from '../../auth/domain/ports/auth-repository.port';
 import type { AuthRepositoryPort } from '../../auth/domain/ports/auth-repository.port';
@@ -37,7 +42,9 @@ export class VerifyCodeUseCase {
   async execute(email: string, code: string): Promise<VerifyCodeResult> {
     const user = await this.authRepository.findByEmail(email);
     if (!user) {
-      this.logger.warn(`Intento de verificacion de codigo para email inexistente: ${email}`);
+      this.logger.warn(
+        `Intento de verificacion de codigo para email inexistente: ${email}`,
+      );
       throw new BadRequestException('Código inválido o expirado.');
     }
 
@@ -48,7 +55,9 @@ export class VerifyCodeUseCase {
     );
 
     if (!validCode) {
-      this.logger.warn(`Codigo OTP invalido o expirado para usuario: ${user.id}`);
+      this.logger.warn(
+        `Codigo OTP invalido o expirado para usuario: ${user.id}`,
+      );
       throw new BadRequestException('Código inválido o expirado.');
     }
 
@@ -66,7 +75,9 @@ export class VerifyCodeUseCase {
       },
     );
 
-    this.logger.log(`Codigo verificado exitosamente para usuario: ${user.id}. Token temporal generado.`);
+    this.logger.log(
+      `Codigo verificado exitosamente para usuario: ${user.id}. Token temporal generado.`,
+    );
 
     return { resetToken };
   }

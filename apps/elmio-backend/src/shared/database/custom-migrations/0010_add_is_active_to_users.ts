@@ -9,14 +9,20 @@ export class AddIsActiveToUsersMigration implements CustomMigration {
   readonly name = '0010_add_is_active_to_users';
 
   async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "users" ADD COLUMN "isActive" boolean NOT NULL DEFAULT true`,
-    );
+    await queryRunner.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='users' AND column_name='isActive'
+        ) THEN
+          ALTER TABLE "users" ADD COLUMN "isActive" boolean NOT NULL DEFAULT true;
+        END IF;
+      END $$;
+    `);
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP COLUMN "isActive"`,
-    );
+    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "isActive"`);
   }
 }

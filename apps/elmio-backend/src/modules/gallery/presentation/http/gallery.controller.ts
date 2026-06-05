@@ -16,6 +16,7 @@ import type { Response } from 'express';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
 import { UserRole, type UserSession } from '../../../auth/domain/user';
+import { RbacGroup } from '../../../auth/presentation/guards/rbac-group.decorator';
 import { DeleteGalleryImageUseCase } from '../../application/delete-gallery-image.use-case';
 import { GetGalleryImageFileUseCase } from '../../application/get-gallery-image-file.use-case';
 import { ListGalleryImagesUseCase } from '../../application/list-gallery-images.use-case';
@@ -70,7 +71,9 @@ export class GalleryController {
     }
 
     if (!session.owner?.trim()) {
-      throw new BadRequestException('Sesion de aliado invalida, falta identificador de propietario.');
+      throw new BadRequestException(
+        'Sesion de aliado invalida, falta identificador de propietario.',
+      );
     }
 
     return session.owner.trim().toLowerCase();
@@ -87,7 +90,10 @@ export class GalleryController {
     return `gallery/${cleanTenant}/images`;
   }
 
-  private toResponseDto(image: GalleryDomainImage, tenant: string): GalleryImageResponseDto {
+  private toResponseDto(
+    image: GalleryDomainImage,
+    tenant: string,
+  ): GalleryImageResponseDto {
     return {
       ...image,
       previewUrl: `/api/gallery/${image.id}/file?tenant=${tenant}`,
@@ -103,13 +109,15 @@ export class GalleryController {
    */
   @UseGuards(AuthGuard)
   @Get()
+  @RbacGroup('gallery-library')
   async listGalleryImages(
     @Query() query: GalleryQueryDto,
     @CurrentUser() session: UserSession,
   ): Promise<GalleryImageResponseDto[]> {
     const tenant = this.resolveTenant(session, query);
     const physicalDirectory = this.getPhysicalDirectory(tenant);
-    const images = await this.listGalleryImagesUseCase.execute(physicalDirectory);
+    const images =
+      await this.listGalleryImagesUseCase.execute(physicalDirectory);
 
     return images.map((image) => this.toResponseDto(image, tenant));
   }
@@ -125,6 +133,7 @@ export class GalleryController {
   @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   @Post('upload')
+  @RbacGroup('gallery-library')
   async uploadGalleryImages(
     @Query() query: GalleryQueryDto,
     @CurrentUser() session: UserSession,
@@ -150,6 +159,7 @@ export class GalleryController {
    */
   @UseGuards(AuthGuard)
   @Delete(':imageId')
+  @RbacGroup('gallery-library')
   async deleteGalleryImage(
     @Query() query: GalleryQueryDto,
     @CurrentUser() session: UserSession,
@@ -177,7 +187,9 @@ export class GalleryController {
     @Param('imageId') imageId: string,
     @Res() response: Response,
   ): Promise<void> {
-    const tenant = query.tenant?.trim() ? query.tenant.trim().toLowerCase() : 'elmio';
+    const tenant = query.tenant?.trim()
+      ? query.tenant.trim().toLowerCase()
+      : 'elmio';
     const physicalDirectory = this.getPhysicalDirectory(tenant);
     const { image, absolutePath, publicUrl } =
       await this.getGalleryImageFileUseCase.execute(physicalDirectory, imageId);
@@ -197,4 +209,3 @@ export class GalleryController {
     response.sendFile(absolutePath);
   }
 }
-

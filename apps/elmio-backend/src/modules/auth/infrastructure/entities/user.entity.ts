@@ -19,7 +19,7 @@ export class UserEntity {
   passwordHash!: string;
 
   @Column({ type: 'varchar', length: 50 })
-  role!: UserRole;
+  role!: UserRole | string;
 
   @Column({ type: 'varchar', length: 255 })
   owner!: string;

@@ -22,7 +22,7 @@ export interface User {
   name: string;
   email: string;
   passwordHash: string;
-  role: UserRole;
+  role: UserRole | string;
   owner: string;
   createdAt: string;
   requirePasswordChange?: boolean;
@@ -38,7 +38,7 @@ export interface User {
 export interface UserSession {
   userId: string;
   email: string;
-  role: UserRole;
+  role: UserRole | string;
   owner: string;
   requirePasswordChange?: boolean;
 }

@@ -6,7 +6,7 @@ import {
   Length,
   Matches,
   IsUUID,
-} from 'class-validator'
+} from 'class-validator';
 
 /**
  * DTO para consultar el estado de una transferencia.
@@ -17,33 +17,33 @@ export class ConsultTransferStatusDto {
   /** Id interno de la cuenta de empresa (cuenta origen para este endpoint). */
   @IsUUID()
   @IsNotEmpty()
-  companyAccountId: string
+  companyAccountId: string;
 
   /** Proveedor de pasarela (ej.: "PLAZA") */
   @IsString()
   @IsNotEmpty()
-  provider: string
+  provider: string;
 
   /** Identificador del originador usado en la URL (quien envió el dinero) */
   @IsString()
   @IsNotEmpty()
-  originatorId: string
+  originatorId: string;
 
   /** Cuenta de origen (20 dígitos) */
   @IsString()
   @Length(20, 20)
   @IsNotEmpty()
-  account: string
+  account: string;
 
   /** Referencia devuelta por el banco al realizar el pago */
   @IsString()
   @IsNotEmpty()
-  reference: string
+  reference: string;
 
   /** Monto exacto de la operación */
   @IsNumber()
   @IsNotEmpty()
-  amount: number
+  amount: number;
 
   /**
    * Fecha de la operación en formato YYMMDD (ej.: 250207).
@@ -54,10 +54,10 @@ export class ConsultTransferStatusDto {
   @Matches(/^\d{6}$/, {
     message: 'La fecha debe tener formato YYMMDD (Ej: 250207)',
   })
-  date: string
+  date: string;
 
   /** Canal o subcanal usado en la consulta (opcional, por defecto '23') */
   @IsString()
   @IsOptional()
-  channel?: string
+  channel?: string;
 }

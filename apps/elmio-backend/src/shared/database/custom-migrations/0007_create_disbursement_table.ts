@@ -1,8 +1,8 @@
 import type { CustomMigration } from '../custom-migration.interface';
 
 export class CreateDisbursementTableMigration implements CustomMigration {
-  name = 'CreateDisbursementTableMigration'
-  version = 7
+  name = 'CreateDisbursementTableMigration';
+  version = 7;
 
   async up(queryRunner: any): Promise<void> {
     await queryRunner.query(`
@@ -25,15 +25,15 @@ export class CreateDisbursementTableMigration implements CustomMigration {
         "status" varchar(20) NOT NULL DEFAULT 'success',
         "created_at" timestamp with time zone NOT NULL DEFAULT now()
       )
-    `)
+    `);
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS "IDX_disbursement_loanRequestId"
         ON "disbursement"("loanRequestId")
-    `)
+    `);
   }
 
   async down(queryRunner: any): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS "disbursement"`)
+    await queryRunner.query(`DROP TABLE IF EXISTS "disbursement"`);
   }
 }

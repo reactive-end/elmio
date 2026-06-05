@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import type { RbacRepositoryPort } from '@/modules/rbac/domain/ports/rbac-repository.port';
 import type { RolePermission } from '@/modules/rbac/domain/role-permission';
+import type { UserPermission } from '@/modules/rbac/domain/user-permission';
 import { RolePermissionEntity } from '@/modules/rbac/infrastructure/entities/role-permission.entity';
+import { UserPermissionEntity } from '@/modules/rbac/infrastructure/entities/user-permission.entity';
+import { CustomRoleEntity } from '@/modules/rbac/infrastructure/entities/custom-role.entity';
 import { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
 import { PersonProfileEntity } from '@/modules/enterprise/infrastructure/entities/person-profile.entity';
 import { EnterpriseEntity } from '@/modules/enterprise/infrastructure/entities/enterprise.entity';
@@ -18,6 +21,10 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
   constructor(
     @InjectRepository(RolePermissionEntity)
     private readonly permRepo: Repository<RolePermissionEntity>,
+    @InjectRepository(UserPermissionEntity)
+    private readonly userPermRepo: Repository<UserPermissionEntity>,
+    @InjectRepository(CustomRoleEntity)
+    private readonly customRoleRepo: Repository<CustomRoleEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(PersonProfileEntity)
@@ -77,7 +84,8 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     const { role, page, perPage, search, includeInactive } = params;
     const skip = (page - 1) * perPage;
 
-    const qb = this.userRepo.createQueryBuilder('user')
+    const qb = this.userRepo
+      .createQueryBuilder('user')
       .leftJoinAndMapOne(
         'user.profile',
         PersonProfileEntity,
@@ -103,9 +111,7 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
       );
     }
 
-    qb.orderBy('user.createdAt', 'DESC')
-      .skip(skip)
-      .take(perPage);
+    qb.orderBy('user.createdAt', 'DESC').skip(skip).take(perPage);
 
     const [rawItems, total] = await qb.getManyAndCount();
 
@@ -117,7 +123,7 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
         ...user,
         profilePhone: profile?.phone ?? null,
         enterprisePhone: enterprise?.phone ?? null,
-      } as EnrichedUser;
+      };
     });
 
     return { items, total };
@@ -132,11 +138,8 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     return this.userRepo.save(entity);
   }
 
-  async updateUser(
-    id: string,
-    data: Partial<UserEntity>,
-  ): Promise<UserEntity> {
-    await this.userRepo.update(id, data as Record<string, unknown>);
+  async updateUser(id: string, data: Partial<UserEntity>): Promise<UserEntity> {
+    await this.userRepo.update(id, data);
     const updated = await this.userRepo.findOne({ where: { id } });
     if (!updated) {
       throw new Error('Usuario no encontrado después de actualizar.');
@@ -145,7 +148,68 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
   }
 
   async deactivateUser(id: string): Promise<void> {
-    await this.userRepo.update(id, { isActive: false } as Record<string, unknown>);
+    await this.userRepo.update(id, { isActive: false });
+  }
+
+  async findUserPermissions(userId: string): Promise<UserPermission[]> {
+    const entities = await this.userPermRepo.find({ where: { userId } });
+    return entities.map((e) => ({
+      id: e.id,
+      userId: e.userId,
+      groupKey: e.groupKey,
+      visible: e.visible,
+    }));
+  }
+
+  async saveUserPermissions(
+    userId: string,
+    permissions: Array<{ groupKey: string; visible: boolean }>,
+  ): Promise<UserPermission[]> {
+    return this.userPermRepo.manager.transaction(async (manager) => {
+      await manager.delete(UserPermissionEntity, { userId });
+
+      const entities = permissions.map((p) => {
+        const entity = new UserPermissionEntity();
+        entity.userId = userId;
+        entity.groupKey = p.groupKey;
+        entity.visible = p.visible;
+        return entity;
+      });
+
+      const saved = await manager.save(UserPermissionEntity, entities);
+      return saved.map((e) => ({
+        id: e.id,
+        userId: e.userId,
+        groupKey: e.groupKey,
+        visible: e.visible,
+      }));
+    });
+  }
+
+  async findCustomRoles(): Promise<Array<{ key: string; name: string }>> {
+    const entities = await this.customRoleRepo.find({ order: { name: 'ASC' } });
+    return entities.map((e) => ({
+      key: e.key,
+      name: e.name,
+    }));
+  }
+
+  async createCustomRole(
+    key: string,
+    name: string,
+  ): Promise<{ key: string; name: string }> {
+    const entity = new CustomRoleEntity();
+    entity.key = key;
+    entity.name = name;
+    const saved = await this.customRoleRepo.save(entity);
+    return {
+      key: saved.key,
+      name: saved.name,
+    };
+  }
+
+  async deleteCustomRole(key: string): Promise<void> {
+    await this.customRoleRepo.delete(key);
   }
 
   private permToDomain(entity: RolePermissionEntity): RolePermission {

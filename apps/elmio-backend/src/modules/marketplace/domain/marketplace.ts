@@ -167,5 +167,11 @@ interface MenuItem {
   label: string;
   href: string;
   icon: string;
-  submenus: { id: string; label: string; href: string; description: string; icon?: string }[];
+  submenus: {
+    id: string;
+    label: string;
+    href: string;
+    description: string;
+    icon?: string;
+  }[];
 }

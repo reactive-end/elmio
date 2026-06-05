@@ -4,9 +4,7 @@ import type {
   BankAccount,
   AdditionalLegalRep,
 } from '../../../domain/enterprise';
-import type {
-  PersonalReference,
-} from '../../../domain/person-profile';
+import type { PersonalReference } from '../../../domain/person-profile';
 
 // ── Enterprise DTOs ──────────────────────────────────────────────────────────
 

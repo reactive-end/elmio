@@ -9,6 +9,9 @@ import { CreateDisbursementTableMigration } from './0007_create_disbursement_tab
 import { AddProductIdToLoanRequestsMigration } from './0008_add_product_id_to_loan_requests';
 import { CreateRolePermissionsTableMigration } from './0009_create_role_permissions_table';
 import { AddIsActiveToUsersMigration } from './0010_add_is_active_to_users';
+import { SeedDefaultRbacPermissionsMigration } from './0011_seed_default_rbac_permissions';
+import { CreateUserPermissionsTableMigration } from './0012_create_user_permissions_table';
+import { CreateCustomRolesTableMigration } from './0013_create_custom_roles_table';
 
 export const customMigrations: CustomMigration[] = [
   new AddActionsToProductsMigration(),
@@ -21,7 +24,7 @@ export const customMigrations: CustomMigration[] = [
   new AddProductIdToLoanRequestsMigration(),
   new CreateRolePermissionsTableMigration(),
   new AddIsActiveToUsersMigration(),
+  new SeedDefaultRbacPermissionsMigration(),
+  new CreateUserPermissionsTableMigration(),
+  new CreateCustomRolesTableMigration(),
 ];
-
-
-

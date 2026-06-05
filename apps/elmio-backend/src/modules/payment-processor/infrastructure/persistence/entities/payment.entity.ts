@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Entity,
   PrimaryColumn,
@@ -7,9 +7,9 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-} from 'typeorm'
-import { BankAccount } from './bank-account.entity'
-import { Currency } from './currency.entity'
+} from 'typeorm';
+import { BankAccount } from './bank-account.entity';
+import { Currency } from './currency.entity';
 
 @Entity({ name: 'payment' })
 /**
@@ -20,10 +20,10 @@ import { Currency } from './currency.entity'
  */
 export class Payment {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @Column({ name: 'amount_bs', type: 'decimal', precision: 15, scale: 2 })
-  amountBs: number
+  amountBs: number;
 
   @Column({
     name: 'amount_usd',
@@ -32,22 +32,22 @@ export class Payment {
     scale: 2,
     default: 0,
   })
-  amountUsd: number
+  amountUsd: number;
 
   @Column({ name: 'reference', type: 'varchar', length: 100, nullable: true })
-  reference: string | null
+  reference: string | null;
 
   @Column({ name: 'billing_id', type: 'varchar', length: 100 })
-  billingId: string
+  billingId: string;
 
   @Column({ name: 'payment_date', type: 'timestamp with time zone' })
-  paymentDate: Date
+  paymentDate: Date;
 
   @ManyToOne(() => BankAccount, (account) => account.outgoingPayments, {
     nullable: true,
   })
   @JoinColumn({ name: 'internal_source_account_id' })
-  internalSourceAccount: BankAccount | null
+  internalSourceAccount: BankAccount | null;
 
   @Column({
     name: 'external_source_bank_code',
@@ -55,7 +55,7 @@ export class Payment {
     length: 4,
     nullable: true,
   })
-  externalSourceBankCode: string | null
+  externalSourceBankCode: string | null;
 
   @Column({
     name: 'external_source_account',
@@ -63,7 +63,7 @@ export class Payment {
     length: 20,
     nullable: true,
   })
-  externalSourceAccount: string | null
+  externalSourceAccount: string | null;
 
   @Column({
     name: 'external_source_phone',
@@ -71,7 +71,7 @@ export class Payment {
     length: 20,
     nullable: true,
   })
-  externalSourcePhone: string | null
+  externalSourcePhone: string | null;
 
   @Column({
     name: 'external_source_doc_type',
@@ -79,7 +79,7 @@ export class Payment {
     length: 1,
     nullable: true,
   })
-  externalSourceDocType: string | null
+  externalSourceDocType: string | null;
 
   @Column({
     name: 'external_source_doc',
@@ -87,13 +87,13 @@ export class Payment {
     length: 20,
     nullable: true,
   })
-  externalSourceDoc: string | null
+  externalSourceDoc: string | null;
 
   @ManyToOne(() => BankAccount, (account) => account.incomingPayments, {
     nullable: true,
   })
   @JoinColumn({ name: 'internal_dest_account_id' })
-  internalDestinationAccount: BankAccount | null
+  internalDestinationAccount: BankAccount | null;
 
   @Column({
     name: 'external_dest_bank_code',
@@ -101,7 +101,7 @@ export class Payment {
     length: 4,
     nullable: true,
   })
-  externalDestBankCode: string | null
+  externalDestBankCode: string | null;
 
   @Column({
     name: 'external_dest_account',
@@ -109,7 +109,7 @@ export class Payment {
     length: 20,
     nullable: true,
   })
-  externalDestAccount: string | null
+  externalDestAccount: string | null;
 
   @Column({
     name: 'external_dest_phone',
@@ -117,7 +117,7 @@ export class Payment {
     length: 20,
     nullable: true,
   })
-  externalDestPhone: string | null
+  externalDestPhone: string | null;
 
   @Column({
     name: 'external_dest_doc_type',
@@ -125,7 +125,7 @@ export class Payment {
     length: 1,
     nullable: true,
   })
-  externalDestDocType: string | null
+  externalDestDocType: string | null;
 
   @Column({
     name: 'external_dest_doc',
@@ -133,7 +133,7 @@ export class Payment {
     length: 20,
     nullable: true,
   })
-  externalDestDoc: string | null
+  externalDestDoc: string | null;
 
   @Column({
     name: 'payer_user_id',
@@ -142,10 +142,10 @@ export class Payment {
     nullable: true,
     comment: 'Identificador de usuario en base de datos externa',
   })
-  payerUserId: string | null
+  payerUserId: string | null;
 
   @Column({ name: 'payer_name', type: 'varchar', length: 150, nullable: true })
-  payerName: string | null
+  payerName: string | null;
 
   @Column({
     name: 'enterprise_id',
@@ -153,26 +153,26 @@ export class Payment {
     length: 100,
     nullable: true,
   })
-  enterpriseId: string | null
+  enterpriseId: string | null;
 
   @Column({ name: 'payment_status_id', type: 'integer' })
-  paymentStatusId: number
+  paymentStatusId: number;
 
   @Column({ name: 'payment_method_id', type: 'integer' })
-  paymentMethodId: number
+  paymentMethodId: number;
 
   @Column({ name: 'payment_type_id', type: 'integer', nullable: true })
-  paymentTypeId: number | null
+  paymentTypeId: number | null;
 
   @ManyToOne(() => Currency, (currency) => currency.payments, {
     nullable: false,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency: Currency
+  currency: Currency;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

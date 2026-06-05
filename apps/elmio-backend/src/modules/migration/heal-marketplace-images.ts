@@ -10,7 +10,9 @@ async function bootstrap() {
   dotenv.config();
 
   const logger = new Logger('HealMarketplaceImagesCli');
-  logger.log('Iniciando contexto de aplicación NestJS para sanar imágenes huérfanas...');
+  logger.log(
+    'Iniciando contexto de aplicación NestJS para sanar imágenes huérfanas...',
+  );
 
   const app = await NestFactory.createApplicationContext(AppModule);
 
@@ -31,42 +33,57 @@ async function bootstrap() {
 
       // 1. Sanar Logo si contiene la URL antigua
       let logoStr = marketplace.logo || '';
-      const gcsBaseRegex = /https:\/\/storage\.googleapis\.com\/elmio-img\/(gallery\/[a-zA-Z0-9_.-]+(?:\/images)?)\/([^"\s'<>\\{}?]+)/g;
+      const gcsBaseRegex =
+        /https:\/\/storage\.googleapis\.com\/elmio-img\/(gallery\/[a-zA-Z0-9_.-]+(?:\/images)?)\/([^"\s'<>\\{}?]+)/g;
 
       // 2. Sanar Secciones
       let sectionsStr = JSON.stringify(marketplace.sections);
 
       // Encontrar todas las URLs antiguas de GCS en logo y secciones
-      const matches: { fullUrl: string; tenantDir: string; name: string }[] = [];
+      const matches: { fullUrl: string; tenantDir: string; name: string }[] =
+        [];
       let match;
 
       // Escanear logo
       while ((match = gcsBaseRegex.exec(logoStr)) !== null) {
-        matches.push({ fullUrl: match[0], tenantDir: match[1], name: match[2] });
+        matches.push({
+          fullUrl: match[0],
+          tenantDir: match[1],
+          name: match[2],
+        });
       }
       gcsBaseRegex.lastIndex = 0; // reset regex index
 
       // Escanear secciones
       while ((match = gcsBaseRegex.exec(sectionsStr)) !== null) {
-        matches.push({ fullUrl: match[0], tenantDir: match[1], name: match[2] });
+        matches.push({
+          fullUrl: match[0],
+          tenantDir: match[1],
+          name: match[2],
+        });
       }
       gcsBaseRegex.lastIndex = 0; // reset regex index
 
       if (matches.length > 0) {
-        logger.log(`Marketplace "${marketplace.name}" (${marketplace.slug}) tiene ${matches.length} candidatos de imágenes a verificar.`);
+        logger.log(
+          `Marketplace "${marketplace.name}" (${marketplace.slug}) tiene ${matches.length} candidatos de imágenes a verificar.`,
+        );
 
         // Realizar consulta en lote
         const galleryMatches = await galleryImageRepo.find({
-          where: matches.map(m => ({
+          where: matches.map((m) => ({
             tenantDirectory: m.tenantDir,
-            name: m.name
-          }))
+            name: m.name,
+          })),
         });
 
         // Crear mapa para resolución rápida
         const fileNameMap = new Map<string, string>();
         for (const item of galleryMatches) {
-          fileNameMap.set(`${item.tenantDirectory}:${item.name}`, item.fileName);
+          fileNameMap.set(
+            `${item.tenantDirectory}:${item.name}`,
+            item.fileName,
+          );
         }
 
         // Aplicar reemplazos
@@ -75,7 +92,7 @@ async function bootstrap() {
           const foundFileName = fileNameMap.get(key);
           if (foundFileName && !foundFileName.includes(match.name)) {
             const newUrl = `https://storage.googleapis.com/elmio-img/${match.tenantDir}/${foundFileName}`;
-            
+
             if (logoStr.includes(match.fullUrl)) {
               logoStr = logoStr.replace(match.fullUrl, newUrl);
               logoHealed = true;
@@ -92,15 +109,21 @@ async function bootstrap() {
           marketplace.logo = logoStr;
           marketplace.sections = JSON.parse(sectionsStr);
           await marketplaceRepo.save(marketplace);
-          logger.log(`✅ ¡Marketplace "${marketplace.name}" (${marketplace.slug}) sanado con éxito!`);
+          logger.log(
+            `✅ ¡Marketplace "${marketplace.name}" (${marketplace.slug}) sanado con éxito!`,
+          );
           totalHealedCount++;
         } else {
-          logger.log(`ℹ️ No se requirieron cambios reales para el marketplace "${marketplace.name}" (las imágenes ya están sanadas o no existen en la galería).`);
+          logger.log(
+            `ℹ️ No se requirieron cambios reales para el marketplace "${marketplace.name}" (las imágenes ya están sanadas o no existen en la galería).`,
+          );
         }
       }
     }
 
-    logger.log(`Proceso completado. Se sanaron ${totalHealedCount} marketplaces.`);
+    logger.log(
+      `Proceso completado. Se sanaron ${totalHealedCount} marketplaces.`,
+    );
   } catch (error) {
     logger.error('Error durante la ejecución del sanador de imágenes:', error);
     process.exit(1);

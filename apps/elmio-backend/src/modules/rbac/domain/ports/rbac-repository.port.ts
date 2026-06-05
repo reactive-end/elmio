@@ -4,6 +4,7 @@
 export const RBAC_REPOSITORY_PORT = Symbol('RBAC_REPOSITORY_PORT');
 
 import type { RolePermission } from '@/modules/rbac/domain/role-permission';
+import type { UserPermission } from '@/modules/rbac/domain/user-permission';
 import type { UserEntity } from '@/modules/auth/infrastructure/entities/user.entity';
 
 export interface EnrichedUser extends UserEntity {
@@ -44,4 +45,25 @@ export interface RbacRepositoryPort {
 
   /** Soft-delete: desactiva un usuario (isActive = false). */
   deactivateUser(id: string): Promise<void>;
+
+  /** Obtiene todos los overrides de permisos de un usuario específico. */
+  findUserPermissions(userId: string): Promise<UserPermission[]>;
+
+  /** Guarda una lista de overrides para un usuario, eliminando los anteriores. */
+  saveUserPermissions(
+    userId: string,
+    permissions: Array<{ groupKey: string; visible: boolean }>,
+  ): Promise<UserPermission[]>;
+
+  /** Obtiene todos los roles dinámicos configurados. */
+  findCustomRoles(): Promise<Array<{ key: string; name: string }>>;
+
+  /** Registra un nuevo rol dinámico. */
+  createCustomRole(
+    key: string,
+    name: string,
+  ): Promise<{ key: string; name: string }>;
+
+  /** Elimina un rol dinámico. */
+  deleteCustomRole(key: string): Promise<void>;
 }

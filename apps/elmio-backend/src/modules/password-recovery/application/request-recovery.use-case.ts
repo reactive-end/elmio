@@ -45,13 +45,16 @@ export class RequestRecoveryUseCase {
   async execute(email: string): Promise<RequestRecoveryResult> {
     const defaultResponse: RequestRecoveryResult = {
       channel: 'email',
-      message: 'Si el correo está registrado, recibirás un código de recuperación.',
+      message:
+        'Si el correo está registrado, recibirás un código de recuperación.',
     };
 
     try {
       const user = await this.authRepository.findByEmail(email);
       if (!user) {
-        this.logger.warn(`Solicitud de recuperacion para email inexistente: ${email}`);
+        this.logger.warn(
+          `Solicitud de recuperacion para email inexistente: ${email}`,
+        );
         return defaultResponse;
       }
 
@@ -103,7 +106,9 @@ export class RequestRecoveryUseCase {
         message: defaultResponse.message,
       };
     } catch (error) {
-      this.logger.error(`Error en caso de uso RequestRecoveryUseCase: ${String(error)}`);
+      this.logger.error(
+        `Error en caso de uso RequestRecoveryUseCase: ${String(error)}`,
+      );
       return defaultResponse;
     }
   }

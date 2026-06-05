@@ -1,4 +1,9 @@
-import { Injectable, OnApplicationBootstrap, Logger, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  OnApplicationBootstrap,
+  Logger,
+  Inject,
+} from '@nestjs/common';
 import {
   MARKETPLACE_REPOSITORY_PORT,
   type MarketplaceRepositoryPort,
@@ -32,7 +37,17 @@ export class MarketplaceSeedService implements OnApplicationBootstrap {
           path.join(__dirname, 'data', 'marketplace-default.json'),
           path.join(__dirname, '..', 'data', 'marketplace-default.json'),
           path.join(rootDir, 'marketplace-default.json'),
-          path.join(rootDir, 'apps', 'elmio-backend', 'src', 'modules', 'marketplace', 'infrastructure', 'data', 'marketplace-default.json'),
+          path.join(
+            rootDir,
+            'apps',
+            'elmio-backend',
+            'src',
+            'modules',
+            'marketplace',
+            'infrastructure',
+            'data',
+            'marketplace-default.json',
+          ),
         ];
 
         let jsonPath = '';
@@ -55,10 +70,14 @@ export class MarketplaceSeedService implements OnApplicationBootstrap {
         ) as Marketplace;
 
         await this.repository.create(mainMarketplace);
-        this.logger.log(`Sembrado exitoso de marketplace principal predeterminado ('${slug}')`);
+        this.logger.log(
+          `Sembrado exitoso de marketplace principal predeterminado ('${slug}')`,
+        );
       }
     } catch (err) {
-      this.logger.warn(`No se pudo sembrar el marketplace principal: ${(err as Error).message}`);
+      this.logger.warn(
+        `No se pudo sembrar el marketplace principal: ${(err as Error).message}`,
+      );
     }
   }
 }

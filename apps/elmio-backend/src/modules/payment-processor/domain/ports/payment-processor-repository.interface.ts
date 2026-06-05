@@ -1,33 +1,36 @@
 export interface LegacyTokenPayload {
-  sub: string
-  phone?: string
-  role?: string
-  iat?: number
-  exp?: number
+  sub: string;
+  phone?: string;
+  role?: string;
+  iat?: number;
+  exp?: number;
 }
 
-import { InitiateDebitDto } from '../../presentation/dtos/banco-plaza/initiate-debit.dto'
-import { CheckStatusDto } from '../../presentation/dtos/banco-plaza/check-status.dto'
-import { SendMobilePaymentDto } from '../../presentation/dtos/banco-plaza/send-mobile-payment.dto'
-import { CustomerMobilePaymentDto } from '../../presentation/dtos/banco-plaza/customer-mobile-payment.dto'
-import { ConsultMobilePaymentDto } from '../../presentation/dtos/banco-plaza/consult-mobile-payment.dto'
-import { InitiateTransferDto } from '../../presentation/dtos/banco-plaza/initiate-transfer.dto'
-import { CustomerTransferDto } from '../../presentation/dtos/banco-plaza/customer-transfer.dto'
-import { ConsultTransferStatusDto } from '../../presentation/dtos/banco-plaza/consult-transfer-status.dto'
-import { RequestDebitTokenDto } from '../../presentation/dtos/banco-plaza/request-debit-token.dto'
-import { InitiateDirectDebitDto } from '../../presentation/dtos/banco-plaza/initiate-direct-debit.dto'
-import { CheckSettlementDto } from '../../presentation/dtos/banco-plaza/check-settlement.dto'
+import { InitiateDebitDto } from '../../presentation/dtos/banco-plaza/initiate-debit.dto';
+import { CheckStatusDto } from '../../presentation/dtos/banco-plaza/check-status.dto';
+import { SendMobilePaymentDto } from '../../presentation/dtos/banco-plaza/send-mobile-payment.dto';
+import { CustomerMobilePaymentDto } from '../../presentation/dtos/banco-plaza/customer-mobile-payment.dto';
+import { ConsultMobilePaymentDto } from '../../presentation/dtos/banco-plaza/consult-mobile-payment.dto';
+import { InitiateTransferDto } from '../../presentation/dtos/banco-plaza/initiate-transfer.dto';
+import { CustomerTransferDto } from '../../presentation/dtos/banco-plaza/customer-transfer.dto';
+import { ConsultTransferStatusDto } from '../../presentation/dtos/banco-plaza/consult-transfer-status.dto';
+import { RequestDebitTokenDto } from '../../presentation/dtos/banco-plaza/request-debit-token.dto';
+import { InitiateDirectDebitDto } from '../../presentation/dtos/banco-plaza/initiate-direct-debit.dto';
+import { CheckSettlementDto } from '../../presentation/dtos/banco-plaza/check-settlement.dto';
 
-import { GetExchangeRateDto } from '../../presentation/dtos/banco-r4/get-r4-exchange-rate.dto'
-import { ConsultMobilePaymentR4Dto } from '../../presentation/dtos/banco-r4/consult-mobile-payment.dto'
-import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4/mobile-payment-notification.dto'
-import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto'
-import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto'
-import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto'
-import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto'
-import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
-import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto'
-import { VueltoRequestDto, VueltoResponseDto } from '../../presentation/dtos/banco-r4/vuelto.dto'
+import { GetExchangeRateDto } from '../../presentation/dtos/banco-r4/get-r4-exchange-rate.dto';
+import { ConsultMobilePaymentR4Dto } from '../../presentation/dtos/banco-r4/consult-mobile-payment.dto';
+import { MobilePaymentNotificationR4Dto } from '../../presentation/dtos/banco-r4/mobile-payment-notification.dto';
+import { AccountDirectDebitDto } from '../../presentation/dtos/banco-r4/account-direct-debit.dto';
+import { PhoneDirectDebitDto } from '../../presentation/dtos/banco-r4/phone-direct-debit.dto';
+import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dto';
+import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto';
+import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto';
+import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto';
+import {
+  VueltoRequestDto,
+  VueltoResponseDto,
+} from '../../presentation/dtos/banco-r4/vuelto.dto';
 
 // Las importaciones de banco-exterior se dejan como DTOs vacíos locales si no se migran
 export interface ConsultSentPaymentsDto {}
@@ -38,59 +41,62 @@ export interface ExecuteImmediateDebitDto {}
 export interface ExecuteImmediateTransferDto {}
 export interface QueryImmediateTransferDto {}
 
-export const PAYMENT_PROCESSOR_REPOSITORY = 'PAYMENT_PROCESSOR_REPOSITORY'
+export const PAYMENT_PROCESSOR_REPOSITORY = 'PAYMENT_PROCESSOR_REPOSITORY';
 
 export interface PaymentProcessorRepositoryPort {
-  debit(dto: InitiateDebitDto, ip?: string): Promise<any>
-  checkStatus(dto: CheckStatusDto): Promise<any>
+  debit(dto: InitiateDebitDto, ip?: string): Promise<any>;
+  checkStatus(dto: CheckStatusDto): Promise<any>;
   sendMobilePayment(
     dto: SendMobilePaymentDto,
     user: LegacyTokenPayload,
-  ): Promise<any>
-  processCustomerMobilePayment(dto: CustomerMobilePaymentDto): Promise<any>
-  getMobilePaymentHistory(dto: ConsultMobilePaymentDto): Promise<any>
+  ): Promise<any>;
+  processCustomerMobilePayment(dto: CustomerMobilePaymentDto): Promise<any>;
+  getMobilePaymentHistory(dto: ConsultMobilePaymentDto): Promise<any>;
   initiateTransfer(
     dto: InitiateTransferDto,
     user: LegacyTokenPayload,
-  ): Promise<any>
+  ): Promise<any>;
   initiateCustomerTransfer(
     dto: CustomerTransferDto,
     user: LegacyTokenPayload,
-  ): Promise<any>
-  consultTransferStatus(dto: ConsultTransferStatusDto): Promise<any>
-  requestToken(dto: RequestDebitTokenDto, ip?: string): Promise<any>
-  initiateDirectDebit(dto: InitiateDirectDebitDto): Promise<any>
-  checkSettlement(dto: CheckSettlementDto): Promise<any>
+  ): Promise<any>;
+  consultTransferStatus(dto: ConsultTransferStatusDto): Promise<any>;
+  requestToken(dto: RequestDebitTokenDto, ip?: string): Promise<any>;
+  initiateDirectDebit(dto: InitiateDirectDebitDto): Promise<any>;
+  checkSettlement(dto: CheckSettlementDto): Promise<any>;
 
-  processWebhook(provider: string, payload: Record<string, unknown>): Promise<Record<string, unknown>>
+  processWebhook(
+    provider: string,
+    payload: Record<string, unknown>,
+  ): Promise<Record<string, unknown>>;
   generateWebPaymentUrl(
     provider: string,
     dto: GenerateWebPaymentUrlRequest,
-  ): Promise<any>
-  processP2pPayment(request: InitiateP2pPaymentRequest): Promise<any>
-  verifyC2pPayment(request: VerifyC2pPaymentRequest): Promise<any>
+  ): Promise<any>;
+  processP2pPayment(request: InitiateP2pPaymentRequest): Promise<any>;
+  verifyC2pPayment(request: VerifyC2pPaymentRequest): Promise<any>;
 
-  getLastExchangeRate(companyAccountId?: string): Promise<any>
-  getExchangeRate(dto: GetExchangeRateDto): Promise<any>
-  generateOTP(dto: GenerateOtpDto): Promise<any>
-  consultMobilePaymentR4(dto: ConsultMobilePaymentR4Dto): Promise<any>
+  getLastExchangeRate(companyAccountId?: string): Promise<any>;
+  getExchangeRate(dto: GetExchangeRateDto): Promise<any>;
+  generateOTP(dto: GenerateOtpDto): Promise<any>;
+  consultMobilePaymentR4(dto: ConsultMobilePaymentR4Dto): Promise<any>;
   processMobilePaymentNotificationR4(
     dto: MobilePaymentNotificationR4Dto,
-  ): Promise<any>
-  processAccountDirectDebitR4(dto: AccountDirectDebitDto): Promise<any>
-  processPhoneDirectDebitR4(dto: PhoneDirectDebitDto): Promise<any>
-  processImmediateCreditR4(dto: ImmediateCreditRequestDto): Promise<any>
-  processImmediateDebitR4(dto: ImmediateDebitRequestDto): Promise<any>
-  queryOperationR4(dto: QueryOperationRequestDto): Promise<any>
-  processVueltoR4(dto: VueltoRequestDto): Promise<VueltoResponseDto>
+  ): Promise<any>;
+  processAccountDirectDebitR4(dto: AccountDirectDebitDto): Promise<any>;
+  processPhoneDirectDebitR4(dto: PhoneDirectDebitDto): Promise<any>;
+  processImmediateCreditR4(dto: ImmediateCreditRequestDto): Promise<any>;
+  processImmediateDebitR4(dto: ImmediateDebitRequestDto): Promise<any>;
+  queryOperationR4(dto: QueryOperationRequestDto): Promise<any>;
+  processVueltoR4(dto: VueltoRequestDto): Promise<VueltoResponseDto>;
 
-  consultSentPayments(dto: ConsultSentPaymentsDto): Promise<any>
-  validateReceivedPayment(dto: ValidateReceivedPaymentDto): Promise<any>
-  makeMobilePayment(dto: MakeMobilePaymentDto): Promise<any>
-  requestOtp(dto: RequestOtpDto): Promise<any>
-  executeImmediateDebit(dto: ExecuteImmediateDebitDto): Promise<any>
-  executeImmediateTransfer(dto: ExecuteImmediateTransferDto): Promise<any>
-  queryImmediateTransfer(dto: QueryImmediateTransferDto): Promise<any>
+  consultSentPayments(dto: ConsultSentPaymentsDto): Promise<any>;
+  validateReceivedPayment(dto: ValidateReceivedPaymentDto): Promise<any>;
+  makeMobilePayment(dto: MakeMobilePaymentDto): Promise<any>;
+  requestOtp(dto: RequestOtpDto): Promise<any>;
+  executeImmediateDebit(dto: ExecuteImmediateDebitDto): Promise<any>;
+  executeImmediateTransfer(dto: ExecuteImmediateTransferDto): Promise<any>;
+  queryImmediateTransfer(dto: QueryImmediateTransferDto): Promise<any>;
 }
 
 /**
@@ -98,45 +104,45 @@ export interface PaymentProcessorRepositoryPort {
  */
 export interface InitiatePaymentRequest {
   /** Id interno de la cuenta de empresa (destino en débito/token; origen en otros flujos). */
-  companyAccountId?: string
-  amount: number
-  concept: string
+  companyAccountId?: string;
+  amount: number;
+  concept: string;
   /** Identificación del pagador (p. ej. cédula o RUC). */
-  payerId: string
+  payerId: string;
   /** Nombre completo del pagador (se enviará al banco). */
-  payerName: string
+  payerName: string;
   /** Teléfono del pagador (opcional, para pagos móviles). */
-  payerPhone?: string
+  payerPhone?: string;
   /** Cuenta del pagador (opcional, para débito a cuenta). */
-  payerAccount?: string
+  payerAccount?: string;
   /** Código del banco del pagador (ej. "0134"). */
-  payerBankCode: string
-  ipAddress: string
+  payerBankCode: string;
+  ipAddress: string;
   /** Identificador del proveedor/pasarela a usar (ej. 'banco_plaza'). */
-  provider: string
+  provider: string;
   /** Indica si el pago fue iniciado por el cliente (true) o es un débito automático (false). */
-  isCustomerInitiated?: boolean
+  isCustomerInitiated?: boolean;
 
-  token?: string // El Token_p de 8 dígitos
-  validationType?: 'C' | 'T' // C: Cuenta, T: Teléfono
+  token?: string; // El Token_p de 8 dígitos
+  validationType?: 'C' | 'T'; // C: Cuenta, T: Teléfono
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
-  gatewayCompanyAccount?: string
-  gatewayCurrencyId?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
+  gatewayCompanyAccount?: string;
+  gatewayCurrencyId?: string;
 }
 
 /**
  * Resumen de la respuesta devuelta por una estrategia de pago.
  */
 export interface PaymentResponse {
-  success: boolean
-  reference: string
+  success: boolean;
+  reference: string;
   /** Identificador externo proporcionado por el banco (endtoend). */
-  externalId: string
-  rawResponse: any
+  externalId: string;
+  rawResponse: any;
 }
 
 /**
@@ -144,44 +150,44 @@ export interface PaymentResponse {
  */
 export interface DirectDebitRequest {
   /** Monto a cobrar en VES. */
-  amount: number
+  amount: number;
   /** Concepto de la operacion. */
-  concept: string
+  concept: string;
   /** Codigo bancario del pagador (ej. 0105). */
-  payerBankCode: string
+  payerBankCode: string;
   /** Cuenta del pagador (20 digitos). */
-  payerAccount: string
+  payerAccount: string;
   /** Documento del pagador (ej. V12345678). */
-  payerDocument: string
+  payerDocument: string;
   /** Nombre del pagador. */
-  payerName: string
+  payerName: string;
   /** Identificador del contrato de domiciliacion (max 15 chars). */
-  contratoId: string
+  contratoId: string;
   /** Fecha del contrato en formato YYYY-MM-DD. */
-  fechaContrato: string
+  fechaContrato: string;
   /** IP del cliente para auditoria. */
-  userIp: string
+  userIp: string;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
-  gatewayCompanyAccount?: string
-  gatewayCurrencyCode?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
+  gatewayCompanyAccount?: string;
+  gatewayCurrencyCode?: string;
 }
 
 /**
  * Resultado normalizado al iniciar una domiciliacion.
  */
 export interface DirectDebitResponse {
-  success: boolean
+  success: boolean;
   /** Referencia principal devuelta por el banco para rastreo. */
-  reference: string
+  reference: string;
   /** Codigo de estado de negocio reportado por el banco. */
-  bankCode: string
+  bankCode: string;
   /** Mensaje legible de la pasarela. */
-  message: string
-  rawResponse: any
+  message: string;
+  rawResponse: any;
 }
 
 /**
@@ -189,16 +195,16 @@ export interface DirectDebitResponse {
  */
 export interface CheckSettlementRequest {
   /** Referencia de la domiciliacion a consultar. */
-  reference: string
+  reference: string;
   /** Id de transaccion del banco (persistido en billingId). */
-  transactionId?: string
+  transactionId?: string;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
-  gatewayCompanyAccount?: string
-  userIp?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
+  gatewayCompanyAccount?: string;
+  userIp?: string;
 }
 
 /**
@@ -206,12 +212,12 @@ export interface CheckSettlementRequest {
  */
 export interface SettlementStatusResponse {
   /** Verdadero cuando la liquidacion fue aprobada (0000). */
-  isApproved: boolean
+  isApproved: boolean;
   /** Codigo devuelto por la pasarela/banco. */
-  status: string
+  status: string;
   /** Mensaje legible para el cliente/sistema. */
-  message: string
-  rawResponse: any
+  message: string;
+  rawResponse: any;
 }
 
 /**
@@ -219,17 +225,17 @@ export interface SettlementStatusResponse {
  */
 export interface CheckTransactionRequest {
   /** Identificador que devuelve el banco cuando se inició el pago. */
-  endToEndId: string
+  endToEndId: string;
   /** Referencia del pago, si está disponible. */
-  reference: string
+  reference: string;
   /** Monto exacto de la operación. */
-  amount: number
+  amount: number;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
-  gatewayCompanyAccount?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
+  gatewayCompanyAccount?: string;
 }
 
 /**
@@ -237,12 +243,12 @@ export interface CheckTransactionRequest {
  */
 export interface TransactionStatusResponse {
   /** Verdadero cuando la transacción fue aprobada/cobrada exitosamente. */
-  isApproved: boolean
+  isApproved: boolean;
   /** Código de estado crudo del banco (p. ej. '0000'). */
-  status: string
+  status: string;
   /** Mensaje legible proporcionado por el banco. */
-  message: string
-  rawResponse: any
+  message: string;
+  rawResponse: any;
 }
 
 // Datos normalizados para el uso interno (pago móvil)
@@ -254,28 +260,28 @@ export interface TransactionStatusResponse {
  */
 export interface MobilePaymentRequest {
   /** Código del banco destino (ej. '0102'). */
-  destinationBankCode: string
+  destinationBankCode: string;
   /** Identificación del beneficiario (Cédula/RIF). */
-  destinationId: string
+  destinationId: string;
   /** Teléfono del beneficiario (ej. '4141234567'). */
-  destinationPhone: string
+  destinationPhone: string;
   /** Teléfono desde el que se origina el pago. */
-  sourcePhone: string
+  sourcePhone: string;
   /** Monto a transferir. */
-  amount: number
+  amount: number;
   /** Concepto o descripción del pago. */
-  concept: string
+  concept: string;
   /** IP usada para auditoría. */
-  ip: string
+  ip: string;
   /** Latitud para auditoría/geo (opcional si no aplica). */
-  latitude: string
+  latitude: string;
   /** Longitud para auditoría/geo (opcional si no aplica). */
-  longitude: string
+  longitude: string;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
 }
 
 /**
@@ -284,13 +290,13 @@ export interface MobilePaymentRequest {
  */
 export interface MobilePaymentResponse {
   /** Verdadero si la operación fue exitosa. */
-  success: boolean
+  success: boolean;
   /** Referencia interna o de negocio asociada al pago. */
-  reference: string
+  reference: string;
   /** Mensaje legible con estado o descripción adicional. */
-  message: string
+  message: string;
   /** Respuesta cruda original proporcionada por la pasarela/banco. */
-  rawResponse: any
+  rawResponse: any;
 }
 
 /**
@@ -301,19 +307,19 @@ export interface MobilePaymentResponse {
  */
 export interface CustomerPaymentRequest {
   /** Identificador del cliente (Cédula/RIF). */
-  payerId: string
+  payerId: string;
   /** Teléfono del cliente (se usará como afiliado/remitente). */
-  payerPhone: string
+  payerPhone: string;
   /** Monto a transferir. */
-  amount: number
+  amount: number;
   /** Concepto o descripción del pago. */
-  concept: string
+  concept: string;
   /** IP para auditoría. */
-  ip: string
+  ip: string;
   /** Latitud para auditoría/geo. */
-  latitude: string
+  latitude: string;
   /** Longitud para auditoría/geo. */
-  longitude: string
+  longitude: string;
 }
 
 /**
@@ -327,15 +333,15 @@ export interface CustomerPaymentRequest {
  */
 export interface ConsultMobilePaymentFilters {
   /** Fecha inicial (campo 'fi'). */
-  dateStart?: string
+  dateStart?: string;
   /** Fecha final (campo 'ff'). */
-  dateEnd?: string
+  dateEnd?: string;
   /** Teléfono (campo 'tlfa'). */
-  phone?: string
+  phone?: string;
   /** Tipo de acción: 0=Entrante, 1=Saliente, 2=All (campo 'acc'). */
-  action?: number
+  action?: number;
   /** Referencia opcional. */
-  reference?: string
+  reference?: string;
 }
 
 /**
@@ -343,13 +349,13 @@ export interface ConsultMobilePaymentFilters {
  */
 export interface ConsultMobilePaymentRequest {
   /** RIF o cédula del cliente cuyo historial se consulta. */
-  payerId: string
+  payerId: string;
   /** Filtros opcionales aplicables a la consulta. */
-  filters?: ConsultMobilePaymentFilters
+  filters?: ConsultMobilePaymentFilters;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
 }
 
 /**
@@ -357,23 +363,23 @@ export interface ConsultMobilePaymentRequest {
  */
 export interface MobilePaymentHistoryItem {
   /** Tipo de acción (ej. 'R' para recibido/realizado). */
-  action: string
+  action: string;
   /** Código del banco asociado al pago (ej. '0102'). */
-  bankCode: string
+  bankCode: string;
   /** Teléfono del cliente asociado al pago. */
-  clientPhone: string
+  clientPhone: string;
   /** Teléfono afiliado/remitente del pago. */
-  affiliatePhone: string
+  affiliatePhone: string;
   /** Monto de la operación. */
-  amount: number
+  amount: number;
   /** Fecha de la operación (formato dependiente de la pasarela). */
-  date: string
+  date: string;
   /** Hora de la operación. */
-  time: string
+  time: string;
   /** Referencia asociada al pago. */
-  reference: string
+  reference: string;
   /** Concepto o descripción del pago. */
-  concept: string
+  concept: string;
 }
 
 /**
@@ -381,11 +387,11 @@ export interface MobilePaymentHistoryItem {
  */
 export interface MobilePaymentHistoryResponse {
   /** Número total de registros devueltos. */
-  count: number
+  count: number;
   /** Lista de pagos normalizados. */
-  payments: MobilePaymentHistoryItem[]
+  payments: MobilePaymentHistoryItem[];
   /** Respuesta cruda original proporcionada por la pasarela/banco. */
-  rawResponse: any
+  rawResponse: any;
 }
 
 /**
@@ -396,31 +402,31 @@ export interface MobilePaymentHistoryResponse {
  */
 export interface TransferRequest {
   /** Nombre del beneficiario */
-  beneficiaryName: string
+  beneficiaryName: string;
   /** Identificación del beneficiario (Cédula/RIF) */
-  beneficiaryId: string
+  beneficiaryId: string;
   /** Código del banco beneficiario (ej. '0102') */
-  beneficiaryBankCode: string
+  beneficiaryBankCode: string;
   /** Monto a transferir */
-  amount: number
+  amount: number;
   /** Concepto o descripción de la transferencia */
-  concept: string
+  concept: string;
   /** IP usada para auditoría */
-  ip: string
+  ip: string;
   /** Número de cuenta del beneficiario (opcional) */
-  beneficiaryAccount?: string
+  beneficiaryAccount?: string;
   /** Teléfono del beneficiario (opcional) */
-  beneficiaryPhone?: string
+  beneficiaryPhone?: string;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
-  gatewayCompanyAccount?: string
-  gatewayCompanyName?: string
-  gatewayCompanyBankCode?: string
-  gatewayCurrencyId?: string
-  gatewayCurrencyCode?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
+  gatewayCompanyAccount?: string;
+  gatewayCompanyName?: string;
+  gatewayCompanyBankCode?: string;
+  gatewayCurrencyId?: string;
+  gatewayCurrencyCode?: string;
 }
 
 /**
@@ -429,13 +435,13 @@ export interface TransferRequest {
  */
 export interface TransferResponse {
   /** Indica si la operación fue exitosa */
-  success: boolean
+  success: boolean;
   /** Referencia interna o de negocio asociada a la transferencia */
-  reference: string
+  reference: string;
   /** Mensaje legible con estado o descripción adicional */
-  message: string
+  message: string;
   /** Respuesta cruda original proporcionada por la pasarela/banco */
-  rawResponse: any
+  rawResponse: any;
 }
 
 /**
@@ -447,20 +453,20 @@ export interface TransferResponse {
  */
 export interface CustomerTransferRequest {
   /** Nombre completo del pagador (cliente) */
-  payerName: string
+  payerName: string;
   /** Identificación del pagador (Cédula/RIF) */
-  payerId: string
+  payerId: string;
   /** Cuenta bancaria del pagador (formato según pasarela, ej. 20 dígitos) */
-  payerAccount: string
+  payerAccount: string;
   /** Monto a transferir */
-  amount: number
+  amount: number;
   /** Concepto o descripción de la transferencia */
-  concept: string
+  concept: string;
   /** IP usada para auditoría */
-  ip: string
+  ip: string;
 
   /** Moneda resuelta desde BD (id de `currency` con code VES). */
-  gatewayCurrencyId?: string
+  gatewayCurrencyId?: string;
 }
 
 /**
@@ -469,21 +475,21 @@ export interface CustomerTransferRequest {
  */
 export interface ConsultTransferStatusRequest {
   /** Identificador del originador usado en la URL (quien envió el dinero) */
-  originatorId: string
+  originatorId: string;
   /** Cuenta de origen (normalmente 20 dígitos) */
-  account: string
+  account: string;
   /** Referencia proporcionada por el banco al realizar el pago */
-  reference: string
+  reference: string;
   /** Monto exacto de la operación */
-  amount: number
+  amount: number;
   /** Fecha de la operación en formato YYMMDD */
-  date: string
+  date: string;
   /** Canal o subcanal a usar en la consulta (ej. '23') */
-  channel: string
+  channel: string;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
 }
 
 /**
@@ -492,13 +498,13 @@ export interface ConsultTransferStatusRequest {
  */
 export interface TransactionTransferStatusResponse {
   /** Verdadero si la transacción fue localizada y está en estado exitoso */
-  isSuccess: boolean
+  isSuccess: boolean;
   /** Mensaje legible con información sobre el estado */
-  message: string
+  message: string;
   /** Código de estado/cruce devuelto por el banco */
-  bankCode: string
+  bankCode: string;
   /** Respuesta cruda original de la pasarela/banco */
-  rawResponse: any
+  rawResponse: any;
 }
 
 export enum DebitValidationType {
@@ -508,39 +514,39 @@ export enum DebitValidationType {
 
 export class RequestDebitTokenRequest {
   /** Id interno de la cuenta de empresa (destino en débito/token; origen en otros flujos). */
-  companyAccountId: string
+  companyAccountId: string;
   /** Tipo de validación (`C` = cuenta, `T` = teléfono). */
-  validationType: DebitValidationType
+  validationType: DebitValidationType;
   /** Identificación del pagador (Cédula/RIF). */
-  payerId: string
+  payerId: string;
   /** Código del banco del pagador (ej. '0134'). */
-  payerBankCode: string
+  payerBankCode: string;
   /** Monto solicitado para el token. */
-  amount: number
+  amount: number;
   /** IP de origen para auditoría. */
-  ipAddress?: string
+  ipAddress?: string;
   /** Cuenta del pagador (cuando aplica). */
-  payerAccount?: string
+  payerAccount?: string;
   /** Teléfono del pagador (cuando aplica). */
-  payerPhone?: string
+  payerPhone?: string;
 
   /** Credenciales/campos operativos resueltos desde BD para Banco Plaza. */
-  gatewayApiKey?: string
-  gatewayApiSecret?: string
-  gatewayCompanyId?: string
-  gatewayCompanyAccount?: string
-  gatewayCurrencyId?: string
+  gatewayApiKey?: string;
+  gatewayApiSecret?: string;
+  gatewayCompanyId?: string;
+  gatewayCompanyAccount?: string;
+  gatewayCurrencyId?: string;
 }
 
 export interface DebitTokenResponse {
   /** Indica si la solicitud fue exitosa. */
-  success: boolean
+  success: boolean;
   /** Mensaje legible del banco o sistema. */
-  message: string
+  message: string;
   /** Código de estado devuelto por la pasarela/banco. */
-  bankCode: string
+  bankCode: string;
   /** Respuesta cruda original del proveedor. */
-  rawResponse: any
+  rawResponse: any;
 }
 
 // BANCO MERCANTIL
@@ -548,292 +554,292 @@ export interface DebitTokenResponse {
  * Interfaz para la solicitud entrante del webhook
  */
 export interface WebhookNotificationDebitRequest {
-  provider: string // ej: 'banco_mercantil'
+  provider: string; // ej: 'banco_mercantil'
   payload: {
-    data: string // Aquí es donde viene el Base64 del banco
-  } // El body crudo del request
+    data: string; // Aquí es donde viene el Base64 del banco
+  }; // El body crudo del request
 }
 
 /**
  * Respuesta que la estrategia devuelve para que el controlador la mande al banco
  */
 export interface WebhookNotificationDebitResponse {
-  statusCode: number
-  responseBody: any
-  decryptedData?: any
+  statusCode: number;
+  responseBody: any;
+  decryptedData?: any;
 }
 
 /**
  * Datos necesarios para generar la URL del botón de pagos web.
  */
 export interface GenerateWebPaymentUrlRequest {
-  companyAccountId: string
-  amount: number
-  concept: string
-  payerId: string
-  payerName: string
-  provider: string // ej: 'banco_mercantil'
+  companyAccountId: string;
+  amount: number;
+  concept: string;
+  payerId: string;
+  payerName: string;
+  provider: string; // ej: 'banco_mercantil'
 }
 
 /**
  * Respuesta que devuelve la URL lista para redireccionar.
  */
 export interface GenerateWebPaymentUrlResponse {
-  paymentUrl: string
+  paymentUrl: string;
 }
 
 // BANCO  R4
 
 export interface ExchangeRateRequest {
-  companyAccountId: string
-  date: string
-  currency: string
+  companyAccountId: string;
+  date: string;
+  currency: string;
 }
 
 export interface ExchangeRateResponse {
-  success: boolean
-  exchangeRate: number
+  success: boolean;
+  exchangeRate: number;
 }
 
 export interface GenerateOtpRequest {
-  companyAccountId: string
-  bankCode: string
-  amount: number
-  phoneNumber: string
-  nationalId: string
+  companyAccountId: string;
+  bankCode: string;
+  amount: number;
+  phoneNumber: string;
+  nationalId: string;
 }
 
 export interface GenerateOtpResponse {
-  code: string
-  message: string
-  success: boolean
+  code: string;
+  message: string;
+  success: boolean;
 }
 
 export interface QueryOperationRequest {
-  companyAccountId: string
-  reference: string
+  companyAccountId: string;
+  reference: string;
 }
 
 export interface QueryOperationGatewayRequest {
-  id: string
-  commerceKey: string
+  id: string;
+  commerceKey: string;
 }
 
 export interface QueryOperationGatewayResponse {
-  code: string
-  reference: string
-  success: boolean
-  rawResponse: any
+  code: string;
+  reference: string;
+  success: boolean;
+  rawResponse: any;
 }
 
 export interface InitiateP2pPaymentRequest {
-  companyAccountId: string
-  provider: string
-  amount: number
-  payerId: string
-  payerPhone: string
-  payerBankCode: string
-  ipAddress: string
+  companyAccountId: string;
+  provider: string;
+  amount: number;
+  payerId: string;
+  payerPhone: string;
+  payerBankCode: string;
+  ipAddress: string;
 }
 
 export interface InitiateP2pPaymentResponse {
-  success: boolean
-  reference: string
-  message: string
-  rawResponse?: any // Opcional, por si quieres guardar el JSON exacto del banco en logs
-  internalId?: string
-  warning?: boolean
+  success: boolean;
+  reference: string;
+  message: string;
+  rawResponse?: any; // Opcional, por si quieres guardar el JSON exacto del banco en logs
+  internalId?: string;
+  warning?: boolean;
 }
 
 export interface VerifyC2pPaymentRequest {
-  companyAccountId: string
-  provider: string
-  amount: number
-  payerPhone: string
-  paymentReference: string
-  trxDate?: string
-  ipAddress: string
+  companyAccountId: string;
+  provider: string;
+  amount: number;
+  payerPhone: string;
+  paymentReference: string;
+  trxDate?: string;
+  ipAddress: string;
 }
 
 export interface VerifyC2pPaymentResponse {
-  success: boolean
-  status: string
-  rawResponse: any
+  success: boolean;
+  status: string;
+  rawResponse: any;
 }
 
 // BANCO EXTERIOR
 // BANCO EXTERIOR
 
 export interface ConsultSentPaymentsRequest {
-  companyAccountId: string
-  clientId: string
-  channelId: string
-  date: string
-  receiverPhone: string
-  startPosition: number
+  companyAccountId: string;
+  clientId: string;
+  channelId: string;
+  date: string;
+  receiverPhone: string;
+  startPosition: number;
 }
 
 export interface ValidateReceivedPaymentRequest {
-  companyAccountId: string
-  clientId: string
-  channelId: string
-  date: string
-  senderPhone: string
+  companyAccountId: string;
+  clientId: string;
+  channelId: string;
+  date: string;
+  senderPhone: string;
 }
 
 export interface MakeMobilePaymentRequest {
-  companyAccountId: string
-  ip: string
-  idCliente: string
-  idCanal: string
-  idOperacion: string
-  fechaOperacion: string
-  codigoBanco: string
-  nombreBanco: string
-  concepto: string
-  telefonoEmisor: string
-  cuentaEmisor: string
-  idBeneficiario: string
-  telefonoBeneficiario: string
-  moneda: string
-  monto: number
-  envioEmailEmisor: boolean
-  envioEmailBeneficiario: boolean
+  companyAccountId: string;
+  ip: string;
+  idCliente: string;
+  idCanal: string;
+  idOperacion: string;
+  fechaOperacion: string;
+  codigoBanco: string;
+  nombreBanco: string;
+  concepto: string;
+  telefonoEmisor: string;
+  cuentaEmisor: string;
+  idBeneficiario: string;
+  telefonoBeneficiario: string;
+  moneda: string;
+  monto: number;
+  envioEmailEmisor: boolean;
+  envioEmailBeneficiario: boolean;
 }
 
 export interface RequestOtpRequest {
-  companyAccountId: string
+  companyAccountId: string;
   datosPeticion: {
-    canal: string
-    canalCore: string
-    idUsuario: string
-    ip: string
-    idSesion: string
-    idCliente: string
-    encabezado?: Record<string, any>
+    canal: string;
+    canalCore: string;
+    idUsuario: string;
+    ip: string;
+    idSesion: string;
+    idCliente: string;
+    encabezado?: Record<string, any>;
     datos: Array<{
-      bancoDebito: string
-      bancoCredito: string
+      bancoDebito: string;
+      bancoCredito: string;
       datosOperacion: {
-        instrumentoLocal: string
-      }
+        instrumentoLocal: string;
+      };
       monto: {
-        montoOperacion: number
-        moneda: string
-      }
+        montoOperacion: number;
+        moneda: string;
+      };
       cuentaDebito: {
-        tipoInstrumento: string
-        instrumento: string
-      }
+        tipoInstrumento: string;
+        instrumento: string;
+      };
       deudor: {
-        nombreEsquema: string
-        idCliente: string
-      }
+        nombreEsquema: string;
+        idCliente: string;
+      };
       acreedor: {
-        nombreEsquema: string
-        idCliente: string
-      }
+        nombreEsquema: string;
+        idCliente: string;
+      };
       cuentaCredito: {
-        tipoInstrumento: string
-        instrumento: string
-      }
-    }>
-  }
+        tipoInstrumento: string;
+        instrumento: string;
+      };
+    }>;
+  };
 }
 
 export interface ExecuteImmediateDebitRequest {
-  companyAccountId: string
+  companyAccountId: string;
   datosPeticion: {
-    canal: string
-    canalCore: string
-    idUsuario: string
-    ip: string
-    idSesion: string
-    idCliente: string
-    encabezado?: Record<string, any>
+    canal: string;
+    canalCore: string;
+    idUsuario: string;
+    ip: string;
+    idSesion: string;
+    idCliente: string;
+    encabezado?: Record<string, any>;
     datos: Array<{
-      bancoDebito: string
-      bancoCredito: string
+      bancoDebito: string;
+      bancoCredito: string;
       datosOperacion: {
-        instrumentoLocal: string
-        idOperacion: string
-        concepto: string
-      }
+        instrumentoLocal: string;
+        idOperacion: string;
+        concepto: string;
+      };
       monto: {
-        montoOperacion: number
-        moneda: string
-      }
+        montoOperacion: number;
+        moneda: string;
+      };
       cuentaDebito: {
-        tipoInstrumento: string
-        instrumento: string
-      }
+        tipoInstrumento: string;
+        instrumento: string;
+      };
       deudor: {
-        nombreEsquema: string
-        idCliente: string
-      }
+        nombreEsquema: string;
+        idCliente: string;
+      };
       acreedor: {
-        nombreEsquema: string
-        idCliente: string
-      }
+        nombreEsquema: string;
+        idCliente: string;
+      };
       cuentaCredito: {
-        tipoInstrumento: string
-        instrumento: string
-      }
+        tipoInstrumento: string;
+        instrumento: string;
+      };
       autenticacion: {
-        clavePago: string
-      }
-    }>
-  }
+        clavePago: string;
+      };
+    }>;
+  };
 }
 
 export interface RequestImmediateTransferOAuthTokenRequest {
-  grant_type: 'client_credentials'
-  client_id: string
-  client_secret: string
+  grant_type: 'client_credentials';
+  client_id: string;
+  client_secret: string;
 }
 
 export interface ExecuteImmediateTransferRequest {
-  companyAccountId: string
+  companyAccountId: string;
   datosPeticion: {
-    idCliente: string
-    idSesion: string
-    idCanal: number
-    idUsuario?: string
-    idTerminal?: string
-    idConsumidor?: string
-  }
+    idCliente: string;
+    idSesion: string;
+    idCanal: number;
+    idUsuario?: string;
+    idTerminal?: string;
+    idConsumidor?: string;
+  };
   transferenciaInmediata: {
-    ctaPagadora: string
-    ctaReceptora?: string
-    codigobancoReceptor: string
-    telefonoReceptor?: string
-    idReceptor: string
-    monto: number
-    moneda: 'VES'
-    nombreBeneficiario: string
-    concepto: string
-  }
+    ctaPagadora: string;
+    ctaReceptora?: string;
+    codigobancoReceptor: string;
+    telefonoReceptor?: string;
+    idReceptor: string;
+    monto: number;
+    moneda: 'VES';
+    nombreBeneficiario: string;
+    concepto: string;
+  };
 }
 
 export interface QueryImmediateTransferRequest {
-  companyAccountId: string
+  companyAccountId: string;
   datosPeticion: {
-    idCliente: string
-    idSesion?: string
-  }
+    idCliente: string;
+    idSesion?: string;
+  };
   filtrosConsulta: {
-    referencia?: string
-    fecha?: string
-    cuenta?: string
-    idTransaccion?: string
-  }
+    referencia?: string;
+    fecha?: string;
+    cuenta?: string;
+    idTransaccion?: string;
+  };
 }
 
 export interface BancoExteriorApiResponse {
-  success: boolean
-  message: string
-  data: any
-  rawResponse: any
+  success: boolean;
+  message: string;
+  data: any;
+  rawResponse: any;
 }
 
 /**
@@ -846,13 +852,15 @@ export abstract class PaymentGatewayPort {
    * Indica si la estrategia puede manejar el proveedor dado.
    * @param provider - Nombre del proveedor a evaluar
    */
-  abstract canHandle(provider: string): boolean
+  abstract canHandle(provider: string): boolean;
 
   /**
    * Ejecuta la operación de débito en la pasarela correspondiente.
    * @param data - Payload con la información del pago
    */
-  abstract initiateDebit(data: InitiatePaymentRequest): Promise<PaymentResponse>
+  abstract initiateDebit(
+    data: InitiatePaymentRequest,
+  ): Promise<PaymentResponse>;
 
   /**
    * Consulta el estado de una transacción previamente iniciada.
@@ -860,7 +868,7 @@ export abstract class PaymentGatewayPort {
    */
   abstract checkTransactionStatus(
     data: CheckTransactionRequest,
-  ): Promise<TransactionStatusResponse>
+  ): Promise<TransactionStatusResponse>;
 
   /**
    * Envía un pago móvil usando la estrategia correspondiente.
@@ -870,7 +878,7 @@ export abstract class PaymentGatewayPort {
    */
   abstract sendMobilePayment(
     data: MobilePaymentRequest,
-  ): Promise<MobilePaymentResponse>
+  ): Promise<MobilePaymentResponse>;
 
   /**
    * Envía un pago móvil iniciado por un cliente.
@@ -880,7 +888,7 @@ export abstract class PaymentGatewayPort {
    */
   abstract sendCustomerMobilePayment(
     data: CustomerPaymentRequest,
-  ): Promise<MobilePaymentResponse>
+  ): Promise<MobilePaymentResponse>;
 
   /**
    * Recupera el historial de pagos móviles para un cliente.
@@ -890,14 +898,14 @@ export abstract class PaymentGatewayPort {
    */
   abstract getMobilePaymentHistory(
     data: ConsultMobilePaymentRequest,
-  ): Promise<MobilePaymentHistoryResponse>
+  ): Promise<MobilePaymentHistoryResponse>;
 
   /**
    * Inicia una transferencia usando la estrategia correspondiente.
    * @param data - Datos normalizados de la transferencia
    * @returns Resultado normalizado con el estado de la operación
    */
-  abstract initiateTransfer(data: TransferRequest): Promise<TransferResponse>
+  abstract initiateTransfer(data: TransferRequest): Promise<TransferResponse>;
 
   /**
    * Inicia una transferencia originada por un cliente hacia la empresa.
@@ -907,7 +915,7 @@ export abstract class PaymentGatewayPort {
    */
   abstract initiateCustomerTransfer(
     data: CustomerTransferRequest,
-  ): Promise<TransferResponse>
+  ): Promise<TransferResponse>;
 
   /**
    * Consulta el estado de una transferencia en la pasarela.
@@ -916,28 +924,28 @@ export abstract class PaymentGatewayPort {
    */
   abstract consultTransferStatus(
     data: ConsultTransferStatusRequest,
-  ): Promise<TransactionTransferStatusResponse>
+  ): Promise<TransactionTransferStatusResponse>;
 
   /**
    * Solicita el Token OTP para débito inmediato.
    */
   abstract requestDebitToken(
     data: RequestDebitTokenRequest,
-  ): Promise<DebitTokenResponse>
+  ): Promise<DebitTokenResponse>;
 
   /**
    * Inicia un cobro por domiciliacion (Debito Inmediato CCE).
    */
   abstract initiateDirectDebit(
     data: DirectDebitRequest,
-  ): Promise<DirectDebitResponse>
+  ): Promise<DirectDebitResponse>;
 
   /**
    * Consulta la liquidacion de una domiciliacion.
    */
   abstract checkSettlement(
     data: CheckSettlementRequest,
-  ): Promise<SettlementStatusResponse>
+  ): Promise<SettlementStatusResponse>;
 
   // BANCO MERCANTIL
   /**
@@ -946,7 +954,7 @@ export abstract class PaymentGatewayPort {
    */
   abstract processWebhookNotificationDebit(
     data: WebhookNotificationDebitRequest,
-  ): Promise<WebhookNotificationDebitResponse>
+  ): Promise<WebhookNotificationDebitResponse>;
 
   /**
    * Genera la URL de redirección para pasarelas de pago web (Ej: Botón Mercantil)
@@ -954,52 +962,52 @@ export abstract class PaymentGatewayPort {
    */
   abstract generateWebPaymentUrl(
     data: GenerateWebPaymentUrlRequest,
-  ): Promise<GenerateWebPaymentUrlResponse>
+  ): Promise<GenerateWebPaymentUrlResponse>;
 
   // BANCO R4 (Opcional - solo para estrategias que soporten consulta de tasas)
-  getExchangeRate?(data: ExchangeRateRequest): Promise<ExchangeRateResponse>
+  getExchangeRate?(data: ExchangeRateRequest): Promise<ExchangeRateResponse>;
   consultOperations?(
     data: QueryOperationGatewayRequest,
-  ): Promise<QueryOperationGatewayResponse>
+  ): Promise<QueryOperationGatewayResponse>;
 
   abstract processP2pPayment(
     data: InitiateP2pPaymentRequest,
-  ): Promise<InitiateP2pPaymentResponse>
+  ): Promise<InitiateP2pPaymentResponse>;
 
   abstract verifyC2pPayment(
     data: VerifyC2pPaymentRequest,
-  ): Promise<VerifyC2pPaymentResponse>
+  ): Promise<VerifyC2pPaymentResponse>;
 
   // BANCO EXTERIOR
   consultSentPayments?(
     data: ConsultSentPaymentsRequest,
-  ): Promise<BancoExteriorApiResponse>
+  ): Promise<BancoExteriorApiResponse>;
 
   validateReceivedPayment?(
     data: ValidateReceivedPaymentRequest,
-  ): Promise<BancoExteriorApiResponse>
+  ): Promise<BancoExteriorApiResponse>;
 
-  requestMakeMobilePaymentOAuthToken?(): Promise<string>
+  requestMakeMobilePaymentOAuthToken?(): Promise<string>;
 
   makeMobilePayment?(
     data: MakeMobilePaymentRequest,
-  ): Promise<BancoExteriorApiResponse>
+  ): Promise<BancoExteriorApiResponse>;
 
-  requestOtp?(data: RequestOtpRequest): Promise<BancoExteriorApiResponse>
+  requestOtp?(data: RequestOtpRequest): Promise<BancoExteriorApiResponse>;
 
-  requestImmediateDebitOAuthToken?(): Promise<string>
+  requestImmediateDebitOAuthToken?(): Promise<string>;
 
   executeImmediateDebit?(
     data: ExecuteImmediateDebitRequest,
-  ): Promise<BancoExteriorApiResponse>
+  ): Promise<BancoExteriorApiResponse>;
 
-  requestImmediateTransferOAuthToken?(): Promise<string>
+  requestImmediateTransferOAuthToken?(): Promise<string>;
 
   executeImmediateTransfer?(
     data: ExecuteImmediateTransferRequest,
-  ): Promise<BancoExteriorApiResponse>
+  ): Promise<BancoExteriorApiResponse>;
 
   queryImmediateTransfer?(
     data: QueryImmediateTransferRequest,
-  ): Promise<BancoExteriorApiResponse>
+  ): Promise<BancoExteriorApiResponse>;
 }

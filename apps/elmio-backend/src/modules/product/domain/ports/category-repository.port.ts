@@ -1,8 +1,6 @@
 import type { Category } from '../category';
 
-export const CATEGORY_REPOSITORY_PORT = Symbol(
-  'CATEGORY_REPOSITORY_PORT',
-);
+export const CATEGORY_REPOSITORY_PORT = Symbol('CATEGORY_REPOSITORY_PORT');
 
 /**
  * Puerto del dominio para persistir y consultar categorias de productos.

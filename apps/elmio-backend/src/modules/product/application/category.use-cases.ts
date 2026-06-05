@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Category } from '../domain/category';
 import {
@@ -55,7 +61,9 @@ export class CreateCategoryUseCase {
 
   async execute(input: CreateCategoryInput): Promise<Category> {
     if (!input.name?.trim()) {
-      throw new BadRequestException('El nombre de la categoría es obligatorio.');
+      throw new BadRequestException(
+        'El nombre de la categoría es obligatorio.',
+      );
     }
 
     const slug = input.name
@@ -99,7 +107,9 @@ export class UpdateCategoryUseCase {
     }
 
     if (!input.name?.trim()) {
-      throw new BadRequestException('El nombre de la categoría es obligatorio.');
+      throw new BadRequestException(
+        'El nombre de la categoría es obligatorio.',
+      );
     }
 
     const slug = input.name
@@ -113,7 +123,9 @@ export class UpdateCategoryUseCase {
 
     const other = await this.repository.findBySlug(slug);
     if (other && other.id !== id) {
-      throw new ConflictException(`Ya existe otra categoría con el nombre "${input.name}".`);
+      throw new ConflictException(
+        `Ya existe otra categoría con el nombre "${input.name}".`,
+      );
     }
 
     const updated: Category = {

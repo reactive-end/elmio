@@ -16,8 +16,20 @@ export interface BillingCutoffResult {
   processedCompaniesCount: number;
   processedRetailTxsCount: number;
   details: {
-    companies: Array<{ id: string; name: string; amount: number; success: boolean; error?: string }>;
-    retail: Array<{ transactionId: string; concept: string; amount: number; success: boolean; error?: string }>;
+    companies: Array<{
+      id: string;
+      name: string;
+      amount: number;
+      success: boolean;
+      error?: string;
+    }>;
+    retail: Array<{
+      transactionId: string;
+      concept: string;
+      amount: number;
+      success: boolean;
+      error?: string;
+    }>;
   };
 }
 
@@ -42,13 +54,17 @@ export class ExecuteBillingCutoffUseCase {
   async execute(cutoffDateStr?: string): Promise<BillingCutoffResult> {
     const cutoffDate = cutoffDateStr ? new Date(cutoffDateStr) : new Date();
     if (Number.isNaN(cutoffDate.getTime())) {
-      throw new BadRequestException('Formato de fecha de corte inválido (debe ser YYYY-MM-DD).');
+      throw new BadRequestException(
+        'Formato de fecha de corte inválido (debe ser YYYY-MM-DD).',
+      );
     }
 
-    this.logger.log(`Iniciando ejecución de cobros para la fecha de corte: ${cutoffDate.toISOString()}`);
+    this.logger.log(
+      `Iniciando ejecución de cobros para la fecha de corte: ${cutoffDate.toISOString()}`,
+    );
 
     const transactions = await this.repository.findAllTransactions();
-    
+
     // Filtrar las transacciones pendientes que sean de tipo cobro/cargo y cuya fecha sea igual o anterior a la fecha de corte
     const pendingCharges = transactions.filter((tx) => {
       if (tx.kind !== 'charge' || tx.status !== 'pending') return false;
@@ -59,7 +75,8 @@ export class ExecuteBillingCutoffUseCase {
     if (pendingCharges.length === 0) {
       return {
         success: true,
-        message: 'No se encontraron cargos de facturación pendientes para procesar en la fecha indicada.',
+        message:
+          'No se encontraron cargos de facturación pendientes para procesar en la fecha indicada.',
         processedCompaniesCount: 0,
         processedRetailTxsCount: 0,
         details: { companies: [], retail: [] },
@@ -67,11 +84,25 @@ export class ExecuteBillingCutoffUseCase {
     }
 
     // Separar cargos de empresas (corporativos) y cargos de personas naturales (individuales)
-    const corporateTxs = pendingCharges.filter((tx) => tx.enterpriseId !== null);
+    const corporateTxs = pendingCharges.filter(
+      (tx) => tx.enterpriseId !== null,
+    );
     const retailTxs = pendingCharges.filter((tx) => tx.enterpriseId === null);
 
-    const companiesResults: Array<{ id: string; name: string; amount: number; success: boolean; error?: string }> = [];
-    const retailResults: Array<{ transactionId: string; concept: string; amount: number; success: boolean; error?: string }> = [];
+    const companiesResults: Array<{
+      id: string;
+      name: string;
+      amount: number;
+      success: boolean;
+      error?: string;
+    }> = [];
+    const retailResults: Array<{
+      transactionId: string;
+      concept: string;
+      amount: number;
+      success: boolean;
+      error?: string;
+    }> = [];
 
     // ─────────────────────────────────────────────────────────────────────────
     // 1. COBRO CONSOLIDADO A EMPRESAS (DOMICILIACIÓN CORPORATIVA)
@@ -97,11 +128,19 @@ export class ExecuteBillingCutoffUseCase {
 
         // Buscar cuenta bancaria de cobro (domiciliación) de la empresa
         const billingAccount = enterprise.bankAccounts?.[0];
-        if (!billingAccount || !billingAccount.accountNumber || !billingAccount.bank) {
-          throw new Error('La empresa no tiene cuentas bancarias de domiciliación registradas.');
+        if (
+          !billingAccount ||
+          !billingAccount.accountNumber ||
+          !billingAccount.bank
+        ) {
+          throw new Error(
+            'La empresa no tiene cuentas bancarias de domiciliación registradas.',
+          );
         }
 
-        this.logger.log(`Procesando cobro consolidado de ${totalAmount} Bs. para la empresa: ${companyName}`);
+        this.logger.log(
+          `Procesando cobro consolidado de ${totalAmount} Bs. para la empresa: ${companyName}`,
+        );
 
         // Ejecutar débito directo CCE (Banco R4 o Plaza) a la cuenta de la organización
         // El R4 fallback o cuenta comercial del procesador se usará en el repositorio de pago
@@ -127,8 +166,13 @@ export class ExecuteBillingCutoffUseCase {
           success: true,
         });
       } catch (err) {
-        const errMsg = err instanceof Error ? err.message : 'Error de comunicación bancaria.';
-        this.logger.error(`Fallo en cobro de empresa ${companyName}: ${errMsg}`);
+        const errMsg =
+          err instanceof Error
+            ? err.message
+            : 'Error de comunicación bancaria.';
+        this.logger.error(
+          `Fallo en cobro de empresa ${companyName}: ${errMsg}`,
+        );
         companiesResults.push({
           id: enterpriseId,
           name: companyName,
@@ -145,22 +189,32 @@ export class ExecuteBillingCutoffUseCase {
     for (const tx of retailTxs) {
       try {
         if (!tx.collaboratorId) {
-          throw new Error('La transacción de cargo no tiene un colaborador o cliente asociado.');
+          throw new Error(
+            'La transacción de cargo no tiene un colaborador o cliente asociado.',
+          );
         }
 
-        const profile = await this.repository.findCollaboratorById(tx.collaboratorId);
+        const profile = await this.repository.findCollaboratorById(
+          tx.collaboratorId,
+        );
         if (!profile) {
           throw new Error('No se encontró el perfil de cliente en el sistema.');
         }
 
-        const bankAccounts = await this.repository.findBankAccountsByPersonProfileId(profile.id);
-        const primaryAccount = bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
+        const bankAccounts =
+          await this.repository.findBankAccountsByPersonProfileId(profile.id);
+        const primaryAccount =
+          bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
 
         if (!primaryAccount) {
-          throw new Error('El cliente no tiene datos de cuenta bancaria registrados para la domiciliación.');
+          throw new Error(
+            'El cliente no tiene datos de cuenta bancaria registrados para la domiciliación.',
+          );
         }
 
-        this.logger.log(`Procesando cobro de cuota domiciliada de ${tx.amount} Bs. para cliente: ${profile.name} ${profile.lastName}`);
+        this.logger.log(
+          `Procesando cobro de cuota domiciliada de ${tx.amount} Bs. para cliente: ${profile.name} ${profile.lastName}`,
+        );
 
         // Ejecutar domiciliación electrónica individual en Banco R4
         await this.paymentProcessorService.processAccountDirectDebitR4({
@@ -183,8 +237,11 @@ export class ExecuteBillingCutoffUseCase {
           success: true,
         });
       } catch (err) {
-        const errMsg = err instanceof Error ? err.message : 'Error en cobro domiciliado.';
-        this.logger.error(`Fallo en cobro de cuota para transacción ${tx.id}: ${errMsg}`);
+        const errMsg =
+          err instanceof Error ? err.message : 'Error en cobro domiciliado.';
+        this.logger.error(
+          `Fallo en cobro de cuota para transacción ${tx.id}: ${errMsg}`,
+        );
         retailResults.push({
           transactionId: tx.id,
           concept: tx.concept,
@@ -195,7 +252,9 @@ export class ExecuteBillingCutoffUseCase {
       }
     }
 
-    const success = companiesResults.every((c) => c.success) && retailResults.every((r) => r.success);
+    const success =
+      companiesResults.every((c) => c.success) &&
+      retailResults.every((r) => r.success);
 
     return {
       success,

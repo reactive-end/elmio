@@ -41,7 +41,10 @@ export class TypeOrmRecoveryCodeRepository implements RecoveryCodeRepositoryPort
    * @param codeHash Hash del codigo ingresado por el usuario.
    * @returns Codigo valido si existe, null si no se encuentra o esta expirado/usado.
    */
-  async findValidCode(userId: string, codeHash: string): Promise<RecoveryCode | null> {
+  async findValidCode(
+    userId: string,
+    codeHash: string,
+  ): Promise<RecoveryCode | null> {
     const entity = await this.repo.findOne({
       where: {
         userId,

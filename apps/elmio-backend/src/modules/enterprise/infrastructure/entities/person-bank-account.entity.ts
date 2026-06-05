@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Entity,
   PrimaryColumn,
@@ -7,8 +7,8 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-} from 'typeorm'
-import { PersonProfileEntity } from './person-profile.entity'
+} from 'typeorm';
+import { PersonProfileEntity } from './person-profile.entity';
 
 /**
  * Entidad que representa una cuenta bancaria de una persona natural o colaborador.
@@ -17,39 +17,39 @@ import { PersonProfileEntity } from './person-profile.entity'
 @Entity('person_bank_accounts')
 export class PersonBankAccountEntity {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @ManyToOne(() => PersonProfileEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'personProfileId' })
-  personProfile!: PersonProfileEntity
+  personProfile!: PersonProfileEntity;
 
   @Column({ type: 'uuid' })
-  personProfileId!: string
+  personProfileId!: string;
 
   @Column({ type: 'varchar', length: 4 })
-  bankCode!: string
+  bankCode!: string;
 
   @Column({ type: 'varchar', length: 100 })
-  bankName!: string
+  bankName!: string;
 
   @Column({ type: 'varchar', length: 20 })
-  accountNumber!: string
+  accountNumber!: string;
 
   @Column({ type: 'varchar', length: 20 })
-  phoneNumber!: string
+  phoneNumber!: string;
 
   @Column({ type: 'varchar', length: 20 })
-  documentId!: string
+  documentId!: string;
 
   @Column({ type: 'text', nullable: true })
-  documentPhoto!: string | null
+  documentPhoto!: string | null;
 
   @Column({ type: 'boolean', default: true })
-  isPrimary!: boolean
+  isPrimary!: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt!: Date
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt!: Date
+  updatedAt!: Date;
 }

@@ -84,7 +84,9 @@ export interface EnterpriseRepositoryPort {
    * @param personProfileId ID del perfil.
    * @returns Lista de cuentas bancarias.
    */
-  findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]>;
+  findBankAccountsByPersonProfileId(
+    personProfileId: string,
+  ): Promise<PersonBankAccount[]>;
 
   /**
    * Busca una cuenta bancaria por su ID.
@@ -120,7 +122,9 @@ export interface EnterpriseRepositoryPort {
    * @param loanRequestId ID de la solicitud.
    * @returns Desembolso o null.
    */
-  findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null>;
+  findDisbursementByLoanRequestId(
+    loanRequestId: string,
+  ): Promise<Disbursement | null>;
 
   // --- Purchases ---
 
@@ -288,13 +292,12 @@ export interface EnterpriseRepositoryPort {
    * @returns Transaccion guardada.
    */
   saveTransaction(transaction: Transaction): Promise<Transaction>;
-  
+
   /**
    * Recupera todas las transacciones del sistema.
    * @returns Lista de todas las transacciones.
    */
   findAllTransactions(): Promise<Transaction[]>;
-
 
   // --- Platform Config ---
 

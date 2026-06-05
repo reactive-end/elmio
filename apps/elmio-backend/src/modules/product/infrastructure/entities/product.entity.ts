@@ -134,4 +134,3 @@ export class ProductEntity {
   @Column({ type: 'varchar', length: 100 })
   updatedAt!: string;
 }
-

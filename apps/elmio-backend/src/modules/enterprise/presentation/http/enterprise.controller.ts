@@ -23,6 +23,7 @@ import type { Request, Response } from 'express';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import { RolesGuard } from '../../../auth/presentation/guards/roles.guard';
 import { Roles } from '../../../auth/presentation/guards/roles.decorator';
+import { RbacGroup } from '../../../auth/presentation/guards/rbac-group.decorator';
 import { MercantilStorageService } from '../../../mercantil/application/services/mercantil-storage.service';
 import { UserRole } from '../../../auth/domain/user';
 import {
@@ -36,11 +37,15 @@ import { ManageLoanRequestsUseCase } from '../../application/manage-loan-request
 import { GetAccountStatementUseCase } from '../../application/get-account-statement.use-case';
 import { CreateTransactionUseCase } from '../../application/create-transaction.use-case';
 import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
-import { ExecuteBillingCutoffUseCase, type BillingCutoffResult } from '../../application/execute-billing-cutoff.use-case';
+import {
+  ExecuteBillingCutoffUseCase,
+  type BillingCutoffResult,
+} from '../../application/execute-billing-cutoff.use-case';
 import { ManageDisburseUseCase } from '../../application/manage-disburse.use-case';
 import { ManageVueltoUseCase } from '../../application/manage-vuelto.use-case';
 import { ManagePurchasesUseCase } from '../../application/manage-purchases.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
+import type { Disbursement } from '../../domain/disbursement';
 import {
   CreateEnterpriseDto,
   UpdateEnterpriseDto,
@@ -97,6 +102,7 @@ export class EnterpriseController {
 
   /** POST /api/enterprises - Crea la empresa del usuario. */
   @Post()
+  @RbacGroup('enterprise-onboarding')
   async create(@Req() req: Request, @Body() body: CreateEnterpriseDto) {
     return this.getOrCreate.execute(
       req.session!.userId,
@@ -111,18 +117,21 @@ export class EnterpriseController {
 
   /** GET /api/enterprises/me - Obtiene la empresa del usuario autenticado. */
   @Get('me')
+  @RbacGroup('enterprise-account')
   async getMe(@Req() req: Request) {
     return this.getEnterprise.execute(req.session!.userId);
   }
 
   /** PATCH /api/enterprises/:id - Actualiza datos de la empresa. */
   @Patch(':id')
+  @RbacGroup('enterprise-onboarding')
   async update(@Param('id') id: string, @Body() body: UpdateEnterpriseDto) {
     return this.updateEnterprise.execute(id, body);
   }
 
   /** PATCH /api/enterprises/:id/complete-onboarding - Finaliza el onboarding. */
   @Patch(':id/complete-onboarding')
+  @RbacGroup('enterprise-onboarding')
   async onboarding(@Param('id') id: string) {
     return this.completeOnboarding.execute(id);
   }
@@ -131,12 +140,14 @@ export class EnterpriseController {
 
   /** GET /api/enterprises/:id/collaborators - Lista colaboradores. */
   @Get(':id/collaborators')
+  @RbacGroup('enterprise-collaborators')
   async listCollaborators(@Param('id') id: string) {
     return this.manageCollaborators.list(id);
   }
 
   /** POST /api/enterprises/:id/collaborators - Crea un colaborador. */
   @Post(':id/collaborators')
+  @RbacGroup('enterprise-collaborators')
   async createCollaborator(
     @Param('id') id: string,
     @Body() body: CreateCollaboratorDto,
@@ -146,6 +157,7 @@ export class EnterpriseController {
 
   /** POST /api/enterprises/:id/collaborators/bulk - Carga masiva. */
   @Post(':id/collaborators/bulk')
+  @RbacGroup('enterprise-collaborators')
   async bulkCollaborators(
     @Param('id') id: string,
     @Body() body: BulkUploadCollaboratorsDto,
@@ -155,6 +167,7 @@ export class EnterpriseController {
 
   /** PATCH /api/enterprises/:id/collaborators/:collabId - Actualiza colaborador. */
   @Patch(':id/collaborators/:collabId')
+  @RbacGroup('enterprise-collaborators')
   async updateCollaborator(
     @Param('collabId') collabId: string,
     @Body()
@@ -169,6 +182,7 @@ export class EnterpriseController {
 
   /** GET /api/enterprises/:id/contracts - Lista contratos de la empresa. */
   @Get(':id/contracts')
+  @RbacGroup('enterprise-contracts')
   async listContracts(@Param('id') id: string) {
     return this.manageContracts.list(id);
   }
@@ -176,6 +190,7 @@ export class EnterpriseController {
   /** POST /api/enterprises/:id/contracts - Crea un contrato con archivos. */
   @Post(':id/contracts')
   @UseInterceptors(FilesInterceptor('files'))
+  @RbacGroup('enterprise-contracts')
   async createContract(
     @Param('id') id: string,
     @Body() body: CreateContractDto,
@@ -187,6 +202,7 @@ export class EnterpriseController {
   /** PATCH /api/enterprises/:id/contracts/:contractId - Edita nombre y/o agrega archivos. */
   @Patch(':id/contracts/:contractId')
   @UseInterceptors(FilesInterceptor('files'))
+  @RbacGroup('enterprise-contracts')
   async updateContract(
     @Param('contractId') contractId: string,
     @Body() body: UpdateContractDto,
@@ -197,6 +213,7 @@ export class EnterpriseController {
 
   /** DELETE /api/enterprises/:id/contracts/:contractId - Elimina un contrato. */
   @Delete(':id/contracts/:contractId')
+  @RbacGroup('enterprise-contracts')
   async deleteContract(@Param('contractId') contractId: string) {
     await this.manageContracts.remove(contractId);
     return { success: true } as const;
@@ -204,6 +221,7 @@ export class EnterpriseController {
 
   /** DELETE /api/enterprises/:id/contracts/:contractId/files/:fileId - Elimina un archivo del contrato. */
   @Delete(':id/contracts/:contractId/files/:fileId')
+  @RbacGroup('enterprise-contracts')
   async deleteContractFile(
     @Param('contractId') contractId: string,
     @Param('fileId') fileId: string,
@@ -216,6 +234,7 @@ export class EnterpriseController {
 
   /** GET /api/enterprises/:id/requests - Lista solicitudes. */
   @Get(':id/requests')
+  @RbacGroup('enterprise-requests')
   async listRequests(
     @Param('id') id: string,
     @Query('status') status?: LoanRequest['status'],
@@ -225,6 +244,7 @@ export class EnterpriseController {
 
   /** PATCH /api/enterprises/:id/requests/:reqId - Resuelve solicitud. */
   @Patch(':id/requests/:reqId')
+  @RbacGroup('enterprise-requests')
   async resolveRequest(
     @Param('reqId') reqId: string,
     @Body() body: ResolveLoanRequestDto,
@@ -236,12 +256,20 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE)
   @Get('requests/finance-pending')
+  @RbacGroup('finance-requests')
   async listFinancePendingRequests() {
-    const requests = await this.enterpriseRepository.findAllRequests('company_approved');
+    const requests =
+      await this.enterpriseRepository.findAllRequests('company_approved');
 
     // Resolver si cada solicitud requiere desembolso manual (manual_disburse)
     // segun la configuracion del producto asociado.
-    const productIds = [...new Set(requests.map((r: LoanRequest) => r.productId).filter(Boolean) as string[])];
+    const productIds = [
+      ...new Set(
+        requests
+          .map((r: LoanRequest) => r.productId)
+          .filter(Boolean) as string[],
+      ),
+    ];
     const products = await Promise.all(
       productIds.map((id: string) => this.productRepository.findById(id)),
     );
@@ -251,23 +279,38 @@ export class EnterpriseController {
 
     // Buscar si hay desembolsos asociados
     const disbursements = await Promise.all(
-      requests.map((r: LoanRequest) => this.enterpriseRepository.findDisbursementByLoanRequestId(r.id))
+      requests.map((r: LoanRequest) =>
+        this.enterpriseRepository.findDisbursementByLoanRequestId(r.id),
+      ),
     );
-    const disbursementMap = new Map<string, any>(
-      disbursements.filter((d): d is any => d !== null).map((d) => [d.loanRequestId, d])
+    const disbursementMap = new Map<string, Disbursement>(
+      disbursements
+        .filter((d): d is Disbursement => d !== null)
+        .map((d) => [d.loanRequestId, d]),
     );
 
     return requests.map((req: LoanRequest) => {
       const product = req.productId ? productMap.get(req.productId) : undefined;
       const requiresManualDisburse =
-        product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'manual_disburse' && a.active) ?? false;
+        product?.actions?.some(
+          (a: { type: string; active: boolean }) =>
+            a.type === 'manual_disburse' && a.active,
+        ) ?? false;
       const requiresR4Vuelto =
-        product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'r4_vuelto' && a.active) ?? false;
+        product?.actions?.some(
+          (a: { type: string; active: boolean }) =>
+            a.type === 'r4_vuelto' && a.active,
+        ) ?? false;
 
       const disbursement = disbursementMap.get(req.id);
       const hasPendingDisbursement = disbursement?.status === 'pending';
 
-      return { ...req, requiresManualDisburse, requiresR4Vuelto, hasPendingDisbursement };
+      return {
+        ...req,
+        requiresManualDisburse,
+        requiresR4Vuelto,
+        hasPendingDisbursement,
+      };
     });
   }
 
@@ -275,36 +318,45 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE)
   @Patch('requests/:reqId/finance-resolve')
+  @RbacGroup('finance-requests')
   async resolveFinanceRequest(
     @Param('reqId') reqId: string,
     @Body() body: ResolveLoanRequestDto,
   ) {
-    return this.manageRequests.resolveByFinance(reqId, body.status, body.denialReason);
+    return this.manageRequests.resolveByFinance(
+      reqId,
+      body.status,
+      body.denialReason,
+    );
   }
 
   /** POST /api/enterprises/requests/:reqId/disburse - Finanzas desembolsa via Credito Inmediato R4. */
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('requests/:reqId/disburse')
+  @RbacGroup('finance-purchases')
   async disburseRequest(
     @Req() req: Request,
     @Param('reqId') reqId: string,
     @Body('force') force?: boolean,
   ) {
-    const session = req.session!
-    return this.manageDisburse.execute(reqId, {
-      financeUserId: session.userId,
-      financeUserName: session.email || 'Usuario Finanzas',
-    }, force);
+    const session = req.session!;
+    return this.manageDisburse.execute(
+      reqId,
+      {
+        financeUserId: session.userId,
+        financeUserName: session.email || 'Usuario Finanzas',
+      },
+      force,
+    );
   }
 
   /** POST /api/enterprises/requests/:reqId/disburse/verify - Verifica el resultado de un desembolso pendiente (R4 AC00). */
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('requests/:reqId/disburse/verify')
-  async verifyDisburseRequest(
-    @Param('reqId') reqId: string,
-  ) {
+  @RbacGroup('finance-purchases')
+  async verifyDisburseRequest(@Param('reqId') reqId: string) {
     return this.manageDisburse.verifyDisburse(reqId);
   }
 
@@ -312,9 +364,8 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('requests/:reqId/disburse/complete-manual')
-  async completeManualDisburseRequest(
-    @Param('reqId') reqId: string,
-  ) {
+  @RbacGroup('finance-purchases')
+  async completeManualDisburseRequest(@Param('reqId') reqId: string) {
     return this.manageDisburse.completeManual(reqId);
   }
 
@@ -322,11 +373,12 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('requests/:reqId/vuelto')
+  @RbacGroup('finance-purchases')
   async processVueltoRequest(
     @Req() req: Request,
     @Param('reqId') reqId: string,
   ) {
-    const session = req.session!
+    const session = req.session!;
     return this.manageVuelto.execute(reqId, {
       financeUserId: session.userId,
       financeUserName: session.email || 'Usuario Finanzas',
@@ -362,6 +414,7 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Get('purchases')
+  @RbacGroup('finance-purchases')
   async listAllPurchases() {
     return this.enterpriseRepository.findAllPurchases();
   }
@@ -370,9 +423,10 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Get('finance/purchases')
+  @RbacGroup('finance-purchases')
   async listAllFinancePurchases() {
     const transactions = await this.enterpriseRepository.findAllTransactions();
-    
+
     // 1. Filtrar las transacciones de tipo 'charge' que comiencen con 'Compra marketplace:'
     const chargeTxs = transactions.filter(
       (t) => t.kind === 'charge' && t.concept.startsWith('Compra marketplace:'),
@@ -387,7 +441,9 @@ export class EnterpriseController {
       let email = '—';
 
       if (tx.collaboratorId) {
-        const collab = await this.enterpriseRepository.findCollaboratorById(tx.collaboratorId);
+        const collab = await this.enterpriseRepository.findCollaboratorById(
+          tx.collaboratorId,
+        );
         if (collab) {
           collaboratorName = `${collab.name} ${collab.lastName}`.trim();
           documentId = collab.documentId || '—';
@@ -398,7 +454,9 @@ export class EnterpriseController {
       // 3. Buscar la empresa
       let enterpriseName = 'Consumidor Directo / Sistema';
       if (tx.enterpriseId) {
-        const enterprise = await this.enterpriseRepository.findEnterpriseById(tx.enterpriseId);
+        const enterprise = await this.enterpriseRepository.findEnterpriseById(
+          tx.enterpriseId,
+        );
         if (enterprise) {
           enterpriseName = enterprise.companyName;
         }
@@ -420,11 +478,15 @@ export class EnterpriseController {
         // Seguros de mercantil: Consultar las cuotas reales por su shopcartId
         try {
           if (email !== '—') {
-            const clientSearchResult = await this.mercantilStorageService.searchClients({ email });
+            const clientSearchResult =
+              await this.mercantilStorageService.searchClients({ email });
             const userOrders = clientSearchResult?.items || [];
             if (userOrders.length > 0) {
               const shopcartId = userOrders[0].shopcartId;
-              const quotes = await this.mercantilStorageService.getQuotesByShopcart(shopcartId);
+              const quotes =
+                await this.mercantilStorageService.getQuotesByShopcart(
+                  shopcartId,
+                );
               if (quotes && quotes.length > 0) {
                 totalQuotes = quotes.length;
                 const paidList = quotes.filter(
@@ -435,7 +497,7 @@ export class EnterpriseController {
                 );
                 paidQuotes = paidList.length;
                 pendingQuotes = Math.max(0, totalQuotes - paidQuotes);
-                
+
                 // Calcular el monto pendiente acumulando el total de las cuotas no pagadas
                 const unpaidList = quotes.filter(
                   (cuota) =>
@@ -445,12 +507,18 @@ export class EnterpriseController {
                       cuota.quoteStatus?.toLowerCase() === 'paid'
                     ),
                 );
-                pendingAmount = unpaidList.reduce((sum, q) => sum + (q.amount ?? 0), 0);
+                pendingAmount = unpaidList.reduce(
+                  (sum, q) => sum + (q.amount ?? 0),
+                  0,
+                );
               }
             }
           }
         } catch (err) {
-          console.error('Error calculando cuotas de seguro mercantil en backend:', err);
+          console.error(
+            'Error calculando cuotas de seguro mercantil en backend:',
+            err,
+          );
         }
       } else {
         // Producto estándar / Préstamos
@@ -512,23 +580,25 @@ export class EnterpriseController {
     return results;
   }
 
-
   // --- Account Statement ---
 
   /** GET /api/enterprises/:id/account-statement - Resumen de deuda. */
   @Get(':id/account-statement')
+  @RbacGroup('enterprise-account')
   async accountStatement(@Param('id') id: string) {
     return this.getAccountStatement.getLoanSummary(id);
   }
 
   /** GET /api/enterprises/:id/transactions - Lista transacciones. */
   @Get(':id/transactions')
+  @RbacGroup('enterprise-account')
   async listTransactions(@Param('id') id: string) {
     return this.getAccountStatement.getTransactions(id);
   }
 
   /** POST /api/enterprises/:id/transactions - Registra un movimiento. */
   @Post(':id/transactions')
+  @RbacGroup('enterprise-account')
   async createTransaction(
     @Param('id') id: string,
     @Body() body: CreateTransactionDto,
@@ -596,7 +666,11 @@ export class EnterpriseController {
     @Param('fileName') fileName: string,
     @Res() res: Response,
   ) {
-    const doc = await this.documentStorage.getDocument(taxId, fileName, 'contracts');
+    const doc = await this.documentStorage.getDocument(
+      taxId,
+      fileName,
+      'contracts',
+    );
     if (!doc) {
       throw new NotFoundException('Archivo de contrato no encontrado.');
     }
@@ -609,7 +683,10 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('billing/execute-cutoff')
-  async executeCutoff(@Body('date') date?: string): Promise<BillingCutoffResult> {
+  @RbacGroup('finance-purchases')
+  async executeCutoff(
+    @Body('date') date?: string,
+  ): Promise<BillingCutoffResult> {
     return this.executeBillingCutoff.execute(date);
   }
 }

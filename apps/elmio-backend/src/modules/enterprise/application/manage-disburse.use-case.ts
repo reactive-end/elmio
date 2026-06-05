@@ -3,33 +3,39 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-} from '@nestjs/common'
-import { randomUUID } from 'node:crypto'
-import { ENTERPRISE_REPOSITORY_PORT, type EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port'
-import { PRODUCT_REPOSITORY_PORT, type ProductRepositoryPort } from '../../product/domain/ports/product-repository.port'
-import { PaymentProcessorService } from '../../payment-processor/application/services/payment-processor.service'
-import { normalizePhoneToR4 } from '@/shared/utils/phone'
-import type { Disbursement } from '../domain/disbursement'
-import type { Purchase } from '../domain/purchase'
+} from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import {
+  ENTERPRISE_REPOSITORY_PORT,
+  type EnterpriseRepositoryPort,
+} from '../domain/ports/enterprise-repository.port';
+import {
+  PRODUCT_REPOSITORY_PORT,
+  type ProductRepositoryPort,
+} from '../../product/domain/ports/product-repository.port';
+import { PaymentProcessorService } from '../../payment-processor/application/services/payment-processor.service';
+import { normalizePhoneToR4 } from '@/shared/utils/phone';
+import type { Disbursement } from '../domain/disbursement';
+import type { Purchase } from '../domain/purchase';
 
 export interface DisburseRequestDto {
   /** ID del usuario de finanzas que ejecuta (viene de la sesion) */
-  financeUserId: string
+  financeUserId: string;
   /** Nombre del usuario de finanzas */
-  financeUserName: string
+  financeUserName: string;
 }
 
 export type DisburseExecuteResult =
   | {
-      status: 'disbursed'
-      request: Awaited<ReturnType<EnterpriseRepositoryPort['findRequestById']>>
-      disbursement: Disbursement
+      status: 'disbursed';
+      request: Awaited<ReturnType<EnterpriseRepositoryPort['findRequestById']>>;
+      disbursement: Disbursement;
     }
-  | { status: 'pending'; requestId: string }
+  | { status: 'pending'; requestId: string };
 
 export type VerifyDisburseResult =
   | { status: 'disbursed'; reference: string | null }
-  | { status: 'pending'; lastCode?: string }
+  | { status: 'pending'; lastCode?: string };
 
 /**
  * Orquesta el desembolso manual de una solicitud aprobada via Credito Inmediato R4.
@@ -56,88 +62,105 @@ export class ManageDisburseUseCase {
    * @param dto Datos del usuario de finanzas que ejecuta.
    * @returns Resultado de la fase de inicio.
    */
-  async execute(requestId: string, dto: DisburseRequestDto, force?: boolean): Promise<DisburseExecuteResult> {
-    const request = await this.repository.findRequestById(requestId)
-    if (!request) throw new NotFoundException('Solicitud no encontrada.')
+  async execute(
+    requestId: string,
+    dto: DisburseRequestDto,
+    force?: boolean,
+  ): Promise<DisburseExecuteResult> {
+    const request = await this.repository.findRequestById(requestId);
+    if (!request) throw new NotFoundException('Solicitud no encontrada.');
 
-    if (request.status !== 'approved' && request.status !== 'company_approved') {
+    if (
+      request.status !== 'approved' &&
+      request.status !== 'company_approved'
+    ) {
       throw new BadRequestException(
         'La solicitud debe estar aprobada (por la empresa o finanzas) para desembolsar.',
-      )
+      );
     }
 
     // Si ya hay un desembolso pendiente para esta solicitud, reanudar sin
     // volver a llamar a R4 (evita credito duplicado si el usuario reabre la UI).
     // Si force es true, marcamos el pendiente anterior como fallido y procedemos a un nuevo intento.
-    const existing = await this.repository.findDisbursementByLoanRequestId(requestId)
+    const existing =
+      await this.repository.findDisbursementByLoanRequestId(requestId);
     if (existing && existing.status === 'pending') {
       if (force) {
-        existing.status = 'failed'
-        await this.repository.saveDisbursement(existing)
+        existing.status = 'failed';
+        await this.repository.saveDisbursement(existing);
       } else {
-        return { status: 'pending', requestId }
+        return { status: 'pending', requestId };
       }
     }
 
     // Buscar perfil del colaborador
-    const profile = await this.repository.findCollaboratorById(request.collaboratorId)
+    const profile = await this.repository.findCollaboratorById(
+      request.collaboratorId,
+    );
     if (!profile) {
-      throw new BadRequestException('No se encontro el perfil del colaborador.')
+      throw new BadRequestException(
+        'No se encontro el perfil del colaborador.',
+      );
     }
 
     // Buscar cuenta bancaria primaria del colaborador
-    const bankAccounts = await this.repository.findBankAccountsByPersonProfileId(profile.id)
-    const primaryAccount = bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0]
+    const bankAccounts =
+      await this.repository.findBankAccountsByPersonProfileId(profile.id);
+    const primaryAccount =
+      bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
     if (!primaryAccount) {
-      throw new BadRequestException('El colaborador no tiene cuenta bancaria registrada.')
+      throw new BadRequestException(
+        'El colaborador no tiene cuenta bancaria registrada.',
+      );
     }
 
     // Obtener tasa de cambio BCV. Primero busca en la BD local,
     // y si no hay dato reciente consulta directamente el endpoint de R4.
-    let exchangeRate: number
+    let exchangeRate: number;
 
-    const dbRate = await this.paymentProcessorService.getLastExchangeRate()
+    const dbRate = await this.paymentProcessorService.getLastExchangeRate();
     if (dbRate && dbRate.bolivaresPerUsd) {
-      exchangeRate = Number(dbRate.bolivaresPerUsd)
+      exchangeRate = Number(dbRate.bolivaresPerUsd);
     } else {
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date().toISOString().split('T')[0];
 
       const rateResponse = await this.paymentProcessorService.getExchangeRate({
         companyAccountId: 'GLOBAL_R4_FALLBACK',
         date: today,
         currency: 'USD',
-      })
+      });
 
       if (!rateResponse || !rateResponse.exchangeRate) {
         throw new BadRequestException(
           'No se pudo obtener la tasa de cambio BCV para calcular el monto en bolivares.',
-        )
+        );
       }
 
-      exchangeRate = rateResponse.exchangeRate
+      exchangeRate = rateResponse.exchangeRate;
     }
 
     // Calcular monto en Bs
-    const amountUsd = Number(request.amount)
-    const amountBs = Number((amountUsd * exchangeRate).toFixed(2))
+    const amountUsd = Number(request.amount);
+    const amountBs = Number((amountUsd * exchangeRate).toFixed(2));
 
-    const concept = `Desembolso prestamo: ${request.description || 'Prestamo'}`
+    const concept = `Desembolso prestamo: ${request.description || 'Prestamo'}`;
 
     // Ejecutar Credito Inmediato en R4
-    const creditResult = (await this.paymentProcessorService.processImmediateCreditR4({
-      companyAccountId: 'GLOBAL_R4_FALLBACK',
-      bankCode: primaryAccount.bankCode,
-      amount: amountBs,
-      phoneNumber: normalizePhoneToR4(primaryAccount.phoneNumber),
-      nationalId: primaryAccount.documentId,
-      concept,
-    } as any)) as {
-      code: string
-      message?: string
-      reference?: string
-      id?: string
-      internalPaymentId?: string
-    }
+    const creditResult =
+      (await this.paymentProcessorService.processImmediateCreditR4({
+        companyAccountId: 'GLOBAL_R4_FALLBACK',
+        bankCode: primaryAccount.bankCode,
+        amount: amountBs,
+        phoneNumber: normalizePhoneToR4(primaryAccount.phoneNumber),
+        nationalId: primaryAccount.documentId,
+        concept,
+      })) as {
+        code: string;
+        message?: string;
+        reference?: string;
+        id?: string;
+        internalPaymentId?: string;
+      };
 
     // AC00 sin id: no hay forma de consultar despues. Marcamos failed.
     if (creditResult.code === 'AC00' && !creditResult.id) {
@@ -153,11 +176,11 @@ export class ManageDisburseUseCase {
         null,
         'failed',
         creditResult,
-      )
-      await this.repository.saveDisbursement(disbursement)
+      );
+      await this.repository.saveDisbursement(disbursement);
       throw new BadRequestException(
         'R4 respondio AC00 sin ID de operacion. No se puede verificar el resultado del credito.',
-      )
+      );
     }
 
     // AC00 con id: desembolso queda en 'pending' y se verifica luego via /disburse/verify.
@@ -174,9 +197,9 @@ export class ManageDisburseUseCase {
         creditResult.id,
         'pending',
         creditResult,
-      )
-      await this.repository.saveDisbursement(disbursement)
-      return { status: 'pending', requestId }
+      );
+      await this.repository.saveDisbursement(disbursement);
+      return { status: 'pending', requestId };
     }
 
     // Cualquier otro codigo distinto a ACCP/AC00: desembolso fallido.
@@ -193,12 +216,12 @@ export class ManageDisburseUseCase {
         creditResult.id || null,
         'failed',
         creditResult,
-      )
-      await this.repository.saveDisbursement(disbursement)
+      );
+      await this.repository.saveDisbursement(disbursement);
       throw new BadRequestException(
         `R4 rechazo la operacion. Codigo: ${creditResult.code || 'N/A'}. ` +
           `Mensaje: ${creditResult.message || ''}`,
-      )
+      );
     }
 
     // ACCP: desembolso exitoso, guardar y actualizar solicitud.
@@ -214,12 +237,12 @@ export class ManageDisburseUseCase {
       creditResult.id || null,
       'success',
       creditResult,
-    )
-    await this.repository.saveDisbursement(disbursement)
+    );
+    await this.repository.saveDisbursement(disbursement);
 
-    request.status = 'disbursed'
-    request.updatedAt = new Date().toISOString()
-    await this.repository.saveRequest(request)
+    request.status = 'disbursed';
+    request.updatedAt = new Date().toISOString();
+    await this.repository.saveRequest(request);
 
     await this.savePurchaseForDisbursement({
       requestId,
@@ -227,9 +250,9 @@ export class ManageDisburseUseCase {
       amountVes: amountBs,
       exchangeRate,
       disbursementId: disbursement.id,
-    })
+    });
 
-    return { status: 'disbursed', request, disbursement }
+    return { status: 'disbursed', request, disbursement };
   }
 
   /**
@@ -243,48 +266,51 @@ export class ManageDisburseUseCase {
    * @returns Estado actual del desembolso.
    */
   async verifyDisburse(requestId: string): Promise<VerifyDisburseResult> {
-    const disbursement = await this.repository.findDisbursementByLoanRequestId(requestId)
+    const disbursement =
+      await this.repository.findDisbursementByLoanRequestId(requestId);
     if (!disbursement) {
-      throw new NotFoundException('No hay un desembolso registrado para esta solicitud.')
+      throw new NotFoundException(
+        'No hay un desembolso registrado para esta solicitud.',
+      );
     }
     if (disbursement.status === 'success') {
-      return { status: 'disbursed', reference: disbursement.bankReference }
+      return { status: 'disbursed', reference: disbursement.bankReference };
     }
 
     // Siempre re-consultamos a R4. No cortocircuitamos aunque el status local
     // diga 'failed', porque queremos que el frontend pueda reintentar varias
     // veces antes de darse por vencido.
-    const reference = disbursement.bankReference
+    const reference = disbursement.bankReference;
     if (!reference) {
       throw new BadRequestException(
         'El desembolso pendiente no tiene referencia bancaria para consultar.',
-      )
+      );
     }
 
     let queryResult:
       | { success: boolean; reference?: string; code?: string }
-      | undefined
+      | undefined;
     try {
       queryResult = (await this.paymentProcessorService.queryOperationR4({
         companyAccountId: 'GLOBAL_R4_FALLBACK',
         reference,
-      } as any)) as { success: boolean; reference?: string; code?: string }
+      })) as { success: boolean; reference?: string; code?: string };
     } catch (err) {
-      return { status: 'pending' }
+      return { status: 'pending' };
     }
 
     if (queryResult?.success) {
-      disbursement.status = 'success'
+      disbursement.status = 'success';
       if (queryResult.reference) {
-        disbursement.bankReference = queryResult.reference
+        disbursement.bankReference = queryResult.reference;
       }
-      await this.repository.saveDisbursement(disbursement)
+      await this.repository.saveDisbursement(disbursement);
 
-      const request = await this.repository.findRequestById(requestId)
+      const request = await this.repository.findRequestById(requestId);
       if (request) {
-        request.status = 'disbursed'
-        request.updatedAt = new Date().toISOString()
-        await this.repository.saveRequest(request)
+        request.status = 'disbursed';
+        request.updatedAt = new Date().toISOString();
+        await this.repository.saveRequest(request);
 
         await this.savePurchaseForDisbursement({
           requestId,
@@ -292,16 +318,16 @@ export class ManageDisburseUseCase {
           amountVes: disbursement.amountBs,
           exchangeRate: disbursement.exchangeRate,
           disbursementId: disbursement.id,
-        })
+        });
       }
 
-      return { status: 'disbursed', reference: disbursement.bankReference }
+      return { status: 'disbursed', reference: disbursement.bankReference };
     }
 
     // Cualquier respuesta distinta a ACCP (sea AC00, codigo de rechazo, o lo
     // que sea) se trata como pendiente. El frontend es quien decide cuantos
     // reintentos hace antes de mostrar error al usuario.
-    return { status: 'pending', lastCode: queryResult?.code }
+    return { status: 'pending', lastCode: queryResult?.code };
   }
 
   /**
@@ -312,23 +338,26 @@ export class ManageDisburseUseCase {
    * @param requestId ID de la solicitud de préstamo.
    */
   async completeManual(requestId: string): Promise<{ success: boolean }> {
-    const disbursement = await this.repository.findDisbursementByLoanRequestId(requestId)
+    const disbursement =
+      await this.repository.findDisbursementByLoanRequestId(requestId);
     if (!disbursement) {
-      throw new NotFoundException('No hay un desembolso registrado para esta solicitud.')
+      throw new NotFoundException(
+        'No hay un desembolso registrado para esta solicitud.',
+      );
     }
 
     if (disbursement.status === 'success') {
-      return { success: true }
+      return { success: true };
     }
 
-    disbursement.status = 'success'
-    await this.repository.saveDisbursement(disbursement)
+    disbursement.status = 'success';
+    await this.repository.saveDisbursement(disbursement);
 
-    const request = await this.repository.findRequestById(requestId)
+    const request = await this.repository.findRequestById(requestId);
     if (request) {
-      request.status = 'disbursed'
-      request.updatedAt = new Date().toISOString()
-      await this.repository.saveRequest(request)
+      request.status = 'disbursed';
+      request.updatedAt = new Date().toISOString();
+      await this.repository.saveRequest(request);
 
       await this.savePurchaseForDisbursement({
         requestId,
@@ -336,10 +365,10 @@ export class ManageDisburseUseCase {
         amountVes: disbursement.amountBs,
         exchangeRate: disbursement.exchangeRate,
         disbursementId: disbursement.id,
-      })
+      });
     }
 
-    return { success: true }
+    return { success: true };
   }
 
   /**
@@ -351,7 +380,12 @@ export class ManageDisburseUseCase {
     amountUsd: number,
     amountBs: number,
     exchangeRate: number,
-    primaryAccount: { bankCode: string; accountNumber: string; phoneNumber: string; documentId: string },
+    primaryAccount: {
+      bankCode: string;
+      accountNumber: string;
+      phoneNumber: string;
+      documentId: string;
+    },
     concept: string,
     bankReference: string | null,
     bankOperationId: string | null,
@@ -376,7 +410,7 @@ export class ManageDisburseUseCase {
       bankOperationId,
       status,
       createdAt: new Date().toISOString(),
-    }
+    };
   }
 
   /**
@@ -384,22 +418,24 @@ export class ManageDisburseUseCase {
    * @param params Datos del desembolso y la solicitud.
    */
   private async savePurchaseForDisbursement(params: {
-    requestId: string
-    amountUsd: number
-    amountVes: number
-    exchangeRate: number
-    disbursementId: string
+    requestId: string;
+    amountUsd: number;
+    amountVes: number;
+    exchangeRate: number;
+    disbursementId: string;
   }): Promise<void> {
     try {
-      const request = await this.repository.findRequestById(params.requestId)
-      if (!request) return
+      const request = await this.repository.findRequestById(params.requestId);
+      if (!request) return;
 
-      const profile = await this.repository.findCollaboratorById(request.collaboratorId)
+      const profile = await this.repository.findCollaboratorById(
+        request.collaboratorId,
+      );
       const product = request.productId
         ? await this.productRepository.findById(request.productId)
-        : null
+        : null;
 
-      const now = new Date().toISOString()
+      const now = new Date().toISOString();
       const purchase: Purchase = {
         id: randomUUID(),
         purchaserType: 'collaborator',
@@ -425,15 +461,15 @@ export class ManageDisburseUseCase {
         status: 'disbursed',
         createdAt: now,
         updatedAt: now,
-      }
+      };
 
-      await this.repository.savePurchase(purchase)
+      await this.repository.savePurchase(purchase);
     } catch (err) {
       // No romper el desembolso si falla la creacion del Purchase.
       // El desembolso ya quedo registrado; el Purchase puede regenerarse
       // en un job posterior si se requiere.
-      // eslint-disable-next-line no-console
-      console.error('Error al guardar Purchase para desembolso:', err)
+
+      console.error('Error al guardar Purchase para desembolso:', err);
     }
   }
 }

@@ -62,7 +62,7 @@ export class RegisterUseCase {
       name: input.name?.trim() ?? '',
       email: input.email.trim().toLowerCase(),
       passwordHash: hashPassword(input.password),
-      role: input.role as UserRole,
+      role: input.role,
       owner: input.owner?.trim() ?? 'default',
       createdAt: new Date().toISOString(),
     };

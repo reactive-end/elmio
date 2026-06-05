@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer'
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsNumber,
@@ -8,8 +8,8 @@ import {
   IsBoolean,
   IsUUID,
   IsEnum,
-} from 'class-validator'
-import { DebitValidationType } from './request-debit-token.dto'
+} from 'class-validator';
+import { DebitValidationType } from './request-debit-token.dto';
 
 /**
  * DTO para la operación de débito.
@@ -20,7 +20,7 @@ export class InitiateDebitDto {
   @Transform(({ value }) => (value === '' ? undefined : value))
   @IsOptional()
   @IsUUID()
-  companyAccountId?: string
+  companyAccountId?: string;
 
   /**
    * Importe a cobrar (número). Se transforma con `class-transformer`.
@@ -28,74 +28,74 @@ export class InitiateDebitDto {
   @IsNumber()
   @Type(() => Number)
   @IsNotEmpty()
-  amount: number
+  amount: number;
 
   /**
    * Concepto o descripción del débito.
    */
   @IsString()
   @IsNotEmpty()
-  concept: string
+  concept: string;
 
   /**
    * Identificación del pagador (p. ej. cédula o RUC).
    */
   @IsString()
   @IsNotEmpty()
-  payerId: string
+  payerId: string;
 
   /**
    * Nombre del pagador (se enviará al proveedor bancario).
    */
   @IsString()
   @IsNotEmpty()
-  payerName: string
+  payerName: string;
 
   /**
    * Código de banco del pagador (exactamente 4 caracteres).
    */
   @IsString()
   @Length(4, 4)
-  payerBankCode: string
+  payerBankCode: string;
 
   /**
    * Tipo de validación del débito: cuenta o teléfono.
    */
   @IsEnum(DebitValidationType)
-  validationType: DebitValidationType
+  validationType: DebitValidationType;
 
   /**
    * Token recibido por el pagador.
    */
   @IsString()
   @IsNotEmpty()
-  token: string
+  token: string;
 
   /**
    * Teléfono del pagador (opcional, usado en pagos móviles).
    */
   @IsOptional()
   @IsString()
-  payerPhone?: string
+  payerPhone?: string;
 
   /**
    * Número de cuenta del pagador (opcional, usado para débito a cuenta).
    */
   @IsOptional()
   @IsString()
-  payerAccount?: string
+  payerAccount?: string;
 
   /**
    * Proveedor de la pasarela. Si no se suministra, la capa superior puede
    * asignar un valor por defecto (p. ej. 'PLAZA').
    */
   @IsString()
-  provider?: string
+  provider?: string;
 
   /**
    * Indica si el pago fue iniciado por el cliente (true) o es un débito automático (false).
    */
   @IsBoolean()
   @IsOptional()
-  isCustomerInitiated?: boolean
+  isCustomerInitiated?: boolean;
 }

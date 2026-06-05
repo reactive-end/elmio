@@ -16,7 +16,7 @@ interface LoginResponseDto {
   user?: {
     userId: string;
     email: string;
-    role: UserRole;
+    role: UserRole | string;
     owner: string;
     requirePasswordChange?: boolean;
   };
@@ -25,7 +25,7 @@ interface LoginResponseDto {
   profiles?: Array<{
     userId: string;
     name: string;
-    role: UserRole;
+    role: UserRole | string;
   }>;
 }
 
@@ -33,7 +33,7 @@ interface RegisterResponseDto {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  role: UserRole | string;
   owner: string;
   createdAt: string;
 }

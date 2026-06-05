@@ -14,7 +14,10 @@ export class TransactionEntity {
   @Column({ type: 'uuid', nullable: true })
   enterpriseId!: string | null;
 
-  @ManyToOne(() => PersonProfileEntity, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => PersonProfileEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'collaboratorId' })
   collaborator!: PersonProfileEntity | null;
 

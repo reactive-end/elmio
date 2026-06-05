@@ -66,9 +66,15 @@ export class DbMarketplaceRepositoryService implements MarketplaceRepositoryPort
   }
 
   async update(id: string, marketplace: Marketplace): Promise<Marketplace> {
-    console.log('[DbMarketplaceRepositoryService] UPDATE DOMAIN WHATSAPP:', JSON.stringify(marketplace.whatsapp, null, 2));
+    console.log(
+      '[DbMarketplaceRepositoryService] UPDATE DOMAIN WHATSAPP:',
+      JSON.stringify(marketplace.whatsapp, null, 2),
+    );
     const entity = this.toPersistence(marketplace);
-    console.log('[DbMarketplaceRepositoryService] UPDATE ENTITY WHATSAPP:', JSON.stringify(entity.whatsapp, null, 2));
+    console.log(
+      '[DbMarketplaceRepositoryService] UPDATE ENTITY WHATSAPP:',
+      JSON.stringify(entity.whatsapp, null, 2),
+    );
     entity.id = id;
     await this.repo.save(entity);
     return marketplace;
@@ -76,6 +82,10 @@ export class DbMarketplaceRepositoryService implements MarketplaceRepositoryPort
 
   async delete(id: string): Promise<boolean> {
     const result = await this.repo.delete(id);
-    return result.affected !== undefined && result.affected !== null && result.affected > 0;
+    return (
+      result.affected !== undefined &&
+      result.affected !== null &&
+      result.affected > 0
+    );
   }
 }

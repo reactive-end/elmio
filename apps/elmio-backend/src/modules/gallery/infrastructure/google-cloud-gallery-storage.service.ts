@@ -253,4 +253,3 @@ export class GoogleCloudGalleryStorageService implements GalleryStoragePort {
     return { image, publicUrl: await this.buildPreviewUrl(objectKey) };
   }
 }
-

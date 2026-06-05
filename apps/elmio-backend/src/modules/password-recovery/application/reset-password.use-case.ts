@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH_REPOSITORY_PORT } from '../../auth/domain/ports/auth-repository.port';
 import type { AuthRepositoryPort } from '../../auth/domain/ports/auth-repository.port';
@@ -39,12 +44,17 @@ export class ResetPasswordUseCase {
    * @returns Mensaje de operacion exitosa.
    * @throws BadRequestException si el token es invalido, expirado o de tipo incorrecto.
    */
-  async execute(token: string, newPassword: string): Promise<ResetPasswordResult> {
+  async execute(
+    token: string,
+    newPassword: string,
+  ): Promise<ResetPasswordResult> {
     try {
       const payload = this.jwtService.verify<ResetPasswordPayload>(token);
 
       if (payload.type !== 'password-reset') {
-        this.logger.warn(`Token de tipo invalido recibido en reset-password: ${payload.type}`);
+        this.logger.warn(
+          `Token de tipo invalido recibido en reset-password: ${payload.type}`,
+        );
         throw new BadRequestException('Token inválido.');
       }
 
@@ -57,7 +67,9 @@ export class ResetPasswordUseCase {
       // Asegurarse de invalidar codigos residuales
       await this.recoveryCodeRepository.invalidateAllForUser(payload.sub);
 
-      this.logger.log(`Contrasena actualizada exitosamente para usuario: ${payload.sub}`);
+      this.logger.log(
+        `Contrasena actualizada exitosamente para usuario: ${payload.sub}`,
+      );
 
       return {
         message: 'Contraseña actualizada exitosamente.',
@@ -66,7 +78,9 @@ export class ResetPasswordUseCase {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error(`Error al verificar token de recuperacion: ${String(error)}`);
+      this.logger.error(
+        `Error al verificar token de recuperacion: ${String(error)}`,
+      );
       throw new BadRequestException('Token inválido o expirado.');
     }
   }

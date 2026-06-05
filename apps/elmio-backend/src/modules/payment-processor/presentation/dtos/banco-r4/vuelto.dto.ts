@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
 /**
  * DTO de entrada para Vuelto en Banco R4.
@@ -10,11 +16,12 @@ import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-vali
 export class VueltoRequestDto {
   @ApiProperty({
     example: 'a3d4f6f6-8f9a-4f3f-9e80-91d5d5f4aa00',
-    description: 'Id de la cuenta interna de empresa para resolver credenciales R4.',
+    description:
+      'Id de la cuenta interna de empresa para resolver credenciales R4.',
   })
   @IsString()
   @IsNotEmpty()
-  companyAccountId!: string
+  companyAccountId!: string;
 
   @ApiProperty({
     example: '04145555555',
@@ -24,7 +31,7 @@ export class VueltoRequestDto {
   @Matches(/^\d{11}$/, {
     message: 'TelefonoDestino debe contener exactamente 11 dígitos',
   })
-  TelefonoDestino!: string
+  TelefonoDestino!: string;
 
   @ApiProperty({
     example: 'V12345678',
@@ -35,7 +42,7 @@ export class VueltoRequestDto {
   @Matches(/^[VE]\d{5,8}$/, {
     message: 'Cedula debe comenzar con V o E seguido de 5-8 dígitos',
   })
-  Cedula!: string
+  Cedula!: string;
 
   @ApiProperty({
     example: '0102',
@@ -45,7 +52,7 @@ export class VueltoRequestDto {
   @Matches(/^\d{4}$/, {
     message: 'Banco debe contener exactamente 4 dígitos',
   })
-  Banco!: string
+  Banco!: string;
 
   @ApiProperty({
     example: '1000.00',
@@ -56,17 +63,18 @@ export class VueltoRequestDto {
   @Matches(/^\d{1,8}(\.\d{1,2})?$/, {
     message: 'Monto debe tener formato correcto (ej: 1000.00)',
   })
-  Monto!: string
+  Monto!: string;
 
   @ApiProperty({
     example: 'PRUEBA',
-    description: 'OPCIONAL - Motivo del pago - máximo 30 caracteres alfanuméricos',
+    description:
+      'OPCIONAL - Motivo del pago - máximo 30 caracteres alfanuméricos',
     required: false,
   })
   @IsOptional()
   @IsString()
   @MaxLength(30)
-  Concepto?: string
+  Concepto?: string;
 
   @ApiProperty({
     example: '0.0.0.0',
@@ -76,7 +84,7 @@ export class VueltoRequestDto {
   })
   @IsOptional()
   @IsString()
-  Ip?: string
+  Ip?: string;
 }
 
 /**
@@ -84,15 +92,15 @@ export class VueltoRequestDto {
  */
 export class VueltoResponseDto {
   @ApiProperty({ example: '00' })
-  code!: string
+  code!: string;
 
   @ApiProperty({ example: 'TRANSACCION EXITOSA' })
-  message!: string
+  message!: string;
 
   @ApiProperty({ example: '15558293', required: false })
-  reference?: string
+  reference?: string;
 
-  rawResponse?: any
+  rawResponse?: any;
 }
 
 /**

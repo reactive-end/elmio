@@ -20,7 +20,8 @@ import { UpdateMarketplaceUseCase } from '../../application/update-marketplace.u
 import type { Marketplace } from '../../domain/marketplace';
 import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
 import { CurrentUser } from '../../../auth/presentation/guards/current-user.decorator';
-import type { UserSession } from '../../../auth/domain/user';
+import { UserRole, type UserSession } from '../../../auth/domain/user';
+import { RbacGroup } from '../../../auth/presentation/guards/rbac-group.decorator';
 import { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
 import { CreateMarketplaceDto } from './dto/create-marketplace.dto';
 import type { UpdateMarketplaceDto } from './dto/update-marketplace.dto';
@@ -49,8 +50,9 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Get()
+  @RbacGroup('marketplaces')
   async list(@CurrentUser() session: UserSession): Promise<Marketplace[]> {
-    if (session.role === 'ALLIED' || session.role === 'COMPANY') {
+    if (session.role === UserRole.ALLIED || session.role === UserRole.COMPANY) {
       return this.listMarketplacesUseCase.execute(session.owner);
     }
     return this.listMarketplacesUseCase.execute();
@@ -75,13 +77,19 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Get(':id')
+  @RbacGroup('marketplaces')
   async getById(
     @Param('id') id: string,
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
     const marketplace = await this.getMarketplaceByIdUseCase.execute(id);
-    if (session.role === 'ALLIED' && marketplace.owner !== session.owner) {
-      throw new ForbiddenException('No tienes permisos para acceder a este marketplace.');
+    if (
+      session.role === UserRole.ALLIED &&
+      marketplace.owner !== session.owner
+    ) {
+      throw new ForbiddenException(
+        'No tienes permisos para acceder a este marketplace.',
+      );
     }
     return marketplace;
   }
@@ -95,11 +103,12 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Post()
+  @RbacGroup('marketplaces')
   async create(
     @Body() body: CreateMarketplaceDto,
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
-    if (session.role === 'COMPANY') {
+    if (session.role === UserRole.COMPANY) {
       throw new ForbiddenException(
         'Las empresas no pueden gestionar marketplaces desde el dashboard.',
       );
@@ -107,9 +116,9 @@ export class MarketplaceController {
 
     let slug = body.slug;
 
-    if (session.role === 'ADMIN') {
+    if (session.role === UserRole.ADMIN) {
       slug = 'elmio';
-    } else if (session.role === 'ALLIED') {
+    } else if (session.role === UserRole.ALLIED) {
       const ally = await this.userRepo.findOne({
         where: { id: session.userId },
       });
@@ -129,7 +138,7 @@ export class MarketplaceController {
 
     return this.createMarketplaceUseCase.execute({
       ...body,
-      slug: slug!,
+      slug: slug,
       owner: body.owner || session.owner,
     });
   }
@@ -143,29 +152,35 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Put(':id')
+  @RbacGroup('marketplaces')
   async update(
     @Param('id') id: string,
     @Body() body: UpdateMarketplaceDto,
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
     console.log('[MarketplaceController] UPDATE ID:', id);
-    console.log('[MarketplaceController] UPDATE BODY WHATSAPP:', JSON.stringify(body.whatsapp, null, 2));
+    console.log(
+      '[MarketplaceController] UPDATE BODY WHATSAPP:',
+      JSON.stringify(body.whatsapp, null, 2),
+    );
 
-    if (session.role === 'COMPANY') {
+    if (session.role === UserRole.COMPANY) {
       throw new ForbiddenException(
         'Las empresas no pueden gestionar marketplaces desde el dashboard.',
       );
     }
 
-    if (session.role === 'ALLIED') {
+    if (session.role === UserRole.ALLIED) {
       const existing = await this.getMarketplaceByIdUseCase.execute(id);
       if (existing.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para modificar este marketplace.');
+        throw new ForbiddenException(
+          'No tienes permisos para modificar este marketplace.',
+        );
       }
     }
 
-    const isAdmin = session.role === 'ADMIN';
-    return this.updateMarketplaceUseCase.execute(id, body as any, isAdmin);
+    const isAdmin = session.role === UserRole.ADMIN;
+    return this.updateMarketplaceUseCase.execute(id, body, isAdmin);
   }
 
   /**
@@ -175,20 +190,23 @@ export class MarketplaceController {
    */
   @UseGuards(AuthGuard)
   @Delete(':id')
+  @RbacGroup('marketplaces')
   async delete(
     @Param('id') id: string,
     @CurrentUser() session: UserSession,
   ): Promise<{ success: true }> {
-    if (session.role === 'COMPANY') {
+    if (session.role === UserRole.COMPANY) {
       throw new ForbiddenException(
         'Las empresas no pueden gestionar marketplaces desde el dashboard.',
       );
     }
 
-    if (session.role === 'ALLIED') {
+    if (session.role === UserRole.ALLIED) {
       const existing = await this.getMarketplaceByIdUseCase.execute(id);
       if (existing.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para eliminar este marketplace.');
+        throw new ForbiddenException(
+          'No tienes permisos para eliminar este marketplace.',
+        );
       }
     }
 

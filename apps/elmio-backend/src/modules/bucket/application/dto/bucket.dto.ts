@@ -34,15 +34,22 @@ export class UploadFileDto {
  * @class BucketFileResponseDto
  */
 export class BucketFileResponseDto {
-  @ApiProperty({ description: 'Nombre del archivo', example: 'banner-principal.jpg' })
+  @ApiProperty({
+    description: 'Nombre del archivo',
+    example: 'banner-principal.jpg',
+  })
   name: string;
 
-  @ApiProperty({ description: 'Ruta completa en el bucket', example: 'banners/banner-principal.jpg' })
+  @ApiProperty({
+    description: 'Ruta completa en el bucket',
+    example: 'banners/banner-principal.jpg',
+  })
   path: string;
 
   @ApiProperty({
     description: 'URL pública del archivo',
-    example: 'https://storage.googleapis.com/my-bucket/banners/banner-principal.jpg',
+    example:
+      'https://storage.googleapis.com/my-bucket/banners/banner-principal.jpg',
   })
   publicUrl: string;
 
@@ -52,7 +59,10 @@ export class BucketFileResponseDto {
   @ApiProperty({ description: 'Tipo MIME del archivo', example: 'image/jpeg' })
   contentType: string;
 
-  @ApiProperty({ description: 'Fecha de última actualización', example: '2026-02-10T22:00:00.000Z' })
+  @ApiProperty({
+    description: 'Fecha de última actualización',
+    example: '2026-02-10T22:00:00.000Z',
+  })
   updatedAt: string;
 
   @ApiProperty({ description: 'Carpeta del archivo', example: 'banners' })
@@ -64,18 +74,28 @@ export class BucketFileResponseDto {
  * @class UploadFileResponseDto
  */
 export class UploadFileResponseDto {
-  @ApiProperty({ description: 'Nombre identificador del archivo', example: 'banner-principal' })
+  @ApiProperty({
+    description: 'Nombre identificador del archivo',
+    example: 'banner-principal',
+  })
   fileName: string;
 
-  @ApiProperty({ description: 'Nombre original del archivo', example: 'mi-imagen.jpg' })
+  @ApiProperty({
+    description: 'Nombre original del archivo',
+    example: 'mi-imagen.jpg',
+  })
   originalName: string;
 
-  @ApiProperty({ description: 'Ruta completa en el bucket', example: 'banners/banner-principal.jpg' })
+  @ApiProperty({
+    description: 'Ruta completa en el bucket',
+    example: 'banners/banner-principal.jpg',
+  })
   path: string;
 
   @ApiProperty({
     description: 'URL pública del archivo',
-    example: 'https://storage.googleapis.com/my-bucket/banners/banner-principal.jpg',
+    example:
+      'https://storage.googleapis.com/my-bucket/banners/banner-principal.jpg',
   })
   publicUrl: string;
 
@@ -90,11 +110,17 @@ export class UploadFileResponseDto {
 }
 
 export class MoveFolderDto {
-  @ApiProperty({ description: 'Prefijo origen', example: 'marketplace/productos/COD-001' })
+  @ApiProperty({
+    description: 'Prefijo origen',
+    example: 'marketplace/productos/COD-001',
+  })
   @IsString()
   from: string;
 
-  @ApiProperty({ description: 'Prefijo destino', example: 'marketplace/productos/COD-002' })
+  @ApiProperty({
+    description: 'Prefijo destino',
+    example: 'marketplace/productos/COD-002',
+  })
   @IsString()
   to: string;
 }

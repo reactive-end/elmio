@@ -1,6 +1,8 @@
 import type { RecoveryCode } from '../types/recovery-code';
 
-export const RECOVERY_CODE_REPOSITORY_PORT = Symbol('RECOVERY_CODE_REPOSITORY_PORT');
+export const RECOVERY_CODE_REPOSITORY_PORT = Symbol(
+  'RECOVERY_CODE_REPOSITORY_PORT',
+);
 
 /**
  * Puerto del repositorio de codigos de recuperacion.

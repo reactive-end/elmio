@@ -4,13 +4,17 @@ import { UserEntity } from '../../../auth/infrastructure/entities/user.entity';
 import { EnterpriseEntity } from './enterprise.entity';
 
 const jsonTransformer = {
-  to: <T>(value: T | null): string | null => (value ? JSON.stringify(value) : null),
-  from: <T>(value: string | null): T | null => (value ? (JSON.parse(value) as T) : null),
+  to: <T>(value: T | null): string | null =>
+    value ? JSON.stringify(value) : null,
+  from: <T>(value: string | null): T | null =>
+    value ? (JSON.parse(value) as T) : null,
 };
 
 const jsonArrayTransformer = {
-  to: <T>(value: T[] | null): string | null => (value ? JSON.stringify(value) : null),
-  from: <T>(value: string | null): T[] => (value ? (JSON.parse(value) as T[]) : []),
+  to: <T>(value: T[] | null): string | null =>
+    value ? JSON.stringify(value) : null,
+  from: <T>(value: string | null): T[] =>
+    value ? (JSON.parse(value) as T[]) : [],
 };
 
 @Entity('person_profiles')

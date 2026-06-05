@@ -6,12 +6,15 @@ import { RolesGuard } from '../../../auth/presentation/guards/roles.guard';
 import { EnterpriseInterestConfigService } from '../../application/enterprise-interest-config.service';
 import { UpdateEnterpriseInterestConfigDto } from './dto/enterprise-interest-config.dto';
 
+import { RbacGroup } from '../../../auth/presentation/guards/rbac-group.decorator';
+
 /**
  * Controlador admin para la tasa global por empresa.
  */
 @Controller('enterprise-interest-configs')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@RbacGroup('config-enterprise-interest-rates')
 export class EnterpriseInterestConfigAdminController {
   constructor(private readonly service: EnterpriseInterestConfigService) {}
 

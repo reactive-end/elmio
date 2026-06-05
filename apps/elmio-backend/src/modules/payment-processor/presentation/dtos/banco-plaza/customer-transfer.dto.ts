@@ -4,7 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   Length,
-} from 'class-validator'
+} from 'class-validator';
 
 /**
  * DTO usado cuando un cliente inicia una transferencia hacia la empresa.
@@ -15,36 +15,36 @@ export class CustomerTransferDto {
   /** Proveedor de la pasarela (ej. "PLAZA") */
   @IsString()
   @IsNotEmpty()
-  provider: string
+  provider: string;
 
   /** Nombre completo del pagador (empresa destino recibirá este nombre) */
   @IsString()
   @IsNotEmpty()
-  payerName: string
+  payerName: string;
 
   /** Identificación del pagador (Cédula/RIF) */
   @IsString()
   @IsNotEmpty()
-  payerId: string
+  payerId: string;
 
   /** Cuenta bancaria del pagador en Plaza (20 dígitos) */
   @IsString()
   @IsNotEmpty()
   @Length(20, 20)
-  payerAccount: string
+  payerAccount: string;
 
   /** Monto a transferir */
   @IsNumber()
   @IsNotEmpty()
-  amount: number
+  amount: number;
 
   /** Concepto o descripción de la transferencia */
   @IsString()
   @IsNotEmpty()
-  concept: string
+  concept: string;
 
   /** IP del usuario que origina la petición (opcional) */
   @IsString()
   @IsOptional()
-  userIp?: string
+  userIp?: string;
 }

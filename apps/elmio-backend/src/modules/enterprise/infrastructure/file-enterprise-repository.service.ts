@@ -178,7 +178,9 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     return data.requests.find((r) => r.id === id) ?? null;
   }
 
-  async findAllRequests(status?: LoanRequest['status']): Promise<LoanRequest[]> {
+  async findAllRequests(
+    status?: LoanRequest['status'],
+  ): Promise<LoanRequest[]> {
     const data = await this.read();
     let results = data.requests;
     if (status) {
@@ -242,11 +244,15 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
   async deleteContract(id: string): Promise<void> {
     const data = await this.read();
     data.contracts = data.contracts.filter((contract) => contract.id !== id);
-    data.contractFiles = data.contractFiles.filter((file) => file.contractId !== id);
+    data.contractFiles = data.contractFiles.filter(
+      (file) => file.contractId !== id,
+    );
     await this.write(data);
   }
 
-  async findContractFilesByContract(contractId: string): Promise<ContractFile[]> {
+  async findContractFilesByContract(
+    contractId: string,
+  ): Promise<ContractFile[]> {
     const data = await this.read();
     return data.contractFiles
       .filter((file) => file.contractId === contractId)
@@ -354,9 +360,13 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
 
   // --- Person Bank Accounts ---
 
-  async findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]> {
+  async findBankAccountsByPersonProfileId(
+    personProfileId: string,
+  ): Promise<PersonBankAccount[]> {
     const data = await this.read();
-    return data.personBankAccounts.filter((a) => a.personProfileId === personProfileId);
+    return data.personBankAccounts.filter(
+      (a) => a.personProfileId === personProfileId,
+    );
   }
 
   async findBankAccountById(id: string): Promise<PersonBankAccount | null> {
@@ -364,7 +374,9 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     return data.personBankAccounts.find((a) => a.id === id) ?? null;
   }
 
-  async saveBankAccount(account: PersonBankAccount): Promise<PersonBankAccount> {
+  async saveBankAccount(
+    account: PersonBankAccount,
+  ): Promise<PersonBankAccount> {
     const data = await this.read();
     const idx = data.personBankAccounts.findIndex((a) => a.id === account.id);
     if (idx >= 0) {
@@ -378,7 +390,9 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
 
   async deleteBankAccount(id: string): Promise<void> {
     const data = await this.read();
-    data.personBankAccounts = data.personBankAccounts.filter((a) => a.id !== id);
+    data.personBankAccounts = data.personBankAccounts.filter(
+      (a) => a.id !== id,
+    );
     await this.write(data);
   }
 
@@ -396,9 +410,13 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
     return disbursement;
   }
 
-  async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
+  async findDisbursementByLoanRequestId(
+    loanRequestId: string,
+  ): Promise<Disbursement | null> {
     const data = await this.read();
-    return data.disbursements.find((d) => d.loanRequestId === loanRequestId) ?? null;
+    return (
+      data.disbursements.find((d) => d.loanRequestId === loanRequestId) ?? null
+    );
   }
 
   // --- Purchases ---
@@ -422,9 +440,12 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
 
   async findAllPurchases(channel?: Purchase['channel']): Promise<Purchase[]> {
     const data = await this.read();
-    const filtered = channel ? data.purchases.filter((p) => p.channel === channel) : data.purchases;
+    const filtered = channel
+      ? data.purchases.filter((p) => p.channel === channel)
+      : data.purchases;
     return [...filtered].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }
 
@@ -434,7 +455,13 @@ export class FileEnterpriseRepositoryService implements EnterpriseRepositoryPort
   ): Promise<Purchase[]> {
     const data = await this.read();
     return data.purchases
-      .filter((p) => p.purchaserType === purchaserType && p.purchaserId === purchaserId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .filter(
+        (p) =>
+          p.purchaserType === purchaserType && p.purchaserId === purchaserId,
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
   }
 }

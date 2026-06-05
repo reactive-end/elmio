@@ -20,6 +20,8 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
 import { hashPassword } from '../../helpers';
 
+import { RbacGroup } from '../guards/rbac-group.decorator';
+
 export class CreateFinanceUserDto {
   name!: string;
   cedula!: string;
@@ -39,6 +41,7 @@ export class UpdateFinanceUserDto {
 @Controller('finance-users')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@RbacGroup('config-finance-users')
 export class FinanceUsersAdminController {
   constructor(
     @InjectRepository(UserEntity)
@@ -51,7 +54,11 @@ export class FinanceUsersAdminController {
       where: { role: UserRole.FINANCE },
       order: { createdAt: 'DESC' },
     });
-    return users.map(({ passwordHash, ...user }) => user);
+    return users.map((user) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passwordHash, ...rest } = user;
+      return rest;
+    });
   }
 
   @Get(':id')
@@ -64,6 +71,7 @@ export class FinanceUsersAdminController {
     if (!user) {
       throw new NotFoundException('Usuario de finanzas no encontrado.');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...rest } = user;
     return rest;
   }
@@ -80,7 +88,9 @@ export class FinanceUsersAdminController {
       where: { email: emailLower, role: UserRole.FINANCE },
     });
     if (existingEmail) {
-      throw new ConflictException('Este correo electrónico ya está registrado para un usuario de finanzas.');
+      throw new ConflictException(
+        'Este correo electrónico ya está registrado para un usuario de finanzas.',
+      );
     }
 
     // Validar cédula única dentro del rol FINANCE (usamos la columna slug)
@@ -88,7 +98,9 @@ export class FinanceUsersAdminController {
       where: { slug: cedulaClean, role: UserRole.FINANCE },
     });
     if (existingCedula) {
-      throw new ConflictException('La cédula ingresada ya está registrada para otro usuario de finanzas.');
+      throw new ConflictException(
+        'La cédula ingresada ya está registrada para otro usuario de finanzas.',
+      );
     }
 
     const userId = randomUUID();
@@ -107,6 +119,7 @@ export class FinanceUsersAdminController {
     newUser.requirePasswordChange = true;
 
     const saved = await this.userRepo.save(newUser);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...rest } = saved;
     return rest;
   }
@@ -131,14 +144,18 @@ export class FinanceUsersAdminController {
       where: { email: emailLower, role: UserRole.FINANCE },
     });
     if (existingWithEmail && existingWithEmail.id !== id) {
-      throw new ConflictException('Este correo electrónico ya está registrado para otro usuario de finanzas.');
+      throw new ConflictException(
+        'Este correo electrónico ya está registrado para otro usuario de finanzas.',
+      );
     }
 
     const existingWithCedula = await this.userRepo.findOne({
       where: { slug: cedulaClean, role: UserRole.FINANCE },
     });
     if (existingWithCedula && existingWithCedula.id !== id) {
-      throw new ConflictException('La cédula ingresada ya está registrada para otro usuario de finanzas.');
+      throw new ConflictException(
+        'La cédula ingresada ya está registrada para otro usuario de finanzas.',
+      );
     }
 
     user.name = body.name.trim();
@@ -148,6 +165,7 @@ export class FinanceUsersAdminController {
     user.phone = body.phone.trim();
 
     const saved = await this.userRepo.save(user);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...rest } = saved;
     return rest;
   }

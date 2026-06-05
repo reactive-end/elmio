@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString, Matches } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
 
 /**
  * DTO de entrada para domiciliación R4 por teléfono.
@@ -12,7 +12,7 @@ export class PhoneDirectDebitDto {
   })
   @IsString()
   @IsNotEmpty()
-  companyAccountId!: string
+  companyAccountId!: string;
 
   /**
    * Documento de identidad del cliente (cédula/RIF/pasaporte según integración).
@@ -23,7 +23,7 @@ export class PhoneDirectDebitDto {
   })
   @IsString()
   @IsNotEmpty()
-  documentId!: string
+  documentId!: string;
 
   /**
    * Teléfono del cliente afiliado al banco.
@@ -36,7 +36,7 @@ export class PhoneDirectDebitDto {
   @Matches(/^\d{11}$/, {
     message: 'phoneNumber debe contener exactamente 11 dígitos',
   })
-  phoneNumber!: string
+  phoneNumber!: string;
 
   /**
    * Nombre del titular afiliado.
@@ -47,7 +47,7 @@ export class PhoneDirectDebitDto {
   })
   @IsString()
   @IsNotEmpty()
-  fullName!: string
+  fullName!: string;
 
   /**
    * Código del banco asociado al teléfono.
@@ -60,7 +60,7 @@ export class PhoneDirectDebitDto {
   @Matches(/^\d{3,4}$/, {
     message: 'bankCode debe contener 3 o 4 dígitos',
   })
-  bankCode!: string
+  bankCode!: string;
 
   /**
    * Monto a debitar en formato string según contrato de R4.
@@ -73,7 +73,7 @@ export class PhoneDirectDebitDto {
   @Matches(/^\d+(\.\d{1,2})?$/, {
     message: 'amount debe ser numérico y puede tener hasta 2 decimales',
   })
-  amount!: string
+  amount!: string;
 
   /**
    * Concepto del débito.
@@ -84,7 +84,7 @@ export class PhoneDirectDebitDto {
   })
   @IsString()
   @IsNotEmpty()
-  concept!: string
+  concept!: string;
 }
 
 /**
@@ -98,7 +98,7 @@ export class PhoneDirectDebitResponseDto {
     example: '202',
     description: 'Código de respuesta devuelto por Banco R4.',
   })
-  code!: string
+  code!: string;
 
   /**
    * Mensaje descriptivo devuelto por el banco.
@@ -107,7 +107,7 @@ export class PhoneDirectDebitResponseDto {
     example: 'Solicitud procesada',
     description: 'Mensaje devuelto por Banco R4.',
   })
-  message!: string
+  message!: string;
 
   /**
    * UUID de trazabilidad generado por el banco.
@@ -116,7 +116,7 @@ export class PhoneDirectDebitResponseDto {
     example: 'f01a4ec5-987c-4955-b83a-8c38e2f06438',
     description: 'Identificador único retornado por Banco R4.',
   })
-  uuid!: string
+  uuid!: string;
 
   /**
    * Respuesta cruda del banco para auditoría.
@@ -126,5 +126,5 @@ export class PhoneDirectDebitResponseDto {
     additionalProperties: true,
     description: 'Respuesta original enviada por Banco R4.',
   })
-  rawResponse!: any
+  rawResponse!: any;
 }

@@ -214,4 +214,3 @@ export class LocalGalleryStorageService implements GalleryStoragePort {
     }
   }
 }
-

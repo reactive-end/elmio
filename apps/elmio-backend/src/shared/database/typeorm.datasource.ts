@@ -36,7 +36,8 @@ const AppDataSource = new DataSource({
     options: `-c search_path=${requiredEnv('DB_SCHEMA')},public`,
   },
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
-  logging: process.env.DB_LOGGING === 'true' || process.env.NODE_ENV === 'development',
+  logging:
+    process.env.DB_LOGGING === 'true' || process.env.NODE_ENV === 'development',
   entities: isCompiled
     ? ['dist/modules/**/*.entity.js']
     : ['src/modules/**/*.entity.ts'],
