@@ -67,6 +67,21 @@ export class ManageVueltoUseCase {
       throw new BadRequestException('Esta solicitud tiene un desembolso pendiente en proceso.')
     }
 
+    // Obtener el producto para leer la configuración de r4_vuelto
+    let configuredAmountUsd: number | null = null
+    if (request.productId) {
+      const product = await this.productRepository.findById(request.productId)
+      if (product?.actions) {
+        const r4VueltoAction = product.actions.find(
+          (a: { type: string; active: boolean; config?: { amountUsd?: number } }) =>
+            a.type === 'r4_vuelto' && a.active && a.config?.amountUsd,
+        )
+        if (r4VueltoAction) {
+          configuredAmountUsd = Number(r4VueltoAction.config.amountUsd)
+        }
+      }
+    }
+
     // Buscar perfil del colaborador
     const profile = await this.repository.findCollaboratorById(request.collaboratorId)
     if (!profile) {
@@ -104,8 +119,8 @@ export class ManageVueltoUseCase {
       exchangeRate = rateResponse.exchangeRate
     }
 
-    // Calcular monto en Bs
-    const amountUsd = Number(request.amount)
+    // Calcular monto en Bs (usar monto configurado en el producto, o el monto de la solicitud como fallback)
+    const amountUsd = configuredAmountUsd ?? Number(request.amount)
     const amountBs = Number((amountUsd * exchangeRate).toFixed(2))
 
     const concept = `Desembolso prestamo: ${request.description || 'Prestamo'}`
