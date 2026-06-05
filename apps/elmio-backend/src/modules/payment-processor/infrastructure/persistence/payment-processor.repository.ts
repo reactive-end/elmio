@@ -53,6 +53,7 @@ import {
   QueryOperationRequestDto,
   QueryOperationResponseDto,
 } from '../../presentation/dtos/banco-r4/query-operation.dto'
+import { VueltoRequestDto, VueltoResponseDto } from '../../presentation/dtos/banco-r4/vuelto.dto'
 
 import {
   GenerateWebPaymentUrlRequest,
@@ -1051,6 +1052,10 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       success: bankResponse.success,
       rawResponse: bankResponse.rawResponse,
     }
+  }
+
+  async processVueltoR4(dto: VueltoRequestDto): Promise<VueltoResponseDto> {
+    return this.r4ProcessVuelto(dto)
   }
 
   async consultSentPayments(dto: ConsultSentPaymentsDto) {
@@ -3757,6 +3762,167 @@ export class PaymentProcessorRepository implements PaymentProcessorRepositoryPor
       this.mapDirectDebitError(
         error,
         'Error procesando Debito Inmediato en Banco R4',
+      )
+    }
+  }
+
+  /**
+   * Procesa una solicitud de Vuelto en Banco R4.
+   * Obtiene la referencia y estado de la transacción de vuelto en la red interbancaria.
+   *
+   * @see https://r4conecta.mibanco.com.ve/MBvuelto
+   */
+  async r4ProcessVuelto(dto: VueltoRequestDto): Promise<VueltoResponseDto> {
+    try {
+      const context = await this.getR4Context(dto.companyAccountId)
+
+      if (!context.commerceKey || !this.BASE_URL) {
+        throw new InternalServerErrorException(
+          'Configuración incompleta de banco R4',
+        )
+      }
+
+      const endpoint = `${this.BASE_URL}/MBvuelto`
+
+      // Normalizar datos
+      const normalizedPhone = String(dto.TelefonoDestino || '')
+        .trim()
+        .replace(/\D/g, '')
+      const normalizedCedula = String(dto.Cedula || '')
+        .trim()
+        .toUpperCase()
+      const normalizedBanco = String(dto.Banco || '')
+        .trim()
+      const normalizedMonto = String(dto.Monto || '').trim()
+      const normalizedIp = dto.Ip?.trim() || '0.0.0.0'
+
+      // Generar hash HMAC-SHA256 de "TelefonoDestino + Monto + Banco + Cedula"
+      const stringToSign = `${normalizedPhone}${normalizedMonto}${normalizedBanco}${normalizedCedula}`
+      const authorization = crypto
+        .createHmac('sha256', context.commerceKey)
+        .update(stringToSign)
+        .digest('hex')
+
+      const payload: Record<string, string> = {
+        TelefonoDestino: normalizedPhone,
+        Cedula: normalizedCedula,
+        Banco: normalizedBanco,
+        Monto: normalizedMonto,
+      }
+
+      // Agregar campos opcionales solo si están presentes
+      if (dto.Concepto) {
+        payload.Concepto = String(dto.Concepto).substring(0, 30)
+      }
+      if (dto.Ip) {
+        payload.Ip = normalizedIp
+      }
+
+      this.logger.debug(`[R4][Vuelto] Endpoint: ${endpoint}`)
+      this.logger.debug(
+        `[R4][Vuelto] Request payload: ${JSON.stringify(payload)}`,
+      )
+      this.logger.debug(
+        `[R4][Vuelto] Request headers: ${JSON.stringify({
+          Commerce: context.commerceKey,
+          Authorization: authorization,
+        })}`,
+      )
+
+      const response = await firstValueFrom(
+        this.httpService.post(endpoint, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            Commerce: context.commerceKey,
+            Authorization: authorization,
+          },
+        }),
+      )
+
+      this.logger.debug(
+        `[R4][Vuelto] HTTP status: ${response.status} - Response body: ${JSON.stringify(
+          response.data,
+        )}`,
+      )
+
+      if (response.status !== HttpStatus.OK && response.status !== HttpStatus.ACCEPTED) {
+        throw new InternalServerErrorException(
+          'Respuesta HTTP inválida de Banco R4',
+        )
+      }
+
+      const code = String(response.data?.code ?? '')
+      const message =
+        response.data?.message ||
+        response.data?.mensaje ||
+        'Respuesta inválida de Banco R4'
+
+      // Transacción exitosa (código "00")
+      if (code === '00') {
+        return {
+          code,
+          message,
+          reference: String(response.data?.reference ?? ''),
+          rawResponse: response.data,
+        }
+      }
+
+      // Códigos de error conocidos - devolver como respuesta exitosa pero con código de error
+      // Estos no lanzan excepción, se devuelven para que el cliente maneje la lógica
+      const knownErrorCodes = ['08', '14', '51', '55', '56', '80']
+      if (knownErrorCodes.includes(code)) {
+        this.logger.warn(
+          `[R4][Vuelto] Código de respuesta conocido: ${code} - ${message}`,
+        )
+        return {
+          code,
+          message,
+          reference: undefined,
+          rawResponse: response.data,
+        }
+      }
+
+      // Código desconocido -> error
+      throw new BadRequestException(message)
+    } catch (error) {
+      this.logger.error(
+        `Error en Vuelto R4: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+
+      if (error.config) {
+        try {
+          this.logger.error(
+            `[AXIOS REQUEST] Método: ${error.config.method?.toUpperCase()}`,
+          )
+          this.logger.error(`[AXIOS REQUEST] URL: ${error.config.url}`)
+          this.logger.error(
+            `[AXIOS REQUEST] Headers: ${JSON.stringify(error.config.headers)}`,
+          )
+          this.logger.error(
+            `[AXIOS REQUEST] Data: ${JSON.stringify(error.config.data)}`,
+          )
+        } catch (e) {
+          this.logger.error('Error al loggear la request Axios', e as Error)
+        }
+      }
+
+      if (error.response) {
+        const resp = error.response
+        this.logger.error(`Status HTTP: ${resp.status}`)
+        this.logger.error(`Body recibido: ${JSON.stringify(resp.data)}`)
+      }
+
+      // Re-lanzar excepciones de NestJS tal cual
+      if (error instanceof HttpException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException(
+        `Error procesando Vuelto en Banco R4: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       )
     }
   }

@@ -27,6 +27,7 @@ import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dt
 import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto'
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
 import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto'
+import { VueltoRequestDto, VueltoResponseDto } from '../../presentation/dtos/banco-r4/vuelto.dto'
 
 // Las importaciones de banco-exterior se dejan como DTOs vacíos locales si no se migran
 export interface ConsultSentPaymentsDto {}
@@ -81,6 +82,7 @@ export interface PaymentProcessorRepositoryPort {
   processImmediateCreditR4(dto: ImmediateCreditRequestDto): Promise<any>
   processImmediateDebitR4(dto: ImmediateDebitRequestDto): Promise<any>
   queryOperationR4(dto: QueryOperationRequestDto): Promise<any>
+  processVueltoR4(dto: VueltoRequestDto): Promise<VueltoResponseDto>
 
   consultSentPayments(dto: ConsultSentPaymentsDto): Promise<any>
   validateReceivedPayment(dto: ValidateReceivedPaymentDto): Promise<any>

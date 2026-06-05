@@ -22,6 +22,7 @@ import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dt
 import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto'
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto'
 import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto'
+import { VueltoRequestDto, VueltoResponseDto } from '../../presentation/dtos/banco-r4/vuelto.dto'
 
 import type { PaymentProcessorRepositoryPort } from '../../domain/ports/payment-processor-repository.interface'
 import {
@@ -199,6 +200,21 @@ export class PaymentProcessorService {
 
     this.logger.debug(
       `[Service] queryOperationR4 - repository response: ${JSON.stringify(
+        result,
+      )}`,
+    )
+
+    return result
+  }
+
+  async processVueltoR4(dto: VueltoRequestDto): Promise<VueltoResponseDto> {
+    this.logger.log('[Service] processVueltoR4 - incoming request')
+    this.logger.debug(`[Service] DTO: ${JSON.stringify(dto)}`)
+
+    const result = await this.paymentProcessorRepository.processVueltoR4(dto)
+
+    this.logger.debug(
+      `[Service] processVueltoR4 - repository response: ${JSON.stringify(
         result,
       )}`,
     )

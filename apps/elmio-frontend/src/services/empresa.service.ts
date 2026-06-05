@@ -329,6 +329,7 @@ export interface LoanRequest {
   updatedAt: string
   productId: string | null
   requiresManualDisburse?: boolean
+  requiresR4Vuelto?: boolean
   hasPendingDisbursement?: boolean
 }
 
@@ -861,6 +862,36 @@ export const enterpriseService = {
       throw new Error(err.message ?? 'Error al conciliar manualmente.')
     }
     return (await res.json()) as { success: boolean }
+  },
+
+  async processVueltoRequest(requestId: string): Promise<{
+    status: 'disbursed' | 'failed'
+    reference?: string
+    code?: string
+    message?: string
+  }> {
+    const res = await authedFetch(`/enterprises/requests/${requestId}/vuelto`, {
+      method: 'POST',
+    })
+    const data = (await res.json()) as {
+      status: string
+      reference?: string
+      code?: string
+      message?: string
+    }
+
+    if (data.status === 'disbursed') {
+      return {
+        status: 'disbursed',
+        reference: data.reference,
+      }
+    }
+
+    return {
+      status: 'failed',
+      code: data.code,
+      message: data.message,
+    }
   },
 
   // --- Purchases ---

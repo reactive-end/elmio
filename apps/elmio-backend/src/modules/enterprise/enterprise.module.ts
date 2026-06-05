@@ -15,6 +15,7 @@ import { ManageContractsUseCase } from './application/manage-contracts.use-case'
 import { ManageProfileUseCase } from './application/manage-profile.use-case';
 import { ManagePersonBankAccountsUseCase } from './application/manage-person-bank-accounts.use-case';
 import { ManageDisburseUseCase } from './application/manage-disburse.use-case';
+import { ManageVueltoUseCase } from './application/manage-vuelto.use-case';
 import { ManagePurchasesUseCase } from './application/manage-purchases.use-case';
 import { ExecuteBillingCutoffUseCase } from './application/execute-billing-cutoff.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
@@ -75,6 +76,7 @@ import { ProductModule } from '../product/product.module';
     ManageProfileUseCase,
     ManagePersonBankAccountsUseCase,
     ManageDisburseUseCase,
+    ManageVueltoUseCase,
     ManagePurchasesUseCase,
     ExecuteBillingCutoffUseCase,
     DbEnterpriseRepositoryService,

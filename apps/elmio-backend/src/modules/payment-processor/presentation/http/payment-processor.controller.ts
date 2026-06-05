@@ -43,6 +43,7 @@ import { GenerateOtpDto } from '../../presentation/dtos/banco-r4/generate-otp.dt
 import { ImmediateCreditRequestDto } from '../../presentation/dtos/banco-r4/immediate-credit.dto';
 import { ImmediateDebitRequestDto } from '../../presentation/dtos/banco-r4/immediate-debit.dto';
 import { QueryOperationRequestDto } from '../../presentation/dtos/banco-r4/query-operation.dto';
+import { VueltoRequestDto } from '../../presentation/dtos/banco-r4/vuelto.dto';
 
 /**
  * Decorador personalizado local para extraer y mapear la sesión actual
@@ -536,5 +537,31 @@ export class PaymentProcessorController {
     return await this.paymentProcessorService.processMobilePaymentNotificationR4(
       dto,
     );
+  }
+
+  // ==========================================
+  // R4 VUELTO
+  // ==========================================
+
+  /**
+   * Procesa una solicitud de Vuelto en Banco R4.
+   * Obtiene la referencia y estado de la transacción de vuelto en la red interbancaria.
+   *
+   * @param dto - Datos de la solicitud de vuelto (teléfono, cédula, banco, monto).
+   * @returns Resultado del proceso de vuelto (referencia si es exitoso, o código de error).
+   * @see https://r4conecta.mibanco.com.ve/MBvuelto
+   */
+  @UseGuards(AuthGuard)
+  @Post('banco-r4/vuelto')
+  @HttpCode(HttpStatus.OK)
+  async processVueltoR4(@Body() dto: VueltoRequestDto) {
+    this.logger.debug(
+      `[banco-r4/vuelto] Request received: ${JSON.stringify(dto)}`,
+    );
+    const result = await this.paymentProcessorService.processVueltoR4(dto);
+    this.logger.debug(
+      `[banco-r4/vuelto] Response returned: ${JSON.stringify(result)}`,
+    );
+    return result;
   }
 }

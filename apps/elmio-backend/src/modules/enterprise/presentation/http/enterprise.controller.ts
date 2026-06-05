@@ -38,6 +38,7 @@ import { CreateTransactionUseCase } from '../../application/create-transaction.u
 import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
 import { ExecuteBillingCutoffUseCase, type BillingCutoffResult } from '../../application/execute-billing-cutoff.use-case';
 import { ManageDisburseUseCase } from '../../application/manage-disburse.use-case';
+import { ManageVueltoUseCase } from '../../application/manage-vuelto.use-case';
 import { ManagePurchasesUseCase } from '../../application/manage-purchases.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
 import {
@@ -82,6 +83,7 @@ export class EnterpriseController {
     private readonly manageContracts: ManageContractsUseCase,
     private readonly executeBillingCutoff: ExecuteBillingCutoffUseCase,
     private readonly manageDisburse: ManageDisburseUseCase,
+    private readonly manageVuelto: ManageVueltoUseCase,
     private readonly managePurchases: ManagePurchasesUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
@@ -259,11 +261,13 @@ export class EnterpriseController {
       const product = req.productId ? productMap.get(req.productId) : undefined;
       const requiresManualDisburse =
         product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'manual_disburse' && a.active) ?? false;
+      const requiresR4Vuelto =
+        product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'r4_vuelto' && a.active) ?? false;
 
       const disbursement = disbursementMap.get(req.id);
       const hasPendingDisbursement = disbursement?.status === 'pending';
 
-      return { ...req, requiresManualDisburse, hasPendingDisbursement };
+      return { ...req, requiresManualDisburse, requiresR4Vuelto, hasPendingDisbursement };
     });
   }
 
@@ -312,6 +316,21 @@ export class EnterpriseController {
     @Param('reqId') reqId: string,
   ) {
     return this.manageDisburse.completeManual(reqId);
+  }
+
+  /** POST /api/enterprises/requests/:reqId/vuelto - Finanzas desembolsa via Vuelto R4 (respuesta inmediata). */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('requests/:reqId/vuelto')
+  async processVueltoRequest(
+    @Req() req: Request,
+    @Param('reqId') reqId: string,
+  ) {
+    const session = req.session!
+    return this.manageVuelto.execute(reqId, {
+      financeUserId: session.userId,
+      financeUserName: session.email || 'Usuario Finanzas',
+    });
   }
 
   // --- Purchases ---
