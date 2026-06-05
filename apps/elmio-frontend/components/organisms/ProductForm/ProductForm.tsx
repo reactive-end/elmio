@@ -34,6 +34,9 @@ export function ProductForm() {
   const isDisburseActive = disburseAction?.active ?? false
   const disburseAmountUsd = disburseAction?.config?.amountUsd ?? ''
 
+  const r4VueltoAction = f.actions.find((a) => a.type === 'r4_vuelto')
+  const isR4VueltoActive = r4VueltoAction?.active ?? false
+
   const handleToggleDisburse = () => {
     const exists = f.actions.some((a) => a.type === 'manual_disburse')
     if (exists) {
@@ -49,6 +52,26 @@ export function ProductForm() {
           name: 'Desembolso Manual de Prestamos',
           active: true,
           config: { amountUsd: 50.0 },
+        },
+      ])
+    }
+  }
+
+  const handleToggleR4Vuelto = () => {
+    const exists = f.actions.some((a) => a.type === 'r4_vuelto')
+    if (exists) {
+      f.setActions(
+        f.actions.map((a) => (a.type === 'r4_vuelto' ? { ...a, active: !a.active } : a)),
+      )
+    } else {
+      f.setActions([
+        ...f.actions,
+        {
+          id: crypto.randomUUID(),
+          type: 'r4_vuelto',
+          name: 'Despacho por Pago Móvil (Vuelto R4)',
+          active: true,
+          config: {},
         },
       ])
     }
@@ -1026,6 +1049,39 @@ export function ProductForm() {
                     </FormField>
                   </div>
                 )}
+              </div>
+
+              {/* Acción de Despacho por Pago Móvil (Vuelto R4) */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 flex flex-col gap-4 transition-all duration-200 hover:border-gray-200">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold text-body block">
+                      Despacho por Pago Móvil (r4_vuelto)
+                    </span>
+                    <p className="text-xs text-body-muted mt-1 leading-relaxed">
+                      Desembolso inmediato vía Vuelto R4 sin polling. El sistema ejecuta el pago móvil
+                      interbancario y marca la solicitud como desembolsada al instante según la respuesta
+                      del banco.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 sm:shrink-0">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isR4VueltoActive}
+                      onClick={handleToggleR4Vuelto}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                        isR4VueltoActive ? 'bg-secondary' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                          isR4VueltoActive ? 'translate-x-5' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
