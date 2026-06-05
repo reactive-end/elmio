@@ -36,6 +36,7 @@ export function ProductForm() {
 
   const r4VueltoAction = f.actions.find((a) => a.type === 'r4_vuelto')
   const isR4VueltoActive = r4VueltoAction?.active ?? false
+  const r4VueltoAmountUsd = r4VueltoAction?.config?.amountUsd ?? ''
 
   const handleToggleDisburse = () => {
     const exists = f.actions.some((a) => a.type === 'manual_disburse')
@@ -71,7 +72,7 @@ export function ProductForm() {
           type: 'r4_vuelto',
           name: 'Despacho por Pago Móvil (Vuelto R4)',
           active: true,
-          config: {},
+          config: { amountUsd: 50.0 },
         },
       ])
     }
@@ -81,6 +82,14 @@ export function ProductForm() {
     f.setActions(
       f.actions.map((a) =>
         a.type === 'manual_disburse' ? { ...a, config: { ...a.config, amountUsd: amount } } : a,
+      ),
+    )
+  }
+
+  const handleUpdateR4VueltoAmount = (amount: number) => {
+    f.setActions(
+      f.actions.map((a) =>
+        a.type === 'r4_vuelto' ? { ...a, config: { ...a.config, amountUsd: amount } } : a,
       ),
     )
   }
@@ -1082,6 +1091,50 @@ export function ProductForm() {
                     </button>
                   </div>
                 </div>
+
+                {isR4VueltoActive && (
+                  <div className="border-t border-gray-50 pt-4 flex flex-col gap-4 mt-1 transition-all duration-200">
+                    <FormField label="Monto de Capital a Desembolsar (USD)" required>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex gap-2 items-center">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
+                              $
+                            </span>
+                            <Input
+                              type="number"
+                              value={String(r4VueltoAmountUsd)}
+                              onChange={(e) => handleUpdateR4VueltoAmount(Number(e.target.value))}
+                              placeholder="Ingresa el monto exacto en USD (ej: 50.00)"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Botones Rápidos Premium */}
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {[20, 50, 100].map((amt) => {
+                            const isSel = Number(r4VueltoAmountUsd) === amt
+                            return (
+                              <button
+                                key={amt}
+                                type="button"
+                                onClick={() => handleUpdateR4VueltoAmount(amt)}
+                                className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer ${
+                                  isSel
+                                    ? 'bg-secondary border-secondary text-white shadow-sm shadow-secondary/20'
+                                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300 text-body'
+                                }`}
+                              >
+                                {`$${amt} USD`}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </FormField>
+                  </div>
+                )}
               </div>
             </div>
           )}
