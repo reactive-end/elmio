@@ -403,7 +403,7 @@ export default function FinanceRequestsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        {!req.requiresManualDisburse && (
+                        {!req.requiresManualDisburse && !req.requiresR4Vuelto && (
                           <Button
                             onClick={() => void handleApprove(req.id)}
                             variant="primary"
@@ -447,7 +447,7 @@ export default function FinanceRequestsPage() {
                             isLoading={actionLoading === req.id}
                           >
                             <Send className="w-3.5 h-3.5" />
-                            Despacho por Pago Móvil
+                            Despachar
                           </Button>
                         )}
                         <Button
