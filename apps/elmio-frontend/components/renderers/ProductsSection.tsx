@@ -98,8 +98,11 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
         const hasSpecificIds = contenido.productosIds && contenido.productosIds.length > 0
         
         if (hasSpecificIds) {
-          // Filtrar por IDs específicos indicados en el editor
-          filtered = allLoadedProducts.filter((p) => contenido.productosIds.includes(p.id))
+          // Filtrar por IDs específicos e indexar para mantener el orden exacto de productosIds
+          const map = new Map(allLoadedProducts.map((p) => [p.id, p]))
+          filtered = contenido.productosIds
+            .map((id) => map.get(id))
+            .filter((p): p is NonNullable<typeof p> => !!p)
         } else {
           // Mostrar todos si es auto-poblar o si no hay elementos manuales
           filtered = allLoadedProducts
@@ -181,11 +184,10 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
   }, [contenido.productosIds, contenido.autoPoblarProductos, contenido.elementos])
 
   const productos = listaProductos
-  const autoplay = contenido.autoplay !== false
-  const velocidad = contenido.autoplayVelocidad || 5000
-
-  const trackRef = useRef<HTMLDivElement>(null)
-  const [indiceActual, setIndiceActual] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [showArrows, setShowArrows] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const tarjetasPorVista = 5
@@ -193,31 +195,58 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
   const espacio = 16
   const paso = anchoTarjeta + espacio
 
-  const maxIndice = Math.max(0, productos.length - tarjetasPorVista)
-  const puedeAvanzar = productos.length > tarjetasPorVista
-
-  const desplazarA = useCallback(
-    (idx: number) => {
-      const limite = Math.max(0, Math.min(idx, maxIndice))
-      setIndiceActual(limite)
-      if (trackRef.current) trackRef.current.style.transform = `translateX(${-(limite * paso)}px)`
-    },
-    [maxIndice, paso],
-  )
+  const checkScrollState = useCallback(() => {
+    if (!containerRef.current) return
+    const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
+    
+    setCanScrollLeft(scrollLeft > 1)
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10)
+    setShowArrows(scrollWidth > clientWidth)
+  }, [])
 
   useEffect(() => {
-    if (!autoplay || !puedeAvanzar || cargando) return
+    const el = containerRef.current
+    if (!el || cargando) return
+
+    checkScrollState()
+
+    el.addEventListener('scroll', checkScrollState)
+    window.addEventListener('resize', checkScrollState)
+
+    const t = setTimeout(checkScrollState, 100)
+
+    return () => {
+      el.removeEventListener('scroll', checkScrollState)
+      window.removeEventListener('resize', checkScrollState)
+      clearTimeout(t)
+    }
+  }, [productos, cargando, checkScrollState])
+
+  const desplazar = (direccion: 'izquierda' | 'derecha') => {
+    if (!containerRef.current) return
+    const offset = direccion === 'izquierda' ? -paso : paso
+    containerRef.current.scrollBy({ left: offset, behavior: 'smooth' })
+  }
+
+  const autoplay = contenido.autoplay !== false
+  const velocidad = contenido.autoplayVelocidad || 5000
+
+  useEffect(() => {
+    if (!autoplay || !showArrows || cargando) return
     intervalRef.current = setInterval(() => {
-      setIndiceActual((prev) => {
-        const next = prev >= maxIndice ? 0 : prev + 1
-        if (trackRef.current) trackRef.current.style.transform = `translateX(${-(next * paso)}px)`
-        return next
-      })
+      if (containerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
+        if (scrollLeft + clientWidth >= scrollWidth - 15) {
+          containerRef.current.scrollTo({ left: 0, behavior: 'smooth' })
+        } else {
+          containerRef.current.scrollBy({ left: paso, behavior: 'smooth' })
+        }
+      }
     }, velocidad)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [autoplay, puedeAvanzar, maxIndice, velocidad, paso, cargando])
+  }, [autoplay, showArrows, velocidad, paso, cargando])
 
   if (cargando) {
     return (
@@ -244,13 +273,13 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               {contenido.titulo}
             </h2>
           )}
-          {puedeAvanzar && (
+          {showArrows && (
             <>
               <button
                 type="button"
-                onClick={() => desplazarA(indiceActual - 1)}
-                disabled={indiceActual === 0}
-                className="absolute -left-6 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 md:flex cursor-pointer"
+                onClick={() => desplazar('izquierda')}
+                disabled={!canScrollLeft}
+                className="absolute -left-6 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 cursor-pointer"
               >
                 <svg
                   width="24"
@@ -265,9 +294,9 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
               </button>
               <button
                 type="button"
-                onClick={() => desplazarA(indiceActual + 1)}
-                disabled={indiceActual >= maxIndice}
-                className="absolute -right-6 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 md:flex cursor-pointer"
+                onClick={() => desplazar('derecha')}
+                disabled={!canScrollRight}
+                className="absolute -right-6 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gray-200 bg-white shadow-lg transition-all hover:scale-110 disabled:opacity-50 cursor-pointer"
               >
                 <svg
                   width="24"
@@ -283,13 +312,14 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
             </>
           )}
 
-          <div className="overflow-hidden">
+          <div
+            ref={containerRef}
+            className="overflow-x-auto no-scrollbar scroll-smooth"
+          >
             <div
-              ref={trackRef}
               className="flex items-stretch gap-4 pb-2"
               style={{
-                width: productos.length * paso,
-                transition: 'transform 300ms ease-out',
+                width: 'max-content',
               }}
             >
               {productos.map((producto) => (

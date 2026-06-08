@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { ImageIcon, Loader2 } from 'lucide-react'
-import { productService } from '@/src/services/product.service'
 
-interface ProductoMarketplace {
+export interface ProductoMarketplace {
   id: string
   nombre: string
   categoria: string
@@ -18,58 +16,22 @@ interface ProductoMarketplace {
 interface SelectorProductosProps {
   seleccionados: string[]
   onToggle: (productoId: string) => void
+  productos: ProductoMarketplace[]
+  loading: boolean
+  error: string | null
 }
 
 /**
  * Selector visual de productos para el carrusel de seccion de productos.
- * Trae los productos reales del backend.
+ * Presenta los productos pasados por props.
  */
-export function SelectorProductos({ seleccionados, onToggle }: SelectorProductosProps) {
-  const [productos, setProductos] = useState<ProductoMarketplace[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await productService.list()
-        
-        // Mapear de Product (Backend) a ProductoMarketplace (Frontend)
-        const mapped: ProductoMarketplace[] = data.map((p) => {
-          const firstPrice = p.priceLists?.[0]
-          const precioFormatted = firstPrice 
-            ? `${firstPrice.currency === 'USD' ? '$' : firstPrice.currency}${firstPrice.amount}`
-            : '$0'
-
-          const firstWindow = p.windows?.[0]
-          const accionTipo = firstWindow?.type === 'external-redirect' ? 'redirect' : 'trigger'
-          
-          return {
-            id: p.id,
-            nombre: p.name,
-            categoria: p.category,
-            precio: precioFormatted,
-            imagenUrl: p.images?.[0] || '',
-            accionTipo,
-            accionEtiqueta: firstWindow?.label || 'Ver detalle',
-            destinoUrl: firstWindow?.config?.redirectUrl || '',
-          }
-        })
-        
-        setProductos(mapped)
-      } catch (err) {
-        console.error('Error al cargar productos en el editor:', err)
-        setError('No se pudieron cargar los productos.')
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    void loadProducts()
-  }, [])
-
+export function SelectorProductos({
+  seleccionados,
+  onToggle,
+  productos,
+  loading,
+  error,
+}: SelectorProductosProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-8 gap-2 text-body-muted">
