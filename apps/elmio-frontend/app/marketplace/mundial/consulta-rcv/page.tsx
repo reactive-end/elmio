@@ -250,7 +250,11 @@ function MundialConsultaRCVContent() {
           )}
 
           {m.step === 7 && (
-            <Step7Confirmation policyData={m.policyData} onClose={handleCompletion} />
+            <Step7Confirmation
+              policyData={m.policyData}
+              onDownloadPdf={m.handleDownloadPdf}
+              onClose={handleCompletion}
+            />
           )}
         </div>
       </div>

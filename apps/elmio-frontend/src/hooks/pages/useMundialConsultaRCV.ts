@@ -84,6 +84,8 @@ export function useMundialConsultaRCV() {
   const [dragActiveProperty, setDragActiveProperty] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const propertyFileInputRef = useRef<HTMLInputElement | null>(null)
+  const dniBucketRef = useRef<any>(null)
+  const vehiclePropertyBucketRef = useRef<any>(null)
   const [loadingDocuments, setLoadingDocuments] = useState(false)
 
   // Paso 5: Completar Vehículo
@@ -116,7 +118,9 @@ export function useMundialConsultaRCV() {
   const [emissionStatus, setEmissionStatus] = useState<'idle' | 'emitting' | 'completed' | 'error'>(
     'idle',
   )
-  const [policyData, setPolicyData] = useState<Array<{ policyId: string; number: string }>>([])
+  const [policyData, setPolicyData] = useState<
+    Array<{ policyId: string; number: string; pdfUrl?: string }>
+  >([])
   const [shopcartId] = useState(() => `mundial-${Math.random().toString(36).slice(2, 11)}`)
 
   // Inicializar Años
@@ -304,7 +308,22 @@ export function useMundialConsultaRCV() {
       return
     }
     setStepError('')
-    setStep(5)
+    setLoadingDocuments(true)
+    try {
+      dniBucketRef.current = await mundialService.uploadDniToBucket(
+        idFile,
+        `${insured.docType}${insured.docNumber}-${shopcartId}`,
+      )
+      vehiclePropertyBucketRef.current = await mundialService.uploadVehiclePropertyToBucket(
+        vehiclePropertyFile,
+        `property-${insured.docType}${insured.docNumber}-${shopcartId}`,
+      )
+      setStep(5)
+    } catch (error) {
+      setStepError(error instanceof Error ? error.message : 'Error subiendo los documentos')
+    } finally {
+      setLoadingDocuments(false)
+    }
   }
 
   // Paso 5: Completar Vehículo
@@ -449,6 +468,15 @@ export function useMundialConsultaRCV() {
       const res = await mundialService.createEmissionAuto(shopcartId, payload)
 
       if (res?.status && res?.data?.cpoliza) {
+        const findName = (options: VehicleSelectOption[], value: string) => {
+          return options.find((o) => o.value === value)?.label || undefined
+        }
+
+        const brandName = findName(brands, brand)
+        const modelName = findName(models, model)
+        const versionName = findName(versions, version)
+        const colorName = findName(vehicleColors, vehicleColorId)
+
         // Persistencia final local en base de datos
         await mundialService.finalizePersistence(shopcartId, {
           client: {
@@ -457,11 +485,13 @@ export function useMundialConsultaRCV() {
             email: insured.email,
             dniType: insured.docType,
             dniNumber: insured.docNumber,
+            dniVenNationality: insured.docType,
             birthDate: insured.birthDate,
             genderId: insured.genderId,
             civilStateId,
-            phone: { areaCode: phoneDigits.slice(0, 3), number: phoneDigits.slice(3) },
+            phone: { countryId: '29', areaCode: phoneDigits.slice(0, 3), number: phoneDigits.slice(3) },
             address: {
+              countryId: '29',
               administrativeAreaId: selectedStateId,
               localityId: selectedCityId,
               address1: addressLine,
@@ -471,17 +501,42 @@ export function useMundialConsultaRCV() {
           vehicle: {
             year,
             brandCode: brand,
+            brandName,
             modelCode: model,
+            modelName,
             versionCode: version,
+            versionName,
+            vehicleTypeId: '1',
             isArmored: hasArmor || false,
             plate: vehiclePlate,
             colorId: vehicleColorId,
+            colorName,
             chassisSerial: vehicleChassisSerial,
             engineSerial: vehicleEngineSerial,
           },
+          ...(dniBucketRef.current?.path
+            ? {
+                dniDocument: {
+                  path: dniBucketRef.current.path,
+                  originalName: dniBucketRef.current.originalName,
+                  contentType: dniBucketRef.current.contentType,
+                },
+              }
+            : {}),
+          ...(vehiclePropertyBucketRef.current?.path
+            ? {
+                vehiclePropertyDocument: {
+                  path: vehiclePropertyBucketRef.current.path,
+                  originalName: vehiclePropertyBucketRef.current.originalName,
+                  contentType: vehiclePropertyBucketRef.current.contentType,
+                },
+              }
+            : {}),
         })
 
-        setPolicyData([{ policyId: res.data.cpoliza, number: res.data.cpoliza }])
+        const pdfUrl = res.data.xrutapdf || res.data.rutapdf || res.data.pdf || res.data.pdfUrl || ''
+
+        setPolicyData([{ policyId: res.data.cpoliza, number: res.data.cpoliza, pdfUrl }])
         setEmissionStatus('completed')
         setStep(7)
       } else {
@@ -490,6 +545,13 @@ export function useMundialConsultaRCV() {
     } catch (error) {
       setEmissionStatus('error')
       setStepError(error instanceof Error ? error.message : 'Error emitiendo póliza')
+    }
+  }
+
+  const handleDownloadPdf = async (pdfUrl: string) => {
+    if (!pdfUrl) return
+    if (typeof window !== 'undefined') {
+      window.open(pdfUrl, '_blank')
     }
   }
 
@@ -610,6 +672,7 @@ export function useMundialConsultaRCV() {
     handleBack,
     handleEmitPolicy,
     policyData,
+    handleDownloadPdf,
     shopcartId,
   }
 }

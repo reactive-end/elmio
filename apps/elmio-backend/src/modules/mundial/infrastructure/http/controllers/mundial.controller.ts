@@ -7,13 +7,19 @@ import {
   Param,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { MundialService } from '../../../application/services/mundial.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MundialService, MulterFile } from '../../../application/services/mundial.service';
 import { MundialStorageService } from '../../../application/services/mundial-storage.service';
+import { BucketService } from '../../../../bucket/application/services/bucket.service';
 
 type FinalizePersistenceBody = {
   client?: Record<string, any>;
   vehicle?: Record<string, any>;
+  dniDocument?: Record<string, any>;
+  vehiclePropertyDocument?: Record<string, any>;
 };
 
 @Controller('mundial')
@@ -23,6 +29,7 @@ export class MundialController {
   constructor(
     private readonly mundialService: MundialService,
     private readonly mundialStorageService: MundialStorageService,
+    private readonly bucketService: BucketService,
   ) {}
 
   @Post('inma/year')
@@ -155,6 +162,43 @@ export class MundialController {
   getList(@Param('type') type: string) {
     return this.mundialService.get(`/valrep/list/${type}`);
   }
+  @Post('storage/dni-upload')
+  @UseInterceptors(FileInterceptor('dniFile'))
+  async uploadDniToBucket(
+    @UploadedFile() file: MulterFile,
+    @Body('fileName') fileName?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('El archivo dniFile es requerido');
+    }
+
+    const resolvedFileName = fileName?.trim() || `mundial-dni-${Date.now()}`;
+
+    return this.bucketService.uploadFile(
+      file,
+      resolvedFileName,
+      'mundial-dni',
+    );
+  }
+
+  @Post('storage/vehicle-property-upload')
+  @UseInterceptors(FileInterceptor('vehiclePropertyFile'))
+  async uploadVehiclePropertyToBucket(
+    @UploadedFile() file: MulterFile,
+    @Body('fileName') fileName?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('El archivo vehiclePropertyFile es requerido');
+    }
+
+    const resolvedFileName = fileName?.trim() || `mundial-vehicle-property-${Date.now()}`;
+
+    return this.bucketService.uploadFile(
+      file,
+      resolvedFileName,
+      'mundial-vehicle-property',
+    );
+  }
 
   @Post('storage/finalize-persistence')
   async finalizePersistence(
@@ -173,11 +217,18 @@ export class MundialController {
       payload: {
         hasClient: Boolean(body.client),
         hasVehicle: Boolean(body.vehicle),
+        hasDniDocument: Boolean(body.dniDocument),
+        hasVehiclePropertyDocument: Boolean(body.vehiclePropertyDocument),
       },
     });
 
     let savedClient: any = null;
     if (body.client) {
+      const clientRawData = {
+        ...(body.client.rawData || body.client),
+        ...(body.dniDocument ? { dniDocument: body.dniDocument } : {}),
+      };
+
       savedClient = await this.mundialStorageService.saveClient({
         shopcartId,
         firstName: body.client.firstName || '',
@@ -185,17 +236,22 @@ export class MundialController {
         email: body.client.email || '',
         dniType: body.client.dniType || 'V',
         dniNumber: body.client.dniNumber || '',
-        dniVenNationality: body.client.dniType || 'V',
+        dniVenNationality: body.client.dniVenNationality || body.client.dniType || 'V',
         birthDate: body.client.birthDate || '',
         genderId: body.client.genderId || 'M',
         civilStateId: body.client.civilStateId || 'S',
         phone: body.client.phone,
         address: body.client.address,
-        rawData: body.client,
+        rawData: clientRawData,
       });
     }
 
     if (body.vehicle) {
+      const vehicleRawData = {
+        ...(body.vehicle.rawData || body.vehicle),
+        ...(body.vehiclePropertyDocument ? { vehiclePropertyDocument: body.vehiclePropertyDocument } : {}),
+      };
+
       await this.mundialStorageService.saveVehicle({
         shopcartId,
         year: body.vehicle.year || '',
@@ -211,7 +267,7 @@ export class MundialController {
         colorName: body.vehicle.colorName || '',
         chassisSerial: body.vehicle.chassisSerial || '',
         engineSerial: body.vehicle.engineSerial || '',
-        rawData: body.vehicle,
+        rawData: vehicleRawData,
       });
     }
 

@@ -21,6 +21,8 @@ export interface ClientExistsResult {
 export interface FinalizePersistencePayload {
   client: Record<string, unknown>
   vehicle?: Record<string, unknown>
+  dniDocument?: Record<string, unknown>
+  vehiclePropertyDocument?: Record<string, unknown>
 }
 
 export interface Country {
@@ -276,5 +278,33 @@ export const mundialService = {
         body: JSON.stringify(body),
       },
     )
+  },
+
+  /**
+   * Sube la cédula de forma genérica al bucket de persistencia digital de ElMio para Mundial.
+   * @async
+   */
+  async uploadDniToBucket(file: File, fileName: string): Promise<any> {
+    const formData = new FormData()
+    formData.append('dniFile', file)
+    formData.append('fileName', fileName)
+    return apiFetch<any>('/mundial/storage/dni-upload', {
+      method: 'POST',
+      body: formData,
+    })
+  },
+
+  /**
+   * Sube el título de propiedad del vehículo al bucket de persistencia de ElMio para Mundial.
+   * @async
+   */
+  async uploadVehiclePropertyToBucket(file: File, fileName: string): Promise<any> {
+    const formData = new FormData()
+    formData.append('vehiclePropertyFile', file)
+    formData.append('fileName', fileName)
+    return apiFetch<any>('/mundial/storage/vehicle-property-upload', {
+      method: 'POST',
+      body: formData,
+    })
   },
 }

@@ -6,15 +6,16 @@
 
 'use client'
 
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, FileDown } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 
 interface Step7ConfirmationProps {
-  policyData: Array<{ policyId: string; number: string }>
+  policyData: Array<{ policyId: string; number: string; pdfUrl?: string }>
+  onDownloadPdf: (pdfUrl: string) => void
   onClose: () => void
 }
 
-export function Step7Confirmation({ policyData, onClose }: Step7ConfirmationProps) {
+export function Step7Confirmation({ policyData, onDownloadPdf, onClose }: Step7ConfirmationProps) {
   return (
     <div className="flex flex-col gap-6 animate-fadeIn">
       <div className="flex flex-col items-center text-center gap-4 py-6">
@@ -24,9 +25,7 @@ export function Step7Confirmation({ policyData, onClose }: Step7ConfirmationProp
         <div>
           <h2 className="text-xl font-bold text-body">¡Póliza Emitida Exitosamente!</h2>
           <p className="text-sm text-body-muted mt-1 max-w-md">
-            Su póliza RCV ha sido procesada y emitida síncronamente por La Mundial de Seguros. La
-            información detallada y las condiciones generales han sido enviadas al correo
-            electrónico del asegurado.
+            Su póliza RCV ha sido procesada y emitida síncronamente por La Mundial de Seguros. Puede descargar el contrato oficial a continuación.
           </p>
         </div>
       </div>
@@ -45,8 +44,21 @@ export function Step7Confirmation({ policyData, onClose }: Step7ConfirmationProp
                 </p>
                 <p className="text-xs text-body-muted">RCV La Mundial de Seguros</p>
               </div>
-              <div className="text-xs text-green-600 font-bold bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">
-                Activa
+              <div className="flex items-center gap-3">
+                {policy.pdfUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => onDownloadPdf(policy.pdfUrl!)}
+                    className="flex items-center gap-2 text-sm text-secondary hover:text-secondary/80 hover:bg-secondary/5"
+                  >
+                    <FileDown className="h-4 w-4" strokeWidth={1.5} />
+                    Descargar PDF
+                  </Button>
+                )}
+                <div className="text-xs text-green-600 font-bold bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">
+                  Activa
+                </div>
               </div>
             </div>
           ))}
