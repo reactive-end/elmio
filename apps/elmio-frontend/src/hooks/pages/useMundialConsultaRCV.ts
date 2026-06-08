@@ -58,7 +58,6 @@ export function useMundialConsultaRCV() {
   const [brand, setBrand] = useState('')
   const [model, setModel] = useState('')
   const [version, setVersion] = useState('')
-  const [hasArmor, setHasArmor] = useState<boolean | null>(false)
 
   const [years, setYears] = useState<string[]>([])
   const [brands, setBrands] = useState<VehicleSelectOption[]>([])
@@ -507,7 +506,7 @@ export function useMundialConsultaRCV() {
             versionCode: version,
             versionName,
             vehicleTypeId: '1',
-            isArmored: hasArmor || false,
+            isArmored: false,
             plate: vehiclePlate,
             colorId: vehicleColorId,
             colorName,
@@ -596,8 +595,6 @@ export function useMundialConsultaRCV() {
     setModel,
     version,
     setVersion,
-    hasArmor,
-    setHasArmor,
     years,
     brands,
     models,

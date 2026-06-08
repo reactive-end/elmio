@@ -22,8 +22,6 @@ interface Step2VehicleDataProps {
   setModel: (v: string) => void
   version: string
   setVersion: (v: string) => void
-  hasArmor: boolean | null
-  setHasArmor: (v: boolean | null) => void
   years: string[]
   brands: VehicleSelectOption[]
   models: VehicleSelectOption[]
@@ -46,8 +44,6 @@ export function Step2VehicleData({
   brand,
   model,
   version,
-  hasArmor,
-  setHasArmor,
   years,
   brands,
   models,
@@ -114,15 +110,7 @@ export function Step2VehicleData({
             disabled={!model || loadingVersions}
           />
         </FormField>
-        <FormField label="¿Tiene blindaje?">
-          <div className="flex items-center gap-3 pt-2">
-            <Toggle
-              checked={hasArmor === true}
-              onChange={(checked) => setHasArmor(checked ? true : false)}
-            />
-            <span className="text-sm text-body">{hasArmor === true ? 'Sí' : 'No'}</span>
-          </div>
-        </FormField>
+
         <div className="sm:col-span-2 flex gap-3 border-t border-gray-100 pt-5 mt-4">
           <Button type="button" variant="ghost" fullWidth onClick={onBack}>
             Anterior

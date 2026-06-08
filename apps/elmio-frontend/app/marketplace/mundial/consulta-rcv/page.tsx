@@ -156,8 +156,6 @@ function MundialConsultaRCVContent() {
               setModel={m.setModel}
               version={m.version}
               setVersion={m.setVersion}
-              hasArmor={m.hasArmor}
-              setHasArmor={m.setHasArmor}
               years={m.years}
               brands={m.brands}
               models={m.models}
