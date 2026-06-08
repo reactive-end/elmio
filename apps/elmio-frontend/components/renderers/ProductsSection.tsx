@@ -36,9 +36,12 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
     const hasMercantilRcvQuery = raw.windows?.some(
       (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-rcv-query-form'
     )
+    const hasMundialRcvQuery = raw.windows?.some(
+      (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mundial-rcv-query-form'
+    )
 
-    // Si tiene consultas mercantil (custom-form actions), no interceptamos, delegamos a ActionableLink
-    if (hasMercantilQuery || hasMercantilRcvQuery) {
+    // Si tiene consultas mercantil o mundial (custom-form actions), no interceptamos, delegamos a ActionableLink
+    if (hasMercantilQuery || hasMercantilRcvQuery || hasMundialRcvQuery) {
       return
     }
 
@@ -127,11 +130,16 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           const hasMercantilRcvQuery = p.windows?.some(
             (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-rcv-query-form'
           )
+          const hasMundialRcvQuery = p.windows?.some(
+            (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mundial-rcv-query-form'
+          )
 
           let enlaceBoton = p.active ? `/dashboard/enterprise/shop?product=${p.id}` : null
           if (p.active) {
             if (hasMercantilRcvQuery) {
               enlaceBoton = `action:mercantil-rcv-query?productId=${p.id}`
+            } else if (hasMundialRcvQuery) {
+              enlaceBoton = `action:mundial-rcv-query?productId=${p.id}`
             } else if (hasMercantilQuery) {
               const provider = p.globalThirdPartyProvider ?? ''
               const slug = MERCANTIL_PROVIDER_SLUGS[provider] || ''

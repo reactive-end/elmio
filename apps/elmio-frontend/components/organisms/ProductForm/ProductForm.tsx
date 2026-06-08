@@ -561,6 +561,10 @@ export function ProductForm() {
                             value: 'elmio:mercantil-rcv',
                             label: 'Mercantil RCV (Responsabilidad Civil Vehicular)',
                           },
+                          {
+                            value: 'elmio:mundial-rcv',
+                            label: 'La Mundial RCV (Responsabilidad Civil Vehicular)',
+                          },
                         ]}
                         placeholder="Selecciona un proveedor de terceros"
                       />

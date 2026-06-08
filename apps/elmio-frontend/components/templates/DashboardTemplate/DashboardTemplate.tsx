@@ -31,6 +31,11 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
   useEffect(() => {
     const session = authService.getSession()
 
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
+      return
+    }
+
     const forbiddenForCompany = [
       '/dashboard/gallery',
       '/dashboard/marketplaces',

@@ -108,12 +108,54 @@ export const authService = {
   },
 
   /**
+   * Verifica si un token JWT ha expirado.
+   * @param token El token JWT.
+   * @returns true si el token expiró o es inválido, false de lo contrario.
+   */
+  isTokenExpired(token: string): boolean {
+    try {
+      const parts = token.split('.')
+      if (parts.length !== 3) return true
+
+      const base64Url = parts[1]
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
+
+      const payload = JSON.parse(jsonPayload) as { exp?: number }
+      if (!payload.exp) return false
+
+      const now = Math.floor(Date.now() / 1000)
+      return now >= payload.exp
+    } catch {
+      return true
+    }
+  },
+
+  /**
    * Obtiene el token almacenado.
    * @returns Token o null si no hay sesion.
    */
   getToken(): string | null {
     if (typeof window === 'undefined') return null
-    return localStorage.getItem(TOKEN_KEY)
+    const raw = localStorage.getItem(TOKEN_KEY)
+    if (!raw) return null
+
+    try {
+      const parsed = JSON.parse(raw) as AuthToken
+      if (parsed.token && this.isTokenExpired(parsed.token)) {
+        this.clearToken()
+        return null
+      }
+      return raw
+    } catch {
+      this.clearToken()
+      return null
+    }
   },
 
   /**
