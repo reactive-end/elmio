@@ -89,16 +89,34 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
+export interface ValrepItem {
+  isexo?: string
+  xsexo?: string
+  iestado_civil?: string
+  xestado_civil?: string
+  cvalor?: string
+  xdescripcion?: string
+}
+
 export const mundialService = {
   /**
    * Obtiene los años habilitados de vehículos.
    * @async
    */
   async getYears(): Promise<number[]> {
-    const res = await apiFetch<{ status: boolean; data: number[] }>('/mundial/inma/year', {
+    const res = await apiFetch<{
+      status: boolean
+      result: Array<{ min: number; max: number }>
+    }>('/mundial/inma/year', {
       method: 'POST',
     })
-    return res.data
+    const min = res.result?.[0]?.min ?? 2000
+    const max = res.result?.[0]?.max ?? new Date().getFullYear()
+    const years: number[] = []
+    for (let y = max; y >= min; y--) {
+      years.push(y)
+    }
+    return years
   },
 
   /**
@@ -108,12 +126,12 @@ export const mundialService = {
   async getBrands(fano: number): Promise<Array<{ cmarca: string; xmarca: string }>> {
     const res = await apiFetch<{
       status: boolean
-      data: Array<{ cmarca: string; xmarca: string }>
+      result: Array<{ cmarca: string; xmarca: string }>
     }>('/mundial/inma/marca', {
       method: 'POST',
       body: JSON.stringify({ fano }),
     })
-    return res.data
+    return res.result
   },
 
   /**
@@ -126,12 +144,12 @@ export const mundialService = {
   ): Promise<Array<{ cmodelo: string; xmodelo: string }>> {
     const res = await apiFetch<{
       status: boolean
-      data: Array<{ cmodelo: string; xmodelo: string }>
+      result: Array<{ cmodelo: string; xmodelo: string }>
     }>('/mundial/inma/modelo', {
       method: 'POST',
       body: JSON.stringify({ fano, cmarca }),
     })
-    return res.data
+    return res.result
   },
 
   /**
@@ -145,12 +163,12 @@ export const mundialService = {
   ): Promise<Array<{ cversion: string; xversion: string }>> {
     const res = await apiFetch<{
       status: boolean
-      data: Array<{ cversion: string; xversion: string }>
+      result: Array<{ cversion: string; xversion: string }>
     }>('/mundial/inma/version', {
       method: 'POST',
       body: JSON.stringify({ fano, cmarca, cmodelo }),
     })
-    return res.data
+    return res.result
   },
 
   /**
@@ -165,12 +183,12 @@ export const mundialService = {
   ): Promise<Array<{ ccategoria_uso: number; xcategoria_uso: string }>> {
     const res = await apiFetch<{
       status: boolean
-      data: Array<{ ccategoria_uso: number; xcategoria_uso: string }>
+      result: { categorias_uso: Array<{ ccategoria_uso: number; xcategoria_uso: string }> }
     }>('/mundial/external/getCategoriasUso', {
       method: 'POST',
       body: JSON.stringify({ fano, cmarca, cmodelo, cversion }),
     })
-    return res.data
+    return res.result.categorias_uso
   },
 
   /**
@@ -185,14 +203,17 @@ export const mundialService = {
     cplan: string
     ccategoria_uso: number
   }): Promise<{ mprima: number; mprimaext: number }> {
-    const res = await apiFetch<{ status: boolean; data: { mprima: number; mprimaext: number } }>(
-      '/mundial/external/getCotizacionAuto',
-      {
-        method: 'POST',
-        body: JSON.stringify(body),
-      },
-    )
-    return res.data
+    const res = await apiFetch<{
+      status: boolean
+      result: { mprima: string; mprimaext: string }
+    }>('/mundial/external/getCotizacionAuto', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+    return {
+      mprima: Number(res.result.mprima),
+      mprimaext: Number(res.result.mprimaext),
+    }
   },
 
   /**
@@ -235,11 +256,14 @@ export const mundialService = {
   async getStates(): Promise<Array<{ cestado: number; xestado: string }>> {
     const res = await apiFetch<{
       status: boolean
-      data: Array<{ cestado: number; xestado: string }>
+      data: { state: Array<{ cestado: number; xdescripcion_l: string }> }
     }>('/mundial/valrep/state', {
       method: 'POST',
     })
-    return res.data
+    return res.data.state.map((s) => ({
+      cestado: s.cestado,
+      xestado: s.xdescripcion_l,
+    }))
   },
 
   /**
@@ -249,20 +273,39 @@ export const mundialService = {
   async getCities(cestado: number): Promise<Array<{ cciudad: number; xciudad: string }>> {
     const res = await apiFetch<{
       status: boolean
-      data: Array<{ cciudad: number; xciudad: string }>
+      data: { city: Array<{ cciudad: number; xdescripcion_l: string }> }
     }>('/mundial/valrep/city', {
       method: 'POST',
       body: JSON.stringify({ cestado }),
     })
-    return res.data
+    return res.data.city.map((c) => ({
+      cciudad: c.cciudad,
+      xciudad: c.xdescripcion_l,
+    }))
   },
 
   /**
    * Obtiene un catálogo secundario (SEXO, EDOCIVIL, PARENTESCOS).
    * @async
    */
-  async getValrepList(type: 'SEXO' | 'EDOCIVIL' | 'PARENTESCOS'): Promise<any[]> {
-    const res = await apiFetch<{ status: boolean; data: any[] }>(`/mundial/valrep/list/${type}`)
+  async getValrepList(type: 'SEXO' | 'EDOCIVIL' | 'PARENTESCOS'): Promise<ValrepItem[]> {
+    const res = await apiFetch<{
+      status: boolean
+      data: Array<{ cvalor: string; xdescripcion: string }>
+    }>(`/mundial/valrep/list/${type}`)
+
+    if (type === 'SEXO') {
+      return res.data.map((item) => ({
+        isexo: item.cvalor,
+        xsexo: item.xdescripcion,
+      }))
+    }
+    if (type === 'EDOCIVIL') {
+      return res.data.map((item) => ({
+        iestado_civil: item.cvalor,
+        xestado_civil: item.xdescripcion,
+      }))
+    }
     return res.data
   },
 

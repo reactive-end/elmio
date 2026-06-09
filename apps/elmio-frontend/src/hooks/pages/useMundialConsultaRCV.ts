@@ -242,7 +242,7 @@ export function useMundialConsultaRCV() {
           id: 'RCVBAS',
           title: 'Plan RCV Básico La Mundial',
           assuredSum: 2000,
-          totalPrime: quote.mprima, // Prima devuelta por el API
+          totalPrime: quote.mprimaext, // Prima devuelta por el API en USD
           description: 'Cubre Responsabilidad Civil de daños a personas y daños a cosas.',
         },
       ])
@@ -347,10 +347,10 @@ export function useMundialConsultaRCV() {
       setStates(statesList.map((s) => ({ label: s.xestado, value: String(s.cestado) })))
 
       const civList = await mundialService.getValrepList('EDOCIVIL')
-      setCivilStates(civList.map((c) => ({ label: c.xestado_civil, value: c.iestado_civil })))
+      setCivilStates(civList.map((c) => ({ label: c.xestado_civil || '', value: c.iestado_civil || '' })))
 
       const sexList = await mundialService.getValrepList('SEXO')
-      setGenders(sexList.map((g) => ({ label: g.xsexo, value: g.isexo })))
+      setGenders(sexList.map((g) => ({ label: g.xsexo || '', value: g.isexo || '' })))
     } catch {
       // Usar fallbacks estáticos en caso de error
       setStates([{ label: 'DISTRITO CAPITAL', value: '1' }])
