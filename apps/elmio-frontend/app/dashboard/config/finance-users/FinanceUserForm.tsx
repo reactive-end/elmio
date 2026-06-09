@@ -37,7 +37,9 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
 
   const handleCedulaChange = (newVal: CedulaValue) => {
     setCedulaValue(newVal)
-    setCedula(`${newVal.letter}${newVal.digits}`)
+    // Se envia solo el numero de cedula, sin el prefijo V/E/J, para que la
+    // contrasena inicial coincida con el campo que el usuario digito.
+    setCedula(newVal.digits)
   }
 
   // Teléfono usando PhoneInput y hook usePhoneFormat
@@ -66,18 +68,19 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
         setFirstName(nameParts[0] || '')
         setLastName(nameParts.slice(1).join(' ') || '')
         const rawCedula = user.slug || ''
-        setCedula(rawCedula)
         const letterMatch = rawCedula.match(/^([VEGJP])(.*)$/i)
         if (letterMatch) {
           setCedulaValue({
             letter: letterMatch[1].toUpperCase() as CedulaLetter,
             digits: letterMatch[2],
           })
+          setCedula(letterMatch[2])
         } else {
           setCedulaValue({
             letter: 'V',
             digits: rawCedula,
           })
+          setCedula(rawCedula)
         }
         setEmail(user.email || '')
 
@@ -120,13 +123,17 @@ export function FinanceUserForm({ mode, id }: FinanceUserFormProps) {
     if (!phoneFormat.rawDigits || phoneFormat.rawDigits.length < 7) errors.phone = true
     if (!email.trim() || !email.includes('@')) errors.email = true
 
-    // Validación de unicidad de cédula proactiva en el cliente
+    // Validación de unicidad de cédula proactiva en el cliente.
+    // Compara normalizando: quita prefijo V/E/J/G/P y espacios para tolerar
+    // registros legacy que aun guardan la cedula con letra.
     if (cedula.trim()) {
       try {
         const list = await financeUsersService.list()
+        const normalize = (s: string | null | undefined) =>
+          (s ?? '').toLowerCase().replace(/\s+/g, '').replace(/^[vejpg]/i, '')
         const cedulaExists = list.some(
           (u) =>
-            u.slug?.toLowerCase().trim() === cedula.toLowerCase().trim() &&
+            normalize(u.slug) === normalize(cedula) &&
             (!isEdit || u.id !== id)
         )
         if (cedulaExists) {
