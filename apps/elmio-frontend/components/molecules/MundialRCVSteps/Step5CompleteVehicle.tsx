@@ -9,12 +9,9 @@
 import { Wrench } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Input } from '@/components/atoms/Input/Input'
-import { Select } from '@/components/atoms/Select/Select'
 import { FormField } from '@/components/molecules/FormField/FormField'
-import type { VehicleSelectOption } from '@/src/hooks/pages/useMundialConsultaRCV'
 
 interface Step5CompleteVehicleProps {
-  vehicleColors: VehicleSelectOption[]
   vehicleColorId: string
   setVehicleColorId: (v: string) => void
   vehiclePlate: string
@@ -23,14 +20,12 @@ interface Step5CompleteVehicleProps {
   setVehicleChassisSerial: (v: string) => void
   vehicleEngineSerial: string
   setVehicleEngineSerial: (v: string) => void
-  loadingVehicleColors: boolean
   isVehicleCompletionValid: boolean
   onBack: () => void
   onNext: () => Promise<void>
 }
 
 export function Step5CompleteVehicle({
-  vehicleColors,
   vehicleColorId,
   setVehicleColorId,
   vehiclePlate,
@@ -39,7 +34,6 @@ export function Step5CompleteVehicle({
   setVehicleChassisSerial,
   vehicleEngineSerial,
   setVehicleEngineSerial,
-  loadingVehicleColors,
   isVehicleCompletionValid,
   onBack,
   onNext,
@@ -60,12 +54,11 @@ export function Step5CompleteVehicle({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Color" required>
-          <Select
+          <Input
+            type="text"
             value={vehicleColorId}
-            onChange={setVehicleColorId}
-            options={vehicleColors}
-            placeholder={loadingVehicleColors ? 'Cargando...' : 'Seleccione color'}
-            disabled={loadingVehicleColors}
+            onChange={(e) => setVehicleColorId(e.target.value)}
+            placeholder="Ej: Blanco, Negro, Rojo"
           />
         </FormField>
         <FormField label="Placa" required>

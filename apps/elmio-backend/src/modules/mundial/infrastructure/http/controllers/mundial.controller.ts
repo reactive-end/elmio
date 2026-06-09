@@ -54,7 +54,7 @@ export class MundialController {
 
   @Get('auto-products/vehicles/colors')
   getVehicleColors() {
-    return this.mundialService.get('/ally-api/auto-products/vehicles/colors');
+    return [];
   }
 
   @Post('external/getCategoriasUso')

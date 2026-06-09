@@ -88,12 +88,10 @@ export function useMundialConsultaRCV() {
   const [loadingDocuments, setLoadingDocuments] = useState(false)
 
   // Paso 5: Completar Vehículo
-  const [vehicleColors, setVehicleColors] = useState<VehicleSelectOption[]>([])
   const [vehicleColorId, setVehicleColorId] = useState('BLANCO')
   const [vehiclePlate, setVehiclePlate] = useState('')
   const [vehicleChassisSerial, setVehicleChassisSerial] = useState('')
   const [vehicleEngineSerial, setVehicleEngineSerial] = useState('')
-  const [loadingVehicleColors, setLoadingVehicleColors] = useState(false)
 
   // Paso 6: Completar Datos del Cliente
   const [states, setStates] = useState<Array<{ value: string; label: string }>>([])
@@ -327,7 +325,7 @@ export function useMundialConsultaRCV() {
 
   // Paso 5: Completar Vehículo
   const isVehicleCompletionValid =
-    vehicleColorId !== '' &&
+    vehicleColorId.trim() !== '' &&
     vehiclePlate.length >= 6 &&
     vehiclePlate.length <= 7 &&
     vehicleChassisSerial.length === 17 &&
@@ -369,21 +367,7 @@ export function useMundialConsultaRCV() {
     setStep(6)
   }
 
-  // Cargar colores del vehículo en paso 5
-  useEffect(() => {
-    if (step === 5 && vehicleColors.length === 0) {
-      setLoadingVehicleColors(true)
-      mundialService.getVehicleColors()
-        .then((colors) => {
-          setVehicleColors(colors.map((c) => ({ label: c.name, value: c.id })))
-          if (colors.length > 0 && !vehicleColorId) {
-            setVehicleColorId(colors[0].id)
-          }
-        })
-        .catch((err) => console.error('Error cargando colores:', err))
-        .finally(() => setLoadingVehicleColors(false))
-    }
-  }, [step, vehicleColors.length, vehicleColorId])
+  // No se requiere cargar colores de la API ya que se maneja por texto libre.
 
   // Carga de Ciudades en Cascada del Paso 6
   const handleStateChange = async (newStateId: string) => {
@@ -469,7 +453,7 @@ export function useMundialConsultaRCV() {
         cmodelo: model,
         cversion: version,
         fano: Number(year),
-        xcolor: vehicleColorId,
+        xcolor: vehicleColorId.trim().toUpperCase(),
         xplaca: vehiclePlate,
         xsercar: vehicleChassisSerial,
         xsermot: vehicleEngineSerial,
@@ -491,7 +475,7 @@ export function useMundialConsultaRCV() {
         const brandName = findName(brands, brand)
         const modelName = findName(models, model)
         const versionName = findName(versions, version)
-        const colorName = findName(vehicleColors, vehicleColorId)
+        const colorName = vehicleColorId.trim().toUpperCase()
 
         // Persistencia final local en base de datos
         await mundialService.finalizePersistence(shopcartId, {
@@ -525,7 +509,7 @@ export function useMundialConsultaRCV() {
             vehicleTypeId: '1',
             isArmored: false,
             plate: vehiclePlate,
-            colorId: vehicleColorId,
+            colorId: vehicleColorId.trim().toUpperCase(),
             colorName,
             chassisSerial: vehicleChassisSerial,
             engineSerial: vehicleEngineSerial,
@@ -652,7 +636,6 @@ export function useMundialConsultaRCV() {
     handleContinueToStep5,
     loadingDocuments,
     // Step 5
-    vehicleColors,
     vehicleColorId,
     setVehicleColorId,
     vehiclePlate,
@@ -661,7 +644,6 @@ export function useMundialConsultaRCV() {
     setVehicleChassisSerial,
     vehicleEngineSerial,
     setVehicleEngineSerial,
-    loadingVehicleColors,
     isVehicleCompletionValid,
     handleCompleteVehicleStep,
     // Step 6
