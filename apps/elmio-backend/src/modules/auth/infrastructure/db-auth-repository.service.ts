@@ -88,6 +88,21 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
 
             if (profile) {
               resolvedEmail = profile.email.toLowerCase();
+            } else {
+              // Fallback: usuarios cuyo telefono vive unicamente en users.phone
+              // (caso tipico de perfiles FINANCE que no tienen PersonProfileEntity).
+              const userByPhone = await this.repo
+                .createQueryBuilder('u')
+                .select('u.email')
+                .where(
+                  `RIGHT(regexp_replace(u.phone, '[^0-9]', '', 'g'), 10) = RIGHT(:phone, 10)`,
+                  { phone: cleanInputPhone },
+                )
+                .getOne();
+
+              if (userByPhone) {
+                resolvedEmail = userByPhone.email.toLowerCase();
+              }
             }
           }
         } catch (err) {
@@ -161,6 +176,20 @@ export class DbAuthRepositoryService implements AuthRepositoryPort {
             .getMany();
           for (const prof of profiles) {
             emailsSet.add(prof.email.toLowerCase());
+          }
+
+          // Fallback: usuarios cuyo telefono vive unicamente en users.phone
+          // (caso tipico de perfiles FINANCE que no tienen PersonProfileEntity).
+          const usersByPhone = await this.repo
+            .createQueryBuilder('u')
+            .select('u.email')
+            .where(
+              `RIGHT(regexp_replace(u.phone, '[^0-9]', '', 'g'), 10) = RIGHT(:phone, 10)`,
+              { phone: cleanInputPhone },
+            )
+            .getMany();
+          for (const usr of usersByPhone) {
+            emailsSet.add(usr.email.toLowerCase());
           }
 
           if (emailsSet.size > 0) {
