@@ -236,6 +236,24 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
     containerRef.current.scrollBy({ left: offset, behavior: 'smooth' })
   }
 
+  /**
+   * Reposiciona el scroll de forma instantánea para simular un loop infinito.
+   * El track se renderiza duplicado ([...productos, ...productos]), de modo que
+   * al cruzar el umbral del primer set hacia el segundo (o viceversa) el
+   * scrollLeft se ajusta sin que el usuario perciba el salto.
+   */
+  const handleInfiniteScroll = useCallback(() => {
+    const el = containerRef.current
+    if (!el || productos.length === 0) return
+    const { scrollLeft, scrollWidth } = el
+    const halfWidth = scrollWidth / 2
+    if (scrollLeft >= halfWidth) {
+      el.scrollLeft = scrollLeft - halfWidth
+    } else if (scrollLeft < 0) {
+      el.scrollLeft = scrollLeft + halfWidth
+    }
+  }, [productos.length])
+
   const autoplay = contenido.autoplay !== false
   const velocidad = contenido.autoplayVelocidad || 5000
 
@@ -243,12 +261,7 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
     if (!autoplay || !showArrows || cargando) return
     intervalRef.current = setInterval(() => {
       if (containerRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
-        if (scrollLeft + clientWidth >= scrollWidth - 15) {
-          containerRef.current.scrollTo({ left: 0, behavior: 'smooth' })
-        } else {
-          containerRef.current.scrollBy({ left: paso, behavior: 'smooth' })
-        }
+        containerRef.current.scrollBy({ left: paso, behavior: 'smooth' })
       }
     }, velocidad)
     return () => {
@@ -323,6 +336,8 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
           <div
             ref={containerRef}
             className="overflow-x-auto no-scrollbar scroll-smooth"
+            style={{ overscrollBehaviorX: 'contain' }}
+            onScroll={handleInfiniteScroll}
           >
             <div
               className="flex items-stretch gap-4 pb-2"
@@ -330,9 +345,9 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
                 width: 'max-content',
               }}
             >
-              {productos.map((producto) => (
+              {[...productos, ...productos].map((producto, idx) => (
                 <div
-                  key={producto.id}
+                  key={`${producto.id}-${idx}`}
                   className={`shrink-0 overflow-hidden shadow-sm transition-shadow hover:shadow-md bg-white transition-all flex flex-col self-stretch ${
                     producto.active === false ? 'opacity-65 bg-gray-50/30' : ''
                   }`}

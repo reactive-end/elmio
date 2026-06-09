@@ -213,10 +213,23 @@ export default function EnterpriseShopPage() {
             return (
               <article
                 key={product.id}
-                className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3 transition-all ${
+                className={`overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-black/3 transition-all ${
                   !product.active ? 'opacity-65 bg-gray-50/30' : ''
                 }`}
               >
+                {product.images && product.images[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="h-48 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-48 w-full items-center justify-center bg-gray-50 text-gray-300">
+                    <Package className="h-10 w-10" strokeWidth={1.5} />
+                  </div>
+                )}
+                <div className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -285,6 +298,7 @@ export default function EnterpriseShopPage() {
                       'No disponible'
                     )}
                   </Button>
+                </div>
                 </div>
               </article>
             )
