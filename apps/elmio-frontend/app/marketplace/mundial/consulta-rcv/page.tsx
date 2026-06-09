@@ -211,6 +211,7 @@ function MundialConsultaRCVContent() {
 
           {m.step === 5 && (
             <Step5CompleteVehicle
+              vehicleColors={m.vehicleColors}
               vehicleColorId={m.vehicleColorId}
               setVehicleColorId={m.setVehicleColorId}
               vehiclePlate={m.vehiclePlate}
@@ -219,6 +220,7 @@ function MundialConsultaRCVContent() {
               setVehicleChassisSerial={m.setVehicleChassisSerial}
               vehicleEngineSerial={m.vehicleEngineSerial}
               setVehicleEngineSerial={m.setVehicleEngineSerial}
+              loadingVehicleColors={m.loadingVehicleColors}
               isVehicleCompletionValid={m.isVehicleCompletionValid}
               onBack={m.handleBack}
               onNext={m.handleCompleteVehicleStep}

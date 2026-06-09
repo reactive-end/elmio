@@ -52,6 +52,11 @@ export class MundialController {
     return this.mundialService.post('/inma/version', body);
   }
 
+  @Get('auto-products/vehicles/colors')
+  getVehicleColors() {
+    return this.mundialService.get('/ally-api/auto-products/vehicles/colors');
+  }
+
   @Post('external/getCategoriasUso')
   getCategoriasUso(@Body() body: Record<string, any>) {
     return this.mundialService.post('/external/getCategoriasUso', body);

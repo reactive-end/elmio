@@ -11,8 +11,10 @@ import { Button } from '@/components/atoms/Button/Button'
 import { Input } from '@/components/atoms/Input/Input'
 import { Select } from '@/components/atoms/Select/Select'
 import { FormField } from '@/components/molecules/FormField/FormField'
+import type { VehicleSelectOption } from '@/src/hooks/pages/useMundialConsultaRCV'
 
 interface Step5CompleteVehicleProps {
+  vehicleColors: VehicleSelectOption[]
   vehicleColorId: string
   setVehicleColorId: (v: string) => void
   vehiclePlate: string
@@ -21,27 +23,14 @@ interface Step5CompleteVehicleProps {
   setVehicleChassisSerial: (v: string) => void
   vehicleEngineSerial: string
   setVehicleEngineSerial: (v: string) => void
+  loadingVehicleColors: boolean
   isVehicleCompletionValid: boolean
   onBack: () => void
   onNext: () => Promise<void>
 }
 
-const VEHICLE_COLORS = [
-  { value: 'BLANCO', label: 'Blanco' },
-  { value: 'NEGRO', label: 'Negro' },
-  { value: 'GRIS', label: 'Gris' },
-  { value: 'PLATA', label: 'Plata' },
-  { value: 'AZUL', label: 'Azul' },
-  { value: 'ROJO', label: 'Rojo' },
-  { value: 'VERDE', label: 'Verde' },
-  { value: 'AMARILLO', label: 'Amarillo' },
-  { value: 'MARRON', label: 'Marrón' },
-  { value: 'BEIGE', label: 'Beige' },
-  { value: 'ANARANJADO', label: 'Anaranjado' },
-  { value: 'OTROS', label: 'Otros' },
-]
-
 export function Step5CompleteVehicle({
+  vehicleColors,
   vehicleColorId,
   setVehicleColorId,
   vehiclePlate,
@@ -50,6 +39,7 @@ export function Step5CompleteVehicle({
   setVehicleChassisSerial,
   vehicleEngineSerial,
   setVehicleEngineSerial,
+  loadingVehicleColors,
   isVehicleCompletionValid,
   onBack,
   onNext,
@@ -73,8 +63,9 @@ export function Step5CompleteVehicle({
           <Select
             value={vehicleColorId}
             onChange={setVehicleColorId}
-            options={VEHICLE_COLORS}
-            placeholder="Seleccione color"
+            options={vehicleColors}
+            placeholder={loadingVehicleColors ? 'Cargando...' : 'Seleccione color'}
+            disabled={loadingVehicleColors}
           />
         </FormField>
         <FormField label="Placa" required>
@@ -93,24 +84,36 @@ export function Step5CompleteVehicle({
             maxLength={7}
           />
         </FormField>
-        <FormField label="Serial de Carrocería (Chasis)" required>
+        <FormField label="Serial de Carrocería (Chasis - 17 caracteres)" required>
           <Input
             type="text"
             value={vehicleChassisSerial}
             onChange={(e) =>
-              setVehicleChassisSerial(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))
+              setVehicleChassisSerial(
+                e.target.value
+                  .toUpperCase()
+                  .replace(/[^A-Z0-9]/g, '')
+                  .slice(0, 17),
+              )
             }
             placeholder="Ej: 1HGCM82633A123456"
+            maxLength={17}
           />
         </FormField>
-        <FormField label="Serial de Motor" required>
+        <FormField label="Serial de Motor (18 caracteres)" required>
           <Input
             type="text"
             value={vehicleEngineSerial}
             onChange={(e) =>
-              setVehicleEngineSerial(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))
+              setVehicleEngineSerial(
+                e.target.value
+                  .toUpperCase()
+                  .replace(/[^A-Z0-9]/g, '')
+                  .slice(0, 18),
+              )
             }
             placeholder="Ej: K24A123456"
+            maxLength={18}
           />
         </FormField>
       </div>

@@ -330,8 +330,8 @@ export function useMundialConsultaRCV() {
     vehicleColorId !== '' &&
     vehiclePlate.length >= 6 &&
     vehiclePlate.length <= 7 &&
-    vehicleChassisSerial.length >= 10 &&
-    vehicleEngineSerial.length >= 10
+    vehicleChassisSerial.length === 17 &&
+    vehicleEngineSerial.length === 18
 
   const handleCompleteVehicleStep = async () => {
     if (!isVehicleCompletionValid) {
@@ -368,6 +368,22 @@ export function useMundialConsultaRCV() {
 
     setStep(6)
   }
+
+  // Cargar colores del vehículo en paso 5
+  useEffect(() => {
+    if (step === 5 && vehicleColors.length === 0) {
+      setLoadingVehicleColors(true)
+      mundialService.getVehicleColors()
+        .then((colors) => {
+          setVehicleColors(colors.map((c) => ({ label: c.name, value: c.id })))
+          if (colors.length > 0 && !vehicleColorId) {
+            setVehicleColorId(colors[0].id)
+          }
+        })
+        .catch((err) => console.error('Error cargando colores:', err))
+        .finally(() => setLoadingVehicleColors(false))
+    }
+  }, [step, vehicleColors.length, vehicleColorId])
 
   // Carga de Ciudades en Cascada del Paso 6
   const handleStateChange = async (newStateId: string) => {
@@ -425,7 +441,8 @@ export function useMundialConsultaRCV() {
 
       const payload = {
         cramo: 18, // Ramo RCV Automóvil por defecto
-        cplan: selectedPlanId,
+        plan: selectedPlanId,
+        ifrecuencia: 'A',
         icedula_tomador: insured.docType,
         xrif_tomador: Number(insured.docNumber),
         xnombre_tomador: insured.firstName,
@@ -635,6 +652,7 @@ export function useMundialConsultaRCV() {
     handleContinueToStep5,
     loadingDocuments,
     // Step 5
+    vehicleColors,
     vehicleColorId,
     setVehicleColorId,
     vehiclePlate,
@@ -643,6 +661,7 @@ export function useMundialConsultaRCV() {
     setVehicleChassisSerial,
     vehicleEngineSerial,
     setVehicleEngineSerial,
+    loadingVehicleColors,
     isVehicleCompletionValid,
     handleCompleteVehicleStep,
     // Step 6

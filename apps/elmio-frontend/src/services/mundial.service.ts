@@ -250,6 +250,14 @@ export const mundialService = {
   },
 
   /**
+   * Obtiene la lista de colores de vehículos disponibles.
+   * @async
+   */
+  async getVehicleColors(): Promise<Array<{ id: string; name: string }>> {
+    return apiFetch<Array<{ id: string; name: string }>>('/mundial/auto-products/vehicles/colors')
+  },
+
+  /**
    * Obtiene el catálogo de estados.
    * @async
    */
