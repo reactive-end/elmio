@@ -9,6 +9,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { mundialService } from '@/src/services/mundial.service'
 import { authService } from '@/src/services/auth.service'
+import { enterpriseService } from '@/src/services/empresa.service'
 
 export interface InsuredData {
   firstName: string
@@ -535,6 +536,26 @@ export function useMundialConsultaRCV() {
         })
 
         const pdfUrl = res.data.xrutapdf || res.data.rutapdf || res.data.pdf || res.data.pdfUrl || ''
+
+        // Registrar la compra en el portal para que aparezca en la pestaña "Seguros" del usuario
+        try {
+          const profile = await enterpriseService.getMyProfile()
+          await enterpriseService.createPurchase({
+            purchaserType: 'collaborator',
+            purchaserId: profile.id,
+            purchaserName: `${profile.name} ${profile.lastName}`.trim(),
+            purchaserEmail: profile.email || undefined,
+            purchaserDocument: profile.documentId || undefined,
+            productName: 'Póliza RCV La Mundial',
+            amountUsd: plans.find((p) => p.id === selectedPlanId)?.totalPrime || 0,
+            isFinanced: true,
+            installments: 1, // Pago anual único (1 cuota)
+            channel: 'insurance',
+            status: 'pending',
+          })
+        } catch (purchaseErr) {
+          console.error('Error registrando la compra de la póliza en el portal:', purchaseErr)
+        }
 
         setPolicyData([{ policyId: res.data.cpoliza, number: res.data.cpoliza, pdfUrl }])
         setEmissionStatus('completed')

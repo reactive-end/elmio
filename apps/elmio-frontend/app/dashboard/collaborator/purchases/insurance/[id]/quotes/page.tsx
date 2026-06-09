@@ -66,6 +66,28 @@ export default function InsuranceQuotesPage({ params }: InsuranceQuotesPageProps
           throw new Error('Tu perfil no posee un correo electrónico asociado para buscar las pólizas.')
         }
 
+        const conceptLower = tx.concept.toLowerCase()
+        const isRCV = conceptLower.includes('rcv')
+
+        if (isRCV) {
+          // Si es un seguro RCV (La Mundial o Mercantil), es de pago único anual (1 cuota)
+          setQuotes([
+            {
+              id: 'rcv-anual',
+              quote: '1 de 1',
+              amount: tx.amount,
+              expirationDate: new Date(new Date(tx.date).setFullYear(new Date(tx.date).getFullYear() + 1)).toISOString(),
+              agreement: 'ANUAL',
+              receipt: '—',
+              isPaid: tx.status === 'paid',
+              receiptStatus: tx.status,
+              quoteStatus: tx.status,
+            } as any
+          ])
+          setLoading(false)
+          return
+        }
+
         // 3. Buscar la orden de seguros del colaborador por su correo
         const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
         const searchRes = await fetch(

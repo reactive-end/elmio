@@ -417,40 +417,55 @@ export class EnterpriseController {
       let pendingAmount = tx.amount;
 
       if (isInsurance) {
-        // Seguros de mercantil: Consultar las cuotas reales por su shopcartId
-        try {
-          if (email !== '—') {
-            const clientSearchResult = await this.mercantilStorageService.searchClients({ email });
-            const userOrders = clientSearchResult?.items || [];
-            if (userOrders.length > 0) {
-              const shopcartId = userOrders[0].shopcartId;
-              const quotes = await this.mercantilStorageService.getQuotesByShopcart(shopcartId);
-              if (quotes && quotes.length > 0) {
-                totalQuotes = quotes.length;
-                const paidList = quotes.filter(
-                  (cuota) =>
-                    cuota.isPaid ||
-                    cuota.receiptStatus?.toLowerCase() === 'paid' ||
-                    cuota.quoteStatus?.toLowerCase() === 'paid',
-                );
-                paidQuotes = paidList.length;
-                pendingQuotes = Math.max(0, totalQuotes - paidQuotes);
-                
-                // Calcular el monto pendiente acumulando el total de las cuotas no pagadas
-                const unpaidList = quotes.filter(
-                  (cuota) =>
-                    !(
+        const isRCV = conceptLower.includes('rcv');
+        if (isRCV) {
+          // Seguros RCV (La Mundial o Mercantil RCV): Pago anual único (1 cuota)
+          totalQuotes = 1;
+          if (tx.status === 'paid') {
+            paidQuotes = 1;
+            pendingQuotes = 0;
+            pendingAmount = 0;
+          } else {
+            paidQuotes = 0;
+            pendingQuotes = 1;
+            pendingAmount = tx.amount;
+          }
+        } else {
+          // Seguros de mercantil (Salud, Vida, etc.): Consultar las cuotas reales por su shopcartId
+          try {
+            if (email !== '—') {
+              const clientSearchResult = await this.mercantilStorageService.searchClients({ email });
+              const userOrders = clientSearchResult?.items || [];
+              if (userOrders.length > 0) {
+                const shopcartId = userOrders[0].shopcartId;
+                const quotes = await this.mercantilStorageService.getQuotesByShopcart(shopcartId);
+                if (quotes && quotes.length > 0) {
+                  totalQuotes = quotes.length;
+                  const paidList = quotes.filter(
+                    (cuota) =>
                       cuota.isPaid ||
                       cuota.receiptStatus?.toLowerCase() === 'paid' ||
-                      cuota.quoteStatus?.toLowerCase() === 'paid'
-                    ),
-                );
-                pendingAmount = unpaidList.reduce((sum, q) => sum + (q.amount ?? 0), 0);
+                      cuota.quoteStatus?.toLowerCase() === 'paid',
+                  );
+                  paidQuotes = paidList.length;
+                  pendingQuotes = Math.max(0, totalQuotes - paidQuotes);
+                  
+                  // Calcular el monto pendiente acumulando el total de las cuotas no pagadas
+                  const unpaidList = quotes.filter(
+                    (cuota) =>
+                      !(
+                        cuota.isPaid ||
+                        cuota.receiptStatus?.toLowerCase() === 'paid' ||
+                        cuota.quoteStatus?.toLowerCase() === 'paid'
+                      ),
+                  );
+                  pendingAmount = unpaidList.reduce((sum, q) => sum + (q.amount ?? 0), 0);
+                }
               }
             }
+          } catch (err) {
+            console.error('Error calculando cuotas de seguro mercantil en backend:', err);
           }
-        } catch (err) {
-          console.error('Error calculando cuotas de seguro mercantil en backend:', err);
         }
       } else {
         // Producto estándar / Préstamos

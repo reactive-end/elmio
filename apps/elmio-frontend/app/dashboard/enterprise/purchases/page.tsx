@@ -142,7 +142,9 @@ export default function EnterprisePurchasesPage() {
   // Genera cuotas simuladas para una póliza de seguro
   const handleOpenCuotas = (insurance: Transaction) => {
     setSelectedInsurance(insurance)
-    const numCuotas = 6 // Por defecto dividimos la póliza de seguro en 6 cuotas
+    const conceptLower = insurance.concept.toLowerCase()
+    const isRCV = conceptLower.includes('rcv')
+    const numCuotas = isRCV ? 1 : 6 // Pólizas RCV se pagan en una sola cuota (anual). Otros en 6 cuotas.
     const totalAmount = insurance.amount
     const cuotaAmount = Math.round((totalAmount / numCuotas) * 100) / 100
     
@@ -159,8 +161,8 @@ export default function EnterprisePurchasesPage() {
       } else if (insurance.status === 'failed') {
         status = 'failed'
       } else {
-        // Si está pendiente, consideramos que las primeras 2 cuotas ya se pagaron
-        status = i <= 2 ? 'paid' : 'pending'
+        // Si está pendiente y son cuotas múltiples (no RCV), consideramos las primeras 2 pagadas
+        status = !isRCV && i <= 2 ? 'paid' : 'pending'
       }
 
       items.push({
