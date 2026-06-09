@@ -25,6 +25,7 @@ const STATUS_BADGE: Record<
   company_approved: { bg: 'bg-blue-50', text: 'text-blue-700', icon: Clock, label: 'Por Finanzas' },
   approved: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle2, label: 'Aprobada' },
   acquired: { bg: 'bg-purple-50', text: 'text-purple-700', icon: FileCheck, label: 'Adquirido' },
+  disbursed: { bg: 'bg-emerald-50', text: 'text-emerald-700', icon: CheckCircle2, label: 'Desembolsado' },
   denied: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle, label: 'Denegada' },
 }
 
