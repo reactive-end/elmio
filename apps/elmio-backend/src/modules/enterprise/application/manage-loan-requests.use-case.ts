@@ -64,6 +64,7 @@ export class ManageLoanRequestsUseCase {
   async resolve(
     requestId: string,
     decision: 'approved' | 'denied',
+    approverUserId?: string,
     denialReason?: string,
   ): Promise<LoanRequest> {
     const request = await this.repository.findRequestById(requestId);
@@ -76,6 +77,20 @@ export class ManageLoanRequestsUseCase {
       throw new BadRequestException(
         'Solo se pueden resolver solicitudes pendientes.',
       );
+    }
+
+    // Evitar auto-aprobacion: el aprobador no puede ser el mismo usuario
+    // que creo la solicitud (caso tipico de cuentas multiples donde un mismo
+    // userId aparece como COMPANY y como EMPLOYEE).
+    if (approverUserId) {
+      const collaborator = await this.repository.findCollaboratorById(
+        request.collaboratorId,
+      );
+      if (collaborator && collaborator.userId === approverUserId) {
+        throw new BadRequestException(
+          'No puedes aprobar o denegar una solicitud creada por tu propia cuenta.',
+        );
+      }
     }
 
     // Al aprobar la empresa, el estado intermedio es 'company_approved'
@@ -112,6 +127,7 @@ export class ManageLoanRequestsUseCase {
   async resolveByFinance(
     requestId: string,
     decision: 'approved' | 'denied',
+    approverUserId?: string,
     denialReason?: string,
   ): Promise<LoanRequest> {
     const request = await this.repository.findRequestById(requestId);
@@ -124,6 +140,19 @@ export class ManageLoanRequestsUseCase {
       throw new BadRequestException(
         'Solo se pueden resolver por finanzas aquellas solicitudes aprobadas previamente por la empresa.',
       );
+    }
+
+    // Evitar auto-aprobacion por finanzas: el aprobador no puede ser el mismo
+    // usuario que creo la solicitud (caso tipico de cuentas multiples).
+    if (approverUserId) {
+      const collaborator = await this.repository.findCollaboratorById(
+        request.collaboratorId,
+      );
+      if (collaborator && collaborator.userId === approverUserId) {
+        throw new BadRequestException(
+          'No puedes aprobar o denegar una solicitud creada por tu propia cuenta.',
+        );
+      }
     }
 
     request.status = decision;

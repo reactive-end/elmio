@@ -226,10 +226,16 @@ export class EnterpriseController {
   /** PATCH /api/enterprises/:id/requests/:reqId - Resuelve solicitud. */
   @Patch(':id/requests/:reqId')
   async resolveRequest(
+    @Req() req: Request,
     @Param('reqId') reqId: string,
     @Body() body: ResolveLoanRequestDto,
   ) {
-    return this.manageRequests.resolve(reqId, body.status, body.denialReason);
+    return this.manageRequests.resolve(
+      reqId,
+      body.status,
+      req.session!.userId,
+      body.denialReason,
+    );
   }
 
   /** GET /api/enterprises/requests/finance-pending - Lista de solicitudes pendientes para Finanzas. */
@@ -276,10 +282,16 @@ export class EnterpriseController {
   @Roles(UserRole.FINANCE)
   @Patch('requests/:reqId/finance-resolve')
   async resolveFinanceRequest(
+    @Req() req: Request,
     @Param('reqId') reqId: string,
     @Body() body: ResolveLoanRequestDto,
   ) {
-    return this.manageRequests.resolveByFinance(reqId, body.status, body.denialReason);
+    return this.manageRequests.resolveByFinance(
+      reqId,
+      body.status,
+      req.session!.userId,
+      body.denialReason,
+    );
   }
 
   /** POST /api/enterprises/requests/:reqId/disburse - Finanzas desembolsa via Credito Inmediato R4. */
