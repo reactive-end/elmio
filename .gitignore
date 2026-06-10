@@ -12,3 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 bucket.json
 whatsapp-session/
+
+# graphify: cache and local state are regenerable
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root

@@ -2,7 +2,7 @@
 
 ## Knowledge Graph (graphify-out/)
 
-La raiz del repositorio contiene un directorio `graphify-out/` con un grafo de conocimiento pre-calculado del proyecto completo. Antes de proponer cambios arquitectonicos, refactors o nuevos componentes, **leelo**: es la fuente mas rapida para entender modulos, sus relaciones, god nodes y convenciones compartidas.
+La raiz del repositorio contiene un directorio `graphify-out/` con un grafo de conocimiento pre-calculado del proyecto completo. Antes de proponer cambios arquitectonicos, refactors o nuevas dependencias, **leelo**: es la fuente mas rapida para entender modulos, sus relaciones, god nodes y convenciones compartidas.
 
 Archivos clave:
 - `graph.json` — datos crudos del grafo (nodos, aristas, comunidades).

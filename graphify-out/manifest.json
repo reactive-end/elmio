@@ -1,0 +1,2527 @@
+{
+  "C:\\Development\\ElMio\\elmio\\.claude\\settings.local.json": {
+    "mtime": 1780685934.6315565,
+    "ast_hash": "8bd7d5a0a89066e48185d2aea1008b18",
+    "semantic_hash": "8bd7d5a0a89066e48185d2aea1008b18"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\check_requests.js": {
+    "mtime": 1781042139.3639774,
+    "ast_hash": "89f62c650f8dc2b130fba786072f8ce0",
+    "semantic_hash": "89f62c650f8dc2b130fba786072f8ce0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\eslint.config.mjs": {
+    "mtime": 1778940540.2008202,
+    "ast_hash": "7729d0ef597fbc03fd7b34c5a31ab31c",
+    "semantic_hash": "7729d0ef597fbc03fd7b34c5a31ab31c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\nest-cli.json": {
+    "mtime": 1779764009.1545203,
+    "ast_hash": "24e6b3f64aa244f6453a04a7867c37cd",
+    "semantic_hash": "24e6b3f64aa244f6453a04a7867c37cd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\package.json": {
+    "mtime": 1779906540.1265597,
+    "ast_hash": "0f418cf2fc02991a578d38bce73c036d",
+    "semantic_hash": "0f418cf2fc02991a578d38bce73c036d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\app.module.ts": {
+    "mtime": 1780606521.4066725,
+    "ast_hash": "d79fcf7ee3347859eed8a5e92fab9185",
+    "semantic_hash": "d79fcf7ee3347859eed8a5e92fab9185"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\main.ts": {
+    "mtime": 1780699667.548289,
+    "ast_hash": "c40a181c1cd0f8ebf4372cf6155bf46a",
+    "semantic_hash": "c40a181c1cd0f8ebf4372cf6155bf46a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\application\\discover-profiles.use-case.ts": {
+    "mtime": 1780699667.5492876,
+    "ast_hash": "c43da1d6997bb0a86119a3fd66207c93",
+    "semantic_hash": "c43da1d6997bb0a86119a3fd66207c93"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\application\\login.use-case.ts": {
+    "mtime": 1779562942.708587,
+    "ast_hash": "d38778f384a5a61f3070cc01e413c6d7",
+    "semantic_hash": "d38778f384a5a61f3070cc01e413c6d7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\application\\register.use-case.ts": {
+    "mtime": 1780699667.5497894,
+    "ast_hash": "d3c20a963ae020845913a6a81bcf7bf1",
+    "semantic_hash": "d3c20a963ae020845913a6a81bcf7bf1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\application\\validate-session.use-case.ts": {
+    "mtime": 1779561012.096902,
+    "ast_hash": "40403d66204249a715d2b2e986ced469",
+    "semantic_hash": "40403d66204249a715d2b2e986ced469"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\auth.module.ts": {
+    "mtime": 1780699667.55029,
+    "ast_hash": "485f41e2277f63459e9d205e896049cf",
+    "semantic_hash": "485f41e2277f63459e9d205e896049cf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\domain\\ports\\auth-repository.port.ts": {
+    "mtime": 1779561558.6681526,
+    "ast_hash": "c99cc378799037806e1d2ae1b8131c34",
+    "semantic_hash": "c99cc378799037806e1d2ae1b8131c34"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\domain\\user.ts": {
+    "mtime": 1780699667.5512857,
+    "ast_hash": "f0188a8b2bf037e3f6bb6133cae951cb",
+    "semantic_hash": "f0188a8b2bf037e3f6bb6133cae951cb"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\helpers.ts": {
+    "mtime": 1779561028.9626822,
+    "ast_hash": "b1fd3554141f1b91aca6cb64a6296624",
+    "semantic_hash": "b1fd3554141f1b91aca6cb64a6296624"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\infrastructure\\auth-seed.service.ts": {
+    "mtime": 1780699667.5517874,
+    "ast_hash": "661dfe16d4bfaeef44ce3a050f0240b0",
+    "semantic_hash": "661dfe16d4bfaeef44ce3a050f0240b0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\infrastructure\\db-auth-repository.service.ts": {
+    "mtime": 1781043595.906509,
+    "ast_hash": "d519805153e460c4883d19be5be46ea9",
+    "semantic_hash": "d519805153e460c4883d19be5be46ea9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\infrastructure\\entities\\user.entity.ts": {
+    "mtime": 1780699667.5517874,
+    "ast_hash": "986513c8dfb15c64c92cfd0d2332a87c",
+    "semantic_hash": "986513c8dfb15c64c92cfd0d2332a87c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\infrastructure\\file-auth-repository.service.ts": {
+    "mtime": 1779561796.0095215,
+    "ast_hash": "4655c3d47c7eb2705a7b3e5a8575ae4e",
+    "semantic_hash": "4655c3d47c7eb2705a7b3e5a8575ae4e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\guards\\auth.guard.ts": {
+    "mtime": 1779623155.1126664,
+    "ast_hash": "e8cabc4ca191bf9334201557a10d61c1",
+    "semantic_hash": "e8cabc4ca191bf9334201557a10d61c1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\guards\\current-user.decorator.ts": {
+    "mtime": 1779051829.4741914,
+    "ast_hash": "a99496010e3036da5c8ce935e30df436",
+    "semantic_hash": "a99496010e3036da5c8ce935e30df436"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\guards\\optional-auth.guard.ts": {
+    "mtime": 1780699667.5532973,
+    "ast_hash": "b84c893b8989cc539a2bc6d62b029695",
+    "semantic_hash": "b84c893b8989cc539a2bc6d62b029695"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\guards\\roles.decorator.ts": {
+    "mtime": 1779622696.6452868,
+    "ast_hash": "6e3534900bdb06126bd2d0af22545e43",
+    "semantic_hash": "6e3534900bdb06126bd2d0af22545e43"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\guards\\roles.guard.ts": {
+    "mtime": 1780699667.5537977,
+    "ast_hash": "e6381d3f8abcce1153064df2ecfccb05",
+    "semantic_hash": "e6381d3f8abcce1153064df2ecfccb05"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\http\\allies-admin.controller.ts": {
+    "mtime": 1780699667.5543015,
+    "ast_hash": "260971d8bd620f0a75aada218d6f1f30",
+    "semantic_hash": "260971d8bd620f0a75aada218d6f1f30"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\http\\auth.controller.ts": {
+    "mtime": 1780699667.5547974,
+    "ast_hash": "203e3b0e6866c8fe04c0395bd8ffb9b7",
+    "semantic_hash": "203e3b0e6866c8fe04c0395bd8ffb9b7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\http\\dto\\discover-profiles.dto.ts": {
+    "mtime": 1779562942.7105868,
+    "ast_hash": "0f7fee08e3949e216fcb3f478675bc3c",
+    "semantic_hash": "0f7fee08e3949e216fcb3f478675bc3c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\http\\dto\\login.dto.ts": {
+    "mtime": 1779562942.7110891,
+    "ast_hash": "bb80df353d90be4cb652d195259f5e22",
+    "semantic_hash": "bb80df353d90be4cb652d195259f5e22"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\http\\dto\\register.dto.ts": {
+    "mtime": 1779051655.3390408,
+    "ast_hash": "1e9674895bd48e3faa6892007f194395",
+    "semantic_hash": "1e9674895bd48e3faa6892007f194395"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\auth\\presentation\\http\\finance-users-admin.controller.ts": {
+    "mtime": 1780699667.555801,
+    "ast_hash": "a654b7489d9c78c6f54ef2b57ad7b37c",
+    "semantic_hash": "a654b7489d9c78c6f54ef2b57ad7b37c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\bucket\\application\\dto\\bucket.dto.ts": {
+    "mtime": 1780699667.5563016,
+    "ast_hash": "079057f8955058812aa77298a1b0bc79",
+    "semantic_hash": "079057f8955058812aa77298a1b0bc79"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\bucket\\application\\services\\bucket.service.ts": {
+    "mtime": 1780699667.5563016,
+    "ast_hash": "70bd9f4004911dd8a0e583584b79da5f",
+    "semantic_hash": "70bd9f4004911dd8a0e583584b79da5f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\bucket\\bucket.module.ts": {
+    "mtime": 1780610408.2128954,
+    "ast_hash": "dfe4e688dd24a8bcd9f94b463db0f2c8",
+    "semantic_hash": "dfe4e688dd24a8bcd9f94b463db0f2c8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\bucket\\infrastructure\\http\\controllers\\bucket.controller.ts": {
+    "mtime": 1779661553.5770807,
+    "ast_hash": "3b9e2ab3f6125550b39f580d448617a7",
+    "semantic_hash": "3b9e2ab3f6125550b39f580d448617a7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise-interest-config\\application\\enterprise-interest-config.service.ts": {
+    "mtime": 1779666768.9674842,
+    "ast_hash": "f6e9e26684c3e99dcfb4db63be2442d5",
+    "semantic_hash": "f6e9e26684c3e99dcfb4db63be2442d5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise-interest-config\\enterprise-interest-config.module.ts": {
+    "mtime": 1779665065.1870275,
+    "ast_hash": "57d1053cfd1d6d150126be29dcdcba55",
+    "semantic_hash": "57d1053cfd1d6d150126be29dcdcba55"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise-interest-config\\infrastructure\\entities\\enterprise-interest-config.entity.ts": {
+    "mtime": 1779726145.3534749,
+    "ast_hash": "c0c8439bc1e629bfe61f4c367477157c",
+    "semantic_hash": "c0c8439bc1e629bfe61f4c367477157c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise-interest-config\\presentation\\http\\dto\\enterprise-interest-config.dto.ts": {
+    "mtime": 1779665008.1194606,
+    "ast_hash": "27b34974c65d5d45e6b832fc5135a489",
+    "semantic_hash": "27b34974c65d5d45e6b832fc5135a489"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise-interest-config\\presentation\\http\\enterprise-interest-config-admin.controller.ts": {
+    "mtime": 1780699667.5578172,
+    "ast_hash": "ce7b53cbb6c4f1e2f62ebcf27761be8e",
+    "semantic_hash": "ce7b53cbb6c4f1e2f62ebcf27761be8e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\complete-onboarding.use-case.ts": {
+    "mtime": 1779053940.8194427,
+    "ast_hash": "7b5ba22b49b6893c29657405c58493b7",
+    "semantic_hash": "7b5ba22b49b6893c29657405c58493b7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\create-transaction.use-case.ts": {
+    "mtime": 1780699667.5583146,
+    "ast_hash": "7b8d791ef0e4751b917432e79ad9bb81",
+    "semantic_hash": "7b8d791ef0e4751b917432e79ad9bb81"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\execute-billing-cutoff.use-case.ts": {
+    "mtime": 1780699667.5593176,
+    "ast_hash": "e0a0edf429610d7b8d33f036f7df3e1f",
+    "semantic_hash": "e0a0edf429610d7b8d33f036f7df3e1f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\get-account-statement.use-case.ts": {
+    "mtime": 1779667528.6091464,
+    "ast_hash": "31315ae9cc98872d96a2a271894fcff1",
+    "semantic_hash": "31315ae9cc98872d96a2a271894fcff1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\get-enterprise.use-case.ts": {
+    "mtime": 1780066047.767313,
+    "ast_hash": "c6ae42b819234ca5f3f0cf4430ca6da4",
+    "semantic_hash": "c6ae42b819234ca5f3f0cf4430ca6da4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-collaborators.use-case.ts": {
+    "mtime": 1780699667.559815,
+    "ast_hash": "28255e292744ba34b36ff4ca8ccd06a8",
+    "semantic_hash": "28255e292744ba34b36ff4ca8ccd06a8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-contracts.use-case.ts": {
+    "mtime": 1780699667.5603166,
+    "ast_hash": "94cc17e2fe3d1718614b9e6636068f73",
+    "semantic_hash": "94cc17e2fe3d1718614b9e6636068f73"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-disburse.use-case.ts": {
+    "mtime": 1780699667.5613184,
+    "ast_hash": "8967dd429df7fe7e1fe5139ae7231232",
+    "semantic_hash": "8967dd429df7fe7e1fe5139ae7231232"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-loan-requests.use-case.ts": {
+    "mtime": 1781045832.8832345,
+    "ast_hash": "5cf91bb91aa7cc01fc4135d794c01f76",
+    "semantic_hash": "5cf91bb91aa7cc01fc4135d794c01f76"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-person-bank-accounts.use-case.ts": {
+    "mtime": 1780699667.5623226,
+    "ast_hash": "4b2786671655d7bfa03793e18dee5b29",
+    "semantic_hash": "4b2786671655d7bfa03793e18dee5b29"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-profile.use-case.ts": {
+    "mtime": 1780438615.5504336,
+    "ast_hash": "db1bde12eb8bdb510d724b2fcbc49f0b",
+    "semantic_hash": "db1bde12eb8bdb510d724b2fcbc49f0b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-purchases.use-case.ts": {
+    "mtime": 1780699667.5633888,
+    "ast_hash": "98492e43e713c99b7e87a8ceba8403bf",
+    "semantic_hash": "98492e43e713c99b7e87a8ceba8403bf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\manage-vuelto.use-case.ts": {
+    "mtime": 1780699667.5638874,
+    "ast_hash": "1883db542c938920560bccdb837240c8",
+    "semantic_hash": "1883db542c938920560bccdb837240c8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\application\\save-domiciliation.use-case.ts": {
+    "mtime": 1780066057.7224226,
+    "ast_hash": "51809788c827f48782916f4274dae985",
+    "semantic_hash": "51809788c827f48782916f4274dae985"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\domain\\disbursement.ts": {
+    "mtime": 1780699667.56489,
+    "ast_hash": "7e0eaba51aab5e156db96d6bd534c8f5",
+    "semantic_hash": "7e0eaba51aab5e156db96d6bd534c8f5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\domain\\enterprise.ts": {
+    "mtime": 1780699667.5653875,
+    "ast_hash": "d189a58cc80d8d899ec381f5d43027d2",
+    "semantic_hash": "d189a58cc80d8d899ec381f5d43027d2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\domain\\person-bank-account.ts": {
+    "mtime": 1780438558.7925758,
+    "ast_hash": "90f374b63050e57676b5f8aaebd89b0c",
+    "semantic_hash": "90f374b63050e57676b5f8aaebd89b0c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\domain\\person-profile.ts": {
+    "mtime": 1780438582.3622754,
+    "ast_hash": "d07a929db3da73f9a952766a51ff8b33",
+    "semantic_hash": "d07a929db3da73f9a952766a51ff8b33"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\domain\\ports\\enterprise-repository.port.ts": {
+    "mtime": 1780699667.5653875,
+    "ast_hash": "cffa770814ed72103bb0796c1be94399",
+    "semantic_hash": "cffa770814ed72103bb0796c1be94399"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\domain\\purchase.ts": {
+    "mtime": 1780699667.566469,
+    "ast_hash": "a0d5eceead86ebd856350e4b754afe85",
+    "semantic_hash": "a0d5eceead86ebd856350e4b754afe85"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\enterprise.module.ts": {
+    "mtime": 1780686406.8249779,
+    "ast_hash": "6bf1eab7bb151b3890efe22071008f7f",
+    "semantic_hash": "6bf1eab7bb151b3890efe22071008f7f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\db-enterprise-repository.service.ts": {
+    "mtime": 1780699667.567498,
+    "ast_hash": "0817bc728c167df2a7a5980ba53e23ed",
+    "semantic_hash": "0817bc728c167df2a7a5980ba53e23ed"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\document-storage.service.ts": {
+    "mtime": 1780699667.5685048,
+    "ast_hash": "0570d017f9bca6687f934f7a58de28bc",
+    "semantic_hash": "0570d017f9bca6687f934f7a58de28bc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\contract-file.entity.ts": {
+    "mtime": 1779726077.7777426,
+    "ast_hash": "2f44e3a1cf3f02d14d3ef4789a553abf",
+    "semantic_hash": "2f44e3a1cf3f02d14d3ef4789a553abf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\contract.entity.ts": {
+    "mtime": 1779725416.6122458,
+    "ast_hash": "f309c0d0edf0715b54d4dd5aac1296f1",
+    "semantic_hash": "f309c0d0edf0715b54d4dd5aac1296f1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\disbursement.entity.ts": {
+    "mtime": 1780699667.5690048,
+    "ast_hash": "d5286f2acf533ea2f0fdf9b2220595e2",
+    "semantic_hash": "d5286f2acf533ea2f0fdf9b2220595e2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\enterprise.entity.ts": {
+    "mtime": 1780699667.5695078,
+    "ast_hash": "f32f360c4528f1e26d8db141d3c431ba",
+    "semantic_hash": "f32f360c4528f1e26d8db141d3c431ba"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\loan-request.entity.ts": {
+    "mtime": 1780699667.5700078,
+    "ast_hash": "037f730a4af0eb34a9491a510c5dc5a5",
+    "semantic_hash": "037f730a4af0eb34a9491a510c5dc5a5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\person-bank-account.entity.ts": {
+    "mtime": 1780699667.5710044,
+    "ast_hash": "be1622a9be0187114a0614b57ae3ee3a",
+    "semantic_hash": "be1622a9be0187114a0614b57ae3ee3a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\person-profile.entity.ts": {
+    "mtime": 1780699667.5715058,
+    "ast_hash": "6c5c2677edf65474cecbe8db085be763",
+    "semantic_hash": "6c5c2677edf65474cecbe8db085be763"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\platform-config.entity.ts": {
+    "mtime": 1779233899.7841399,
+    "ast_hash": "21731352011e5fbef240574732097994",
+    "semantic_hash": "21731352011e5fbef240574732097994"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\purchase.entity.ts": {
+    "mtime": 1780699667.5720065,
+    "ast_hash": "203f2922cbb7c6b785a243509abc8aba",
+    "semantic_hash": "203f2922cbb7c6b785a243509abc8aba"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\entities\\transaction.entity.ts": {
+    "mtime": 1780699667.5720065,
+    "ast_hash": "3328537bfa132dc1502c427f73e3180b",
+    "semantic_hash": "3328537bfa132dc1502c427f73e3180b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\infrastructure\\file-enterprise-repository.service.ts": {
+    "mtime": 1780699667.5730104,
+    "ast_hash": "f97feb2c1dd730ced0dedc4a32e3747f",
+    "semantic_hash": "f97feb2c1dd730ced0dedc4a32e3747f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\presentation\\http\\dto\\enterprise.dto.ts": {
+    "mtime": 1780699667.5740151,
+    "ast_hash": "75774b1494f46a77dc69830de8086f21",
+    "semantic_hash": "75774b1494f46a77dc69830de8086f21"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\presentation\\http\\enterprise.controller.ts": {
+    "mtime": 1781045846.0575554,
+    "ast_hash": "e3415d99b24fc4e1468b5381200d16c4",
+    "semantic_hash": "e3415d99b24fc4e1468b5381200d16c4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\enterprise\\presentation\\http\\profile.controller.ts": {
+    "mtime": 1780699667.575016,
+    "ast_hash": "6bf5182a41dc238bbf5150997cb07e2a",
+    "semantic_hash": "6bf5182a41dc238bbf5150997cb07e2a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\application\\delete-gallery-image.use-case.ts": {
+    "mtime": 1779054407.7273564,
+    "ast_hash": "917abd20d13d2eea5ad199e5ae373e60",
+    "semantic_hash": "917abd20d13d2eea5ad199e5ae373e60"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\application\\get-gallery-image-file.use-case.ts": {
+    "mtime": 1779054407.7308908,
+    "ast_hash": "67ebc4b91b1f4eb908781d7b5ed11f8c",
+    "semantic_hash": "67ebc4b91b1f4eb908781d7b5ed11f8c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\application\\list-gallery-images.use-case.ts": {
+    "mtime": 1779054407.734917,
+    "ast_hash": "ae9a93a9f8b20417fde55ece3a22d47d",
+    "semantic_hash": "ae9a93a9f8b20417fde55ece3a22d47d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\application\\upload-gallery-images.use-case.ts": {
+    "mtime": 1780699667.5760162,
+    "ast_hash": "ff52b7fb3073dca0dc346006181bfad8",
+    "semantic_hash": "ff52b7fb3073dca0dc346006181bfad8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\domain\\gallery-image.ts": {
+    "mtime": 1779054407.7476156,
+    "ast_hash": "d1563ce42f14079d64f247fd8103e5df",
+    "semantic_hash": "d1563ce42f14079d64f247fd8103e5df"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\domain\\ports\\gallery-storage.port.ts": {
+    "mtime": 1779054407.7551832,
+    "ast_hash": "ed9d90a435a986eb8d2556b05b6a1e94",
+    "semantic_hash": "ed9d90a435a986eb8d2556b05b6a1e94"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\gallery.module.ts": {
+    "mtime": 1780699667.5765162,
+    "ast_hash": "bf16d0460be24d29d875dd9e4cc7d96a",
+    "semantic_hash": "bf16d0460be24d29d875dd9e4cc7d96a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\infrastructure\\entities\\gallery-image.entity.ts": {
+    "mtime": 1779234839.290552,
+    "ast_hash": "5f3e39ca4d0fd24d6c7337fae87fde12",
+    "semantic_hash": "5f3e39ca4d0fd24d6c7337fae87fde12"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\infrastructure\\google-cloud-gallery-storage.service.ts": {
+    "mtime": 1780699667.5765162,
+    "ast_hash": "e33e39cfb1e7956663448cdaad9ae160",
+    "semantic_hash": "e33e39cfb1e7956663448cdaad9ae160"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\infrastructure\\local-gallery-storage.service.ts": {
+    "mtime": 1780699667.578029,
+    "ast_hash": "da7cd1dbe3d3021205ec33ce15d2750e",
+    "semantic_hash": "da7cd1dbe3d3021205ec33ce15d2750e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\presentation\\http\\dto\\gallery-query.dto.ts": {
+    "mtime": 1779054407.8039846,
+    "ast_hash": "441ca05a0a30332e26d5a90396d3756a",
+    "semantic_hash": "441ca05a0a30332e26d5a90396d3756a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\gallery\\presentation\\http\\gallery.controller.ts": {
+    "mtime": 1780699667.5785296,
+    "ast_hash": "67638c214b9b666e35a8c6f19fad01c7",
+    "semantic_hash": "67638c214b9b666e35a8c6f19fad01c7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\application\\get-health.use-case.ts": {
+    "mtime": 1778940560.4490757,
+    "ast_hash": "98323166c04758936e711bc2d50ef0d0",
+    "semantic_hash": "98323166c04758936e711bc2d50ef0d0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\domain\\health-status.ts": {
+    "mtime": 1778940546.7497594,
+    "ast_hash": "6449298b857593c3f0b1d5ed744fcbf9",
+    "semantic_hash": "6449298b857593c3f0b1d5ed744fcbf9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\domain\\ports\\health-check.port.ts": {
+    "mtime": 1778940552.5022476,
+    "ast_hash": "4640dba893bf09222d4c1c6b55866234",
+    "semantic_hash": "4640dba893bf09222d4c1c6b55866234"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\health.module.ts": {
+    "mtime": 1778940590.6694448,
+    "ast_hash": "f442ceb073a6fbdc442357818756d5d5",
+    "semantic_hash": "f442ceb073a6fbdc442357818756d5d5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\infrastructure\\runtime-health.service.ts": {
+    "mtime": 1778940567.3619123,
+    "ast_hash": "e4bc1494584cac85c17b4a0fa6020300",
+    "semantic_hash": "e4bc1494584cac85c17b4a0fa6020300"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\presentation\\http\\health.controller.spec.ts": {
+    "mtime": 1778940583.2862554,
+    "ast_hash": "a321b37300b451fe82e7f115174068c2",
+    "semantic_hash": "a321b37300b451fe82e7f115174068c2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\health\\presentation\\http\\health.controller.ts": {
+    "mtime": 1778940574.9926107,
+    "ast_hash": "c1bc58ac137f76e011de368d582cd95b",
+    "semantic_hash": "c1bc58ac137f76e011de368d582cd95b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\integration-api-keys\\application\\integration-api-keys.service.ts": {
+    "mtime": 1779665612.6983454,
+    "ast_hash": "eb98babb8997075adce5ad93efbf02f7",
+    "semantic_hash": "eb98babb8997075adce5ad93efbf02f7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\integration-api-keys\\infrastructure\\entities\\integration-api-key.entity.ts": {
+    "mtime": 1779672023.3220625,
+    "ast_hash": "68f31fab3e3fda58fdae75bf24c2f0d7",
+    "semantic_hash": "68f31fab3e3fda58fdae75bf24c2f0d7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\integration-api-keys\\integration-api-keys.module.ts": {
+    "mtime": 1779665008.1154492,
+    "ast_hash": "bdbbd4c8d4032742efbbf2561544f3e7",
+    "semantic_hash": "bdbbd4c8d4032742efbbf2561544f3e7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\integration-api-keys\\presentation\\http\\dto\\integration-api-key.dto.ts": {
+    "mtime": 1779665612.691835,
+    "ast_hash": "f32e3c63b0b12dbaf106af94717b7c84",
+    "semantic_hash": "f32e3c63b0b12dbaf106af94717b7c84"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\integration-api-keys\\presentation\\http\\integration-api-keys-admin.controller.ts": {
+    "mtime": 1779738597.9361863,
+    "ast_hash": "ddf6b21b6d6e4044f2b7fe71b07c8382",
+    "semantic_hash": "ddf6b21b6d6e4044f2b7fe71b07c8382"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\application\\create-marketplace.use-case.ts": {
+    "mtime": 1779233204.6510904,
+    "ast_hash": "771132ed58c41f98a31f203769052a3f",
+    "semantic_hash": "771132ed58c41f98a31f203769052a3f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\application\\delete-marketplace.use-case.ts": {
+    "mtime": 1779045411.2738929,
+    "ast_hash": "0ae57ca4de237289b6783b6fdc4204d6",
+    "semantic_hash": "0ae57ca4de237289b6783b6fdc4204d6"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\application\\get-marketplace-by-id.use-case.ts": {
+    "mtime": 1779045375.2069771,
+    "ast_hash": "bd0603a4180e8f28d7e5c2353f5eb218",
+    "semantic_hash": "bd0603a4180e8f28d7e5c2353f5eb218"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\application\\get-marketplace-by-slug.use-case.ts": {
+    "mtime": 1779054407.8736308,
+    "ast_hash": "10f75753301c0c5cf95862e1497c68d8",
+    "semantic_hash": "10f75753301c0c5cf95862e1497c68d8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\application\\list-marketplaces.use-case.ts": {
+    "mtime": 1779738233.485668,
+    "ast_hash": "53581b47b0c82d9b035fd9a9a5b4c133",
+    "semantic_hash": "53581b47b0c82d9b035fd9a9a5b4c133"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\application\\update-marketplace.use-case.ts": {
+    "mtime": 1779233197.740252,
+    "ast_hash": "63225b2b4545a664e020552b1ca4c485",
+    "semantic_hash": "63225b2b4545a664e020552b1ca4c485"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\domain\\marketplace.ts": {
+    "mtime": 1780699667.57903,
+    "ast_hash": "364f4f80504aa5950dfcac548bc57fcc",
+    "semantic_hash": "364f4f80504aa5950dfcac548bc57fcc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\domain\\ports\\marketplace-repository.port.ts": {
+    "mtime": 1779054407.897062,
+    "ast_hash": "baa42fbff744584f8e6e25efea3dcc5e",
+    "semantic_hash": "baa42fbff744584f8e6e25efea3dcc5e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\infrastructure\\data\\marketplace-default.json": {
+    "mtime": 1780610408.24057,
+    "ast_hash": "2c81e72e0fb11d3b8836bc3d731632f6",
+    "semantic_hash": "2c81e72e0fb11d3b8836bc3d731632f6"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\infrastructure\\db-marketplace-repository.service.ts": {
+    "mtime": 1780699667.5800326,
+    "ast_hash": "09053d46bb6510aff3102acf571a11ea",
+    "semantic_hash": "09053d46bb6510aff3102acf571a11ea"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\infrastructure\\entities\\marketplace.entity.ts": {
+    "mtime": 1780699667.5805326,
+    "ast_hash": "cd26632ff89d88d6b96980ae7a35e01a",
+    "semantic_hash": "cd26632ff89d88d6b96980ae7a35e01a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\infrastructure\\file-marketplace-repository.service.ts": {
+    "mtime": 1779233195.4850087,
+    "ast_hash": "53a65e20ea945360fbac3bd336d7272d",
+    "semantic_hash": "53a65e20ea945360fbac3bd336d7272d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\infrastructure\\marketplace-seed.service.ts": {
+    "mtime": 1780699667.58153,
+    "ast_hash": "90840806198783aa33fc3c1ba704bdad",
+    "semantic_hash": "90840806198783aa33fc3c1ba704bdad"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\marketplace.module.ts": {
+    "mtime": 1780699667.5820317,
+    "ast_hash": "bcf7487ffb24edb72c33ae394a615642",
+    "semantic_hash": "bcf7487ffb24edb72c33ae394a615642"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\presentation\\http\\dto\\create-marketplace.dto.ts": {
+    "mtime": 1779738916.045607,
+    "ast_hash": "7b6b1b0b401ee58c000447782c9bf105",
+    "semantic_hash": "7b6b1b0b401ee58c000447782c9bf105"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\presentation\\http\\dto\\update-marketplace.dto.ts": {
+    "mtime": 1779045459.7203884,
+    "ast_hash": "f270d214093a36e6ce8097a6ba9877a7",
+    "semantic_hash": "f270d214093a36e6ce8097a6ba9877a7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\marketplace\\presentation\\http\\marketplace.controller.ts": {
+    "mtime": 1780699667.5820317,
+    "ast_hash": "87e8a1539b2225f4b6e7c174f81c9898",
+    "semantic_hash": "87e8a1539b2225f4b6e7c174f81c9898"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\application\\services\\mercantil-storage.service.ts": {
+    "mtime": 1780699667.5840573,
+    "ast_hash": "f80c346217a2a09504fda979861a2093",
+    "semantic_hash": "f80c346217a2a09504fda979861a2093"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\application\\services\\mercantil.service.ts": {
+    "mtime": 1779665065.2553606,
+    "ast_hash": "e186ec36c94b8601b046d30bda574eaf",
+    "semantic_hash": "e186ec36c94b8601b046d30bda574eaf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\application\\types\\mercantil-persistence.types.ts": {
+    "mtime": 1780699667.5845635,
+    "ast_hash": "b68f8a2a0eefe8cbf721d8fd000c1b0b",
+    "semantic_hash": "b68f8a2a0eefe8cbf721d8fd000c1b0b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\infrastructure\\http\\controllers\\mercantil.controller.ts": {
+    "mtime": 1779661574.861196,
+    "ast_hash": "5c72084154cec6364e28bddd7aec612d",
+    "semantic_hash": "5c72084154cec6364e28bddd7aec612d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\infrastructure\\persistence\\entities\\insurance-order.entity.ts": {
+    "mtime": 1780699667.5855632,
+    "ast_hash": "ef9e9ae7c5a62a12b257a8457618b285",
+    "semantic_hash": "ef9e9ae7c5a62a12b257a8457618b285"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\infrastructure\\persistence\\entities\\insurance-payment-trace.entity.ts": {
+    "mtime": 1779628628.7376826,
+    "ast_hash": "b04a821d6ab88bfc38b7ce7fa745ad23",
+    "semantic_hash": "b04a821d6ab88bfc38b7ce7fa745ad23"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mercantil\\mercantil.module.ts": {
+    "mtime": 1780610408.24659,
+    "ast_hash": "8ffce47deecc1fd16084e00865ac6042",
+    "semantic_hash": "8ffce47deecc1fd16084e00865ac6042"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\migration\\heal-marketplace-images.ts": {
+    "mtime": 1780699667.5860639,
+    "ast_hash": "84f426b2f3b967a8d9baec384a17e974",
+    "semantic_hash": "84f426b2f3b967a8d9baec384a17e974"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\migration\\infrastructure\\entities\\sys-migration.entity.ts": {
+    "mtime": 1779906027.991028,
+    "ast_hash": "311825b650a55662db361ee37ec00914",
+    "semantic_hash": "311825b650a55662db361ee37ec00914"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\migration\\migrate-elmio-default.ts": {
+    "mtime": 1780699667.5860639,
+    "ast_hash": "da3ee7acd00d52a03cf2af575d16724e",
+    "semantic_hash": "da3ee7acd00d52a03cf2af575d16724e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\migration\\migration.module.ts": {
+    "mtime": 1779762795.52032,
+    "ast_hash": "a28e68259ef527dd52150867b2defdc7",
+    "semantic_hash": "a28e68259ef527dd52150867b2defdc7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\migration\\presentation\\http\\migration.controller.ts": {
+    "mtime": 1780699667.5875812,
+    "ast_hash": "d1d535e5ca372ee1ca11e05f6c1070df",
+    "semantic_hash": "d1d535e5ca372ee1ca11e05f6c1070df"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\migration\\run-csv-migration.ts": {
+    "mtime": 1780699667.588079,
+    "ast_hash": "9354a6eaafe6ed4bb364aef7dd088b7c",
+    "semantic_hash": "9354a6eaafe6ed4bb364aef7dd088b7c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mundial\\application\\services\\mundial-storage.service.ts": {
+    "mtime": 1780609705.6468046,
+    "ast_hash": "ffbb489a70119256a5145dd4e29b0952",
+    "semantic_hash": "ffbb489a70119256a5145dd4e29b0952"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mundial\\application\\services\\mundial.service.ts": {
+    "mtime": 1780606495.952131,
+    "ast_hash": "5b00f5cae7e45f1b242098aca7e40bfc",
+    "semantic_hash": "5b00f5cae7e45f1b242098aca7e40bfc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mundial\\infrastructure\\http\\controllers\\mundial.controller.ts": {
+    "mtime": 1780968583.0324256,
+    "ast_hash": "42f3f0d9df148769de7f646fdcce7d01",
+    "semantic_hash": "42f3f0d9df148769de7f646fdcce7d01"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\mundial\\mundial.module.ts": {
+    "mtime": 1780606515.2832818,
+    "ast_hash": "3ba8e295bbc45dcdebea85f4ee743eb9",
+    "semantic_hash": "3ba8e295bbc45dcdebea85f4ee743eb9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\notification\\application\\notification.service.ts": {
+    "mtime": 1780699667.5890763,
+    "ast_hash": "0c3bf7ad958932e1ddf88430db5f70ea",
+    "semantic_hash": "0c3bf7ad958932e1ddf88430db5f70ea"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\notification\\domain\\ports\\notification-sender.port.ts": {
+    "mtime": 1780699667.5895765,
+    "ast_hash": "01699a305f4ba5bc7e96f21b221f52a8",
+    "semantic_hash": "01699a305f4ba5bc7e96f21b221f52a8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\notification\\domain\\types\\notification-recipient.ts": {
+    "mtime": 1779622713.7421494,
+    "ast_hash": "bceeb58b4fca5f18a543672332863f5b",
+    "semantic_hash": "bceeb58b4fca5f18a543672332863f5b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\notification\\domain\\types\\notification-result.ts": {
+    "mtime": 1779622718.1906047,
+    "ast_hash": "4a344b180a28f37e61acec02e72481f6",
+    "semantic_hash": "4a344b180a28f37e61acec02e72481f6"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\notification\\infrastructure\\email.service.ts": {
+    "mtime": 1780699667.590079,
+    "ast_hash": "4262f13ec9f26c05bd60af3326a8ad9c",
+    "semantic_hash": "4262f13ec9f26c05bd60af3326a8ad9c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\notification\\notification.module.ts": {
+    "mtime": 1779622762.5913472,
+    "ast_hash": "d090d53b72e35cdc7786c3876ce42fe3",
+    "semantic_hash": "d090d53b72e35cdc7786c3876ce42fe3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\application\\request-recovery.use-case.ts": {
+    "mtime": 1780699667.5910795,
+    "ast_hash": "b4ba733dbf4ba28863cc1549cf95f497",
+    "semantic_hash": "b4ba733dbf4ba28863cc1549cf95f497"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\application\\verify-code.use-case.ts": {
+    "mtime": 1780699667.5920768,
+    "ast_hash": "6d6801dfea99b4990e772167583e2711",
+    "semantic_hash": "6d6801dfea99b4990e772167583e2711"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\domain\\ports\\recovery-code-repository.port.ts": {
+    "mtime": 1780699667.5930808,
+    "ast_hash": "711bd90f0f41f7989f4c125800626338",
+    "semantic_hash": "711bd90f0f41f7989f4c125800626338"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\domain\\types\\recovery-code.ts": {
+    "mtime": 1779622726.5178866,
+    "ast_hash": "f993b9170a7f3769b1dbea6fa34aba29",
+    "semantic_hash": "f993b9170a7f3769b1dbea6fa34aba29"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\infrastructure\\entities\\recovery-code.entity.ts": {
+    "mtime": 1779672024.9835877,
+    "ast_hash": "7fa6075fe682fc759cf2e4e24f1c5b6c",
+    "semantic_hash": "7fa6075fe682fc759cf2e4e24f1c5b6c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\infrastructure\\repositories\\typeorm-recovery-code.repository.ts": {
+    "mtime": 1780699667.5935867,
+    "ast_hash": "f842808d0d794911d53eb6aff93a76fd",
+    "semantic_hash": "f842808d0d794911d53eb6aff93a76fd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\presentation\\dtos\\request-recovery.dto.ts": {
+    "mtime": 1779622851.6670053,
+    "ast_hash": "8a31931bf8b14fadef3aa0dbb757767a",
+    "semantic_hash": "8a31931bf8b14fadef3aa0dbb757767a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\password-recovery\\presentation\\dtos\\verify-code.dto.ts": {
+    "mtime": 1779622852.9806018,
+    "ast_hash": "9d0792af9429573c8ddcd31bef3ace44",
+    "semantic_hash": "9d0792af9429573c8ddcd31bef3ace44"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\application\\services\\payment-processor.service.ts": {
+    "mtime": 1780699667.59509,
+    "ast_hash": "407821501e6f8690179f54e61777b3d2",
+    "semantic_hash": "407821501e6f8690179f54e61777b3d2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\domain\\ports\\payment-processor-repository.interface.ts": {
+    "mtime": 1780699667.5965872,
+    "ast_hash": "8f91deab7ab19c69e70ec4ea0dc83e06",
+    "semantic_hash": "8f91deab7ab19c69e70ec4ea0dc83e06"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\api-key-cipher.util.ts": {
+    "mtime": 1780699667.5981016,
+    "ast_hash": "880c0b0a6b6a52fee81b7e7c23813a27",
+    "semantic_hash": "880c0b0a6b6a52fee81b7e7c23813a27"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\api-key.entity.ts": {
+    "mtime": 1780699667.5986013,
+    "ast_hash": "f0a061db9a271f35af3d2c977596be21",
+    "semantic_hash": "f0a061db9a271f35af3d2c977596be21"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\bank-account-type.entity.ts": {
+    "mtime": 1780699667.599099,
+    "ast_hash": "fb4fa4c98b71de0cb5c654c18b91cfc0",
+    "semantic_hash": "fb4fa4c98b71de0cb5c654c18b91cfc0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\bank-account.entity.ts": {
+    "mtime": 1780699667.6001003,
+    "ast_hash": "122b7bd2a002e119f437cab14ed5fe21",
+    "semantic_hash": "122b7bd2a002e119f437cab14ed5fe21"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\bank-payment-method.entity.ts": {
+    "mtime": 1780699667.6006002,
+    "ast_hash": "0f46e620ddc8e5d91ffc2a6a087d894f",
+    "semantic_hash": "0f46e620ddc8e5d91ffc2a6a087d894f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\bank.entity.ts": {
+    "mtime": 1780699667.6010993,
+    "ast_hash": "56e0dac5721624bb1f586e5531a25345",
+    "semantic_hash": "56e0dac5721624bb1f586e5531a25345"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\currency.entity.ts": {
+    "mtime": 1780699667.6016018,
+    "ast_hash": "cb63eaadcb5b7a24c3b8b527f198c920",
+    "semantic_hash": "cb63eaadcb5b7a24c3b8b527f198c920"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\exchange-rate.entity.ts": {
+    "mtime": 1780699667.6026082,
+    "ast_hash": "e08ef17b278723a40aa1f4c9fc6244df",
+    "semantic_hash": "e08ef17b278723a40aa1f4c9fc6244df"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\payment-method.entity.ts": {
+    "mtime": 1780699667.6031153,
+    "ast_hash": "75e4b08eae1689a83a0cc0c9354eea56",
+    "semantic_hash": "75e4b08eae1689a83a0cc0c9354eea56"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\entities\\payment.entity.ts": {
+    "mtime": 1780699667.6036162,
+    "ast_hash": "5f9f0a180cebea59e0aa67cef7acbbf8",
+    "semantic_hash": "5f9f0a180cebea59e0aa67cef7acbbf8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\infrastructure\\persistence\\payment-processor.repository.ts": {
+    "mtime": 1780699667.6056142,
+    "ast_hash": "b513859cc45e16dedb9350aab67d3a3d",
+    "semantic_hash": "b513859cc45e16dedb9350aab67d3a3d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\payment-processor.module.ts": {
+    "mtime": 1779734221.8617103,
+    "ast_hash": "47dd64427be8e33023151b511ef42bce",
+    "semantic_hash": "47dd64427be8e33023151b511ef42bce"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\check-settlement.dto.ts": {
+    "mtime": 1780699667.6061172,
+    "ast_hash": "cd221d126c38c2e75072b970ddb6d0bd",
+    "semantic_hash": "cd221d126c38c2e75072b970ddb6d0bd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\check-status.dto.ts": {
+    "mtime": 1780699667.6061172,
+    "ast_hash": "5242afd0352e8eee9aae8094b7f3820f",
+    "semantic_hash": "5242afd0352e8eee9aae8094b7f3820f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\consult-mobile-payment.dto.ts": {
+    "mtime": 1780699667.607631,
+    "ast_hash": "011dd0d079511da14d14c2d65efbadd1",
+    "semantic_hash": "011dd0d079511da14d14c2d65efbadd1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\consult-transfer-status.dto.ts": {
+    "mtime": 1780699667.608132,
+    "ast_hash": "0f2db3b82f0b7f90904161c83b00b46a",
+    "semantic_hash": "0f2db3b82f0b7f90904161c83b00b46a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\customer-mobile-payment.dto.ts": {
+    "mtime": 1780699667.6091318,
+    "ast_hash": "26a82d9161d62182071e9c9c086cd0f2",
+    "semantic_hash": "26a82d9161d62182071e9c9c086cd0f2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\customer-transfer.dto.ts": {
+    "mtime": 1780699667.6096315,
+    "ast_hash": "5b55b75c01fad6e1e81cfb2488b1b734",
+    "semantic_hash": "5b55b75c01fad6e1e81cfb2488b1b734"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\initiate-debit.dto.ts": {
+    "mtime": 1780699667.6101308,
+    "ast_hash": "80153c77ecb17bbe7f6c06c184c0b7e2",
+    "semantic_hash": "80153c77ecb17bbe7f6c06c184c0b7e2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\initiate-direct-debit.dto.ts": {
+    "mtime": 1780699667.6111312,
+    "ast_hash": "ea25b7afd3198d416e218f113a7560df",
+    "semantic_hash": "ea25b7afd3198d416e218f113a7560df"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\initiate-transfer.dto.ts": {
+    "mtime": 1780699667.611632,
+    "ast_hash": "a8b330526e175342aca057c73abf3cc9",
+    "semantic_hash": "a8b330526e175342aca057c73abf3cc9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-plaza\\send-mobile-payment.dto.ts": {
+    "mtime": 1780699667.6131322,
+    "ast_hash": "7e2c4a7c89b94615b5aaacb5c6107f81",
+    "semantic_hash": "7e2c4a7c89b94615b5aaacb5c6107f81"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\account-direct-debit.dto.ts": {
+    "mtime": 1780699667.6136312,
+    "ast_hash": "08748dc72c905bea5b70ee7c7a12d429",
+    "semantic_hash": "08748dc72c905bea5b70ee7c7a12d429"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\consult-mobile-payment.dto.ts": {
+    "mtime": 1780699667.6141305,
+    "ast_hash": "1e46b2072d4d4a3a48fff082cbde331c",
+    "semantic_hash": "1e46b2072d4d4a3a48fff082cbde331c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\generate-otp.dto.ts": {
+    "mtime": 1780699667.6146338,
+    "ast_hash": "40ba0e2ba8fa20aed81118a5f9bffa86",
+    "semantic_hash": "40ba0e2ba8fa20aed81118a5f9bffa86"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\get-r4-exchange-rate.dto.ts": {
+    "mtime": 1780699667.6151304,
+    "ast_hash": "e034a104d62abff8ce132ae34ce16505",
+    "semantic_hash": "e034a104d62abff8ce132ae34ce16505"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\immediate-credit.dto.ts": {
+    "mtime": 1780699667.6161325,
+    "ast_hash": "db17a89017b8936fc7f806137de04688",
+    "semantic_hash": "db17a89017b8936fc7f806137de04688"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\immediate-debit.dto.ts": {
+    "mtime": 1780699667.6166313,
+    "ast_hash": "5b93ba4f1008b1bf7cc2b96d48913f02",
+    "semantic_hash": "5b93ba4f1008b1bf7cc2b96d48913f02"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\mobile-payment-notification.dto.ts": {
+    "mtime": 1780699667.617137,
+    "ast_hash": "177ebe01eaf05dcb11ab8319f9c41fff",
+    "semantic_hash": "177ebe01eaf05dcb11ab8319f9c41fff"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\phone-direct-debit.dto.ts": {
+    "mtime": 1780699667.6176362,
+    "ast_hash": "20de8c2ffccce9361a6787894927d801",
+    "semantic_hash": "20de8c2ffccce9361a6787894927d801"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\query-operation.dto.ts": {
+    "mtime": 1780699667.6181397,
+    "ast_hash": "4447e024404e65a63a13cff40e2fee96",
+    "semantic_hash": "4447e024404e65a63a13cff40e2fee96"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\dtos\\banco-r4\\vuelto.dto.ts": {
+    "mtime": 1780699667.618639,
+    "ast_hash": "b58f8542cccadd57b9c8e6c8e340e009",
+    "semantic_hash": "b58f8542cccadd57b9c8e6c8e340e009"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\http\\bank-accounts-admin.controller.ts": {
+    "mtime": 1780699667.6196368,
+    "ast_hash": "3871488319e8f79969f819213893ec8c",
+    "semantic_hash": "3871488319e8f79969f819213893ec8c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\http\\done-api-key.guard.ts": {
+    "mtime": 1780699667.6201384,
+    "ast_hash": "6dd33592ab1ddb7cc1c0061c96f157e4",
+    "semantic_hash": "6dd33592ab1ddb7cc1c0061c96f157e4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\http\\dtos\\bank-accounts-admin.dto.ts": {
+    "mtime": 1780699667.62064,
+    "ast_hash": "ffe3020e125c909dbe3ec3a041cd5e83",
+    "semantic_hash": "ffe3020e125c909dbe3ec3a041cd5e83"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\payment-processor\\presentation\\http\\payment-processor.controller.ts": {
+    "mtime": 1780686407.2631335,
+    "ast_hash": "d3be14a6afb03e7a37a2ccbd89d6ef63",
+    "semantic_hash": "d3be14a6afb03e7a37a2ccbd89d6ef63"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\application\\category.use-cases.ts": {
+    "mtime": 1780699667.621137,
+    "ast_hash": "eaa25693f5936161346a7c5aa8746250",
+    "semantic_hash": "eaa25693f5936161346a7c5aa8746250"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\application\\create-product.use-case.ts": {
+    "mtime": 1780610408.2842505,
+    "ast_hash": "ff3b6d4e44401b210500d7f55eb50791",
+    "semantic_hash": "ff3b6d4e44401b210500d7f55eb50791"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\application\\list-products.use-case.ts": {
+    "mtime": 1779053474.413797,
+    "ast_hash": "82529e281028a293efcccd12d859bfc2",
+    "semantic_hash": "82529e281028a293efcccd12d859bfc2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\application\\update-product.use-case.ts": {
+    "mtime": 1779053472.3949313,
+    "ast_hash": "e2919631dfa33f9bbc94b34c42924833",
+    "semantic_hash": "e2919631dfa33f9bbc94b34c42924833"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\domain\\category.ts": {
+    "mtime": 1779233103.0262713,
+    "ast_hash": "d56580b9217bd3933ee789dc459e485a",
+    "semantic_hash": "d56580b9217bd3933ee789dc459e485a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\domain\\ports\\category-repository.port.ts": {
+    "mtime": 1780699667.6221356,
+    "ast_hash": "50a5557ef27b5847125a9f1520d32874",
+    "semantic_hash": "50a5557ef27b5847125a9f1520d32874"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\domain\\ports\\product-repository.port.ts": {
+    "mtime": 1779053433.821224,
+    "ast_hash": "6f806cdcd603dc2accedb00bcbf4ed3e",
+    "semantic_hash": "6f806cdcd603dc2accedb00bcbf4ed3e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\domain\\product.ts": {
+    "mtime": 1780699667.6221356,
+    "ast_hash": "3645564a38d3624da0bb224363b1612d",
+    "semantic_hash": "3645564a38d3624da0bb224363b1612d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\infrastructure\\db-category-repository.service.ts": {
+    "mtime": 1780699667.6231418,
+    "ast_hash": "5d80f87c608ed0ffad3ddb37f20f5fb4",
+    "semantic_hash": "5d80f87c608ed0ffad3ddb37f20f5fb4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\infrastructure\\db-product-repository.service.ts": {
+    "mtime": 1780699667.6236467,
+    "ast_hash": "0d844108d7432e9d15fb7784f9aa90e3",
+    "semantic_hash": "0d844108d7432e9d15fb7784f9aa90e3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\infrastructure\\entities\\category.entity.ts": {
+    "mtime": 1779233851.7506206,
+    "ast_hash": "94e629c1a4e94b9fad2e4275cd4f55cf",
+    "semantic_hash": "94e629c1a4e94b9fad2e4275cd4f55cf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\infrastructure\\entities\\product.entity.ts": {
+    "mtime": 1780699667.6241467,
+    "ast_hash": "3c46c23268d33868119385a5aeee353a",
+    "semantic_hash": "3c46c23268d33868119385a5aeee353a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\infrastructure\\file-category-repository.service.ts": {
+    "mtime": 1779233108.0379083,
+    "ast_hash": "3795755ed41838c6fdec55d200d0f219",
+    "semantic_hash": "3795755ed41838c6fdec55d200d0f219"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\infrastructure\\file-product-repository.service.ts": {
+    "mtime": 1779053447.0725694,
+    "ast_hash": "4d5aca4598b04b6ae93526565e8c8d2a",
+    "semantic_hash": "4d5aca4598b04b6ae93526565e8c8d2a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\presentation\\http\\category.controller.ts": {
+    "mtime": 1779233115.3946006,
+    "ast_hash": "14edbd2d55cd2a62fbd90b8237252461",
+    "semantic_hash": "14edbd2d55cd2a62fbd90b8237252461"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\presentation\\http\\dto\\category.dto.ts": {
+    "mtime": 1779233112.712463,
+    "ast_hash": "3db1cacaef0a5e90932c304e478827ae",
+    "semantic_hash": "3db1cacaef0a5e90932c304e478827ae"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\presentation\\http\\dto\\product.dto.ts": {
+    "mtime": 1780610408.288256,
+    "ast_hash": "6f58c6eab94bd072fe8059d05aaf7014",
+    "semantic_hash": "6f58c6eab94bd072fe8059d05aaf7014"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\presentation\\http\\product.controller.ts": {
+    "mtime": 1780699667.6251464,
+    "ast_hash": "7db02eebf57449d58da60f2c72fb9525",
+    "semantic_hash": "7db02eebf57449d58da60f2c72fb9525"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\product\\product.module.ts": {
+    "mtime": 1780699667.6256487,
+    "ast_hash": "59b845f3774e076a35f43b5bb0b6c035",
+    "semantic_hash": "59b845f3774e076a35f43b5bb0b6c035"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\application\\manage-permissions.use-case.ts": {
+    "mtime": 1780699667.6261513,
+    "ast_hash": "d251448dbd0c23d1ae1303127731dfcf",
+    "semantic_hash": "d251448dbd0c23d1ae1303127731dfcf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\application\\manage-users.use-case.ts": {
+    "mtime": 1780699667.6271505,
+    "ast_hash": "2b28aa91afee2ee69c2768dd984e431c",
+    "semantic_hash": "2b28aa91afee2ee69c2768dd984e431c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\domain\\ports\\rbac-repository.port.ts": {
+    "mtime": 1780699667.627647,
+    "ast_hash": "42f64c69ff7728a5bdbcd02211a8f498",
+    "semantic_hash": "42f64c69ff7728a5bdbcd02211a8f498"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\domain\\role-permission.ts": {
+    "mtime": 1780525318.3061085,
+    "ast_hash": "8fe55935a21cee9aac2e823425efe84d",
+    "semantic_hash": "8fe55935a21cee9aac2e823425efe84d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\infrastructure\\db-rbac-repository.service.ts": {
+    "mtime": 1780699667.628649,
+    "ast_hash": "62c36fcd9504f307b63c97f1bac19a31",
+    "semantic_hash": "62c36fcd9504f307b63c97f1bac19a31"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\infrastructure\\entities\\role-permission.entity.ts": {
+    "mtime": 1780525303.1285963,
+    "ast_hash": "7b65c7f6d3e825841230436eb9c8e139",
+    "semantic_hash": "7b65c7f6d3e825841230436eb9c8e139"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\presentation\\http\\rbac-admin.controller.ts": {
+    "mtime": 1780699667.6291478,
+    "ast_hash": "568a244041d1dd6ae273c5732935533e",
+    "semantic_hash": "568a244041d1dd6ae273c5732935533e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\rbac\\rbac.module.ts": {
+    "mtime": 1780699667.6296508,
+    "ast_hash": "12bfd2418f749925a911111d4c888b87",
+    "semantic_hash": "12bfd2418f749925a911111d4c888b87"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\whatsapp\\domain\\enums\\whatsapp-status.enum.ts": {
+    "mtime": 1779622724.110237,
+    "ast_hash": "f5ce72c2927d2c67a622a276f7711b6f",
+    "semantic_hash": "f5ce72c2927d2c67a622a276f7711b6f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\whatsapp\\domain\\ports\\whatsapp-client.port.ts": {
+    "mtime": 1779622730.8100042,
+    "ast_hash": "a2fdf6cdb026f62af0c57d43230f23eb",
+    "semantic_hash": "a2fdf6cdb026f62af0c57d43230f23eb"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\whatsapp\\domain\\types\\whatsapp-status-info.ts": {
+    "mtime": 1779622730.7749681,
+    "ast_hash": "b2f2649a22231dce746fdaf3dae05a29",
+    "semantic_hash": "b2f2649a22231dce746fdaf3dae05a29"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\whatsapp\\infrastructure\\baileys-whatsapp.service.ts": {
+    "mtime": 1780699667.6311514,
+    "ast_hash": "2b33c8de563aaa5ed965f7c3fd62093e",
+    "semantic_hash": "2b33c8de563aaa5ed965f7c3fd62093e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\whatsapp\\presentation\\whatsapp-admin.controller.ts": {
+    "mtime": 1780699667.6316495,
+    "ast_hash": "56ce9e3bdbbdd5f9ea888bde2572b35a",
+    "semantic_hash": "56ce9e3bdbbdd5f9ea888bde2572b35a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\modules\\whatsapp\\whatsapp.module.ts": {
+    "mtime": 1779624604.7212574,
+    "ast_hash": "8b939f02cf03d9896a3ad016a3fa7a74",
+    "semantic_hash": "8b939f02cf03d9896a3ad016a3fa7a74"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migration.interface.ts": {
+    "mtime": 1779906030.6421065,
+    "ast_hash": "37f22867f81b7ddd5169eb6578e4a59b",
+    "semantic_hash": "37f22867f81b7ddd5169eb6578e4a59b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0001_add_actions_to_products.ts": {
+    "mtime": 1779906033.3229606,
+    "ast_hash": "fb67d83ed5036d1dcdd25750eb1ecb7b",
+    "semantic_hash": "fb67d83ed5036d1dcdd25750eb1ecb7b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0002_add_financing_and_legal_reps.ts": {
+    "mtime": 1780699667.6321466,
+    "ast_hash": "ce3e4765521f7829ad04ba7bb0c42138",
+    "semantic_hash": "ce3e4765521f7829ad04ba7bb0c42138"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0003_add_alternative_bank_account_and_actions_to_products.ts": {
+    "mtime": 1780699667.6331515,
+    "ast_hash": "5ccfe94ffc987e8bdb26caeae714e2bf",
+    "semantic_hash": "5ccfe94ffc987e8bdb26caeae714e2bf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0004_make_transaction_enterprise_id_nullable.ts": {
+    "mtime": 1780337142.7721324,
+    "ast_hash": "a55fd69009a4ce93a13cb653c7329bb4",
+    "semantic_hash": "a55fd69009a4ce93a13cb653c7329bb4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0005_add_role_to_bank_account.ts": {
+    "mtime": 1780699667.6336586,
+    "ast_hash": "58438d7476aaf3730a029843bebc0fef",
+    "semantic_hash": "58438d7476aaf3730a029843bebc0fef"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0006_create_person_bank_accounts.ts": {
+    "mtime": 1780438771.9289894,
+    "ast_hash": "db180fdb4dcb95eb1927e60b0acead06",
+    "semantic_hash": "db180fdb4dcb95eb1927e60b0acead06"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0007_create_disbursement_table.ts": {
+    "mtime": 1780699667.634159,
+    "ast_hash": "8c90597442440bb58718a324fa0800cc",
+    "semantic_hash": "8c90597442440bb58718a324fa0800cc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0008_add_product_id_to_loan_requests.ts": {
+    "mtime": 1780699667.6346612,
+    "ast_hash": "314631e295eaf5a3620a0efda4cef126",
+    "semantic_hash": "314631e295eaf5a3620a0efda4cef126"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0009_create_role_permissions_table.ts": {
+    "mtime": 1780525291.5251048,
+    "ast_hash": "835207ed29cc86aa39a835060426be72",
+    "semantic_hash": "835207ed29cc86aa39a835060426be72"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\0010_add_is_active_to_users.ts": {
+    "mtime": 1780699667.6351576,
+    "ast_hash": "93404293f159e75aea622733a7dce134",
+    "semantic_hash": "93404293f159e75aea622733a7dce134"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\custom-migrations\\index.ts": {
+    "mtime": 1780699667.6356585,
+    "ast_hash": "c36cb4148044a5c4b47f0a82e89e1ea8",
+    "semantic_hash": "c36cb4148044a5c4b47f0a82e89e1ea8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\run-migrations.ts": {
+    "mtime": 1780699667.6366622,
+    "ast_hash": "e7f526a5b6c6a8cfe45ae76426a18f07",
+    "semantic_hash": "e7f526a5b6c6a8cfe45ae76426a18f07"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\database\\typeorm.datasource.ts": {
+    "mtime": 1780699667.6371706,
+    "ast_hash": "7a813b0b1b9861fbc090c9dbb9aa763d",
+    "semantic_hash": "7a813b0b1b9861fbc090c9dbb9aa763d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\utils\\phone.spec.ts": {
+    "mtime": 1780699667.6376715,
+    "ast_hash": "b267c474aadf39e8c069b3f7095110ff",
+    "semantic_hash": "b267c474aadf39e8c069b3f7095110ff"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\src\\shared\\utils\\phone.ts": {
+    "mtime": 1780699667.6381676,
+    "ast_hash": "4962e2fed4ebf8a22260351d11e40b99",
+    "semantic_hash": "4962e2fed4ebf8a22260351d11e40b99"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\test\\app.e2e-spec.ts": {
+    "mtime": 1778940652.4359252,
+    "ast_hash": "fa2b7bd3cd6f97dc84f7a7cd46eb6b74",
+    "semantic_hash": "fa2b7bd3cd6f97dc84f7a7cd46eb6b74"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\test\\jest-e2e.json": {
+    "mtime": 1778940652.4399517,
+    "ast_hash": "9f2f5b0e1da31d7b04e205c944e85e8d",
+    "semantic_hash": "9f2f5b0e1da31d7b04e205c944e85e8d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\tsconfig.build.json": {
+    "mtime": 1778940652.442953,
+    "ast_hash": "f73d0f011ee462dcdf7f02bbdcde284b",
+    "semantic_hash": "f73d0f011ee462dcdf7f02bbdcde284b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\tsconfig.json": {
+    "mtime": 1778940652.4454813,
+    "ast_hash": "a6ea887cdc729c8962e8097ff74e39f7",
+    "semantic_hash": "a6ea887cdc729c8962e8097ff74e39f7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\account-statement\\page.tsx": {
+    "mtime": 1780610408.301303,
+    "ast_hash": "a063743bd8501b047125660894e0ae64",
+    "semantic_hash": "a063743bd8501b047125660894e0ae64"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\bank-data\\page.tsx": {
+    "mtime": 1780610408.3023028,
+    "ast_hash": "9b0b2713b3b591de69d1106118e004ab",
+    "semantic_hash": "9b0b2713b3b591de69d1106118e004ab"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\purchases\\insurance\\[id]\\quotes\\page.tsx": {
+    "mtime": 1780969951.9886467,
+    "ast_hash": "7506c72d2da6a5313279c02caa64ac52",
+    "semantic_hash": "7506c72d2da6a5313279c02caa64ac52"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\purchases\\page.tsx": {
+    "mtime": 1780610408.304303,
+    "ast_hash": "e7fbe3ba399606aebd00f782d56982bf",
+    "semantic_hash": "e7fbe3ba399606aebd00f782d56982bf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\purchases\\product\\[id]\\quotes\\page.tsx": {
+    "mtime": 1780610408.3053033,
+    "ast_hash": "c324cdf710943139ac29310fbc5b0b4c",
+    "semantic_hash": "c324cdf710943139ac29310fbc5b0b4c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\purchases\\product\\_id_\\quotes\\page.tsx": {
+    "mtime": 1780610408.3063023,
+    "ast_hash": "4b993df473e8e7720c99f479fbbdcb44",
+    "semantic_hash": "4b993df473e8e7720c99f479fbbdcb44"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\requests\\page.tsx": {
+    "mtime": 1781039369.542164,
+    "ast_hash": "c6d76e5db6f7510a81ee100a691802a1",
+    "semantic_hash": "c6d76e5db6f7510a81ee100a691802a1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\collaborator\\shop\\page.tsx": {
+    "mtime": 1779566676.870059,
+    "ast_hash": "b074b63fa81cbe7028fab8cace82a51a",
+    "semantic_hash": "b074b63fa81cbe7028fab8cace82a51a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\allies\\AlliedForm.tsx": {
+    "mtime": 1780610408.3083134,
+    "ast_hash": "99912bb52f76f3c823958421e3223874",
+    "semantic_hash": "99912bb52f76f3c823958421e3223874"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\allies\\[id]\\page.tsx": {
+    "mtime": 1779739271.5652678,
+    "ast_hash": "920095d32cf3d2235408c26d651943fe",
+    "semantic_hash": "920095d32cf3d2235408c26d651943fe"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\allies\\new\\page.tsx": {
+    "mtime": 1779739268.5326178,
+    "ast_hash": "729209d8b8649eec7bc815405e334bc9",
+    "semantic_hash": "729209d8b8649eec7bc815405e334bc9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\allies\\page.tsx": {
+    "mtime": 1780610408.308814,
+    "ast_hash": "da1df1a955571ffafc85a0dee2f54c7e",
+    "semantic_hash": "da1df1a955571ffafc85a0dee2f54c7e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\api-keys\\page.tsx": {
+    "mtime": 1780610408.3098123,
+    "ast_hash": "0280ed2ac894e58c1e36a11d9cc87f95",
+    "semantic_hash": "0280ed2ac894e58c1e36a11d9cc87f95"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\bank-accounts\\BankAccountForm.tsx": {
+    "mtime": 1780610408.3108158,
+    "ast_hash": "472d5fe5b548d613888b8b7a79cf9634",
+    "semantic_hash": "472d5fe5b548d613888b8b7a79cf9634"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\bank-accounts\\[id]\\page.tsx": {
+    "mtime": 1780435702.1445684,
+    "ast_hash": "caf1e5bd016cf628dac06242294a1b7c",
+    "semantic_hash": "caf1e5bd016cf628dac06242294a1b7c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\bank-accounts\\new\\page.tsx": {
+    "mtime": 1780435697.6309597,
+    "ast_hash": "89161367264e68fb7f01d510194f3f2e",
+    "semantic_hash": "89161367264e68fb7f01d510194f3f2e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\bank-accounts\\page.tsx": {
+    "mtime": 1780610408.3113203,
+    "ast_hash": "f20f594c4ff726b8548fd587e6943b41",
+    "semantic_hash": "f20f594c4ff726b8548fd587e6943b41"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\currencies\\CurrencyForm.tsx": {
+    "mtime": 1780610408.3123233,
+    "ast_hash": "4cfb52fd7af3efd0804673b5db6651e3",
+    "semantic_hash": "4cfb52fd7af3efd0804673b5db6651e3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\currencies\\[id]\\page.tsx": {
+    "mtime": 1779736003.0237567,
+    "ast_hash": "c269b79e8d38f6d01d8f96ebf2f19eb4",
+    "semantic_hash": "c269b79e8d38f6d01d8f96ebf2f19eb4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\currencies\\new\\page.tsx": {
+    "mtime": 1779735999.8182847,
+    "ast_hash": "09cdf9bdc98ae848d5e4f99b9d82b565",
+    "semantic_hash": "09cdf9bdc98ae848d5e4f99b9d82b565"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\currencies\\page.tsx": {
+    "mtime": 1780610408.3128273,
+    "ast_hash": "1c3194d71163755389de056c24969ff3",
+    "semantic_hash": "1c3194d71163755389de056c24969ff3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\enterprise-interest-rates\\page.tsx": {
+    "mtime": 1780610408.3133273,
+    "ast_hash": "c04138be39de7ad2e91d07508f514a64",
+    "semantic_hash": "c04138be39de7ad2e91d07508f514a64"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\finance-users\\FinanceUserForm.tsx": {
+    "mtime": 1781043650.0773425,
+    "ast_hash": "9a90e47d616d923784f08bb13e9cbdb5",
+    "semantic_hash": "9a90e47d616d923784f08bb13e9cbdb5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\finance-users\\[id]\\page.tsx": {
+    "mtime": 1780086745.2020237,
+    "ast_hash": "0d04cc790952382d268a3018642e6fd9",
+    "semantic_hash": "0d04cc790952382d268a3018642e6fd9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\finance-users\\new\\page.tsx": {
+    "mtime": 1780086740.7878466,
+    "ast_hash": "c3a3ae6bcadec302827be5841fa6fbf2",
+    "semantic_hash": "c3a3ae6bcadec302827be5841fa6fbf2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\finance-users\\page.tsx": {
+    "mtime": 1780610408.3148305,
+    "ast_hash": "4934c3f3a42dfe31258bc6fcf6ca4b44",
+    "semantic_hash": "4934c3f3a42dfe31258bc6fcf6ca4b44"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\rbac\\RbacUserForm.tsx": {
+    "mtime": 1780610408.3153305,
+    "ast_hash": "ae9119272fed206d7c5ad6cbf21b2c40",
+    "semantic_hash": "ae9119272fed206d7c5ad6cbf21b2c40"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\rbac\\[id]\\page.tsx": {
+    "mtime": 1780610408.3163335,
+    "ast_hash": "ddd0549d02af86fc5987cba5aa6f681e",
+    "semantic_hash": "ddd0549d02af86fc5987cba5aa6f681e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\rbac\\new\\page.tsx": {
+    "mtime": 1780525653.999964,
+    "ast_hash": "9d583dca1021f6f90b00a5f5abbc581d",
+    "semantic_hash": "9d583dca1021f6f90b00a5f5abbc581d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\rbac\\page.tsx": {
+    "mtime": 1780610408.3173308,
+    "ast_hash": "f0575f3251b06054a25461e3052aa1f8",
+    "semantic_hash": "f0575f3251b06054a25461e3052aa1f8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\config\\whatsapp\\page.tsx": {
+    "mtime": 1780610408.3173308,
+    "ast_hash": "818e393d4b053155410da44bdc9d3340",
+    "semantic_hash": "818e393d4b053155410da44bdc9d3340"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\account-statement\\page.tsx": {
+    "mtime": 1780610408.318839,
+    "ast_hash": "dc446ddfdb01b7694dbb66c82ecb5281",
+    "semantic_hash": "dc446ddfdb01b7694dbb66c82ecb5281"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\collaborators\\page.tsx": {
+    "mtime": 1780610408.319844,
+    "ast_hash": "28387d0c135dfc483387aeb56a312d4e",
+    "semantic_hash": "28387d0c135dfc483387aeb56a312d4e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\contracts\\components\\ContractModal.tsx": {
+    "mtime": 1780610408.32135,
+    "ast_hash": "53c8c3e8fc95ea34a648bccd9305b8a2",
+    "semantic_hash": "53c8c3e8fc95ea34a648bccd9305b8a2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\contracts\\components\\ContractTable.tsx": {
+    "mtime": 1780610408.3218508,
+    "ast_hash": "762ba10b0a21616b9f314b1e25df5251",
+    "semantic_hash": "762ba10b0a21616b9f314b1e25df5251"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\contracts\\page.tsx": {
+    "mtime": 1780610408.3223495,
+    "ast_hash": "8e22e7afc92cf86982d8f5242f19cb14",
+    "semantic_hash": "8e22e7afc92cf86982d8f5242f19cb14"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\onboarding\\page.tsx": {
+    "mtime": 1780610408.3238485,
+    "ast_hash": "20a91fbfa798ab3d62aa540cc2b5d3bc",
+    "semantic_hash": "20a91fbfa798ab3d62aa540cc2b5d3bc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\purchases\\page.tsx": {
+    "mtime": 1780969938.7080302,
+    "ast_hash": "c20f4739c93ecd4d6991effee581a9a0",
+    "semantic_hash": "c20f4739c93ecd4d6991effee581a9a0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\requests\\page.tsx": {
+    "mtime": 1781039367.393504,
+    "ast_hash": "2e5614f499bec26c35429a8e08c74ce9",
+    "semantic_hash": "2e5614f499bec26c35429a8e08c74ce9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\shop\\checkout\\page.tsx": {
+    "mtime": 1780610408.325348,
+    "ast_hash": "d9ebedfd8c28de78b3937c9bb537081b",
+    "semantic_hash": "d9ebedfd8c28de78b3937c9bb537081b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\enterprise\\shop\\page.tsx": {
+    "mtime": 1781043558.743366,
+    "ast_hash": "dd9c59e0dd00acaba01f7c4f029f3199",
+    "semantic_hash": "dd9c59e0dd00acaba01f7c4f029f3199"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\finance\\purchases\\page.tsx": {
+    "mtime": 1780610408.3268561,
+    "ast_hash": "215a5e1d8c5099eb29c92e7c620ad7a1",
+    "semantic_hash": "215a5e1d8c5099eb29c92e7c620ad7a1"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\finance\\requests\\page.tsx": {
+    "mtime": 1780699696.4152966,
+    "ast_hash": "be0adc8fe65045b2b8d5794d9e542fd7",
+    "semantic_hash": "be0adc8fe65045b2b8d5794d9e542fd7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\gallery\\page.tsx": {
+    "mtime": 1779054408.2302115,
+    "ast_hash": "26853d59b31935bc41dab6ea01164fc9",
+    "semantic_hash": "26853d59b31935bc41dab6ea01164fc9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\layout.tsx": {
+    "mtime": 1779044979.2732847,
+    "ast_hash": "74b301e0a609958b477b09f322702838",
+    "semantic_hash": "74b301e0a609958b477b09f322702838"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\marketplaces\\[id]\\page.tsx": {
+    "mtime": 1779564852.592438,
+    "ast_hash": "58dab6772750b251120e3ef8002264d2",
+    "semantic_hash": "58dab6772750b251120e3ef8002264d2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\marketplaces\\page.tsx": {
+    "mtime": 1780610408.3283646,
+    "ast_hash": "fe2d776c64a88568db5a26b4bcf6ddc0",
+    "semantic_hash": "fe2d776c64a88568db5a26b4bcf6ddc0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\page.tsx": {
+    "mtime": 1779045054.2185278,
+    "ast_hash": "cbe80f133ebdb5443372b2ca2e9bc662",
+    "semantic_hash": "cbe80f133ebdb5443372b2ca2e9bc662"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\person\\onboarding\\page.tsx": {
+    "mtime": 1780610408.328864,
+    "ast_hash": "759a2756d7ea876e6d8eff2843969645",
+    "semantic_hash": "759a2756d7ea876e6d8eff2843969645"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\products\\categories\\page.tsx": {
+    "mtime": 1779564825.5283618,
+    "ast_hash": "ea6b121f35eed8a5c542a215163dbb6c",
+    "semantic_hash": "ea6b121f35eed8a5c542a215163dbb6c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\products\\new\\page.tsx": {
+    "mtime": 1779657220.7363682,
+    "ast_hash": "b2927bddc6f148dd440643c284e6c7a9",
+    "semantic_hash": "b2927bddc6f148dd440643c284e6c7a9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\dashboard\\products\\page.tsx": {
+    "mtime": 1780010937.7144797,
+    "ast_hash": "d9c71ad980908e4a67bc37692688d088",
+    "semantic_hash": "d9c71ad980908e4a67bc37692688d088"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\layout.tsx": {
+    "mtime": 1780174396.065604,
+    "ast_hash": "2b73ab341ea1b245e35be3d6ea73c924",
+    "semantic_hash": "2b73ab341ea1b245e35be3d6ea73c924"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\login\\page.tsx": {
+    "mtime": 1778957576.3587577,
+    "ast_hash": "345b53cc54a858ddaadca0de746d4bc0",
+    "semantic_hash": "345b53cc54a858ddaadca0de746d4bc0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\marketplace\\[allySlug]\\page.tsx": {
+    "mtime": 1779547128.7333975,
+    "ast_hash": "f858bfc75e520ea13d6b491d25b8d3b0",
+    "semantic_hash": "f858bfc75e520ea13d6b491d25b8d3b0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\marketplace\\mercantil\\consulta-rcv\\page.tsx": {
+    "mtime": 1780610408.3303711,
+    "ast_hash": "447097958153a70178f9c889bc9b6259",
+    "semantic_hash": "447097958153a70178f9c889bc9b6259"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\marketplace\\mercantil\\consulta\\page.tsx": {
+    "mtime": 1779661090.666442,
+    "ast_hash": "207ad8738b4ed33e21c2234a7aa46c1b",
+    "semantic_hash": "207ad8738b4ed33e21c2234a7aa46c1b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\marketplace\\mundial\\consulta-rcv\\page.tsx": {
+    "mtime": 1780968602.5854797,
+    "ast_hash": "768f6ba75f13cdbaf7a649a6a53ba900",
+    "semantic_hash": "768f6ba75f13cdbaf7a649a6a53ba900"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\marketplace\\page.tsx": {
+    "mtime": 1779547394.6198742,
+    "ast_hash": "53905434f2d726bee2ce0e9c430b566b",
+    "semantic_hash": "53905434f2d726bee2ce0e9c430b566b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\page.tsx": {
+    "mtime": 1779759364.4784,
+    "ast_hash": "1681bba0698ccf84d6c21cc582a6c671",
+    "semantic_hash": "1681bba0698ccf84d6c21cc582a6c671"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\app\\registro\\page.tsx": {
+    "mtime": 1778970478.201861,
+    "ast_hash": "331fb8c71f47962ec10a9220d85e185c",
+    "semantic_hash": "331fb8c71f47962ec10a9220d85e185c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\ActionableLink\\ActionableLink.tsx": {
+    "mtime": 1780610408.3313708,
+    "ast_hash": "95a0f4ecd423be58374a4ac53bf80614",
+    "semantic_hash": "95a0f4ecd423be58374a4ac53bf80614"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Alert\\Alert.d.ts": {
+    "mtime": 1778957213.6658626,
+    "ast_hash": "42810eaecc9f521f373cb86643d16aba",
+    "semantic_hash": "42810eaecc9f521f373cb86643d16aba"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Alert\\Alert.tsx": {
+    "mtime": 1778957233.6935508,
+    "ast_hash": "a71effc847055c92e16f48d18d212920",
+    "semantic_hash": "a71effc847055c92e16f48d18d212920"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Button\\Button.d.ts": {
+    "mtime": 1778957197.7083602,
+    "ast_hash": "ae676d618722d67d707baa5d1612ae40",
+    "semantic_hash": "ae676d618722d67d707baa5d1612ae40"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Button\\Button.tsx": {
+    "mtime": 1779054408.3142734,
+    "ast_hash": "c5e25a01a4f7e64e237b201f1068b533",
+    "semantic_hash": "c5e25a01a4f7e64e237b201f1068b533"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Input\\Input.d.ts": {
+    "mtime": 1778957185.0058928,
+    "ast_hash": "b008e882d829a89a2c8ece8a85a95a1e",
+    "semantic_hash": "b008e882d829a89a2c8ece8a85a95a1e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Input\\Input.tsx": {
+    "mtime": 1779054408.3238206,
+    "ast_hash": "9751a9818028a361f48139db623d22b2",
+    "semantic_hash": "9751a9818028a361f48139db623d22b2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Logo\\Logo.d.ts": {
+    "mtime": 1778957174.991632,
+    "ast_hash": "b68f567749dacdac5a2eb8712a525fcc",
+    "semantic_hash": "b68f567749dacdac5a2eb8712a525fcc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Logo\\Logo.tsx": {
+    "mtime": 1778957181.4677672,
+    "ast_hash": "f6744b3dfb1f953be25f11a02c9e4913",
+    "semantic_hash": "f6744b3dfb1f953be25f11a02c9e4913"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Select\\Select.d.ts": {
+    "mtime": 1779054408.3349538,
+    "ast_hash": "d80b1a29cd15d2910a990fc8aa7f0e12",
+    "semantic_hash": "d80b1a29cd15d2910a990fc8aa7f0e12"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Select\\Select.tsx": {
+    "mtime": 1778970116.295159,
+    "ast_hash": "e27730a2ac077ec7c1a5ca1db88a6266",
+    "semantic_hash": "e27730a2ac077ec7c1a5ca1db88a6266"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Spinner\\Spinner.d.ts": {
+    "mtime": 1778957237.1376,
+    "ast_hash": "31155b2b246e3b11866938b94fb09d11",
+    "semantic_hash": "31155b2b246e3b11866938b94fb09d11"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Spinner\\Spinner.tsx": {
+    "mtime": 1779054408.3516061,
+    "ast_hash": "d21264973a471c1876c6e90bdb78342c",
+    "semantic_hash": "d21264973a471c1876c6e90bdb78342c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\TextArea\\TextArea.d.ts": {
+    "mtime": 1779043822.455234,
+    "ast_hash": "380dcc9c43973ea213b8588471dd64be",
+    "semantic_hash": "380dcc9c43973ea213b8588471dd64be"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\TextArea\\TextArea.tsx": {
+    "mtime": 1779043830.3985574,
+    "ast_hash": "afe839d75ae03ca915f3c23278512550",
+    "semantic_hash": "afe839d75ae03ca915f3c23278512550"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\TextField\\TextField.d.ts": {
+    "mtime": 1779043811.7051952,
+    "ast_hash": "c466584bf3739f55293817cca075c2bb",
+    "semantic_hash": "c466584bf3739f55293817cca075c2bb"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\TextField\\TextField.tsx": {
+    "mtime": 1779043819.0851126,
+    "ast_hash": "0ebe2090d82a7ad8736e442fec736ec3",
+    "semantic_hash": "0ebe2090d82a7ad8736e442fec736ec3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Toggle\\Toggle.d.ts": {
+    "mtime": 1778974504.242127,
+    "ast_hash": "9ae5fcafe81cfa8e3c1facde798fe3db",
+    "semantic_hash": "9ae5fcafe81cfa8e3c1facde798fe3db"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\atoms\\Toggle\\Toggle.tsx": {
+    "mtime": 1780966340.216444,
+    "ast_hash": "e10e556ce705943426961f341e5aad1a",
+    "semantic_hash": "e10e556ce705943426961f341e5aad1a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\CardGroup\\CardGroup.d.ts": {
+    "mtime": 1779043847.1298563,
+    "ast_hash": "1f8f6e084b3bd45c61a640f27206ff12",
+    "semantic_hash": "1f8f6e084b3bd45c61a640f27206ff12"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\CardGroup\\CardGroup.tsx": {
+    "mtime": 1779054408.385236,
+    "ast_hash": "f85738d3b8dc50f275977aafa9a52432",
+    "semantic_hash": "f85738d3b8dc50f275977aafa9a52432"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\CedulaInput\\CedulaInput.d.ts": {
+    "mtime": 1779660545.0738754,
+    "ast_hash": "468eda5d39b2bff7d1141a13a1d3eb29",
+    "semantic_hash": "468eda5d39b2bff7d1141a13a1d3eb29"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\CedulaInput\\CedulaInput.tsx": {
+    "mtime": 1779660667.2780788,
+    "ast_hash": "5bffdccf55ab1624c2eaac603f59af23",
+    "semantic_hash": "5bffdccf55ab1624c2eaac603f59af23"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\CedulaInput\\useCedulaInput.ts": {
+    "mtime": 1779660771.2038002,
+    "ast_hash": "5476dba66b3a036eae033bf32a924f5a",
+    "semantic_hash": "5476dba66b3a036eae033bf32a924f5a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\ColorInput\\ColorInput.d.ts": {
+    "mtime": 1778975616.2408462,
+    "ast_hash": "d6d7523e198bf6bbe5e7b818a84a65ac",
+    "semantic_hash": "d6d7523e198bf6bbe5e7b818a84a65ac"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\ColorInput\\ColorInput.tsx": {
+    "mtime": 1779054408.420796,
+    "ast_hash": "b3ab83b9661a4307635b90ca18e2af42",
+    "semantic_hash": "b3ab83b9661a4307635b90ca18e2af42"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\ConfirmModal\\ConfirmModal.tsx": {
+    "mtime": 1780610408.3328753,
+    "ast_hash": "ec73a04a5ccea28434e64a25b0e652ef",
+    "semantic_hash": "ec73a04a5ccea28434e64a25b0e652ef"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\FontSelect\\FontSelect.d.ts": {
+    "mtime": 1778973635.9490988,
+    "ast_hash": "5801e56aa8ae112bf6aa0dfa33136fb7",
+    "semantic_hash": "5801e56aa8ae112bf6aa0dfa33136fb7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\FontSelect\\FontSelect.tsx": {
+    "mtime": 1780610408.3333802,
+    "ast_hash": "7479edd733f1db676740e569a582b80a",
+    "semantic_hash": "7479edd733f1db676740e569a582b80a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\FormField\\FormField.d.ts": {
+    "mtime": 1778957257.4154396,
+    "ast_hash": "fb61bf4196d9fe3797902692f2458f6a",
+    "semantic_hash": "fb61bf4196d9fe3797902692f2458f6a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\FormField\\FormField.tsx": {
+    "mtime": 1778957266.3597693,
+    "ast_hash": "f1f4cf1c8ad2b16d6a769832e9729e07",
+    "semantic_hash": "f1f4cf1c8ad2b16d6a769832e9729e07"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\FormGroup\\FormGroup.d.ts": {
+    "mtime": 1779043859.1473098,
+    "ast_hash": "153282fe5a7a194dee4a31f9a6ba0d06",
+    "semantic_hash": "153282fe5a7a194dee4a31f9a6ba0d06"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\FormGroup\\FormGroup.tsx": {
+    "mtime": 1779054408.4573915,
+    "ast_hash": "27fa8ba3597ce9d7a67c37ecbba6624d",
+    "semantic_hash": "27fa8ba3597ce9d7a67c37ecbba6624d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\GradientBuilder\\GradientBuilder.d.ts": {
+    "mtime": 1778974468.8403752,
+    "ast_hash": "bee96bfd6e28b8567c9d8f9290a7104a",
+    "semantic_hash": "bee96bfd6e28b8567c9d8f9290a7104a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\GradientBuilder\\GradientBuilder.tsx": {
+    "mtime": 1779054408.4653904,
+    "ast_hash": "1249592e9103671491ac1b9439745567",
+    "semantic_hash": "1249592e9103671491ac1b9439745567"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\ImagePicker\\ImagePicker.d.ts": {
+    "mtime": 1779144995.5767708,
+    "ast_hash": "cff5f5335b502fbc65d7306f758175a8",
+    "semantic_hash": "cff5f5335b502fbc65d7306f758175a8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\ImagePicker\\ImagePicker.tsx": {
+    "mtime": 1780610408.3338795,
+    "ast_hash": "fed6a6f8ad38b59352abd9187546ca62",
+    "semantic_hash": "fed6a6f8ad38b59352abd9187546ca62"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\ImagePicker\\useImagePicker.ts": {
+    "mtime": 1780610408.3343792,
+    "ast_hash": "864331a26d8e14595fe0f5801b7dc7e3",
+    "semantic_hash": "864331a26d8e14595fe0f5801b7dc7e3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step1InsuredData.tsx": {
+    "mtime": 1780610408.3353791,
+    "ast_hash": "4f1afee51e175b650b39ff0889ff3754",
+    "semantic_hash": "4f1afee51e175b650b39ff0889ff3754"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step2VehicleData.tsx": {
+    "mtime": 1780610408.3358793,
+    "ast_hash": "1d567d838678bbd8888d5c67f06cd576",
+    "semantic_hash": "1d567d838678bbd8888d5c67f06cd576"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step3PlanSelection.tsx": {
+    "mtime": 1780610408.3363793,
+    "ast_hash": "9c612ea0c32e3fe4936f332219378e9d",
+    "semantic_hash": "9c612ea0c32e3fe4936f332219378e9d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step4Documents.tsx": {
+    "mtime": 1780610408.3368812,
+    "ast_hash": "41903d91209d52cf0cf6b7b98f1082a7",
+    "semantic_hash": "41903d91209d52cf0cf6b7b98f1082a7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step5CompleteVehicle.tsx": {
+    "mtime": 1780610408.3368812,
+    "ast_hash": "a9e4261d594e4f4640bbeefffc354a92",
+    "semantic_hash": "a9e4261d594e4f4640bbeefffc354a92"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step6CompleteData.tsx": {
+    "mtime": 1780610408.338395,
+    "ast_hash": "76c0f2776ffb1b3ad3ab37e3426e6915",
+    "semantic_hash": "76c0f2776ffb1b3ad3ab37e3426e6915"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilRCVSteps\\Step7Confirmation.tsx": {
+    "mtime": 1780610408.3388958,
+    "ast_hash": "57af3cce34bf85dfffa30f2caf8ae25a",
+    "semantic_hash": "57af3cce34bf85dfffa30f2caf8ae25a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilSteps\\Step1InsuredData.tsx": {
+    "mtime": 1779661196.3652406,
+    "ast_hash": "68081bfe442a2712ca08415593ae710b",
+    "semantic_hash": "68081bfe442a2712ca08415593ae710b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilSteps\\Step2PlanSelection.tsx": {
+    "mtime": 1779728321.047623,
+    "ast_hash": "bb002d9b01c9e735b92a32360efd7305",
+    "semantic_hash": "bb002d9b01c9e735b92a32360efd7305"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilSteps\\Step3DniUpload.tsx": {
+    "mtime": 1779728344.2790153,
+    "ast_hash": "cd0ef3a8f0d9299c31cd2f7f08577892",
+    "semantic_hash": "cd0ef3a8f0d9299c31cd2f7f08577892"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilSteps\\Step4CompleteData.tsx": {
+    "mtime": 1779728349.9946654,
+    "ast_hash": "8759b7549275c3580adad09bcde99f62",
+    "semantic_hash": "8759b7549275c3580adad09bcde99f62"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MercantilSteps\\Step5Confirmation.tsx": {
+    "mtime": 1780610408.3393934,
+    "ast_hash": "ad12b9276bfe5686fbc4356fb234c0b7",
+    "semantic_hash": "ad12b9276bfe5686fbc4356fb234c0b7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step1InsuredData.tsx": {
+    "mtime": 1780609707.7692573,
+    "ast_hash": "accc2e8c43fbdcb33751cde24f27dc51",
+    "semantic_hash": "accc2e8c43fbdcb33751cde24f27dc51"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step2VehicleData.tsx": {
+    "mtime": 1780959227.0990634,
+    "ast_hash": "88faf4c47b704d1b4c90229ebfc2c814",
+    "semantic_hash": "88faf4c47b704d1b4c90229ebfc2c814"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step3PlanSelection.tsx": {
+    "mtime": 1780609707.7898412,
+    "ast_hash": "c6d60fc9d56fb5d00d6ebc1a824070f7",
+    "semantic_hash": "c6d60fc9d56fb5d00d6ebc1a824070f7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step4Documents.tsx": {
+    "mtime": 1780609707.7993383,
+    "ast_hash": "3009a4fcc4d8c8469a799ea67ac74bd5",
+    "semantic_hash": "3009a4fcc4d8c8469a799ea67ac74bd5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step5CompleteVehicle.tsx": {
+    "mtime": 1780968598.7363193,
+    "ast_hash": "64341f5137dcf9bed2f8f60aacc5fa51",
+    "semantic_hash": "64341f5137dcf9bed2f8f60aacc5fa51"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step6CompleteData.tsx": {
+    "mtime": 1780609707.811756,
+    "ast_hash": "315a3d379961f3290cfb366dedd399f0",
+    "semantic_hash": "315a3d379961f3290cfb366dedd399f0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\MundialRCVSteps\\Step7Confirmation.tsx": {
+    "mtime": 1780943030.9199762,
+    "ast_hash": "5aa91ad0f6344b3a0e38c59b3b8d616f",
+    "semantic_hash": "5aa91ad0f6344b3a0e38c59b3b8d616f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\OtpInput\\OtpInput.d.ts": {
+    "mtime": 1779624291.7837176,
+    "ast_hash": "96cd6ea097640d4a8f2fbff57dc65706",
+    "semantic_hash": "96cd6ea097640d4a8f2fbff57dc65706"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\OtpInput\\OtpInput.tsx": {
+    "mtime": 1779624296.584045,
+    "ast_hash": "8b70f26e9d7d0d43d8217334e162ca48",
+    "semantic_hash": "8b70f26e9d7d0d43d8217334e162ca48"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PasswordInput\\PasswordInput.d.ts": {
+    "mtime": 1778957269.8743956,
+    "ast_hash": "7c0fa20d790dcf97fffa3d4345766650",
+    "semantic_hash": "7c0fa20d790dcf97fffa3d4345766650"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PasswordInput\\PasswordInput.tsx": {
+    "mtime": 1779054408.5037658,
+    "ast_hash": "d417b532f1ab9f0649b4862fca8d4c1a",
+    "semantic_hash": "d417b532f1ab9f0649b4862fca8d4c1a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PasswordInput\\usePasswordInput.ts": {
+    "mtime": 1778957276.3330798,
+    "ast_hash": "af72dceb48fd8d1f81ce8ed86ad713da",
+    "semantic_hash": "af72dceb48fd8d1f81ce8ed86ad713da"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PhoneInput\\PhoneInput.d.ts": {
+    "mtime": 1779660676.7712345,
+    "ast_hash": "efe62170816a643c6c6bd131d34ef483",
+    "semantic_hash": "efe62170816a643c6c6bd131d34ef483"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PhoneInput\\PhoneInput.tsx": {
+    "mtime": 1779660687.116485,
+    "ast_hash": "36cc1e22bf432019fdf6185239834b69",
+    "semantic_hash": "36cc1e22bf432019fdf6185239834b69"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PhoneInput\\usePhoneInput.ts": {
+    "mtime": 1778957312.4289632,
+    "ast_hash": "9e3d8f446c658af17403f8e16bdc4952",
+    "semantic_hash": "9e3d8f446c658af17403f8e16bdc4952"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PixelInput\\PixelInput.d.ts": {
+    "mtime": 1780235720.1122983,
+    "ast_hash": "9f0275faaac79b11ff7abf53783c3015",
+    "semantic_hash": "9f0275faaac79b11ff7abf53783c3015"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\PixelInput\\PixelInput.tsx": {
+    "mtime": 1780235723.7303274,
+    "ast_hash": "495503db9677938c0d53821768438fb0",
+    "semantic_hash": "495503db9677938c0d53821768438fb0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\RichTextEditor\\RichTextEditor.tsx": {
+    "mtime": 1780610408.340397,
+    "ast_hash": "82b593dbb5dc7a54f554c7c375446484",
+    "semantic_hash": "82b593dbb5dc7a54f554c7c375446484"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\SearchableSelect\\SearchableSelect.tsx": {
+    "mtime": 1780610408.340894,
+    "ast_hash": "0d352efebfa57ac818d9bdcc1d5f25ea",
+    "semantic_hash": "0d352efebfa57ac818d9bdcc1d5f25ea"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\StepIndicator\\StepIndicator.d.ts": {
+    "mtime": 1778970120.514578,
+    "ast_hash": "14c65f63d0e394132bb3bddae8f597d3",
+    "semantic_hash": "14c65f63d0e394132bb3bddae8f597d3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\StepIndicator\\StepIndicator.tsx": {
+    "mtime": 1779054408.5692081,
+    "ast_hash": "4237856e4680510cfe91e830dd623020",
+    "semantic_hash": "4237856e4680510cfe91e830dd623020"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\SwitchField\\SwitchField.d.ts": {
+    "mtime": 1779043833.5839503,
+    "ast_hash": "d354b2deeb638622e6af06172487a1c2",
+    "semantic_hash": "d354b2deeb638622e6af06172487a1c2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\SwitchField\\SwitchField.tsx": {
+    "mtime": 1779043843.3233092,
+    "ast_hash": "b59d5d395a19b50efbdd60c183bbce99",
+    "semantic_hash": "b59d5d395a19b50efbdd60c183bbce99"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\molecules\\WhatsAppFloatingButton\\WhatsAppFloatingButton.tsx": {
+    "mtime": 1780236644.3232367,
+    "ast_hash": "2e880c0331e4d2e7a3e4330a3d5ca060",
+    "semantic_hash": "2e880c0331e4d2e7a3e4330a3d5ca060"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\ChangePasswordModal\\ChangePasswordModal.d.ts": {
+    "mtime": 1779561666.2856054,
+    "ast_hash": "864660a5ecd1173306391d9931f5edc3",
+    "semantic_hash": "864660a5ecd1173306391d9931f5edc3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\ChangePasswordModal\\ChangePasswordModal.tsx": {
+    "mtime": 1779562270.9515638,
+    "ast_hash": "d1a1e082c4abcd507106878e35b0dc50",
+    "semantic_hash": "d1a1e082c4abcd507106878e35b0dc50"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\ChangePasswordModal\\useChangePasswordModal.ts": {
+    "mtime": 1779562683.0745585,
+    "ast_hash": "e32b7a29993b7ca0a756beb6075a0f0a",
+    "semantic_hash": "e32b7a29993b7ca0a756beb6075a0f0a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\GalleryManager\\GalleryManager.d.ts": {
+    "mtime": 1779054408.6050987,
+    "ast_hash": "4f129f53492e9776a0e47f5eea9e413c",
+    "semantic_hash": "4f129f53492e9776a0e47f5eea9e413c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\GalleryManager\\GalleryManager.tsx": {
+    "mtime": 1780610408.3424065,
+    "ast_hash": "db5947487e48a81bed6636273a8ac619",
+    "semantic_hash": "db5947487e48a81bed6636273a8ac619"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\GalleryManager\\useGalleryManager.ts": {
+    "mtime": 1779822546.3402212,
+    "ast_hash": "866187d620733c39f22e84c43fad607a",
+    "semantic_hash": "866187d620733c39f22e84c43fad607a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\LoginForm\\LoginForm.d.ts": {
+    "mtime": 1780610408.3429055,
+    "ast_hash": "4e5b1c129d0fe7f7a2490aea5ef5f0c7",
+    "semantic_hash": "4e5b1c129d0fe7f7a2490aea5ef5f0c7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\LoginForm\\LoginForm.tsx": {
+    "mtime": 1780610408.3434062,
+    "ast_hash": "34b26bcea57dc34181e9aff759f428cd",
+    "semantic_hash": "34b26bcea57dc34181e9aff759f428cd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\LoginForm\\useLoginForm.ts": {
+    "mtime": 1780610408.34441,
+    "ast_hash": "85700c4151ac1a1768cd1c995f6575ae",
+    "semantic_hash": "85700c4151ac1a1768cd1c995f6575ae"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\ProductForm\\ProductForm.tsx": {
+    "mtime": 1780949072.4316156,
+    "ast_hash": "d3082848e5539c8ea12f8b36f7a913cf",
+    "semantic_hash": "d3082848e5539c8ea12f8b36f7a913cf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\ProductForm\\useProductForm.ts": {
+    "mtime": 1780949076.8032482,
+    "ast_hash": "41b290d594601be44aa079f8183affbf",
+    "semantic_hash": "41b290d594601be44aa079f8183affbf"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\RegisterForm\\RegisterForm.d.ts": {
+    "mtime": 1778970265.06327,
+    "ast_hash": "d1115c1c034ab868c8dca3f342c2a941",
+    "semantic_hash": "d1115c1c034ab868c8dca3f342c2a941"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\RegisterForm\\RegisterForm.tsx": {
+    "mtime": 1780610408.345914,
+    "ast_hash": "953b91ac3e26438118426139832bdb1b",
+    "semantic_hash": "953b91ac3e26438118426139832bdb1b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\RegisterForm\\useRegisterForm.ts": {
+    "mtime": 1780610408.3464139,
+    "ast_hash": "d565b5f2a4ee47061610343e2d2bfb5a",
+    "semantic_hash": "d565b5f2a4ee47061610343e2d2bfb5a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\Sidebar\\Sidebar.d.ts": {
+    "mtime": 1778971958.0601268,
+    "ast_hash": "09e0e820d1007dd5886741436d2abf73",
+    "semantic_hash": "09e0e820d1007dd5886741436d2abf73"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\Sidebar\\Sidebar.tsx": {
+    "mtime": 1780610408.3469136,
+    "ast_hash": "7c1acbd423ad4db12b016a86af29f4f6",
+    "semantic_hash": "7c1acbd423ad4db12b016a86af29f4f6"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\Topbar\\Topbar.d.ts": {
+    "mtime": 1778970179.7782834,
+    "ast_hash": "b653f8a078cc4f60215828a60e8626ec",
+    "semantic_hash": "b653f8a078cc4f60215828a60e8626ec"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\Topbar\\Topbar.tsx": {
+    "mtime": 1780686386.8928058,
+    "ast_hash": "1b1a14ab6a5710ccc9d33e5ed8d51cdc",
+    "semantic_hash": "1b1a14ab6a5710ccc9d33e5ed8d51cdc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\AgregarSeccionModal.tsx": {
+    "mtime": 1779054408.6742244,
+    "ast_hash": "868f99a13681d1fbaf996deb4796a8d6",
+    "semantic_hash": "868f99a13681d1fbaf996deb4796a8d6"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\ConfiguracionGeneralTab.tsx": {
+    "mtime": 1780610408.3479187,
+    "ast_hash": "1c26f4596725daac1cbfeb90d75efcfb",
+    "semantic_hash": "1c26f4596725daac1cbfeb90d75efcfb"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\ContenidoSeccionPanel.tsx": {
+    "mtime": 1779044967.1272142,
+    "ast_hash": "52117eb82c23a5608895fe3e47f45a53",
+    "semantic_hash": "52117eb82c23a5608895fe3e47f45a53"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\EdicionTab.tsx": {
+    "mtime": 1779054408.6889687,
+    "ast_hash": "0e1429ff37e28c7381c8beaac47c4fbd",
+    "semantic_hash": "0e1429ff37e28c7381c8beaac47c4fbd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\EditorShell.tsx": {
+    "mtime": 1780610408.3489285,
+    "ast_hash": "65b6f6618dd51656fe809b9b0769554f",
+    "semantic_hash": "65b6f6618dd51656fe809b9b0769554f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\EditorTopBar.tsx": {
+    "mtime": 1779907608.3899217,
+    "ast_hash": "29b7748c7365f593e11959c62b77c050",
+    "semantic_hash": "29b7748c7365f593e11959c62b77c050"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\ElementosList.tsx": {
+    "mtime": 1780610408.349429,
+    "ast_hash": "42588b2af3313e8ce587a1a9bee627b4",
+    "semantic_hash": "42588b2af3313e8ce587a1a9bee627b4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\EstilosEditor.tsx": {
+    "mtime": 1780610408.3504286,
+    "ast_hash": "88761203a54372c1f87b16ab4b49d51b",
+    "semantic_hash": "88761203a54372c1f87b16ab4b49d51b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\MarketplaceEditorContext.tsx": {
+    "mtime": 1779234906.8205729,
+    "ast_hash": "0f5a1056818e73ace9b3d4aac783a20c",
+    "semantic_hash": "0f5a1056818e73ace9b3d4aac783a20c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\SeccionItem.tsx": {
+    "mtime": 1779054408.875706,
+    "ast_hash": "e7d233e7ced75ceef2774461a81c686e",
+    "semantic_hash": "e7d233e7ced75ceef2774461a81c686e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\SeccionesTab.tsx": {
+    "mtime": 1779044503.8287492,
+    "ast_hash": "c8ba6346d35c237dcf0b83883183803b",
+    "semantic_hash": "c8ba6346d35c237dcf0b83883183803b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\SectionListPanel.tsx": {
+    "mtime": 1779054408.8807447,
+    "ast_hash": "49aad16cdb919b3426300688414fcffe",
+    "semantic_hash": "49aad16cdb919b3426300688414fcffe"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\SectionPropertiesPanel.tsx": {
+    "mtime": 1780610408.3509278,
+    "ast_hash": "210e41c926b74fca716625f56bf3f24e",
+    "semantic_hash": "210e41c926b74fca716625f56bf3f24e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\SelectorProductos.tsx": {
+    "mtime": 1780944637.9992876,
+    "ast_hash": "b6283142353fe247870910897ea7cb98",
+    "semantic_hash": "b6283142353fe247870910897ea7cb98"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\VistaPreviaTab.tsx": {
+    "mtime": 1780610408.3519287,
+    "ast_hash": "abee4dbfd4769d81d2574170f227eea3",
+    "semantic_hash": "abee4dbfd4769d81d2574170f227eea3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\editors\\EditorAliados.tsx": {
+    "mtime": 1779054408.6990044,
+    "ast_hash": "c67f4a98d565ecf9f3e80aad4d01373e",
+    "semantic_hash": "c67f4a98d565ecf9f3e80aad4d01373e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\editors\\EditorColumnasPie.tsx": {
+    "mtime": 1779054408.708607,
+    "ast_hash": "dba2fd181d568c151131b8e362a0c578",
+    "semantic_hash": "dba2fd181d568c151131b8e362a0c578"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\editors\\EditorDiapositivas.tsx": {
+    "mtime": 1779054408.7226372,
+    "ast_hash": "6bc292d2f630a4fc64ee482148472646",
+    "semantic_hash": "6bc292d2f630a4fc64ee482148472646"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\editors\\EditorMenu.tsx": {
+    "mtime": 1780610408.3529248,
+    "ast_hash": "e3ea467ac8988c49cc6a57408ef63fef",
+    "semantic_hash": "e3ea467ac8988c49cc6a57408ef63fef"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\editors\\EditorPilares.tsx": {
+    "mtime": 1780610408.3534257,
+    "ast_hash": "a5ec89200febe6346bc2d66a05280244",
+    "semantic_hash": "a5ec89200febe6346bc2d66a05280244"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\BloqueContenidoBase.tsx": {
+    "mtime": 1779054408.7949028,
+    "ast_hash": "58c81824a3559594bf3572bd350840a7",
+    "semantic_hash": "58c81824a3559594bf3572bd350840a7"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelAliados.tsx": {
+    "mtime": 1779054408.799448,
+    "ast_hash": "30170e8119ff1b0aeb345df818944585",
+    "semantic_hash": "30170e8119ff1b0aeb345df818944585"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelBanner.tsx": {
+    "mtime": 1780067624.453959,
+    "ast_hash": "e256627e3623820149f52fda3eb3e53a",
+    "semantic_hash": "e256627e3623820149f52fda3eb3e53a"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelCabecera.tsx": {
+    "mtime": 1780610408.3539264,
+    "ast_hash": "f884afe3c8f6cecf24d470a04861d90b",
+    "semantic_hash": "f884afe3c8f6cecf24d470a04861d90b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelCaracteristicas.tsx": {
+    "mtime": 1779044268.7547932,
+    "ast_hash": "fbf8f6805774c8f75a5de8a64de21591",
+    "semantic_hash": "fbf8f6805774c8f75a5de8a64de21591"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelDobleBanner.tsx": {
+    "mtime": 1779054408.8240695,
+    "ast_hash": "7a7990afe2315cbd7bf3e1a21382f1c4",
+    "semantic_hash": "7a7990afe2315cbd7bf3e1a21382f1c4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelFranja.tsx": {
+    "mtime": 1779054408.8297744,
+    "ast_hash": "5e293d3e3a9fbfb7879803a932edd3dd",
+    "semantic_hash": "5e293d3e3a9fbfb7879803a932edd3dd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelPie.tsx": {
+    "mtime": 1780610408.3549252,
+    "ast_hash": "c12217a62b83e64160cd35cc89c97f96",
+    "semantic_hash": "c12217a62b83e64160cd35cc89c97f96"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelPilares.tsx": {
+    "mtime": 1779054408.8434074,
+    "ast_hash": "d4d502a374939c1b2383a785f58ffa6e",
+    "semantic_hash": "d4d502a374939c1b2383a785f58ffa6e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelPrincipal.tsx": {
+    "mtime": 1780610408.355425,
+    "ast_hash": "b18ba182a2fc99d9bef8f7e40ac4fc2e",
+    "semantic_hash": "b18ba182a2fc99d9bef8f7e40ac4fc2e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelProductos.tsx": {
+    "mtime": 1780944645.540434,
+    "ast_hash": "e85206eb5369f5c24d256270815410e3",
+    "semantic_hash": "e85206eb5369f5c24d256270815410e3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\organisms\\marketplace-editor\\panels\\PanelTexto.tsx": {
+    "mtime": 1780610408.3559258,
+    "ast_hash": "c0a95baef40c9dbd6175b80f1c213e42",
+    "semantic_hash": "c0a95baef40c9dbd6175b80f1c213e42"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\BannerSection.tsx": {
+    "mtime": 1780610408.3564267,
+    "ast_hash": "e3585d5366ea58df4cd9d5a3bdbc8483",
+    "semantic_hash": "e3585d5366ea58df4cd9d5a3bdbc8483"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\DualBannerSection.tsx": {
+    "mtime": 1780610408.3574333,
+    "ast_hash": "b83360e9a877d97750a8bda496d5bf79",
+    "semantic_hash": "b83360e9a877d97750a8bda496d5bf79"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\FooterSection.tsx": {
+    "mtime": 1779054409.0670004,
+    "ast_hash": "48920bdc059ca2b3573b524db58e8286",
+    "semantic_hash": "48920bdc059ca2b3573b524db58e8286"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\HeaderSection.tsx": {
+    "mtime": 1780610408.3584385,
+    "ast_hash": "9ea4aa22444639c050d55969a2066298",
+    "semantic_hash": "9ea4aa22444639c050d55969a2066298"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\HeroSection.tsx": {
+    "mtime": 1780610408.3589382,
+    "ast_hash": "21ac1aa0e58ef001d0fb9f371b9bd9b5",
+    "semantic_hash": "21ac1aa0e58ef001d0fb9f371b9bd9b5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\InfoTextSection.tsx": {
+    "mtime": 1780174408.2330294,
+    "ast_hash": "41d77fad98d39060a78e7608d5352090",
+    "semantic_hash": "41d77fad98d39060a78e7608d5352090"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\MarketplaceRenderer.tsx": {
+    "mtime": 1779763823.2683277,
+    "ast_hash": "2a15e85036395792dc029eb0c04813fe",
+    "semantic_hash": "2a15e85036395792dc029eb0c04813fe"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\MarketplaceTemplate.tsx": {
+    "mtime": 1780610408.3594422,
+    "ast_hash": "f218516ce199f7713377422d07f940da",
+    "semantic_hash": "f218516ce199f7713377422d07f940da"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\PartnersSection.tsx": {
+    "mtime": 1780174410.872512,
+    "ast_hash": "ad80d13b6914cbf8ef8f73cd0f975ea3",
+    "semantic_hash": "ad80d13b6914cbf8ef8f73cd0f975ea3"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\PillarsSection.tsx": {
+    "mtime": 1780610408.3599417,
+    "ast_hash": "f57eb24229a7ed51101155a965cd9e24",
+    "semantic_hash": "f57eb24229a7ed51101155a965cd9e24"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\ProductsSection.tsx": {
+    "mtime": 1781043528.6098986,
+    "ast_hash": "63f8647814c55ef856b668fcf2274012",
+    "semantic_hash": "63f8647814c55ef856b668fcf2274012"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\SectionContainer.tsx": {
+    "mtime": 1780610408.3614426,
+    "ast_hash": "b6b48d4a0a7e6dcd751416d65224120c",
+    "semantic_hash": "b6b48d4a0a7e6dcd751416d65224120c"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\SectionRenderer.tsx": {
+    "mtime": 1780010927.8983066,
+    "ast_hash": "2af7b6e85c588103fe450854e5a04474",
+    "semantic_hash": "2af7b6e85c588103fe450854e5a04474"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\renderers\\StripSection.tsx": {
+    "mtime": 1780610408.3614426,
+    "ast_hash": "8d5113222b81eda4f5d25f044d72edee",
+    "semantic_hash": "8d5113222b81eda4f5d25f044d72edee"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\templates\\AuthTemplate\\AuthTemplate.d.ts": {
+    "mtime": 1778957379.0198367,
+    "ast_hash": "2c7a5f27bcc446a95136f447e3526eb8",
+    "semantic_hash": "2c7a5f27bcc446a95136f447e3526eb8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\templates\\AuthTemplate\\AuthTemplate.tsx": {
+    "mtime": 1778970946.7488425,
+    "ast_hash": "09e49947db3c9b4eb0a245ebdecaac55",
+    "semantic_hash": "09e49947db3c9b4eb0a245ebdecaac55"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\templates\\AuthTemplate\\useAuthTemplate.ts": {
+    "mtime": 1778957375.8805969,
+    "ast_hash": "a4cf9dd2b11cad7b43d071d5c69e3fd0",
+    "semantic_hash": "a4cf9dd2b11cad7b43d071d5c69e3fd0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\templates\\DashboardTemplate\\DashboardTemplate.d.ts": {
+    "mtime": 1778970235.6918626,
+    "ast_hash": "6344e73bf187fc0e128a79f048bfe840",
+    "semantic_hash": "6344e73bf187fc0e128a79f048bfe840"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\templates\\DashboardTemplate\\DashboardTemplate.tsx": {
+    "mtime": 1780949665.2664971,
+    "ast_hash": "c95d5d44b1647bf5288e37b530e77356",
+    "semantic_hash": "c95d5d44b1647bf5288e37b530e77356"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\components\\templates\\DashboardTemplate\\useSidebar.ts": {
+    "mtime": 1778970212.2228427,
+    "ast_hash": "9f76a319f04d159ec00a6662d45c4645",
+    "semantic_hash": "9f76a319f04d159ec00a6662d45c4645"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\eslint.config.mjs": {
+    "mtime": 1779054589.0853088,
+    "ast_hash": "6308b70a4680dfdf7ce050e76597bd99",
+    "semantic_hash": "6308b70a4680dfdf7ce050e76597bd99"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\next-env.d.ts": {
+    "mtime": 1780610787.5290148,
+    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
+    "semantic_hash": "2a74d3909800ca5467fa83b0ab4a4890"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\next.config.ts": {
+    "mtime": 1779054409.1771803,
+    "ast_hash": "579a8aaf696bd9c620cde39cddfb0c6d",
+    "semantic_hash": "579a8aaf696bd9c620cde39cddfb0c6d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\package.json": {
+    "mtime": 1779558981.7693458,
+    "ast_hash": "985f6daf72a31999ad9b16dba29cd371",
+    "semantic_hash": "985f6daf72a31999ad9b16dba29cd371"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\postcss.config.mjs": {
+    "mtime": 1778938326.508741,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\data\\marketplace-mock.ts": {
+    "mtime": 1779231852.7807784,
+    "ast_hash": "632e8a2c36ebb535d84497c9eb1efef5",
+    "semantic_hash": "632e8a2c36ebb535d84497c9eb1efef5"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useCategories.ts": {
+    "mtime": 1779548022.4050226,
+    "ast_hash": "83edf03b6977f43d0cd8786740b28289",
+    "semantic_hash": "83edf03b6977f43d0cd8786740b28289"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useColaboradores.ts": {
+    "mtime": 1779564825.6122456,
+    "ast_hash": "36eef620f3ae87eaa00fc51ceeefcacd",
+    "semantic_hash": "36eef620f3ae87eaa00fc51ceeefcacd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useContracts.ts": {
+    "mtime": 1780610408.3639553,
+    "ast_hash": "b5ce16b8b5543397be969e5b0269293e",
+    "semantic_hash": "b5ce16b8b5543397be969e5b0269293e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useEmployeeAccountStatement.ts": {
+    "mtime": 1779566687.8150408,
+    "ast_hash": "4786b75fb355b0119f210fd402d3bc04",
+    "semantic_hash": "4786b75fb355b0119f210fd402d3bc04"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useEmployeeRequests.ts": {
+    "mtime": 1779566402.242315,
+    "ast_hash": "0f69acec5dfd3fc05bfb66f678944d96",
+    "semantic_hash": "0f69acec5dfd3fc05bfb66f678944d96"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useEnterpriseInterestRatesConfig.ts": {
+    "mtime": 1779665122.7729218,
+    "ast_hash": "36bac5030d88abae586fe6fd7f1d3508",
+    "semantic_hash": "36bac5030d88abae586fe6fd7f1d3508"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useEnterpriseShop.ts": {
+    "mtime": 1780609708.7319753,
+    "ast_hash": "d0d393650f5fc274b6f34a2eba91becc",
+    "semantic_hash": "d0d393650f5fc274b6f34a2eba91becc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useEstadoCuenta.ts": {
+    "mtime": 1779565875.1312284,
+    "ast_hash": "e5884f00e1841c5f0dc5d9fc57dbfc5f",
+    "semantic_hash": "e5884f00e1841c5f0dc5d9fc57dbfc5f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useIntegrationApiKeysConfig.ts": {
+    "mtime": 1779667343.6332774,
+    "ast_hash": "31c88660fe281c9ea722ebeeb358f36b",
+    "semantic_hash": "31c88660fe281c9ea722ebeeb358f36b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useMarketplaceEditor.ts": {
+    "mtime": 1780610408.3649557,
+    "ast_hash": "3c6a93afd5f0b481f0525e8130bb86f2",
+    "semantic_hash": "3c6a93afd5f0b481f0525e8130bb86f2"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useMarketplaces.ts": {
+    "mtime": 1780610408.3659525,
+    "ast_hash": "c32c426cf954523170d10a02d187308f",
+    "semantic_hash": "c32c426cf954523170d10a02d187308f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useMercantilConsulta.ts": {
+    "mtime": 1780610408.366453,
+    "ast_hash": "c64f2ae87ca8f728ec0ebe6d216af989",
+    "semantic_hash": "c64f2ae87ca8f728ec0ebe6d216af989"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useMercantilConsultaRCV.ts": {
+    "mtime": 1780610408.367962,
+    "ast_hash": "d0baf7a4d610e716ec347420ca18fa36",
+    "semantic_hash": "d0baf7a4d610e716ec347420ca18fa36"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useMundialConsultaRCV.ts": {
+    "mtime": 1780969933.4033644,
+    "ast_hash": "8a726baf9218d6fb258f81dbd923ea32",
+    "semantic_hash": "8a726baf9218d6fb258f81dbd923ea32"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useOnboarding.ts": {
+    "mtime": 1780610408.3684697,
+    "ast_hash": "79c412b6390f7cf6f86200f4f88d68c6",
+    "semantic_hash": "79c412b6390f7cf6f86200f4f88d68c6"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useProducts.ts": {
+    "mtime": 1780610408.3689685,
+    "ast_hash": "15f5df50a5a92760b1fb3b7981dc98fb",
+    "semantic_hash": "15f5df50a5a92760b1fb3b7981dc98fb"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\hooks\\pages\\useSolicitudes.ts": {
+    "mtime": 1779055373.8559792,
+    "ast_hash": "298234bff466048c8d341c83705a72f9",
+    "semantic_hash": "298234bff466048c8d341c83705a72f9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\providers\\MarketplaceActionProvider.tsx": {
+    "mtime": 1780609708.9738321,
+    "ast_hash": "5ab9c0b9cbfd45924e1be53d3f2ea072",
+    "semantic_hash": "5ab9c0b9cbfd45924e1be53d3f2ea072"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\allies.service.ts": {
+    "mtime": 1779738698.3261015,
+    "ast_hash": "aa55cef1712cdaa37a385c4e6c44d663",
+    "semantic_hash": "aa55cef1712cdaa37a385c4e6c44d663"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\auth.service.ts": {
+    "mtime": 1780949659.982277,
+    "ast_hash": "d80b76b5db6536c88e272a43f6fce043",
+    "semantic_hash": "d80b76b5db6536c88e272a43f6fce043"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\bank-accounts-admin.service.ts": {
+    "mtime": 1780610408.3699749,
+    "ast_hash": "6813fdcf9ea450a93c28972c95dd2966",
+    "semantic_hash": "6813fdcf9ea450a93c28972c95dd2966"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\category.service.ts": {
+    "mtime": 1779233122.95865,
+    "ast_hash": "f66423d5d4252abe351f9d7b96426677",
+    "semantic_hash": "f66423d5d4252abe351f9d7b96426677"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\empresa.service.ts": {
+    "mtime": 1781039364.5058706,
+    "ast_hash": "2bb3ed6a5b9bf8a4a231f5fa3261f353",
+    "semantic_hash": "2bb3ed6a5b9bf8a4a231f5fa3261f353"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\enterprise-interest-config.service.ts": {
+    "mtime": 1779738706.3240657,
+    "ast_hash": "9f9279d63c62154389fce035170b598e",
+    "semantic_hash": "9f9279d63c62154389fce035170b598e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\finance-users.service.ts": {
+    "mtime": 1780086729.697076,
+    "ast_hash": "eda9f18837d1a9100e6c9b9de2674e17",
+    "semantic_hash": "eda9f18837d1a9100e6c9b9de2674e17"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\gallery.service.ts": {
+    "mtime": 1779822541.0181496,
+    "ast_hash": "3473c2b23fae9b5310fa69a871500d57",
+    "semantic_hash": "3473c2b23fae9b5310fa69a871500d57"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\integration-api-keys.service.ts": {
+    "mtime": 1780610408.3709736,
+    "ast_hash": "581c24265d85feb787c7373e7ed8686b",
+    "semantic_hash": "581c24265d85feb787c7373e7ed8686b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\marketplace.service.ts": {
+    "mtime": 1780610408.3719754,
+    "ast_hash": "c54f649c08d22fdf368eeb64219abc3f",
+    "semantic_hash": "c54f649c08d22fdf368eeb64219abc3f"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\mercantil.service.ts": {
+    "mtime": 1780610408.3724778,
+    "ast_hash": "fe45b958c8e15d65e6e94ee153a873a9",
+    "semantic_hash": "fe45b958c8e15d65e6e94ee153a873a9"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\mundial.service.ts": {
+    "mtime": 1780967730.7047153,
+    "ast_hash": "297970866142cb30c539a83d1a596ea0",
+    "semantic_hash": "297970866142cb30c539a83d1a596ea0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\payments.service.ts": {
+    "mtime": 1780610408.372974,
+    "ast_hash": "fa9e7b192782cd78b380f806da3eea1e",
+    "semantic_hash": "fa9e7b192782cd78b380f806da3eea1e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\product.service.ts": {
+    "mtime": 1780690085.6903203,
+    "ast_hash": "18fde4bdc9f76f4ec0e094edc4a60c82",
+    "semantic_hash": "18fde4bdc9f76f4ec0e094edc4a60c82"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\r4-payment.service.ts": {
+    "mtime": 1780073719.2869925,
+    "ast_hash": "2b5a436d36bcda84d1519998866e1733",
+    "semantic_hash": "2b5a436d36bcda84d1519998866e1733"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\rbac.service.ts": {
+    "mtime": 1780526918.9863238,
+    "ast_hash": "2f6eeb92a0f222d17befda987f600e83",
+    "semantic_hash": "2f6eeb92a0f222d17befda987f600e83"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\recovery.service.ts": {
+    "mtime": 1779623728.9585238,
+    "ast_hash": "0bea9c4ad793b6fd10cc4f0c812c4a3d",
+    "semantic_hash": "0bea9c4ad793b6fd10cc4f0c812c4a3d"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\services\\whatsapp.service.ts": {
+    "mtime": 1779738929.1578856,
+    "ast_hash": "582352d2bd8848cc68cff36cf13d3429",
+    "semantic_hash": "582352d2bd8848cc68cff36cf13d3429"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\utils\\editor-types.d.ts": {
+    "mtime": 1780610408.3744779,
+    "ast_hash": "8da16ea4a04e010db89c8af6140c9122",
+    "semantic_hash": "8da16ea4a04e010db89c8af6140c9122"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\utils\\phoneFormat.ts": {
+    "mtime": 1778975166.9730055,
+    "ast_hash": "b09262c33f76a5183292c51ddd13c7b4",
+    "semantic_hash": "b09262c33f76a5183292c51ddd13c7b4"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\src\\utils\\usePhoneFormat.ts": {
+    "mtime": 1779734930.6313455,
+    "ast_hash": "f8ccd1d2b81fa72c4ec5b69ca2e6c0ad",
+    "semantic_hash": "f8ccd1d2b81fa72c4ec5b69ca2e6c0ad"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\tsconfig.json": {
+    "mtime": 1778938432.3719065,
+    "ast_hash": "02fc19ad21338c2ab820a70136310db4",
+    "semantic_hash": "02fc19ad21338c2ab820a70136310db4"
+  },
+  "C:\\Development\\ElMio\\elmio\\marketplace-default.json": {
+    "mtime": 1780610408.3749774,
+    "ast_hash": "2c81e72e0fb11d3b8836bc3d731632f6",
+    "semantic_hash": "2c81e72e0fb11d3b8836bc3d731632f6"
+  },
+  "C:\\Development\\ElMio\\elmio\\package.json": {
+    "mtime": 1778940532.8950078,
+    "ast_hash": "d8199dc1586047ba00354f23cd2a6b0b",
+    "semantic_hash": "d8199dc1586047ba00354f23cd2a6b0b"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\AGENTS.md": {
+    "mtime": 1778940606.6050794,
+    "ast_hash": "0bd18077bebf1723d6e1d7ccd34a3464",
+    "semantic_hash": "0bd18077bebf1723d6e1d7ccd34a3464"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-backend\\README.md": {
+    "mtime": 1779039869.5282986,
+    "ast_hash": "0852b99562010eeeeea19798ef5b2fdd",
+    "semantic_hash": "0852b99562010eeeeea19798ef5b2fdd"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\AGENTS.md": {
+    "mtime": 1779736513.5419016,
+    "ast_hash": "cb92af53af660eeebe7d7bab765112cc",
+    "semantic_hash": "cb92af53af660eeebe7d7bab765112cc"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\CLAUDE.md": {
+    "mtime": 1778938474.7580256,
+    "ast_hash": "5c27369b226fcf2be8a6cfe52224e767",
+    "semantic_hash": "5c27369b226fcf2be8a6cfe52224e767"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\docs\\condiciones_elmio.pdf": {
+    "mtime": 1780959158.067233,
+    "ast_hash": "b61ad76f08ecea08b0e8f95ea593cb31",
+    "semantic_hash": "b61ad76f08ecea08b0e8f95ea593cb31"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\accidentes-condiciones-generales.pdf": {
+    "mtime": 1776880083.578931,
+    "ast_hash": "198dc73722c2d221babdfbe8182e5550",
+    "semantic_hash": "198dc73722c2d221babdfbe8182e5550"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\accidentes-condiciones-particulares.pdf": {
+    "mtime": 1776880083.578931,
+    "ast_hash": "bae06f4531c28158219023bfa2e0aee0",
+    "semantic_hash": "bae06f4531c28158219023bfa2e0aee0"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\funerario-condiciones-generales.pdf": {
+    "mtime": 1776880083.5799303,
+    "ast_hash": "e57cc701fdb402c4e4b176e28a14489e",
+    "semantic_hash": "e57cc701fdb402c4e4b176e28a14489e"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\funerario-condiciones-particulares.pdf": {
+    "mtime": 1776880083.5809302,
+    "ast_hash": "b7581b0b7d05946810245c84117a1003",
+    "semantic_hash": "b7581b0b7d05946810245c84117a1003"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\terminos-y-politicas-venezuela.pdf": {
+    "mtime": 1776880083.58193,
+    "ast_hash": "edbfe09e1fbbdf564baf6dd425b57623",
+    "semantic_hash": "edbfe09e1fbbdf564baf6dd425b57623"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\vida-condiciones-generales.pdf": {
+    "mtime": 1776880083.5762236,
+    "ast_hash": "f19ada44b76890cf2406359b81138157",
+    "semantic_hash": "f19ada44b76890cf2406359b81138157"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\mercantil\\condiciones\\vida-condiciones-particulares.pdf": {
+    "mtime": 1776880083.577926,
+    "ast_hash": "aaee5776e2921c9a49f2af0d04f704c8",
+    "semantic_hash": "aaee5776e2921c9a49f2af0d04f704c8"
+  },
+  "C:\\Development\\ElMio\\elmio\\apps\\elmio-frontend\\public\\logo.svg": {
+    "mtime": 1777405817.5642533,
+    "ast_hash": "2ebc80feb52541ed6a73615e1e95675a",
+    "semantic_hash": "2ebc80feb52541ed6a73615e1e95675a"
+  }
+}

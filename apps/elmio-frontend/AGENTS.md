@@ -144,3 +144,18 @@ Para lograr simetría visual en toda la plataforma y simular la robustez y limpi
 - [ ] ¿Se evitaron por completo estilos en línea manuales o clases de bordes marcados tipo `border-gray-150` o superiores?
 - [ ] ¿Los contenedores de formularios utilizan `w-full` para ocupar el 100% de la anchura del layout y mantener simetría visual?
 
+## Knowledge Graph (graphify-out/)
+
+La raiz del repositorio contiene un directorio `graphify-out/` con un grafo de conocimiento pre-calculado del proyecto completo (backend + frontend). Antes de proponer cambios arquitectonicos, refactors o nuevos componentes, **leelo**: es la fuente mas rapida para entender modulos, sus relaciones, god nodes, atomic design en uso y convenciones compartidas.
+
+Archivos clave:
+- `graph.json` — datos crudos del grafo (nodos, aristas, comunidades).
+- `GRAPH_REPORT.md` — reporte legible: god nodes, conexiones sorprendentes, preguntas sugeridas.
+- `graph.html` — visualizador interactivo (abrir en navegador).
+- `manifest.json` — manifiesto de archivos procesados (usado por `graphify --update`).
+
+Reglas de uso:
+- Cuando te preguntes "¿que componentes dependen de X?" o "¿como se conecta la pagina Y con sus servicios?", prefiere `graphify query "<pregunta>"` antes que un grep manual.
+- Si anades nuevos componentes, paginas, hooks o servicios, regenera el grafo con `graphify --update` para mantenerlo sincronizado.
+- El grafo rastrea los `file_type` y `confidence_score` de cada arista (EXTRACTED / INFERRED / AMBIGUOUS); respeta esa auditoria al tomar decisiones.
+
