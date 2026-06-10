@@ -13,7 +13,12 @@ import { HeaderSection } from './HeaderSection'
 import { InfoTextSection } from './InfoTextSection'
 import type { SeccionMarketplace } from '@/src/utils/editor-types.d'
 
-type RendererComponent = ComponentType<{ seccion: SeccionMarketplace; carritoActivo?: boolean }>
+type RendererComponent = ComponentType<{
+  seccion: SeccionMarketplace
+  carritoActivo?: boolean
+  marketplaceId?: string
+  marketplaceName?: string
+}>
 
 const rendererRegistry: Record<string, RendererComponent> = {
   // Español (Frontend Types)
@@ -49,6 +54,8 @@ interface SectionRendererProps {
   onClick?: () => void
   seleccionada?: boolean
   carritoActivo?: boolean
+  marketplaceId?: string
+  marketplaceName?: string
 }
 
 /**
@@ -61,12 +68,21 @@ export function SectionRenderer({
   onClick,
   seleccionada,
   carritoActivo,
+  marketplaceId,
+  marketplaceName,
 }: SectionRendererProps) {
   if (!seccion.visible) return null
 
   const Renderer = rendererRegistry[seccion.tipo]
 
-  const contenido = Renderer ? <Renderer seccion={seccion} carritoActivo={carritoActivo} /> : null
+  const contenido = Renderer ? (
+    <Renderer
+      seccion={seccion}
+      carritoActivo={carritoActivo}
+      marketplaceId={marketplaceId}
+      marketplaceName={marketplaceName}
+    />
+  ) : null
 
   if (previewMode && onClick) {
     return (

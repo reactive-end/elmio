@@ -22,6 +22,7 @@ export interface CreatePurchaseInput {
   productName: string
   productSku?: string
   marketplaceId?: string
+  marketplaceName?: string
   amountUsd: number
   isFinanced: boolean
   installments?: number
@@ -98,7 +99,7 @@ export class ManagePurchasesUseCase {
       productName: input.productName,
       productSku: input.productSku ?? null,
       marketplaceId: input.marketplaceId ?? null,
-      marketplaceName: null,
+      marketplaceName: input.marketplaceName ?? null,
       amountUsd: input.amountUsd,
       amountVes,
       exchangeRate,

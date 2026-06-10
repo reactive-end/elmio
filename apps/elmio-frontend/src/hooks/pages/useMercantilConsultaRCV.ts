@@ -18,6 +18,8 @@ import {
   type BucketUploadResult,
 } from '@/src/services/mercantil.service';
 import { authService } from '@/src/services/auth.service';
+import { r4PaymentService } from '@/src/services/r4-payment.service';
+import { enterpriseService } from '@/src/services/empresa.service';
 
 export type { MercantilCategoryResult, MercantilProduct, MercantilPlan } from '@/src/services/mercantil.service';
 
@@ -216,11 +218,22 @@ export function calculateAge(birthDate: string): number {
   return age;
 }
 
-export function useMercantilConsultaRCV() {
+export function useMercantilConsultaRCV(params?: {
+  productId?: string
+  productSku?: string
+  marketplaceId?: string
+  marketplaceName?: string
+}) {
   // Step tracking
   const [step, setStep] = useState(1);
-  const TOTAL_STEPS = 7;
+  const TOTAL_STEPS = 8;
   const waitingForLoginRef = useRef(false);
+
+  // --- Banco R4 States ---
+  const [paymentData, setPaymentData] = useState<{ reference: string; transactionId: string; bankCode: string } | null>(null);
+  const [exchangeRate, setExchangeRate] = useState<number>(1);
+  const [loadingExchangeRate, setLoadingExchangeRate] = useState<boolean>(false);
+  const [finishingPurchase, setFinishingPurchase] = useState<boolean>(false);
 
   // Step 1: Insured data
   const [insured, setInsured] = useState<InsuredData>({
@@ -700,7 +713,8 @@ export function useMercantilConsultaRCV() {
           address1: addressLine || 'Gran Caracas',
         },
       });
-      await handleEmitPolicy();
+      // Avanzar al paso de pago de R4
+      setStep(7);
     } catch (error) {
       setStepError(error instanceof Error ? error.message : 'Error completando los datos');
     } finally {
@@ -941,6 +955,83 @@ export function useMercantilConsultaRCV() {
     };
   }, [handleContinueToStep4]);
 
+  // --- Banco R4 Effects & Handlers ---
+
+  /**
+   * Obtiene la tasa oficial de cambio del BCV desde Banco R4 al iniciar el paso 7 de pago.
+   */
+  useEffect(() => {
+    if (step === 7 && exchangeRate === 1) {
+      setLoadingExchangeRate(true);
+      const today = new Date().toISOString().split('T')[0];
+      r4PaymentService
+        .getExchangeRate({
+          date: today,
+          currency: 'USD',
+          companyAccountId: 'GLOBAL_R4_FALLBACK',
+        })
+        .then((res) => {
+          if (res && res.exchangeRate) {
+            setExchangeRate(res.exchangeRate);
+          }
+        })
+        .catch((err) => console.error('Error al obtener la tasa BCV desde R4:', err))
+        .finally(() => setLoadingExchangeRate(false));
+    }
+  }, [step, exchangeRate]);
+
+  /**
+   * Callback ejecutado tras pago C2P exitoso. Registra la compra/transacción pendiente y avanza a confirmación.
+   * @param {object} result - Datos de la transacción de pago.
+   */
+  const handlePaymentSuccess = async (result: { reference: string; transactionId: string; bankCode: string }) => {
+    setPaymentData(result);
+    await handleFinishPurchase(result);
+    setStep(8);
+  };
+
+  /**
+   * Registra localmente la transacción de cobro y la compra (Purchase) en estado pendiente para conciliación posterior.
+   * @param {object} pay - Datos del pago C2P.
+   */
+  const handleFinishPurchase = async (pay: { reference: string; transactionId: string; bankCode: string }) => {
+    setFinishingPurchase(true);
+    try {
+      const profile = await enterpriseService.getMyProfile();
+
+      // 1. Registrar transacción local de cargo
+      const concept = `Compra marketplace: Seguro Mercantil RCV - Ref: ${pay.reference}`;
+      const tx = await enterpriseService.createMyTransaction({
+        kind: 'charge',
+        concept,
+        amount: totalEstimatedPrime,
+        status: 'pending',
+        productId: params?.productId || undefined,
+      });
+
+      // 2. Registrar la compra (Purchase) localmente en estado pendiente
+      await enterpriseService.createPurchase({
+        purchaserType: 'collaborator',
+        purchaserId: profile.id,
+        purchaserName: `${profile.name} ${profile.lastName}`.trim(),
+        purchaserEmail: profile.email || undefined,
+        purchaserDocument: profile.documentId || undefined,
+        productId: params?.productId || undefined,
+        productName: 'Póliza RCV Mercantil',
+        amountUsd: totalEstimatedPrime,
+        isFinanced: false,
+        installments: 1, // Pago anual único
+        channel: 'insurance',
+        transactionId: tx.id,
+        status: 'pending',
+      });
+    } catch (err) {
+      console.error('Error registrando compra o transacción de RCV Mercantil en portal:', err);
+    } finally {
+      setFinishingPurchase(false);
+    }
+  };
+
   return {
     step,
     TOTAL_STEPS,
@@ -1055,5 +1146,10 @@ export function useMercantilConsultaRCV() {
     shopcartId,
     clientId,
     needsCompletion,
+    paymentData,
+    exchangeRate,
+    loadingExchangeRate,
+    finishingPurchase,
+    handlePaymentSuccess,
   };
 }

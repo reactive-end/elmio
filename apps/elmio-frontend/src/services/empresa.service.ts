@@ -380,6 +380,7 @@ export interface CreatePurchaseInput {
   productName: string
   productSku?: string
   marketplaceId?: string
+  marketplaceName?: string
   amountUsd: number
   isFinanced: boolean
   installments?: number
@@ -918,5 +919,17 @@ export const enterpriseService = {
     const res = await authedFetch('/profile/me/purchases')
     if (!res.ok) throw new Error('Error al listar tus compras.')
     return (await res.json()) as Purchase[]
+  },
+
+  async notifyInsurancePayment(transactionId: string, reference?: string): Promise<{ success: boolean }> {
+    const res = await authedFetch(`/enterprises/finance/purchases/${transactionId}/notify-insurance`, {
+      method: 'POST',
+      body: JSON.stringify({ reference }),
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string }
+      throw new Error(err.message ?? 'Error al notificar pago de seguro.')
+    }
+    return (await res.json()) as { success: boolean }
   },
 }

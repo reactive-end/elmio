@@ -9,6 +9,8 @@ import type { DatosMarketplace } from '@/src/utils/editor-types.d'
 
 interface MarketplaceTemplateProps {
   datos: DatosMarketplace
+  marketplaceId: string
+  marketplaceName: string
 }
 
 const GOOGLE_FONTS_MAP: Record<string, string> = {
@@ -39,7 +41,7 @@ const GOOGLE_FONTS_MAP: Record<string, string> = {
  * Template publico que renderiza un marketplace completo a partir de su config.
  * Ordena secciones, las renderiza por tipo con cabecera y pie.
  */
-export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
+export function MarketplaceTemplate({ datos, marketplaceId, marketplaceName }: MarketplaceTemplateProps) {
   const cabecera = datos.secciones.find((s) => s.tipo === 'cabecera' && s.visible)
   const pie = datos.secciones.find((s) => s.tipo === 'pie' && s.visible)
 
@@ -86,7 +88,13 @@ export function MarketplaceTemplate({ datos }: MarketplaceTemplateProps) {
         .filter((s) => s.tipo !== 'cabecera' && s.tipo !== 'pie')
         .sort((a, b) => a.orden - b.orden)
         .map((seccion) => (
-          <SectionRenderer key={seccion.id} seccion={seccion} carritoActivo={datos.carrito?.activo ?? true} />
+          <SectionRenderer
+            key={seccion.id}
+            seccion={seccion}
+            carritoActivo={datos.carrito?.activo ?? true}
+            marketplaceId={marketplaceId}
+            marketplaceName={marketplaceName}
+          />
         ))}
 
       {pie && <FooterSection seccion={pie} />}

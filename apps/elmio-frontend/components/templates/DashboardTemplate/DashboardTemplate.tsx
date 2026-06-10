@@ -32,7 +32,8 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
     const session = authService.getSession()
 
     if (!session) {
-      router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
+      const fullPath = pathname + (typeof window !== 'undefined' ? window.location.search : '')
+      router.push(`/login?redirect=${encodeURIComponent(fullPath)}`)
       return
     }
 
@@ -78,13 +79,25 @@ export function DashboardTemplate({ children }: DashboardTemplateProps) {
       session?.role === 'EMPLOYEE' &&
       forbiddenForEmployee.some((path) => pathname.startsWith(path))
     ) {
+      if (pathname.startsWith('/dashboard/enterprise/shop')) {
+        const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+        const productId = searchParams.get('product')
+        if (productId) {
+          router.push(`/dashboard/collaborator/shop?product=${productId}`)
+          return
+        }
+        router.push('/dashboard/collaborator/shop')
+        return
+      }
       router.push('/dashboard/collaborator/account-statement')
       return
     }
 
     if (
       session?.role === 'CLIENT' &&
-      (pathname === '/dashboard' || pathname === '/dashboard/' || forbiddenForClient.some((path) => pathname.startsWith(path)))
+      (pathname === '/dashboard' || 
+       pathname === '/dashboard/' || 
+       (forbiddenForClient.some((path) => pathname.startsWith(path)) && !pathname.startsWith('/dashboard/enterprise/shop/checkout')))
     ) {
       router.push('/dashboard/collaborator/purchases')
       return

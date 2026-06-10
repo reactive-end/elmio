@@ -16,7 +16,10 @@ import { Step4Documents } from '@/components/molecules/MundialRCVSteps/Step4Docu
 import { Step5CompleteVehicle } from '@/components/molecules/MundialRCVSteps/Step5CompleteVehicle'
 import { Step6CompleteData } from '@/components/molecules/MundialRCVSteps/Step6CompleteData'
 import { Step7Confirmation } from '@/components/molecules/MundialRCVSteps/Step7Confirmation'
+import { R4PaymentStep } from '@/components/molecules/R4PaymentStep/R4PaymentStep'
 import { Alert } from '@/components/atoms/Alert/Alert'
+import { Button } from '@/components/atoms/Button/Button'
+import { CheckCircle, ArrowRight } from 'lucide-react'
 
 const STEP_LABELS = [
   'Datos del Asegurado',
@@ -25,6 +28,7 @@ const STEP_LABELS = [
   'Documentos',
   'Completar Vehículo',
   'Completar Datos',
+  'Pago C2P R4',
   'Confirmación',
 ]
 
@@ -74,18 +78,68 @@ function notifyEmbeddedParent(
   )
 }
 
+function InsurancePendingConfirmation({
+  onClose,
+  amountUsd,
+}: {
+  onClose: () => void
+  amountUsd: number
+}) {
+  return (
+    <div className="flex flex-col items-center text-center max-w-md mx-auto py-6 px-4 gap-6 animate-scaleIn">
+      <div className="relative">
+        <div className="p-4 bg-amber-50 text-amber-500 rounded-full shadow-md">
+          <CheckCircle className="h-12 w-12 animate-pulse" strokeWidth={1.5} />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-bold text-body">¡Pago Registrado!</h2>
+        <p className="text-sm font-semibold text-secondary mt-1">
+          Solicitud de Póliza RCV en Proceso de Conciliación
+        </p>
+        <p className="text-xs text-body-muted mt-2 leading-relaxed">
+          Su pago de <span className="font-semibold text-body">${amountUsd.toFixed(2)}</span> mediante Banco R4 ha sido recibido de conformidad.
+          El departamento de finanzas está verificando la transacción. Recibirá su póliza definitiva y certificado RCV a la brevedad en su correo afiliado.
+        </p>
+      </div>
+
+      <div className="w-full border-t border-gray-100 pt-5 my-2">
+        <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/20 p-4 text-left flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Estado de la Solicitud</span>
+          <p className="text-xs text-body-muted">
+            Estado: <span className="font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">Pendiente de Aprobación</span>
+          </p>
+          <p className="text-[10px] text-body-muted">
+            Aseguradora: <span className="font-semibold text-body">La Mundial de Seguros</span>
+          </p>
+        </div>
+      </div>
+
+      <Button onClick={onClose} fullWidth className="mt-2">
+        Finalizar Proceso <ArrowRight className="h-4 w-4 ml-2" />
+      </Button>
+    </div>
+  )
+}
+
 function MundialConsultaRCVContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === '1'
-  const m = useMundialConsultaRCV()
+  const productId = searchParams.get('productId') || undefined
+  const productSku = searchParams.get('productSku') || undefined
+  const marketplaceId = searchParams.get('marketplaceId') || undefined
+  const marketplaceName = searchParams.get('marketplaceName') || undefined
+  const m = useMundialConsultaRCV({ productId, productSku, marketplaceId, marketplaceName })
 
   const handleCompletion = () => {
+    const primeAmount = m.plans.find((p) => p.id === m.selectedPlanId)?.totalPrime || 0
     if (isEmbedded) {
       notifyEmbeddedParent('completed', {
-        amount: m.plans.find((p) => p.id === m.selectedPlanId)?.totalPrime || 0,
-        policyCount: m.policyData?.length ?? 0,
-        shopcartId: m.shopcartId ?? undefined,
+        amount: primeAmount,
+        policyCount: 0,
+        shopcartId: undefined,
       })
       return
     }
@@ -97,30 +151,16 @@ function MundialConsultaRCVContent() {
     <main
       className={`min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fadeIn ${isEmbedded ? 'py-6' : 'py-12'}`}
     >
-      {m.emissionStatus === 'emitting' && (
+      {/* OVERLAY DE CARGA PREMIUM DURANTE CONCILIACIÓN/GUARDADO LOCAL */}
+      {m.finishingPurchase && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl p-8 flex flex-col items-center shadow-2xl max-w-sm mx-4 text-center border border-gray-100 animate-scaleIn">
             <div className="relative mb-5">
               <div className="animate-spin rounded-full h-14 w-14 border-4 border-secondary border-t-transparent" />
-              <div className="absolute inset-0 flex items-center justify-center text-secondary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-5 w-5 animate-pulse"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-              </div>
             </div>
-            <h3 className="text-lg font-bold text-body mb-2">Emitiendo tu póliza RCV...</h3>
+            <h3 className="text-lg font-bold text-body mb-2">Registrando tu seguro...</h3>
             <p className="text-xs text-body-muted leading-relaxed">
-              Por favor espera mientras validamos tus datos en el API de La Mundial de Seguros y
-              procesamos tu certificado.
+              Por favor espera mientras conciliamos el pago de R4 y registramos su solicitud en el portal corporativo.
             </p>
           </div>
         </div>
@@ -248,10 +288,22 @@ function MundialConsultaRCVContent() {
           )}
 
           {m.step === 7 && (
-            <Step7Confirmation
-              policyData={m.policyData}
-              onDownloadPdf={m.handleDownloadPdf}
+            <R4PaymentStep
+              amountUsd={m.plans.find((p) => p.id === m.selectedPlanId)?.totalPrime || 0}
+              exchangeRate={m.exchangeRate}
+              defaultPayerName={`${m.insured.firstName} ${m.insured.lastName}`}
+              defaultPayerDocument={`${m.insured.docType}-${m.insured.docNumber}`}
+              defaultPayerPhone={`${m.insured.phoneCode}${m.insured.phoneNumber}`}
+              paymentConcept={`Compra RCV La Mundial: ${m.plans.find((p) => p.id === m.selectedPlanId)?.title || 'Plan'}`}
+              onPaymentSuccess={m.handlePaymentSuccess}
+              onBack={m.handleBack}
+            />
+          )}
+
+          {m.step === 8 && (
+            <InsurancePendingConfirmation
               onClose={handleCompletion}
+              amountUsd={m.plans.find((p) => p.id === m.selectedPlanId)?.totalPrime || 0}
             />
           )}
         </div>

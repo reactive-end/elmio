@@ -191,6 +191,23 @@ export function useLoginForm(onLoginSuccess?: () => void) {
         const searchParams = new URLSearchParams(window.location.search)
         const redirect = searchParams.get('redirect')
         if (redirect) {
+          const session = authService.getSession()
+          const isEmployee = session?.role === 'EMPLOYEE'
+          
+          if (isEmployee && redirect.includes('/dashboard/enterprise/shop')) {
+            try {
+              const dummyUrl = new URL(redirect, window.location.origin)
+              const productId = dummyUrl.searchParams.get('product')
+              if (productId) {
+                router.push(`/dashboard/collaborator/shop?product=${productId}`)
+                return
+              }
+              router.push('/dashboard/collaborator/shop')
+              return
+            } catch (e) {
+              console.error('Error parseando redirección del colaborador:', e)
+            }
+          }
           router.push(redirect)
         } else {
           router.push('/dashboard')

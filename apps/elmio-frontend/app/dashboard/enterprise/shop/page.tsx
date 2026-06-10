@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   CreditCard,
   ExternalLink,
@@ -55,6 +55,22 @@ export default function EnterpriseShopPage() {
     embeddedFormUrl,
     closeEmbeddedForm,
   } = useEnterpriseShop()
+
+  const searchParams = useSearchParams()
+  const highlightProductId = searchParams.get('product')
+  const [hasScrolled, setHasScrolled] = useState(false)
+
+  useEffect(() => {
+    if (highlightProductId && !loading && !hasScrolled) {
+      const element = document.getElementById(`product-card-${highlightProductId}`)
+      if (element) {
+        setHasScrolled(true)
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 300)
+      }
+    }
+  }, [highlightProductId, loading, hasScrolled])
 
   const [selectedProductForScheme, setSelectedProductForScheme] = useState<any | null>(null)
   const [showSchemeSelectorModal, setShowSchemeSelectorModal] = useState(false)
@@ -212,8 +228,13 @@ export default function EnterpriseShopPage() {
             const price = product.priceLists[0]?.amount ?? 0
             return (
               <article
+                id={`product-card-${product.id}`}
                 key={product.id}
-                className={`overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-black/3 transition-all ${
+                className={`overflow-hidden rounded-2xl border bg-white shadow-sm shadow-black/3 transition-all duration-300 ${
+                  highlightProductId === product.id
+                    ? 'border-secondary/60 ring-4 ring-secondary/15 scale-[1.01] shadow-md shadow-secondary/10'
+                    : 'border-gray-100'
+                } ${
                   !product.active ? 'opacity-65 bg-gray-50/30' : ''
                 }`}
               >

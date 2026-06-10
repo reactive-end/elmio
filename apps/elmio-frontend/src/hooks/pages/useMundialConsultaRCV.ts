@@ -10,6 +10,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { mundialService } from '@/src/services/mundial.service'
 import { authService } from '@/src/services/auth.service'
 import { enterpriseService } from '@/src/services/empresa.service'
+import { r4PaymentService } from '@/src/services/r4-payment.service'
 
 export interface InsuredData {
   firstName: string
@@ -36,10 +37,21 @@ export interface MundialPlan {
   description: string
 }
 
-export function useMundialConsultaRCV() {
+export function useMundialConsultaRCV(params?: {
+  productId?: string
+  productSku?: string
+  marketplaceId?: string
+  marketplaceName?: string
+}) {
   const [step, setStep] = useState(1)
-  const TOTAL_STEPS = 7
+  const TOTAL_STEPS = 8
   const waitingForLoginRef = useRef(false)
+
+  // --- Banco R4 States ---
+  const [paymentData, setPaymentData] = useState<{ reference: string; transactionId: string; bankCode: string } | null>(null)
+  const [exchangeRate, setExchangeRate] = useState<number>(1)
+  const [loadingExchangeRate, setLoadingExchangeRate] = useState<boolean>(false)
+  const [finishingPurchase, setFinishingPurchase] = useState<boolean>(false)
 
   // Paso 1: Asegurado
   const [insured, setInsured] = useState<InsuredData>({
@@ -406,8 +418,8 @@ export function useMundialConsultaRCV() {
         serial_motor: vehicleEngineSerial,
       })
 
-      // 2. Si es válido, ejecutar la emisión final
-      await handleEmitPolicy()
+      // Avanzar al paso de pago de R4
+      setStep(7)
     } catch (error) {
       setStepError(
         error instanceof Error ? error.message : 'Error en la validación previa de emisión',
@@ -548,7 +560,11 @@ export function useMundialConsultaRCV() {
             purchaserName: `${profile.name} ${profile.lastName}`.trim(),
             purchaserEmail: profile.email || undefined,
             purchaserDocument: profile.documentId || undefined,
+            productId: params?.productId,
             productName: 'Póliza RCV La Mundial',
+            productSku: params?.productSku,
+            marketplaceId: params?.marketplaceId,
+            marketplaceName: params?.marketplaceName,
             amountUsd: plans.find((p) => p.id === selectedPlanId)?.totalPrime || 0,
             isFinanced: true,
             installments: 1, // Pago anual único (1 cuota)
@@ -600,6 +616,85 @@ export function useMundialConsultaRCV() {
       window.removeEventListener('message', handleMessage)
     }
   }, [handleContinueToStep4])
+
+  // --- Banco R4 Effects & Handlers ---
+
+  /**
+   * Obtiene la tasa oficial de cambio del BCV desde Banco R4 al iniciar el paso 7 de pago.
+   */
+  useEffect(() => {
+    if (step === 7 && exchangeRate === 1) {
+      setLoadingExchangeRate(true)
+      const today = new Date().toISOString().split('T')[0]
+      r4PaymentService
+        .getExchangeRate({
+          date: today,
+          currency: 'USD',
+          companyAccountId: 'GLOBAL_R4_FALLBACK',
+        })
+        .then((res) => {
+          if (res && res.exchangeRate) {
+            setExchangeRate(res.exchangeRate)
+          }
+        })
+        .catch((err) => console.error('Error al obtener la tasa BCV desde R4:', err))
+        .finally(() => setLoadingExchangeRate(false))
+    }
+  }, [step, exchangeRate])
+
+  /**
+   * Callback ejecutado tras pago C2P exitoso. Registra la compra/transacción pendiente y avanza a confirmación.
+   * @param {object} result - Datos de la transacción de pago.
+   */
+  const handlePaymentSuccess = async (result: { reference: string; transactionId: string; bankCode: string }) => {
+    setPaymentData(result)
+    await handleFinishPurchase(result)
+    setStep(8)
+  }
+
+  /**
+   * Registra localmente la transacción de cobro y la compra (Purchase) en estado pendiente para conciliación posterior.
+   * @param {object} pay - Datos del pago C2P.
+   */
+  const handleFinishPurchase = async (pay: { reference: string; transactionId: string; bankCode: string }) => {
+    setFinishingPurchase(true)
+    try {
+      const profile = await enterpriseService.getMyProfile()
+
+      const primeAmount = plans.find((p) => p.id === selectedPlanId)?.totalPrime || 0
+
+      // 1. Registrar transacción local de cargo
+      const concept = `Compra marketplace: Seguro La Mundial RCV - Ref: ${pay.reference}`
+      const tx = await enterpriseService.createMyTransaction({
+        kind: 'charge',
+        concept,
+        amount: primeAmount,
+        status: 'pending',
+        productId: params?.productId || undefined,
+      })
+
+      // 2. Registrar la compra (Purchase) localmente en estado pendiente
+      await enterpriseService.createPurchase({
+        purchaserType: 'collaborator',
+        purchaserId: profile.id,
+        purchaserName: `${profile.name} ${profile.lastName}`.trim(),
+        purchaserEmail: profile.email || undefined,
+        purchaserDocument: profile.documentId || undefined,
+        productId: params?.productId || undefined,
+        productName: 'Póliza RCV La Mundial',
+        amountUsd: primeAmount,
+        isFinanced: false,
+        installments: 1, // Pago anual único
+        channel: 'insurance',
+        transactionId: tx.id,
+        status: 'pending',
+      })
+    } catch (err) {
+      console.error('Error registrando compra o transacción de RCV La Mundial en portal:', err)
+    } finally {
+      setFinishingPurchase(false)
+    }
+  }
 
   return {
     step,
@@ -695,5 +790,10 @@ export function useMundialConsultaRCV() {
     policyData,
     handleDownloadPdf,
     shopcartId,
+    paymentData,
+    exchangeRate,
+    loadingExchangeRate,
+    finishingPurchase,
+    handlePaymentSuccess,
   }
 }

@@ -58,7 +58,15 @@ const MarketplaceActionContext = createContext<MarketplaceActionContextProps | u
  * Provider que envuelve el marketplace para manejar ventanas de acción (pagos, seguros, modales de usuario).
  * Utiliza un reducer para despachar acciones globalmente.
  */
-export function MarketplaceActionProvider({ children }: { children: ReactNode }) {
+export function MarketplaceActionProvider({
+  children,
+  marketplaceId,
+  marketplaceName,
+}: {
+  children: ReactNode
+  marketplaceId?: string
+  marketplaceName?: string
+}) {
   const [state, dispatch] = useReducer(actionReducer, initialState)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
 
@@ -106,13 +114,13 @@ export function MarketplaceActionProvider({ children }: { children: ReactNode })
         <InsuranceFormModal data={state.actionData} onClose={closeAction} />
       )}
       {state.isOpen && state.actionType === 'MERCANTIL-QUERY' && (
-        <MercantilQueryModal data={state.actionData} onClose={closeAction} />
+        <MercantilQueryModal data={state.actionData} onClose={closeAction} fallbackMarketplace={{ id: marketplaceId, name: marketplaceName }} />
       )}
       {state.isOpen && state.actionType === 'MERCANTIL-RCV-QUERY' && (
-        <MercantilRcvQueryModal data={state.actionData} onClose={closeAction} />
+        <MercantilRcvQueryModal data={state.actionData} onClose={closeAction} fallbackMarketplace={{ id: marketplaceId, name: marketplaceName }} />
       )}
       {state.isOpen && state.actionType === 'MUNDIAL-RCV-QUERY' && (
-        <MundialRcvQueryModal data={state.actionData} onClose={closeAction} />
+        <MundialRcvQueryModal data={state.actionData} onClose={closeAction} fallbackMarketplace={{ id: marketplaceId, name: marketplaceName }} />
       )}
 
       {/* Modal de Login Premium Superpuesta para el Marketplace */}
@@ -153,6 +161,38 @@ export function useMarketplaceAction() {
 
 // ----- Componentes Modales (Premium y adaptados) -----
 
+/**
+ * Construye la URL del iframe embebido preservando todos los params de trazabilidad
+ * que llegaron al modal via openAction (productId, productSku, marketplaceId,
+ * marketplaceName) y agregando cualquier param extra (p.ej. slug del aliado).
+ * Se mantienen como fallback los marketplaceId/marketplaceName que el provider
+ * recibio como prop, por si el href original no los inyecto.
+ */
+function buildEmbeddedUrl(
+  basePath: string,
+  data: any,
+  extraParams: Record<string, string> = {},
+  fallbackMarketplace: { id?: string; name?: string } = {},
+) {
+  const params: string[] = ['embedded=1']
+  const incoming = data || {}
+  for (const key of ['productId', 'productSku', 'marketplaceId', 'marketplaceName']) {
+    const v = incoming[key]
+    if (v) params.push(`${encodeURIComponent(key)}=${encodeURIComponent(v)}`)
+  }
+  // Fallback del provider para marketplaceId/marketplaceName
+  if (!incoming.marketplaceId && fallbackMarketplace.id) {
+    params.push(`marketplaceId=${encodeURIComponent(fallbackMarketplace.id)}`)
+  }
+  if (!incoming.marketplaceName && fallbackMarketplace.name) {
+    params.push(`marketplaceName=${encodeURIComponent(fallbackMarketplace.name)}`)
+  }
+  for (const [k, v] of Object.entries(extraParams)) {
+    if (v) params.push(`${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+  }
+  return `${basePath}?${params.join('&')}`
+}
+
 function PaymentModal({ data, onClose }: { data: any; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -190,8 +230,8 @@ function InsuranceFormModal({ data, onClose }: { data: any; onClose: () => void 
 /**
  * Ventana de consulta general de Mercantil idéntica a la tienda empresarial.
  */
-function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
-  const embeddedUrl = `/marketplace/mercantil/consulta?embedded=1&slug=${data?.slug || ''}&productId=${data?.productId || ''}`
+function MercantilQueryModal({ data, onClose, fallbackMarketplace }: { data: any; onClose: () => void; fallbackMarketplace?: { id?: string; name?: string } }) {
+  const embeddedUrl = buildEmbeddedUrl('/marketplace/mercantil/consulta', data, { slug: data?.slug || '' }, fallbackMarketplace)
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -229,8 +269,8 @@ function MercantilQueryModal({ data, onClose }: { data: any; onClose: () => void
 /**
  * Ventana de consulta RCV de Mercantil idéntica a la tienda empresarial.
  */
-function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
-  const embeddedUrl = `/marketplace/mercantil/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
+function MercantilRcvQueryModal({ data, onClose, fallbackMarketplace }: { data: any; onClose: () => void; fallbackMarketplace?: { id?: string; name?: string } }) {
+  const embeddedUrl = buildEmbeddedUrl('/marketplace/mercantil/consulta-rcv', data, {}, fallbackMarketplace)
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -268,8 +308,8 @@ function MercantilRcvQueryModal({ data, onClose }: { data: any; onClose: () => v
 /**
  * Ventana de consulta RCV de La Mundial idéntica a la tienda empresarial.
  */
-function MundialRcvQueryModal({ data, onClose }: { data: any; onClose: () => void }) {
-  const embeddedUrl = `/marketplace/mundial/consulta-rcv?embedded=1&productId=${data?.productId || ''}`
+function MundialRcvQueryModal({ data, onClose, fallbackMarketplace }: { data: any; onClose: () => void; fallbackMarketplace?: { id?: string; name?: string } }) {
+  const embeddedUrl = buildEmbeddedUrl('/marketplace/mundial/consulta-rcv', data, {}, fallbackMarketplace)
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">

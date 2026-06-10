@@ -195,6 +195,7 @@ export class CreatePurchaseDto {
   productName!: string;
   productSku?: string;
   marketplaceId?: string;
+  marketplaceName?: string;
   amountUsd!: number;
   isFinanced!: boolean;
   installments?: number;
@@ -210,3 +211,11 @@ export class CreatePurchaseDto {
 export class UpdateContractDto {
   name?: string;
 }
+
+/**
+ * DTO para la petición de notificación de pago de un seguro en finanzas.
+ */
+export class NotifyInsurancePaymentDto {
+  reference?: string;
+}
+

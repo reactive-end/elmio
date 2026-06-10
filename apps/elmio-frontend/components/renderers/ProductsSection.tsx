@@ -10,13 +10,15 @@ import { authService } from '@/src/services/auth.service'
 
 interface ProductsSectionProps {
   seccion: SeccionMarketplace
+  marketplaceId?: string
+  marketplaceName?: string
 }
 
 /**
  * Renderiza la seccion de productos con carrusel horizontal navegable.
  * Carga dinámicamente los productos activos del backend (auto-poblado o filtrado por ID).
  */
-export function ProductsSection({ seccion }: ProductsSectionProps) {
+export function ProductsSection({ seccion, marketplaceId, marketplaceName }: ProductsSectionProps) {
   const { contenido, estilo } = seccion
   
   const router = useRouter()
@@ -136,14 +138,24 @@ export function ProductsSection({ seccion }: ProductsSectionProps) {
 
           let enlaceBoton = p.active ? `/dashboard/enterprise/shop?product=${p.id}` : null
           if (p.active) {
+            // Params de trazabilidad compartidos por todas las ventanas de acción: permiten
+            // que la página embebida registre el productId/SKU y el marketplace al persistir
+            // la compra. Se omiten si el renderer no los recibió (p.ej. uso fuera de MarketplaceRenderer).
+            const traceParams = [
+              `productId=${encodeURIComponent(p.id)}`,
+              p.sku ? `productSku=${encodeURIComponent(p.sku)}` : '',
+              marketplaceId ? `marketplaceId=${encodeURIComponent(marketplaceId)}` : '',
+              marketplaceName ? `marketplaceName=${encodeURIComponent(marketplaceName)}` : '',
+            ].filter(Boolean).join('&')
+
             if (hasMercantilRcvQuery) {
-              enlaceBoton = `action:mercantil-rcv-query?productId=${p.id}`
+              enlaceBoton = `action:mercantil-rcv-query?${traceParams}`
             } else if (hasMundialRcvQuery) {
-              enlaceBoton = `action:mundial-rcv-query?productId=${p.id}`
+              enlaceBoton = `action:mundial-rcv-query?${traceParams}`
             } else if (hasMercantilQuery) {
               const provider = p.globalThirdPartyProvider ?? ''
               const slug = MERCANTIL_PROVIDER_SLUGS[provider] || ''
-              enlaceBoton = `action:mercantil-query?productId=${p.id}&slug=${slug}`
+              enlaceBoton = `action:mercantil-query?${traceParams}&slug=${encodeURIComponent(slug)}`
             }
           }
 

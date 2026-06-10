@@ -14,8 +14,11 @@ import { Step2PlanSelection } from '@/components/molecules/MercantilSteps/Step2P
 import { Step3DniUpload } from '@/components/molecules/MercantilSteps/Step3DniUpload'
 import { Step4CompleteData } from '@/components/molecules/MercantilSteps/Step4CompleteData'
 import { Step5Confirmation } from '@/components/molecules/MercantilSteps/Step5Confirmation'
+import { R4PaymentStep } from '@/components/molecules/R4PaymentStep/R4PaymentStep'
+import { R4DomiciliationStep } from '@/components/molecules/R4DomiciliationStep/R4DomiciliationStep'
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Button } from '@/components/atoms/Button/Button'
+import { CheckCircle, ArrowRight } from 'lucide-react'
 
 const TOTAL_STEPS = 5
 const STEP_LABELS = [
@@ -27,13 +30,21 @@ const STEP_LABELS = [
 ]
 
 /**
- * Renderiza el indicador superior de progreso para el asistente de 5 pasos.
- * @param {{ currentStep: number }} props - Propiedades del componente.
+ * Renderiza el indicador superior de progreso para el asistente dinámico.
+ * @param {{ currentStep: number; totalSteps: number; stepLabels: string[] }} props - Propiedades del componente.
  */
-function StepsProgressBar({ currentStep }: { currentStep: number }) {
+function StepsProgressBar({
+  currentStep,
+  totalSteps,
+  stepLabels,
+}: {
+  currentStep: number
+  totalSteps: number
+  stepLabels: string[]
+}) {
   return (
     <div className="w-full flex items-center mb-8 bg-gray-50/50 p-4 border border-gray-100 rounded-2xl">
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
+      {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
         <div key={s} className="flex items-center flex-1 min-w-0">
           <div
             className={`h-8 w-8 rounded-full grid place-content-center text-[11px] font-bold shrink-0 border-2 transition-all duration-300 ${
@@ -41,11 +52,11 @@ function StepsProgressBar({ currentStep }: { currentStep: number }) {
                 ? 'bg-secondary border-secondary text-white shadow-sm'
                 : 'bg-white border-gray-200 text-gray-400'
             }`}
-            title={STEP_LABELS[s - 1]}
+            title={stepLabels[s - 1]}
           >
             {currentStep > s ? '✓' : s}
           </div>
-          {s < TOTAL_STEPS && (
+          {s < totalSteps && (
             <div className="h-0.5 flex-1 bg-gray-100 rounded mx-1.5 overflow-hidden">
               <div
                 className={`h-full rounded bg-secondary transition-all duration-500 ease-out ${
@@ -81,6 +92,53 @@ function notifyEmbeddedParent(
   )
 }
 
+function InsurancePendingConfirmation({
+  onClose,
+  amountUsd,
+  isFinanced,
+}: {
+  onClose: () => void
+  amountUsd: number
+  isFinanced: boolean
+}) {
+  return (
+    <div className="flex flex-col items-center text-center max-w-md mx-auto py-6 px-4 gap-6 animate-scaleIn">
+      <div className="relative">
+        <div className="p-4 bg-amber-50 text-amber-500 rounded-full shadow-md">
+          <CheckCircle className="h-12 w-12 animate-pulse" strokeWidth={1.5} />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-bold text-body">¡Pago Registrado!</h2>
+        <p className="text-sm font-semibold text-secondary mt-1">
+          Solicitud de Póliza en Proceso de Conciliación
+        </p>
+        <p className="text-xs text-body-muted mt-2 leading-relaxed">
+          Su pago de <span className="font-semibold text-body">${amountUsd.toFixed(2)}</span> mediante Banco R4 ha sido recibido de conformidad.
+          El departamento de finanzas está verificando la transacción. Recibirá su póliza definitiva a la brevedad en su correo afiliado.
+        </p>
+      </div>
+
+      <div className="w-full border-t border-gray-100 pt-5 my-2">
+        <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/20 p-4 text-left flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Estado de la Solicitud</span>
+          <p className="text-xs text-body-muted">
+            Estado: <span className="font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">Pendiente de Aprobación</span>
+          </p>
+          <p className="text-[10px] text-body-muted">
+            Canal de financiamiento: <span className="font-semibold text-body">{isFinanced ? 'Cuotas Domiciliadas R4' : 'Pago de Contado'}</span>
+          </p>
+        </div>
+      </div>
+
+      <Button onClick={onClose} fullWidth className="mt-2">
+        Finalizar Proceso <ArrowRight className="h-4 w-4 ml-2" />
+      </Button>
+    </div>
+  )
+}
+
 /**
  * Contenedor reactivo del asistente de consulta de Mercantil.
  */
@@ -96,8 +154,8 @@ function MercantilConsultaContent() {
   const handleCompletion = () => {
     if (isEmbedded) {
       notifyEmbeddedParent('completed', {
-        amount: m.shopcartSummary?.quotedAmount ?? m.totalEstimatedPrime,
-        policyCount: m.policyData?.length ?? 0,
+        amount: m.totalEstimatedPrime,
+        policyCount: 0,
         shopcartId: m.shopcartId ?? undefined,
       })
       return
@@ -106,35 +164,41 @@ function MercantilConsultaContent() {
     router.push('/dashboard/enterprise/shop')
   }
 
+  // Configuración dinámica de pasos basándose en si es pago anual único o financiado
+  const totalSteps = m.isAnnual ? 6 : 7
+  const stepLabels = m.isAnnual
+    ? [
+        'Datos del Asegurado',
+        'Selección de Planes',
+        'Cédula del Asegurado',
+        'Completar Datos',
+        'Pago C2P R4',
+        'Confirmación',
+      ]
+    : [
+        'Datos del Asegurado',
+        'Selección de Planes',
+        'Cédula del Asegurado',
+        'Completar Datos',
+        'Pago C2P R4',
+        'Domiciliación R4',
+        'Confirmación',
+      ]
+
   return (
     <main
       className={`min-h-screen bg-gray-50/50 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center animate-fadeIn relative ${isEmbedded ? 'py-6' : 'py-12'}`}
     >
-      {/* OVERLAY DE CARGA PREMIUM DURANTE EL POLLING DE EMISIÓN */}
-      {(m.emissionStatus === 'emitting' || m.emissionStatus === 'polling') && (
+      {/* OVERLAY DE CARGA PREMIUM DURANTE CONCILIACIÓN/GUARDADO LOCAL */}
+      {m.finishingPurchase && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl p-8 flex flex-col items-center shadow-2xl max-w-sm mx-4 text-center border border-gray-100 animate-scaleIn">
             <div className="relative mb-5">
               <div className="animate-spin rounded-full h-14 w-14 border-4 border-secondary border-t-transparent" />
-              <div className="absolute inset-0 flex items-center justify-center text-secondary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-5 w-5 animate-pulse"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-              </div>
             </div>
-            <h3 className="text-lg font-bold text-body mb-2">Emitiendo tu póliza...</h3>
+            <h3 className="text-lg font-bold text-body mb-2">Registrando tu seguro...</h3>
             <p className="text-xs text-body-muted leading-relaxed">
-              Por favor espera mientras validamos tus datos y procesamos el certificado oficial con
-              Mercantil Seguros en tiempo real. Este proceso puede tardar hasta 2 minutos.
+              Por favor espera mientras conciliamos el pago de R4 y registramos su solicitud en el portal corporativo.
             </p>
           </div>
         </div>
@@ -155,23 +219,7 @@ function MercantilConsultaContent() {
         )}
 
         {/* Indicador de progreso */}
-        <StepsProgressBar currentStep={m.step} />
-
-        {/* Banner de error de emisión en caso de falla con opción de reintento */}
-        {m.emissionStatus === 'error' && m.stepError && (
-          <div className="mb-6 w-full animate-fadeIn flex flex-col gap-3">
-            <Alert type="error" message={m.stepError} onDismiss={() => m.setStepError('')} />
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                onClick={() => void m.handleEmitPolicy()}
-                className="text-xs h-9 px-4 font-bold"
-              >
-                Reintentar Emisión de Póliza
-              </Button>
-            </div>
-          </div>
-        )}
+        <StepsProgressBar currentStep={m.step} totalSteps={totalSteps} stepLabels={stepLabels} />
 
         {/* Tarjeta Envolvente Principal del Wizard */}
         <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-xl shadow-black/3">
@@ -251,10 +299,36 @@ function MercantilConsultaContent() {
           )}
 
           {m.step === 5 && (
-            <Step5Confirmation
-              shopcartId={m.shopcartId ?? ''}
-              policyData={m.policyData}
+            <R4PaymentStep
+              amountUsd={m.totalEstimatedPrime}
+              exchangeRate={m.exchangeRate}
+              defaultPayerName={`${m.insured.firstName} ${m.insured.lastName}`}
+              defaultPayerDocument={`${m.insured.docType}-${m.insured.docNumber}`}
+              defaultPayerPhone={`${m.insured.phoneCode}${m.insured.phoneNumber}`}
+              paymentConcept={`Compra Seguro Mercantil: ${m.selectedPlans[0]?.product.title || 'Plan'}`}
+              onPaymentSuccess={m.handlePaymentSuccess}
+              onBack={m.handleBack}
+            />
+          )}
+
+          {m.step === 6 && !m.isAnnual && (
+            <R4DomiciliationStep
+              quotaAmountUsd={m.totalEstimatedPrime / (m.selectedPlans[0]?.frequency === 'monthly' ? 12 : (m.selectedPlans[0]?.frequency === 'quarterly' ? 4 : 2))}
+              exchangeRate={m.exchangeRate}
+              defaultHolderName={`${m.insured.firstName} ${m.insured.lastName}`}
+              defaultHolderDocument={`${m.insured.docType}-${m.insured.docNumber}`}
+              frequencyLabel={m.selectedPlans[0]?.frequency === 'monthly' ? 'Mensual' : (m.selectedPlans[0]?.frequency === 'quarterly' ? 'Trimestral' : 'Semestral')}
+              domiciliationConcept={`Domiciliación Seguro Mercantil: ${m.selectedPlans[0]?.product.title || 'Plan'}`}
+              onDomiciliationSuccess={m.handleDomiciliationSuccess}
+              onBack={m.handleBack}
+            />
+          )}
+
+          {m.step === (m.isAnnual ? 6 : 7) && (
+            <InsurancePendingConfirmation
               onClose={handleCompletion}
+              amountUsd={m.totalEstimatedPrime}
+              isFinanced={!m.isAnnual}
             />
           )}
         </div>

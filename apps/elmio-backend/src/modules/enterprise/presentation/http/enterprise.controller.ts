@@ -51,6 +51,7 @@ import {
   CreateContractDto,
   UpdateContractDto,
   CreatePurchaseDto,
+  NotifyInsurancePaymentDto,
 } from './dto/enterprise.dto';
 import {
   ENTERPRISE_REPOSITORY_PORT,
@@ -360,6 +361,7 @@ export class EnterpriseController {
       productName: body.productName,
       productSku: body.productSku,
       marketplaceId: body.marketplaceId,
+      marketplaceName: body.marketplaceName,
       amountUsd: body.amountUsd,
       isFinanced: body.isFinanced,
       installments: body.installments,
@@ -537,6 +539,43 @@ export class EnterpriseController {
     }
 
     return results;
+  }
+
+  /** POST /api/enterprises/finance/purchases/:transactionId/notify-insurance - Concilia localmente el pago de un seguro pendiente en Finanzas. */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('finance/purchases/:transactionId/notify-insurance')
+  async notifyInsurancePayment(
+    @Param('transactionId') transactionId: string,
+    @Body() body: NotifyInsurancePaymentDto,
+  ) {
+    const transaction = await this.enterpriseRepository.findTransactionById(transactionId);
+    if (!transaction) {
+      throw new NotFoundException('Transacción no encontrada.');
+    }
+
+    if (transaction.kind !== 'charge') {
+      throw new BadRequestException('La transacción no corresponde a un cargo.');
+    }
+
+    // Conciliación local: Marcar la transacción como pagada
+    transaction.status = 'paid';
+    await this.enterpriseRepository.saveTransaction(transaction);
+
+    // Buscar y actualizar la compra (Purchase) asociada si existe
+    const purchases = await this.enterpriseRepository.findAllPurchases();
+    const purchase = purchases.find((p) => p.transactionId === transactionId);
+    if (purchase) {
+      purchase.status = purchase.isFinanced ? 'financed' : 'paid';
+      await this.enterpriseRepository.savePurchase(purchase);
+    }
+
+    return {
+      success: true,
+      message: 'Pago del seguro verificado y conciliado localmente.',
+      transaction,
+      purchase,
+    };
   }
 
 

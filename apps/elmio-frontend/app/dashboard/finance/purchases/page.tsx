@@ -27,6 +27,7 @@ export default function FinancePurchasesPage() {
   const [purchases, setPurchases] = useState<FinancePurchaseResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [processingTxs, setProcessingTxs] = useState<Record<string, boolean>>({})
   
   // Filtros y búsquedas
   const [searchCedula, setSearchCedula] = useState('')
@@ -44,6 +45,21 @@ export default function FinancePurchasesPage() {
       setError(err instanceof Error ? err.message : 'Error al cargar el historial global de compras.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleNotifyInsurance = async (transactionId: string) => {
+    if (processingTxs[transactionId]) return
+    setProcessingTxs((prev) => ({ ...prev, [transactionId]: true }))
+    setError(null)
+    try {
+      await enterpriseService.notifyInsurancePayment(transactionId)
+      await loadData()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Error al notificar pago de seguro.')
+    } finally {
+      setProcessingTxs((prev) => ({ ...prev, [transactionId]: false }))
     }
   }
 
@@ -292,20 +308,36 @@ export default function FinancePurchasesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            if (item.type === 'insurance') {
-                              router.push(`/dashboard/collaborator/purchases/insurance/${item.transactionId}/quotes`)
-                            } else {
-                              router.push(`/dashboard/collaborator/purchases/product/${item.transactionId}/quotes`)
-                            }
-                          }}
-                          className="flex items-center gap-1.5 mx-auto border border-gray-150 hover:bg-secondary/5 hover:text-secondary py-1.5 px-3 text-[10px] cursor-pointer rounded-lg font-semibold"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          Auditar Plan
-                        </Button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              if (item.type === 'insurance') {
+                                router.push(`/dashboard/collaborator/purchases/insurance/${item.transactionId}/quotes`)
+                              } else {
+                                router.push(`/dashboard/collaborator/purchases/product/${item.transactionId}/quotes`)
+                              }
+                            }}
+                            className="flex items-center gap-1.5 border border-gray-150 hover:bg-secondary/5 hover:text-secondary py-1.5 px-3 text-[10px] cursor-pointer rounded-lg font-semibold"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Auditar Plan
+                          </Button>
+                          {item.type === 'insurance' && !isPaid && (
+                            <Button
+                              onClick={() => void handleNotifyInsurance(item.transactionId)}
+                              disabled={processingTxs[item.transactionId]}
+                              className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white py-1.5 px-3 text-[10px] cursor-pointer rounded-lg font-semibold border-none disabled:bg-gray-200 disabled:text-gray-400"
+                            >
+                              {processingTxs[item.transactionId] ? (
+                                <Spinner size="sm" />
+                              ) : (
+                                <Shield className="w-3.5 h-3.5" />
+                              )}
+                              {processingTxs[item.transactionId] ? 'Notificando...' : 'Notificar Aseguradora'}
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )

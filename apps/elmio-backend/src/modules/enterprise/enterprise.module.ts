@@ -35,6 +35,7 @@ import { EnterpriseController } from './presentation/http/enterprise.controller'
 import { ProfileController } from './presentation/http/profile.controller';
 import { EnterpriseInterestConfigEntity } from '../enterprise-interest-config/infrastructure/entities/enterprise-interest-config.entity';
 import { MercantilModule } from '../mercantil/mercantil.module';
+import { MundialModule } from '../mundial/mundial.module';
 import { PaymentProcessorModule } from '../payment-processor/payment-processor.module';
 import { ProductModule } from '../product/product.module';
 
@@ -46,6 +47,7 @@ import { ProductModule } from '../product/product.module';
   imports: [
     AuthModule,
     MercantilModule,
+    MundialModule,
     PaymentProcessorModule,
     ProductModule,
     TypeOrmModule.forFeature([

@@ -19,6 +19,8 @@ import {
   type BucketUploadResult,
 } from '@/src/services/mercantil.service';
 import { authService } from '@/src/services/auth.service';
+import { r4PaymentService } from '@/src/services/r4-payment.service';
+import { enterpriseService } from '@/src/services/empresa.service';
 
 export const ALLOWED_PRODUCT_SLUGS = ['personalAccidents', 'life', 'funerary'] as const;
 export type AllowedProductSlug = (typeof ALLOWED_PRODUCT_SLUGS)[number];
@@ -168,6 +170,18 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
   const [shopcartSummary, setShopcartSummary] = useState<ShopcartSummary | null>(null);
   const [emissionStatus, setEmissionStatus] = useState<'idle' | 'emitting' | 'polling' | 'completed' | 'error'>('idle');
   const [policyData, setPolicyData] = useState<{ policyId?: string; number?: string }[] | null>(null);
+
+  // --- Banco R4 States ---
+  const isAnnual = useMemo(() => {
+    if (selectedPlans.length === 0) return true;
+    return selectedPlans[0].frequency === 'yearly';
+  }, [selectedPlans]);
+
+  const [paymentData, setPaymentData] = useState<{ reference: string; transactionId: string; bankCode: string } | null>(null);
+  const [domiciliationData, setDomiciliationData] = useState<{ uuid: string; accountNumber: string; bankCode: string } | null>(null);
+  const [exchangeRate, setExchangeRate] = useState<number>(1);
+  const [loadingExchangeRate, setLoadingExchangeRate] = useState<boolean>(false);
+  const [finishingPurchase, setFinishingPurchase] = useState<boolean>(false);
 
   // Step 3: Subir Cédula
   const [idFile, setIdFile] = useState<File | null>(null);
@@ -599,8 +613,8 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
         },
       });
 
-      // Disparar emisión de póliza de inmediato
-      await handleEmitPolicy(shopcartId || undefined);
+      // Avanzar al paso de pago de R4
+      setStep(5);
     } catch {
       setStepError('No se pudo actualizar los datos geográficos del cliente.');
     } finally {
@@ -625,6 +639,105 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
       window.removeEventListener('message', handleMessage);
     };
   }, [handleContinueToStep3]);
+
+  // --- Efecto y funciones para Banco R4 ---
+
+  /**
+   * Efecto para consultar la tasa BCV oficial desde Banco R4 al iniciar el paso de pago (paso 5).
+   */
+  useEffect(() => {
+    if (step === 5 && exchangeRate === 1) {
+      setLoadingExchangeRate(true);
+      const today = new Date().toISOString().split('T')[0];
+      r4PaymentService
+        .getExchangeRate({
+          date: today,
+          currency: 'USD',
+          companyAccountId: 'GLOBAL_R4_FALLBACK',
+        })
+        .then((res) => {
+          if (res && res.exchangeRate) {
+            setExchangeRate(res.exchangeRate);
+          }
+        })
+        .catch((err) => console.error('Error al obtener la tasa BCV desde R4:', err))
+        .finally(() => setLoadingExchangeRate(false));
+    }
+  }, [step, exchangeRate]);
+
+  /**
+   * Callback ejecutado tras un pago C2P exitoso en R4PaymentStep.
+   * Si es anual, registra la transacción y compra y avanza a confirmación. De lo contrario, avanza a Domiciliación.
+   * @param {object} result - Resultado del pago exitoso.
+   */
+  const handlePaymentSuccess = async (result: { reference: string; transactionId: string; bankCode: string }) => {
+    setPaymentData(result);
+    if (isAnnual) {
+      await handleFinishPurchase(result, null);
+      setStep(6);
+    } else {
+      setStep(6);
+    }
+  };
+
+  /**
+   * Callback ejecutado tras un registro de domiciliación exitoso en R4DomiciliationStep.
+   * Registra la transacción y la compra en estado pendiente y avanza al paso final de confirmación.
+   * @param {object} result - Resultado de la domiciliación.
+   */
+  const handleDomiciliationSuccess = async (result: { uuid: string; accountNumber: string; bankCode: string }) => {
+    setDomiciliationData(result);
+    if (paymentData) {
+      await handleFinishPurchase(paymentData, result);
+    }
+    setStep(7);
+  };
+
+  /**
+   * Registra localmente la transacción de cobro y la compra (Purchase) en estado pendiente para conciliación posterior.
+   * @param {object} pay - Datos del pago C2P.
+   * @param {object|null} dom - Datos de la domiciliación si aplica.
+   */
+  const handleFinishPurchase = async (
+    pay: { reference: string; transactionId: string; bankCode: string },
+    dom: { uuid: string; accountNumber: string; bankCode: string } | null,
+  ) => {
+    setFinishingPurchase(true);
+    try {
+      const profile = await enterpriseService.getMyProfile();
+
+      // 1. Registrar transacción local de cargo
+      const concept = `Compra marketplace: Seguro Mercantil - Ref: ${pay.reference}`;
+      const tx = await enterpriseService.createMyTransaction({
+        kind: 'charge',
+        concept,
+        amount: totalEstimatedPrime,
+        status: 'pending',
+        productId: selectedPlans[0]?.product.id,
+      });
+
+      // 2. Registrar la compra (Purchase) localmente en estado pendiente
+      await enterpriseService.createPurchase({
+        purchaserType: 'collaborator',
+        purchaserId: profile.id,
+        purchaserName: `${profile.name} ${profile.lastName}`.trim(),
+        purchaserEmail: profile.email || undefined,
+        purchaserDocument: profile.documentId || undefined,
+        productId: selectedPlans[0]?.product.id,
+        productName: `Seguro Mercantil - ${selectedPlans[0]?.product.title || 'Plan'}`,
+        amountUsd: totalEstimatedPrime,
+        isFinanced: !isAnnual,
+        installments: isAnnual ? 1 : (selectedPlans[0]?.frequency === 'monthly' ? 12 : (selectedPlans[0]?.frequency === 'quarterly' ? 4 : 2)),
+        channel: 'insurance',
+        transactionId: tx.id,
+        status: 'pending',
+      });
+    } catch (err) {
+      console.error('Error registrando compra o transacción de seguros en portal:', err);
+    } finally {
+      setFinishingPurchase(false);
+    }
+  };
 
   return {
     step,
@@ -690,5 +803,13 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
     handleCompleteClient,
     handleEmitPolicy,
     handleBack,
+    isAnnual,
+    paymentData,
+    domiciliationData,
+    exchangeRate,
+    loadingExchangeRate,
+    finishingPurchase,
+    handlePaymentSuccess,
+    handleDomiciliationSuccess,
   };
 }

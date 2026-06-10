@@ -84,9 +84,9 @@ export function MarketplaceRenderer({ marketplaceSlug }: MarketplaceRendererProp
   if (!datos) return null
 
   return (
-    <MarketplaceActionProvider>
+    <MarketplaceActionProvider marketplaceId={datos.id} marketplaceName={datos.nombre}>
       <main>
-        <MarketplaceTemplate datos={datos} />
+        <MarketplaceTemplate datos={datos} marketplaceId={datos.id} marketplaceName={datos.nombre} />
       </main>
     </MarketplaceActionProvider>
   )
