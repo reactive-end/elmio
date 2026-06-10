@@ -21,6 +21,8 @@ import {
 import { authService } from '@/src/services/auth.service';
 import { r4PaymentService } from '@/src/services/r4-payment.service';
 import { enterpriseService } from '@/src/services/empresa.service';
+import { useConsultationAuth, type ConsultationAuthView, type ProfileSummary, buildShopRedirect, buildReturnTo } from './useConsultationAuth';
+import type { ConsultationAuthReturn } from './useConsultationAuth.d';
 
 export const ALLOWED_PRODUCT_SLUGS = ['personalAccidents', 'life', 'funerary'] as const;
 export type AllowedProductSlug = (typeof ALLOWED_PRODUCT_SLUGS)[number];
@@ -133,11 +135,42 @@ export function formatCurrency(value: number): string {
   return `$${value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export function useMercantilConsulta(initialSlug: string | null = null) {
+export function useMercantilConsulta(
+  initialSlug: string | null = null,
+  consultationParams?: {
+    productId?: string
+    productSku?: string
+    marketplaceId?: string
+    marketplaceName?: string
+    isEmbedded?: boolean
+    pathname?: string
+    searchParams?: URLSearchParams
+  },
+) {
   const [step, setStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [stepError, setStepError] = useState('');
   const waitingForLoginRef = useRef(false);
+
+  // Gate de identidad: reutiliza el LoginModal global del MarketplaceActionProvider
+  // y valida el rol compatible (CLIENT o EMPLOYEE) antes de continuar.
+  const consultationAuth = useConsultationAuth({
+    isEmbedded: consultationParams?.isEmbedded ?? false,
+    onResolved: () => {
+      // Disparar la continuacion real cuando el rol resuelto es CLIENT.
+      void continueContinueToStep3()
+    },
+    onEmployeeRedirect: (_profile, context) => {
+      if (typeof window !== 'undefined') {
+        window.location.href = buildShopRedirect(context)
+      }
+    },
+  })
+
+  const continueContinueToStep3Ref = useRef<() => Promise<void>>(async () => {})
+  const continueContinueToStep3 = useCallback(async () => {
+    await continueContinueToStep3Ref.current()
+  }, [])
 
   const handleBack = () => setStep((s) => Math.max(1, s - 1));
 
@@ -474,22 +507,9 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
   ]);
 
   // Transición 2 -> 3 (Crear cliente/shopcart, subir productos) o directo a Emisión (modal)
-  const handleContinueToStep3 = async () => {
-    setStepError('');
-
-    // Validar si existe sesión
-    const session = authService.getSession();
-    if (!session) {
-      waitingForLoginRef.current = true;
-      if (typeof window !== 'undefined') {
-        window.parent.postMessage(
-          { source: 'mercantil-consulta-auth-required', type: 'login-required' },
-          window.location.origin
-        );
-      }
-      return;
-    }
-
+  // Logica principal extraida a runContinueToStep3 para que el gate de identidad
+  // pueda invocarla tras validar la sesion (CLIENT) sin acoplar el handler.
+  const runContinueToStep3 = useCallback(async () => {
     setStep3Loading(true);
     try {
       let currClientId = clientId;
@@ -549,7 +569,36 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
     } finally {
       setStep3Loading(false);
     }
-  };
+  }, [shopcartId, emissionStatus, selectedPlans, clientId, insured, selectedCountryOfBirthId, civilStateId, selectedAdministrativeAreaId, selectedSubAdministrativeAreaId, selectedLocalityId, selectedZoneId, postalCode, addressLine, salesChannelId, needsCompletion, handleEmitPolicy]);
+
+  // Mantener la referencia actualizada para que el gate pueda invocarla al resolver CLIENT.
+  continueContinueToStep3Ref.current = runContinueToStep3;
+
+  /**
+   * Handler publico de transicion 2 -> 3. Primero valida la identidad del usuario
+   * (login modal + rol compatible) y, si pasa, ejecuta la logica original.
+   */
+  const handleContinueToStep3 = useCallback(async () => {
+    setStepError('');
+
+    const returnTo = (() => {
+      if (typeof window === 'undefined') return '/marketplace/mercantil/consulta'
+      const params = consultationParams?.searchParams ?? new URLSearchParams(window.location.search)
+      return buildReturnTo(consultationParams?.pathname ?? window.location.pathname, params)
+    })()
+
+    const context = {
+      productId: consultationParams?.productId,
+      productSku: consultationParams?.productSku,
+      marketplaceId: consultationParams?.marketplaceId,
+      marketplaceName: consultationParams?.marketplaceName,
+    }
+
+    const authorized = await consultationAuth.guard(returnTo, context)
+    if (!authorized) return
+
+    await runContinueToStep3()
+  }, [consultationAuth, consultationParams, runContinueToStep3])
 
   // --- Paso 3: Subida de Cédula/DNI ---
   const handleContinueToStep4 = async () => {
@@ -811,5 +860,9 @@ export function useMercantilConsulta(initialSlug: string | null = null) {
     finishingPurchase,
     handlePaymentSuccess,
     handleDomiciliationSuccess,
+    // Gate de identidad
+    consultationAuthView: consultationAuth.view,
+    consultationAuthSelectProfile: consultationAuth.selectProfile,
+    consultationAuthCancel: consultationAuth.cancel,
   };
 }

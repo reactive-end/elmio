@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   CreditCard,
   ExternalLink,
@@ -18,6 +18,7 @@ import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { FormField } from '@/components/molecules/FormField/FormField'
 import { Select } from '@/components/atoms/Select/Select'
 import { useEnterpriseShop } from '@/src/hooks/pages/useEnterpriseShop'
+import { useProductHighlight } from '@/src/hooks/pages/useProductHighlight'
 import { enterpriseService } from '@/src/services/empresa.service'
 import { authService } from '@/src/services/auth.service'
 
@@ -56,21 +57,7 @@ export default function EnterpriseShopPage() {
     closeEmbeddedForm,
   } = useEnterpriseShop()
 
-  const searchParams = useSearchParams()
-  const highlightProductId = searchParams.get('product')
-  const [hasScrolled, setHasScrolled] = useState(false)
-
-  useEffect(() => {
-    if (highlightProductId && !loading && !hasScrolled) {
-      const element = document.getElementById(`product-card-${highlightProductId}`)
-      if (element) {
-        setHasScrolled(true)
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }, 300)
-      }
-    }
-  }, [highlightProductId, loading, hasScrolled])
+  const { highlightedProductId: highlightProductId, cardDomId, isActive: highlightActive } = useProductHighlight(!loading)
 
   const [selectedProductForScheme, setSelectedProductForScheme] = useState<any | null>(null)
   const [showSchemeSelectorModal, setShowSchemeSelectorModal] = useState(false)
@@ -228,12 +215,14 @@ export default function EnterpriseShopPage() {
             const price = product.priceLists[0]?.amount ?? 0
             return (
               <article
-                id={`product-card-${product.id}`}
+                id={cardDomId(product.id)}
                 key={product.id}
                 className={`overflow-hidden rounded-2xl border bg-white shadow-sm shadow-black/3 transition-all duration-300 ${
-                  highlightProductId === product.id
-                    ? 'border-secondary/60 ring-4 ring-secondary/15 scale-[1.01] shadow-md shadow-secondary/10'
-                    : 'border-gray-100'
+                  highlightProductId === product.id && highlightActive
+                    ? 'border-secondary/60 ring-4 ring-secondary/30 scale-[1.01] shadow-md shadow-secondary/15'
+                    : highlightProductId === product.id
+                      ? 'border-secondary/40'
+                      : 'border-gray-100'
                 } ${
                   !product.active ? 'opacity-65 bg-gray-50/30' : ''
                 }`}

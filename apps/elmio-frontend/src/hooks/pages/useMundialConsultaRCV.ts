@@ -11,6 +11,7 @@ import { mundialService } from '@/src/services/mundial.service'
 import { authService } from '@/src/services/auth.service'
 import { enterpriseService } from '@/src/services/empresa.service'
 import { r4PaymentService } from '@/src/services/r4-payment.service'
+import { useConsultationAuth, buildShopRedirect, buildReturnTo } from './useConsultationAuth'
 
 export interface InsuredData {
   firstName: string
@@ -42,10 +43,30 @@ export function useMundialConsultaRCV(params?: {
   productSku?: string
   marketplaceId?: string
   marketplaceName?: string
+  isEmbedded?: boolean
+  pathname?: string
+  searchParams?: URLSearchParams
 }) {
   const [step, setStep] = useState(1)
   const TOTAL_STEPS = 8
   const waitingForLoginRef = useRef(false)
+
+  // Gate de identidad: reutiliza el LoginModal global y valida el rol compatible.
+  const consultationAuth = useConsultationAuth({
+    isEmbedded: params?.isEmbedded ?? false,
+    onResolved: () => {
+      void runContinueToStep4Invoker()
+    },
+    onEmployeeRedirect: (_profile, context) => {
+      if (typeof window !== 'undefined') {
+        window.location.href = buildShopRedirect(context)
+      }
+    },
+  })
+  const runContinueToStep4Ref = useRef<() => Promise<void>>(async () => {})
+  const runContinueToStep4Invoker = useCallback(async () => {
+    await runContinueToStep4Ref.current()
+  }, [])
 
   // --- Banco R4 States ---
   const [paymentData, setPaymentData] = useState<{ reference: string; transactionId: string; bankCode: string } | null>(null)
@@ -267,24 +288,41 @@ export function useMundialConsultaRCV(params?: {
   }
 
   // Paso 3 Submit -> Validar Sesión e ir a Documentos
-  const handleContinueToStep4 = async () => {
+  // Logica principal extraida a runContinueToStep4 para que el gate de identidad
+  // (login modal + rol compatible) pueda invocarla tras validar la sesion.
+  const runContinueToStep4 = useCallback(async () => {
+    setStepError('')
+    setStep(4)
+  }, [])
+
+  // Mantener la referencia actualizada para que el gate pueda invocarla al resolver CLIENT.
+  runContinueToStep4Ref.current = runContinueToStep4
+
+  /**
+   * Handler publico de transicion 3 -> 4. Primero valida la identidad (login
+   * modal + rol compatible) y, si pasa, ejecuta la logica original.
+   */
+  const handleContinueToStep4 = useCallback(async () => {
     setStepError('')
 
-    // Validar si existe sesión (como en Mercantil)
-    const session = authService.getSession()
-    if (!session) {
-      waitingForLoginRef.current = true
-      if (typeof window !== 'undefined') {
-        window.parent.postMessage(
-          { source: 'mercantil-consulta-auth-required', type: 'login-required' },
-          window.location.origin,
-        )
-      }
-      return
+    const returnTo = (() => {
+      if (typeof window === 'undefined') return '/marketplace/mundial/consulta-rcv'
+      const sp = params?.searchParams ?? new URLSearchParams(window.location.search)
+      return buildReturnTo(params?.pathname ?? window.location.pathname, sp)
+    })()
+
+    const context = {
+      productId: params?.productId,
+      productSku: params?.productSku,
+      marketplaceId: params?.marketplaceId,
+      marketplaceName: params?.marketplaceName,
     }
 
-    setStep(4)
-  }
+    const authorized = await consultationAuth.guard(returnTo, context)
+    if (!authorized) return
+
+    await runContinueToStep4()
+  }, [consultationAuth, params, runContinueToStep4])
 
   // Paso 4 Documentos Handlers
   const handleFileDrop = useCallback((e: React.DragEvent) => {
@@ -795,5 +833,9 @@ export function useMundialConsultaRCV(params?: {
     loadingExchangeRate,
     finishingPurchase,
     handlePaymentSuccess,
+    // Gate de identidad
+    consultationAuthView: consultationAuth.view,
+    consultationAuthSelectProfile: consultationAuth.selectProfile,
+    consultationAuthCancel: consultationAuth.cancel,
   }
 }

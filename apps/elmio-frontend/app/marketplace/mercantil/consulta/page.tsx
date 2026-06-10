@@ -7,7 +7,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMercantilConsulta } from '@/src/hooks/pages/useMercantilConsulta'
 import { Step1InsuredData } from '@/components/molecules/MercantilSteps/Step1InsuredData'
 import { Step2PlanSelection } from '@/components/molecules/MercantilSteps/Step2PlanSelection'
@@ -19,6 +19,8 @@ import { R4DomiciliationStep } from '@/components/molecules/R4DomiciliationStep/
 import { Alert } from '@/components/atoms/Alert/Alert'
 import { Button } from '@/components/atoms/Button/Button'
 import { CheckCircle, ArrowRight } from 'lucide-react'
+import { ProfileSelectorModal } from '@/components/molecules/ProfileSelectorModal/ProfileSelectorModal'
+import { BlockedAccessModal } from '@/components/molecules/BlockedAccessModal/BlockedAccessModal'
 
 const TOTAL_STEPS = 5
 const STEP_LABELS = [
@@ -144,12 +146,17 @@ function InsurancePendingConfirmation({
  */
 function MercantilConsultaContent() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const requestedSlug = searchParams.get('slug')
   const isEmbedded = searchParams.get('embedded') === '1'
 
-  // Inicializar hook con slug para pre-filtrado si existe en query params
-  const m = useMercantilConsulta(requestedSlug)
+  // Inicializar hook con slug y params de consulta para gate de identidad.
+  const m = useMercantilConsulta(requestedSlug, {
+    isEmbedded,
+    pathname,
+    searchParams,
+  })
 
   const handleCompletion = () => {
     if (isEmbedded) {
@@ -333,6 +340,20 @@ function MercantilConsultaContent() {
           )}
         </div>
       </div>
+
+      {/* Modales del gate de identidad */}
+      {m.consultationAuthView.kind === 'profile_selector' && (
+        <ProfileSelectorModal
+          isOpen
+          profiles={m.consultationAuthView.profiles}
+          reason={m.consultationAuthView.reason}
+          onSelect={(profile) => void m.consultationAuthSelectProfile(profile)}
+          onClose={m.consultationAuthCancel}
+        />
+      )}
+      {m.consultationAuthView.kind === 'blocked' && (
+        <BlockedAccessModal isOpen onClose={m.consultationAuthCancel} />
+      )}
     </main>
   )
 }

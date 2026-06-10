@@ -46,10 +46,25 @@ function actionReducer(state: ActionState, action: Action): ActionState {
   }
 }
 
+interface LoginRequest {
+  returnTo?: string
+  onSuccess?: () => void
+}
+
 interface MarketplaceActionContextProps {
   state: ActionState
   openAction: (type: MarketplaceActionType, data?: any) => void
   closeAction: () => void
+  /**
+   * Abre el modal de login global desde cualquier punto del marketplace (no solo embebido).
+   * El callback onSuccess se ejecuta cuando el usuario completa el login.
+   * @param request - Configuracion opcional con returnTo y onSuccess.
+   */
+  openLoginModal: (request?: LoginRequest) => void
+  /**
+   * Cierra el modal de login global si esta abierto.
+   */
+  closeLoginModal: () => void
 }
 
 const MarketplaceActionContext = createContext<MarketplaceActionContextProps | undefined>(undefined)
@@ -69,6 +84,7 @@ export function MarketplaceActionProvider({
 }) {
   const [state, dispatch] = useReducer(actionReducer, initialState)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [loginSuccessCallback, setLoginSuccessCallback] = useState<(() => void) | null>(null)
 
   const openAction = (actionType: MarketplaceActionType, actionData?: any) => {
     dispatch({ type: 'OPEN_ACTION', payload: { actionType, actionData } })
@@ -76,6 +92,21 @@ export function MarketplaceActionProvider({
 
   const closeAction = () => {
     dispatch({ type: 'CLOSE_ACTION' })
+  }
+
+  /**
+   * Abre el modal de login premium. Si ya esta abierto, no hace nada.
+   * @param request - { returnTo, onSuccess } opcionales. onSuccess se ejecuta tras login exitoso.
+   */
+  const openLoginModal = (request?: LoginRequest) => {
+    if (isLoginOpen) return
+    setLoginSuccessCallback(request?.onSuccess ?? null)
+    setIsLoginOpen(true)
+  }
+
+  const closeLoginModal = () => {
+    setIsLoginOpen(false)
+    setLoginSuccessCallback(null)
   }
 
   // Escuchar mensajes provenientes del iframe embebido (completado, cancelado o requerimiento de autenticación)
@@ -92,6 +123,8 @@ export function MarketplaceActionProvider({
       }
 
       if (data.source === 'mercantil-consulta-auth-required' && data.type === 'login-required') {
+        // No pisar el callback si ya se abrio programaticamente
+        if (loginSuccessCallback) return
         setIsLoginOpen(true)
       }
     }
@@ -103,7 +136,7 @@ export function MarketplaceActionProvider({
   }, [state.isOpen])
 
   return (
-    <MarketplaceActionContext.Provider value={{ state, openAction, closeAction }}>
+    <MarketplaceActionContext.Provider value={{ state, openAction, closeAction, openLoginModal, closeLoginModal }}>
       {children}
 
       {/* Aqui se renderizan dinamicamente los modales / ventanas */}
@@ -126,11 +159,16 @@ export function MarketplaceActionProvider({
       {/* Modal de Login Premium Superpuesta para el Marketplace */}
       {isLoginOpen && (
         <LoginModal
-          onClose={() => setIsLoginOpen(false)}
+          onClose={() => {
+            setIsLoginOpen(false)
+            setLoginSuccessCallback(null)
+          }}
           onSuccess={() => {
             setIsLoginOpen(false)
+            const callback = loginSuccessCallback
+            setLoginSuccessCallback(null)
 
-            // 1. Notificar al iframe de la consulta que la sesión ya está activa
+            // 1. Notificar al iframe de la consulta que la sesion ya esta activa (solo si existe un iframe embebido)
             const iframe = document.querySelector('iframe')
             if (iframe && iframe.contentWindow) {
               iframe.contentWindow.postMessage(
@@ -139,8 +177,11 @@ export function MarketplaceActionProvider({
               )
             }
 
-            // 2. Disparar evento global para que la barra de navegación se actualice de inmediato
+            // 2. Disparar evento global para que la barra de navegacion se actualice de inmediato
             window.dispatchEvent(new CustomEvent('marketplace-login-success-update'))
+
+            // 3. Ejecutar el callback programatico si fue provisto
+            if (callback) callback()
           }}
         />
       )}
