@@ -468,7 +468,9 @@ export function useMundialConsultaRCV() {
 
       const res = await mundialService.createEmissionAuto(shopcartId, payload)
 
-      if (res?.status && res?.data?.cpoliza) {
+      // El backend hace proxy de La Mundial y devuelve la respuesta cruda:
+      //   { status: true, result: { message, cnpoliza, urlpoliza, cnrecibo, ncuota } }
+      if (res?.status === true && res?.result?.cnpoliza) {
         const findName = (options: VehicleSelectOption[], value: string) => {
           return options.find((o) => o.value === value)?.label || undefined
         }
@@ -535,7 +537,7 @@ export function useMundialConsultaRCV() {
             : {}),
         })
 
-        const pdfUrl = res.data.xrutapdf || res.data.rutapdf || res.data.pdf || res.data.pdfUrl || ''
+        const pdfUrl = res.result.urlpoliza || ''
 
         // Registrar la compra en el portal para que aparezca en la pestaña "Seguros" del usuario
         try {
@@ -557,11 +559,11 @@ export function useMundialConsultaRCV() {
           console.error('Error registrando la compra de la póliza en el portal:', purchaseErr)
         }
 
-        setPolicyData([{ policyId: res.data.cpoliza, number: res.data.cpoliza, pdfUrl }])
+        setPolicyData([{ policyId: res.result.cnpoliza, number: res.result.cnpoliza, pdfUrl }])
         setEmissionStatus('completed')
         setStep(7)
       } else {
-        throw new Error(res?.data?.mensaje || 'Error desconocido al emitir la póliza.')
+        throw new Error(res?.result?.message || res?.message || 'Error desconocido al emitir la póliza.')
       }
     } catch (error) {
       setEmissionStatus('error')
