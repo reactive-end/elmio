@@ -211,6 +211,7 @@ export function useMarketplaceEditor(mercadoInicial: DatosMarketplace): UseMarke
         autoplay: tipo === 'principal' || tipo === 'franja' || tipo === 'productos',
         autoplayVelocidad: 5000,
         htmlId: '',
+        mostrarBoton: true,
       },
       estilo: estiloPorDefecto(tipo),
     }

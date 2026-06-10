@@ -225,6 +225,7 @@ export interface ContenidoSeccion {
   showDescription?: boolean
   showBottomLinks?: boolean
   bottomLinks?: { id: string; label: string; href: string }[]
+  mostrarBoton?: boolean
 }
 
 export interface SeccionMarketplace {

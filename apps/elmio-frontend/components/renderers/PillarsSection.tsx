@@ -122,7 +122,7 @@ export function PillarsSection({ seccion }: PillarsSectionProps) {
                 <p className="text-sm" style={{ color: estilo.cuerpoColor }}>
                   {item.texto || item.descripcion}
                 </p>
-                {item.textoBoton && item.enlaceBoton && (
+                {contenido.mostrarBoton !== false && item.textoBoton && item.enlaceBoton && (
                   <div className={isZigzag ? "mt-4 text-left" : "mt-4"}>
                     <ActionableLink
                       href={item.enlaceBoton}

@@ -555,15 +555,15 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
               {/* Navigation */}
               <div className="flex gap-3 mt-4">
-                <Button type="button" variant="ghost" fullWidth onClick={handleBack}>
+                <Button key="back-btn" type="button" variant="ghost" fullWidth onClick={handleBack}>
                   Anterior
                 </Button>
                 {(accountRole === 'COMPANY' && step === 2) || step === 3 ? (
-                  <Button type="submit" fullWidth isLoading={isLoading}>
+                  <Button key="submit-btn" type="submit" fullWidth isLoading={isLoading}>
                     {isLoading ? 'Registrando...' : 'Crear cuenta'}
                   </Button>
                 ) : (
-                  <Button type="button" fullWidth onClick={handleNext}>
+                  <Button key="next-btn" type="button" fullWidth onClick={handleNext}>
                     Siguiente
                   </Button>
                 )}

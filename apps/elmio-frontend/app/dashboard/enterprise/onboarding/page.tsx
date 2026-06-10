@@ -44,16 +44,16 @@ const BANCOS = [
 ]
 
 const SECTORES = [
-  { value: 'tecnologia', label: 'Tecnologia' },
-  { value: 'salud', label: 'Salud' },
-  { value: 'educacion', label: 'Educacion' },
-  { value: 'comercio', label: 'Comercio' },
-  { value: 'finanzas', label: 'Finanzas' },
-  { value: 'construccion', label: 'Construccion' },
-  { value: 'manufactura', label: 'Manufactura' },
-  { value: 'servicios', label: 'Servicios' },
-  { value: 'gobierno', label: 'Gobierno' },
-  { value: 'otro', label: 'Otro' },
+  { value: 'Tecnologia', label: 'Tecnologia' },
+  { value: 'Salud', label: 'Salud' },
+  { value: 'Educacion', label: 'Educacion' },
+  { value: 'Comercio', label: 'Comercio' },
+  { value: 'Finanzas', label: 'Finanzas' },
+  { value: 'Construccion', label: 'Construccion' },
+  { value: 'Manufactura', label: 'Manufactura' },
+  { value: 'Servicios', label: 'Servicios' },
+  { value: 'Gobierno', label: 'Gobierno' },
+  { value: 'Otro', label: 'Otro' },
 ]
 
 export default function OnboardingEnterprisePage() {

@@ -294,18 +294,30 @@ export function useOnboarding(): UseOnboardingReturn {
 
   const submitCompanyData = useCallback(async () => {
     await withLoading(async () => {
-      const emp = await enterpriseService.create({
-        companyName: companyData.companyName.trim(),
-        sector: companyData.sector.trim(),
-        employeeCount: companyData.employeeCount,
-        phone: companyData.phone.trim(),
-        email: companyData.email.trim(),
-        taxId: companyData.taxId.trim(),
-      })
+      let emp
+      if (enterprise?.id) {
+        emp = await enterpriseService.updateEnterprise(enterprise.id, {
+          companyName: companyData.companyName.trim(),
+          sector: companyData.sector.trim(),
+          employeeCount: companyData.employeeCount,
+          phone: companyData.phone.trim(),
+          email: companyData.email.trim(),
+          taxId: companyData.taxId.trim(),
+        })
+      } else {
+        emp = await enterpriseService.create({
+          companyName: companyData.companyName.trim(),
+          sector: companyData.sector.trim(),
+          employeeCount: companyData.employeeCount,
+          phone: companyData.phone.trim(),
+          email: companyData.email.trim(),
+          taxId: companyData.taxId.trim(),
+        })
+      }
       setEnterprise(emp)
       setStep('legal-docs')
     })
-  }, [companyData, withLoading])
+  }, [enterprise, companyData, withLoading])
 
   const submitLegalDocs = useCallback(async () => {
     if (!enterprise) return

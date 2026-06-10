@@ -35,6 +35,24 @@ export function PanelPilares({ seccion, actualizarSeccion }: PanelPilaresProps) 
           placeholder="Texto auxiliar"
         />
       </FormGroup>
+      <FormGroup label="Configuración">
+        <div className="flex items-center gap-2 py-1">
+          <input
+            type="checkbox"
+            id={`mostrarBoton-${seccion.id}`}
+            checked={seccion.contenido.mostrarBoton ?? true}
+            onChange={(e) =>
+              actualizarSeccion(seccion.id, {
+                contenido: { ...seccion.contenido, mostrarBoton: e.target.checked },
+              })
+            }
+            className="h-4 w-4 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer"
+          />
+          <label htmlFor={`mostrarBoton-${seccion.id}`} className="text-sm text-gray-700 font-medium cursor-pointer">
+            Mostrar botones en los pilares
+          </label>
+        </div>
+      </FormGroup>
       <FormGroup label="Pilares">
         <EditorPilares
           pilares={seccion.contenido.pilares ?? []}

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { TextField } from '@/components/atoms/TextField/TextField'
 import { TextArea } from '@/components/atoms/TextArea/TextArea'
 import { ImagePicker } from '@/components/molecules/ImagePicker/ImagePicker'
 import { ConfirmModal } from '@/components/molecules/ConfirmModal/ConfirmModal'
+import { productService, type Product } from '@/src/services/product.service'
 import type { PilarItem } from '@/src/utils/editor-types.d'
 
 const ICON_OPTIONS = [
@@ -25,6 +26,60 @@ const ICON_OPTIONS = [
   { value: 'Info', label: 'Información (Info)' },
 ]
 
+const MERCANTIL_PROVIDER_SLUGS: Record<string, string> = {
+  'elmio:mercantil-vida': 'life',
+  'elmio:mercantil-accidentes': 'personalAccidents',
+  'elmio:mercantil-funeraria': 'funerary',
+  'elmio:mercantil-rcv': 'rcv',
+}
+
+const getProductIdFromLink = (link: string) => {
+  if (!link) return ''
+  if (link.startsWith('action:')) {
+    const query = link.split('?')[1]
+    if (query) {
+      const params = new URLSearchParams(query)
+      return params.get('productId') || ''
+    }
+  } else if (link.includes('?product=')) {
+    const query = link.split('?')[1]
+    if (query) {
+      const params = new URLSearchParams(query)
+      return params.get('product') || ''
+    }
+  }
+  return ''
+}
+
+const generateProductLink = (p: Product) => {
+  const hasMercantilQuery = p.windows?.some(
+    (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-query-form'
+  )
+  const hasMercantilRcvQuery = p.windows?.some(
+    (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mercantil-rcv-query-form'
+  )
+  const hasMundialRcvQuery = p.windows?.some(
+    (w: any) => w.type === 'custom-form' && w.config?.redirectUrl === 'mundial-rcv-query-form'
+  )
+
+  const traceParams = [
+    `productId=${encodeURIComponent(p.id)}`,
+    p.sku ? `productSku=${encodeURIComponent(p.sku)}` : '',
+  ].filter(Boolean).join('&')
+
+  if (hasMercantilRcvQuery) {
+    return `action:mercantil-rcv-query?${traceParams}`
+  } else if (hasMundialRcvQuery) {
+    return `action:mundial-rcv-query?${traceParams}`
+  } else if (hasMercantilQuery) {
+    const provider = p.globalThirdPartyProvider ?? ''
+    const slug = MERCANTIL_PROVIDER_SLUGS[provider] || ''
+    return `action:mercantil-query?${traceParams}&slug=${encodeURIComponent(slug)}`
+  } else {
+    return `/dashboard/enterprise/shop?product=${p.id}`
+  }
+}
+
 interface EditorPilaresProps {
   pilares: PilarItem[]
   onChange: (pilares: PilarItem[]) => void
@@ -36,6 +91,13 @@ interface EditorPilaresProps {
  */
 export function EditorPilares({ pilares, onChange }: EditorPilaresProps) {
   const [pilarParaEliminarIdx, setPilarParaEliminarIdx] = useState<number | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+    productService.list()
+      .then((res) => setProducts(res.filter(p => p.active)))
+      .catch((e) => console.error('Error al cargar productos en EditorPilares:', e))
+  }, [])
 
   const handleConfirmarEliminar = () => {
     if (pilarParaEliminarIdx !== null) {
@@ -134,25 +196,97 @@ export function EditorPilares({ pilares, onChange }: EditorPilaresProps) {
               }}
               placeholder="Descripcion del pilar"
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-2 border-t border-gray-100 pt-2 mt-1">
               <TextField
-                label="Texto boton"
+                label="Texto del botón"
                 value={pilar.textoBoton}
                 onChange={(v) => {
                   const n = pilares.map((p, i) => (i === idx ? { ...p, textoBoton: v } : p))
                   onChange(n)
                 }}
-                placeholder="CTA"
+                placeholder="Ej: Ver más"
               />
-              <TextField
-                label="Enlace"
-                value={pilar.enlaceBoton}
-                onChange={(v) => {
-                  const n = pilares.map((p, i) => (i === idx ? { ...p, enlaceBoton: v } : p))
-                  onChange(n)
-                }}
-                placeholder="/ruta"
-              />
+              
+              {pilar.textoBoton && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-gray-500">Tipo de acción</span>
+                    <select
+                      value={
+                        pilar.enlaceBoton?.startsWith('action:') || pilar.enlaceBoton?.includes('?product=')
+                          ? 'producto'
+                          : 'enlace'
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value
+                        const n = pilares.map((p, i) => {
+                          if (i === idx) {
+                            return {
+                              ...p,
+                              enlaceBoton: val === 'producto' && products.length > 0
+                                ? generateProductLink(products[0])
+                                : ''
+                            }
+                          }
+                          return p
+                        })
+                        onChange(n)
+                      }}
+                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                    >
+                      <option value="enlace">Enlace web normal</option>
+                      <option value="producto">Proceso de producto</option>
+                    </select>
+                  </div>
+
+                  {(() => {
+                    const isProduct =
+                      pilar.enlaceBoton?.startsWith('action:') || pilar.enlaceBoton?.includes('?product=')
+                    if (isProduct) {
+                      const selectedProductId = getProductIdFromLink(pilar.enlaceBoton)
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-semibold text-gray-500">Seleccionar Producto</span>
+                          <select
+                            value={selectedProductId}
+                            onChange={(e) => {
+                              const pId = e.target.value
+                              const prod = products.find((pr) => pr.id === pId)
+                              if (prod) {
+                                const newLink = generateProductLink(prod)
+                                const n = pilares.map((p, i) =>
+                                  i === idx ? { ...p, enlaceBoton: newLink } : p
+                                )
+                                onChange(n)
+                              }
+                            }}
+                            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                          >
+                            <option value="">-- Seleccionar --</option>
+                            {products.map((prod) => (
+                              <option key={prod.id} value={prod.id}>
+                                {prod.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <TextField
+                        label="Enlace / URL"
+                        value={pilar.enlaceBoton}
+                        onChange={(v) => {
+                          const n = pilares.map((p, i) => (i === idx ? { ...p, enlaceBoton: v } : p))
+                          onChange(n)
+                        }}
+                        placeholder="Ej: /nosotros o https://..."
+                      />
+                    )
+                  })()}
+                </div>
+              )}
             </div>
           </div>
         </div>
