@@ -348,6 +348,30 @@ export function useRegisterForm(): UseRegisterFormReturn {
     }
   }
 
+  /**
+   * Inicia sesion del usuario recen registrado y selecciona el perfil adecuado.
+   * Funciona tanto si el email es nuevo (un solo perfil) como si ya existia
+   * con un perfil previo (multi-perfil tras nuestro fix). El backend exige
+   * que la contrasena coincida con la del primer perfil existente cuando
+   * el email ya estaba registrado, asi que usamos el flujo de descubrimiento
+   * de perfiles y login con `userId` especifico para que el token JWT quede
+   * atado al perfil COMPANY o CLIENT que acabamos de crear.
+   */
+  const autologinAfterRegister = async (): Promise<void> => {
+    const discovery = await authService.discoverProfiles(userFields.email.trim())
+    const profiles = discovery.profiles ?? []
+    if (profiles.length === 0) {
+      throw new Error('No se encontro un perfil para el correo registrado.')
+    }
+
+    const targetProfile = profiles.find((p) => p.role === accountRole) ?? profiles[0]
+    if (!targetProfile) {
+      throw new Error('No se encontro el perfil recen creado.')
+    }
+
+    await authService.login(userFields.email.trim(), userFields.password, targetProfile.userId)
+  }
+
   const doRegister = async () => {
     if (!accountRole) return
 
@@ -365,10 +389,12 @@ export function useRegisterForm(): UseRegisterFormReturn {
         owner: 'default',
       })
 
-      if (accountRole === 'COMPANY') {
-        // Autologuear para crear la empresa inmediatamente
-        await authService.login(userFields.email, userFields.password)
+      // Autologuear usando el flujo de descubrimiento de perfiles.
+      // Esto funciona tanto si el email es nuevo (un solo perfil) como si ya
+      // existia con un perfil previo (multi-perfil tras nuestro fix).
+      await autologinAfterRegister()
 
+      if (accountRole === 'COMPANY') {
         const { enterpriseService } = await import('@/src/services/empresa.service')
 
         const fullPhone = `${countryCode.dial}${operatorPrefix}${phoneDisplay.replace(/\D/g, '')}`
@@ -385,11 +411,8 @@ export function useRegisterForm(): UseRegisterFormReturn {
       }
 
       if (accountRole === 'CLIENT') {
-        // Autologuear para poder guardar el perfil
-        await authService.login(userFields.email, userFields.password)
-        
         const { enterpriseService } = await import('@/src/services/empresa.service')
-        
+
         await enterpriseService.updateMyProfile({
           name: userFields.first_name,
           lastName: userFields.last_name,
@@ -415,7 +438,7 @@ export function useRegisterForm(): UseRegisterFormReturn {
           timeInCompanyMonths: parseInt(employmentFields.time_in_company_months) || 0,
           loanPurpose: employmentFields.loan_purpose,
         })
-        
+
         await enterpriseService.completeProfileOnboarding()
       }
 
