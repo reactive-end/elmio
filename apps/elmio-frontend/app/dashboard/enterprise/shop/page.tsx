@@ -67,6 +67,27 @@ export default function EnterpriseShopPage() {
   const [requestSuccess, setRequestSuccess] = useState<string | null>(null)
 
   const handleStartPurchaseClick = (product: any) => {
+    // Productos con precio por consulta (seguros): abrir la ventana embebida
+    // internamente sin pasar por el wizard de pago (que exige precio fijo).
+    if (product.usesThirdPartyPricing) {
+      const hasQueryWindow = product.windows?.some(
+        (w: any) =>
+          w.type === 'custom-form' &&
+          [
+            'mercantil-query-form',
+            'mercantil-rcv-query-form',
+            'mundial-rcv-query-form',
+          ].includes(w.config?.redirectUrl),
+      )
+      if (hasQueryWindow) {
+        // startPurchase crea el draft; nextPurchaseStep abre la modal
+        // embebida con el iframe de consulta (manejo centralizado en el hook).
+        startPurchase(product)
+        void nextPurchaseStep()
+        return
+      }
+    }
+
     if (product.financingSchemes && product.financingSchemes.length > 1) {
       setSelectedProductForScheme(product)
       setShowSchemeSelectorModal(true)
@@ -83,8 +104,14 @@ export default function EnterpriseShopPage() {
       setRequestSuccess(null)
 
       const amount = product.priceLists?.[0]?.amount ?? 0
-      if (amount <= 0) {
-        throw new Error('El producto no tiene un precio principal configurado.')
+      // Productos con precio por consulta (seguros) saltan el cargo directo:
+      // la solicitud se registra sin monto y la consulta embebida maneja el cobro.
+      const isQuoteBased = product.usesThirdPartyPricing === true || amount <= 0
+      if (isQuoteBased) {
+        setRequestSuccess(
+          `Has iniciado el proceso de consulta para "${product.name}". Completa la ventana de consulta para registrar tu solicitud.`,
+        )
+        return
       }
 
       const concept = `Compra marketplace: ${product.name}`
@@ -217,7 +244,7 @@ export default function EnterpriseShopPage() {
               <article
                 id={cardDomId(product.id)}
                 key={product.id}
-                className={`overflow-hidden rounded-2xl border bg-white shadow-sm shadow-black/3 transition-all duration-300 ${
+                className={`flex flex-row items-stretch overflow-hidden rounded-2xl border bg-white shadow-sm shadow-black/3 transition-all duration-300 ${
                   highlightProductId === product.id && highlightActive
                     ? 'border-secondary/60 ring-4 ring-secondary/30 scale-[1.01] shadow-md shadow-secondary/15'
                     : highlightProductId === product.id
@@ -232,16 +259,16 @@ export default function EnterpriseShopPage() {
                   <img
                     src={product.images[0]}
                     alt={product.name}
-                    className="h-48 w-full object-cover"
+                    className="h-32 w-32 shrink-0 self-stretch object-cover"
                   />
                 ) : (
-                  <div className="flex h-48 w-full items-center justify-center bg-gray-50 text-gray-300">
-                    <Package className="h-10 w-10" strokeWidth={1.5} />
+                  <div className="flex h-32 w-32 shrink-0 items-center justify-center bg-gray-50 text-gray-300">
+                    <Package className="h-8 w-8" strokeWidth={1.5} />
                   </div>
                 )}
-                <div className="p-5">
+                <div className="p-5 flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">
                         {PRODUCT_TYPE_LABELS[product.type] ?? product.type}
