@@ -943,10 +943,10 @@ function StepActions({
         {onSave && (
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={onSave}
             disabled={loading}
-            className="border-gray-200"
+            className="border border-gray-200"
           >
             {saveLabel}
           </Button>
