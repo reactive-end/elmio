@@ -449,11 +449,13 @@ export function useMundialConsultaRCV(params?: {
 
     try {
       // 1. Llamar a validación pre-emisión del API de La Mundial
+      // serial_motor es opcional en la spec, solo enviar si tiene valor
+      const engineSerial = vehicleEngineSerial.trim()
       await mundialService.validateEmissionAuto({
         plan: selectedPlanId,
         placa: vehiclePlate,
         serial_carroceria: vehicleChassisSerial,
-        serial_motor: vehicleEngineSerial,
+        ...(engineSerial ? { serial_motor: engineSerial } : {}),
       })
 
       // Avanzar al paso de pago de R4
