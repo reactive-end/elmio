@@ -39,6 +39,11 @@ interface UseOnboardingReturn {
   loading: boolean
   error: string | null
 
+  // Navegacion entre pasos
+  goToStep: (step: OnboardingStep) => void
+  goBack: () => void
+  goForward: () => void
+
   // Paso 1: Datos generales
   companyData: CreateEnterpriseInput
   setCompanyData: (data: CreateEnterpriseInput) => void
@@ -148,6 +153,40 @@ export function useOnboarding(): UseOnboardingReturn {
   const [enterprise, setEnterprise] = useState<Enterprise | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Helpers para navegar entre pasos sin forzar el avance.
+  // Util cuando se edita la empresa luego del onboarding inicial.
+  const goToStep = useCallback((next: OnboardingStep) => setStep(next), [])
+  const goBack = useCallback(() => {
+    setStep(prev => {
+      const order: OnboardingStep[] = [
+        'company-data',
+        'legal-docs',
+        'legal-rep',
+        'shareholders',
+        'bank-accounts',
+        'payroll',
+      ]
+      const idx = order.indexOf(prev)
+      if (idx <= 0) return prev
+      return order[idx - 1] ?? prev
+    })
+  }, [])
+  const goForward = useCallback(() => {
+    setStep(prev => {
+      const order: OnboardingStep[] = [
+        'company-data',
+        'legal-docs',
+        'legal-rep',
+        'shareholders',
+        'bank-accounts',
+        'payroll',
+      ]
+      const idx = order.indexOf(prev)
+      if (idx === -1 || idx >= order.length - 1) return prev
+      return order[idx + 1] ?? prev
+    })
+  }, [])
 
   const [companyData, setCompanyData] = useState<CreateEnterpriseInput>({
     companyName: '',
@@ -526,6 +565,9 @@ export function useOnboarding(): UseOnboardingReturn {
     enterprise,
     loading,
     error,
+    goToStep,
+    goBack,
+    goForward,
     companyData,
     setCompanyData,
     submitCompanyData,

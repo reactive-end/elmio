@@ -10,6 +10,7 @@ import { StepIndicator } from '@/components/molecules/StepIndicator/StepIndicato
 import { useOnboarding } from '@/src/hooks/pages/useOnboarding'
 import type { CollaboratorInput, Shareholder } from '@/src/services/empresa.service'
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { PhoneInput } from '@/components/molecules/PhoneInput/PhoneInput'
 import CedulaInput from '@/components/molecules/CedulaInput/CedulaInput'
 import { usePhoneFormat } from '@/src/utils/usePhoneFormat'
@@ -58,6 +59,7 @@ const SECTORES = [
 
 export default function OnboardingEnterprisePage() {
   const ob = useOnboarding()
+  const router = useRouter()
   const currentStepNum = STEP_MAP[ob.step]
   const completedSteps = Array.from({ length: currentStepNum }, (_, i) => i)
 
@@ -146,6 +148,45 @@ export default function OnboardingEnterprisePage() {
   const repCedula = parseCedula(ob.legalRep.legalRepDocumentId)
   const mgrCedula = parseCedula(ob.legalRep.accountManagerDocumentId)
 
+  // Permite saltar a un paso ya completado al editar la empresa luego del onboarding.
+  const handleStepClick = (stepNum: number) => {
+    if (stepNum < currentStepNum) {
+      ob.goToStep(STEP_KEYS[stepNum])
+    }
+  }
+
+  // Guardar el paso actual y salir al estado de cuenta.
+  // Si el submit lanza error, el Alert del hook lo muestra y no redirige.
+  const handleSaveAndExit = async () => {
+    try {
+      switch (ob.step) {
+        case 'company-data':
+          await ob.submitCompanyData()
+          break
+        case 'legal-docs':
+          if (ob.enterprise) await ob.submitLegalDocs()
+          break
+        case 'legal-rep':
+          if (ob.enterprise) await ob.submitLegalRep()
+          break
+        case 'shareholders':
+          if (ob.enterprise) await ob.submitShareholders()
+          break
+        case 'bank-accounts':
+          if (ob.enterprise) await ob.submitBankAccounts()
+          break
+        case 'payroll':
+          // En payroll el submit ya redirige; no hay nada que "guardar y volver" extra.
+          return
+      }
+      if (!ob.error) {
+        router.push('/dashboard/enterprise/account-statement')
+      }
+    } catch {
+      // El error ya quedo seteado en ob.error por el hook; no redirigimos.
+    }
+  }
+
   return (
     <div className="min-h-dvh bg-gradient-to-br from-gray-50 to-surface-muted flex items-center justify-center p-4">
       <div className="w-full max-w-3xl">
@@ -157,7 +198,7 @@ export default function OnboardingEnterprisePage() {
           <p className="text-sm text-body-muted mt-1">Completa la informacion para comenzar a operar en ElMio.</p>
         </div>
 
-        <StepIndicator steps={STEPS} currentStep={currentStepNum} completedSteps={completedSteps} stepIcons={STEP_ICONS} onStepClick={() => {}} />
+        <StepIndicator steps={STEPS} currentStep={currentStepNum} completedSteps={completedSteps} stepIcons={STEP_ICONS} onStepClick={handleStepClick} />
 
         <div className="bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 p-6 sm:p-8">
           {ob.error && <Alert type="error" message={ob.error} />}
@@ -204,7 +245,7 @@ export default function OnboardingEnterprisePage() {
                 </FormField>
               </div>
               <FormField label="Numero de empleados" required><Input type="number" placeholder="50" min="1" value={ob.companyData.employeeCount || ''} onChange={(e) => ob.setCompanyData({ ...ob.companyData, employeeCount: parseInt(e.target.value) || 0 })} required /></FormField>
-              <Button type="submit" isLoading={ob.loading} fullWidth className="mt-2">Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} /></Button>
+              <StepActions onSave={handleSaveAndExit} onContinue={() => void ob.submitCompanyData()} loading={ob.loading} />
             </form>
           )}
 
@@ -276,14 +317,7 @@ export default function OnboardingEnterprisePage() {
                 onUpload={(files) => void ob.uploadMultipleDocs(files, 'bankReferencePhotos')}
                 onClear={() => ob.setLegalDocs({ ...ob.legalDocs, bankReferencePhotos: [] })}
               />
-              <Button
-                type="submit"
-                isLoading={ob.loading}
-                fullWidth
-                className="mt-2"
-              >
-                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
-              </Button>
+              <StepActions onBack={ob.goBack} onSave={handleSaveAndExit} onContinue={() => void ob.submitLegalDocs()} loading={ob.loading} />
             </form>
           )}
 
@@ -464,18 +498,13 @@ export default function OnboardingEnterprisePage() {
                 <FormField label="LinkedIn"><Input placeholder="linkedin.com/company/miempresa" value={ob.legalRep.socialMediaLinkedin} onChange={(e) => ob.setLegalRep({ ...ob.legalRep, socialMediaLinkedin: e.target.value })} /></FormField>
                 <FormField label="TikTok"><Input placeholder="@miempresa" value={ob.legalRep.socialMediaTiktok} onChange={(e) => ob.setLegalRep({ ...ob.legalRep, socialMediaTiktok: e.target.value })} /></FormField>
               </div>
-              <Button
-                type="submit"
-                isLoading={ob.loading}
-                disabled={
-                  !ob.legalRep.legalRepDocumentId ||
-                  !ob.legalRep.accountManagerDocumentId
-                }
-                fullWidth
-                className="mt-2"
-              >
-                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
-              </Button>
+              <StepActions
+                onBack={ob.goBack}
+                onSave={handleSaveAndExit}
+                onContinue={() => void ob.submitLegalRep()}
+                loading={ob.loading}
+                continueDisabled={!ob.legalRep.legalRepDocumentId || !ob.legalRep.accountManagerDocumentId}
+              />
             </form>
           )}
 
@@ -506,14 +535,7 @@ export default function OnboardingEnterprisePage() {
                   }}
                 />
               ))}
-              <Button
-                type="submit"
-                isLoading={ob.loading}
-                fullWidth
-                className="mt-2"
-              >
-                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
-              </Button>
+              <StepActions onBack={ob.goBack} onSave={handleSaveAndExit} onContinue={() => void ob.submitShareholders()} loading={ob.loading} />
             </form>
           )}
 
@@ -606,14 +628,7 @@ export default function OnboardingEnterprisePage() {
                   <Plus className="w-4 h-4" /> Agregar otra cuenta
                 </button>
               )}
-              <Button
-                type="submit"
-                isLoading={ob.loading}
-                fullWidth
-                className="mt-2"
-              >
-                Continuar <ChevronRight className="w-4 h-4" strokeWidth={2} />
-              </Button>
+              <StepActions onBack={ob.goBack} onSave={handleSaveAndExit} onContinue={() => void ob.submitBankAccounts()} loading={ob.loading} />
             </form>
           )}
 
@@ -889,6 +904,63 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
     <div className="mb-2">
       <h2 className="text-lg font-semibold text-body">{title}</h2>
       <p className="text-sm text-body-muted mt-0.5">{subtitle}</p>
+    </div>
+  )
+}
+
+/**
+ * Botonera estandar de navegacion: "Atras" + "Guardar y salir" + "Continuar".
+ * Se muestra debajo de cada paso para que el usuario pueda volver al paso
+ * anterior o salir al estado de cuenta sin tener que llegar al ultimo paso.
+ */
+function StepActions({
+  onBack,
+  onSave,
+  onContinue,
+  backLabel = 'Atras',
+  saveLabel = 'Guardar y salir',
+  continueLabel = 'Continuar',
+  loading = false,
+  continueDisabled = false,
+}: {
+  onBack?: () => void
+  onSave?: () => void
+  onContinue: () => void
+  backLabel?: string
+  saveLabel?: string
+  continueLabel?: string
+  loading?: boolean
+  continueDisabled?: boolean
+}) {
+  return (
+    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex gap-2">
+        {onBack && (
+          <Button type="button" variant="ghost" onClick={onBack} disabled={loading}>
+            {backLabel}
+          </Button>
+        )}
+        {onSave && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onSave}
+            disabled={loading}
+            className="border-gray-200"
+          >
+            {saveLabel}
+          </Button>
+        )}
+      </div>
+      <Button
+        type="submit"
+        isLoading={loading}
+        disabled={continueDisabled}
+        fullWidth
+        className="sm:w-auto sm:min-w-[200px]"
+      >
+        {continueLabel} <ChevronRight className="w-4 h-4" strokeWidth={2} />
+      </Button>
     </div>
   )
 }
