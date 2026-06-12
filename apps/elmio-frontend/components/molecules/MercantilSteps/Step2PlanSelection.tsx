@@ -128,15 +128,27 @@ export function Step2PlanSelection({
                     key={product.id}
                     className="flex flex-col gap-4 p-4 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div>
-                        <h4 className="text-base font-bold text-body">{product.title}</h4>
-                        <p className="text-xs text-body-muted mt-0.5">
-                          {product.description || 'Seguro masivo de Mercantil.'}
-                        </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        {product.icon?.src ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={product.icon.src}
+                            alt={product.title}
+                            className="h-10 w-10 shrink-0 rounded-lg object-contain bg-slate-100 p-1.5"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100" />
+                        )}
+                        <div className="min-w-0">
+                          <h4 className="text-base font-bold text-body">{product.title}</h4>
+                          <p className="text-xs text-body-muted mt-0.5">
+                            {product.description || 'Seguro masivo de Mercantil.'}
+                          </p>
+                        </div>
                       </div>
                       {product.slug && PRODUCT_PDFS[product.slug as AllowedProductSlug] && (
-                        <div className="flex gap-2 text-[10px] font-semibold text-secondary">
+                        <div className="flex gap-2 text-[10px] font-semibold text-secondary shrink-0">
                           <a
                             href={PRODUCT_PDFS[product.slug as AllowedProductSlug].particulares}
                             target="_blank"
@@ -166,21 +178,30 @@ export function Step2PlanSelection({
                           <div
                             key={plan.id}
                             onClick={() => togglePlan(product, plan)}
-                            className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all cursor-pointer ${
+                            className={`p-4 rounded-xl border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${
                               isSelected
                                 ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                                 : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50'
                             }`}
                           >
-                            <div className="flex justify-between items-start">
-                              <div>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
                                 <span
-                                  className={`text-xs font-semibold uppercase tracking-wider ${isSelected ? 'text-secondary' : 'text-gray-400'}`}
+                                  className={`text-[10px] font-semibold uppercase tracking-wider ${
+                                    isSelected ? 'text-secondary' : 'text-gray-400'
+                                  }`}
                                 >
-                                  Suma Asegurada
+                                  Prima {FREQUENCY_LABELS[draft?.frequency ?? 'yearly']}
                                 </span>
-                                <p className="text-lg font-bold text-body">
-                                  {formatCurrency(plan.assuredSum || 0)}
+                                <p
+                                  className={`text-lg font-bold leading-tight ${
+                                    isSelected ? 'text-secondary' : 'text-body'
+                                  }`}
+                                >
+                                  {formatCurrency(
+                                    (plan.totalPrime || 0) /
+                                      FREQUENCY_DIVISORS[draft?.frequency ?? 'yearly'],
+                                  )}
                                 </p>
                               </div>
                               {isSelected ? (
@@ -194,40 +215,35 @@ export function Step2PlanSelection({
                               )}
                             </div>
 
-                            <div className="flex justify-between items-end border-t border-gray-100 pt-3 mt-1">
-                              <div>
-                                <span className="text-[10px] text-gray-400">Prima Anual</span>
-                                <p className="text-xs font-semibold text-body">
-                                  {formatCurrency(plan.totalPrime || 0)} / año
-                                </p>
-                              </div>
-                              {isSelected && draft && (
-                                <div
-                                  className="flex flex-col gap-1 items-end"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <span className="text-[10px] text-gray-400 font-semibold">
-                                    Frecuencia de pago
-                                  </span>
-                                  <Select
-                                    value={draft.frequency}
-                                    onChange={(v) =>
-                                      updateFrequency(product.id, plan.id, v as PaymentFrequency)
-                                    }
-                                    options={Object.keys(FREQUENCY_LABELS).map((freqKey) => {
-                                      const key = freqKey as PaymentFrequency
-                                      const divCost =
-                                        (plan.totalPrime || 0) / FREQUENCY_DIVISORS[key]
-                                      return {
-                                        value: key,
-                                        label: `${FREQUENCY_LABELS[key]} (${formatCurrency(divCost)})`,
-                                      }
-                                    })}
-                                    className="text-xs min-w-[200px]"
-                                  />
-                                </div>
-                              )}
+                            <div className="text-[10px] text-gray-400">
+                              Suma asegurada: {formatCurrency(plan.assuredSum || 0)}
                             </div>
+
+                            {isSelected && draft && (
+                              <div
+                                className="flex flex-col gap-1 items-start border-t border-gray-100 pt-2 mt-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <span className="text-[10px] text-gray-400 font-semibold">
+                                  Frecuencia de pago
+                                </span>
+                                <Select
+                                  value={draft.frequency}
+                                  onChange={(v) =>
+                                    updateFrequency(product.id, plan.id, v as PaymentFrequency)
+                                  }
+                                  options={Object.keys(FREQUENCY_LABELS).map((freqKey) => {
+                                    const key = freqKey as PaymentFrequency
+                                    const divCost = (plan.totalPrime || 0) / FREQUENCY_DIVISORS[key]
+                                    return {
+                                      value: key,
+                                      label: `${FREQUENCY_LABELS[key]} (${formatCurrency(divCost)})`,
+                                    }
+                                  })}
+                                  className="text-xs w-full"
+                                />
+                              </div>
+                            )}
                           </div>
                         )
                       })}

@@ -4,29 +4,29 @@
  * @module components/molecules/MercantilRCVSteps/Step3PlanSelection
  */
 
-'use client';
+'use client'
 
-import { Shield, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/atoms/Button/Button';
-import { Toggle } from '@/components/atoms/Toggle/Toggle';
+import { Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Button } from '@/components/atoms/Button/Button'
+import { Toggle } from '@/components/atoms/Toggle/Toggle'
 import type {
   MercantilCategoryResult,
   MercantilProduct,
   MercantilPlan,
   SelectedPlan,
-} from '@/src/hooks/pages/useMercantilConsultaRCV';
-import { formatCurrency } from '@/src/hooks/pages/useMercantilConsultaRCV';
-import { TERMS_PDF } from '@/src/hooks/pages/useMercantilConsulta';
+} from '@/src/hooks/pages/useMercantilConsultaRCV'
+import { formatCurrency } from '@/src/hooks/pages/useMercantilConsultaRCV'
+import { TERMS_PDF } from '@/src/hooks/pages/useMercantilConsulta'
 
 interface Step3PlanSelectionProps {
-  categories: MercantilCategoryResult[];
-  selectedPlans: SelectedPlan[];
-  togglePlan: (product: MercantilProduct, plan: MercantilPlan) => void;
-  termsAccepted: boolean;
-  setTermsAccepted: (accepted: boolean) => void;
-  loading: boolean;
-  onBack: () => void;
-  onNext: () => Promise<void>;
+  categories: MercantilCategoryResult[]
+  selectedPlans: SelectedPlan[]
+  togglePlan: (product: MercantilProduct, plan: MercantilPlan) => void
+  termsAccepted: boolean
+  setTermsAccepted: (accepted: boolean) => void
+  loading: boolean
+  onBack: () => void
+  onNext: () => Promise<void>
 }
 
 export function Step3PlanSelection({
@@ -39,7 +39,7 @@ export function Step3PlanSelection({
   onBack,
   onNext,
 }: Step3PlanSelectionProps) {
-  const totalPrime = selectedPlans.reduce((acc, item) => acc + (item.plan.totalPrime || 0), 0);
+  const totalPrime = selectedPlans.reduce((acc, item) => acc + (item.plan.totalPrime || 0), 0)
 
   return (
     <div className="flex flex-col gap-6 animate-fadeIn">
@@ -49,7 +49,9 @@ export function Step3PlanSelection({
         </div>
         <div>
           <h2 className="text-lg font-semibold text-body">Selección de Planes</h2>
-          <p className="text-xs text-body-muted">Elija el plan de RCV que se ajuste a sus necesidades.</p>
+          <p className="text-xs text-body-muted">
+            Elija el plan de RCV que se ajuste a sus necesidades.
+          </p>
         </div>
       </div>
 
@@ -57,7 +59,9 @@ export function Step3PlanSelection({
         <div className="p-8 border border-dashed border-gray-200 rounded-2xl text-center bg-gray-50/50">
           <AlertCircle className="mx-auto h-8 w-8 text-gray-400 mb-2" strokeWidth={1.5} />
           <p className="text-sm font-semibold text-body">Sin planes disponibles</p>
-          <p className="text-xs text-body-muted mt-1">No existen planes RCV disponibles para este vehículo.</p>
+          <p className="text-xs text-body-muted mt-1">
+            No existen planes RCV disponibles para este vehículo.
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-6">
@@ -72,46 +76,69 @@ export function Step3PlanSelection({
                     key={product.id}
                     className="flex flex-col gap-4 p-4 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
+                    <div className="flex items-start gap-3">
+                      {product.icon?.src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={product.icon.src}
+                          alt={product.title}
+                          className="h-10 w-10 shrink-0 rounded-lg object-contain bg-slate-100 p-1.5"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100" />
+                      )}
+                      <div className="min-w-0">
                         <h4 className="text-base font-bold text-body">{product.title}</h4>
-                        <p className="text-xs text-body-muted mt-0.5">{product.description || 'Seguro RCV de Mercantil.'}</p>
+                        <p className="text-xs text-body-muted mt-0.5">
+                          {product.description || 'Seguro RCV de Mercantil.'}
+                        </p>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
                       {product.plans?.map((plan) => {
-                        const isSelected = selectedPlans.some((sp) => sp.plan.id === plan.id);
+                        const isSelected = selectedPlans.some((sp) => sp.plan.id === plan.id)
                         return (
                           <div
                             key={plan.id}
                             onClick={() => togglePlan(product, plan)}
-                            className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all cursor-pointer ${
+                            className={`p-4 rounded-xl border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${
                               isSelected
                                 ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                                 : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50'
                             }`}
                           >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className={`text-xs font-semibold uppercase tracking-wider ${isSelected ? 'text-secondary' : 'text-gray-400'}`}>
-                                  Suma Asegurada
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <span
+                                  className={`text-[10px] font-semibold uppercase tracking-wider ${
+                                    isSelected ? 'text-secondary' : 'text-gray-400'
+                                  }`}
+                                >
+                                  Prima Anual
                                 </span>
-                                <p className="text-lg font-bold text-body">{formatCurrency(plan.assuredSum || 0)}</p>
+                                <p
+                                  className={`text-lg font-bold leading-tight ${
+                                    isSelected ? 'text-secondary' : 'text-body'
+                                  }`}
+                                >
+                                  {formatCurrency(plan.totalPrime || 0)}
+                                </p>
                               </div>
                               {isSelected ? (
-                                <CheckCircle2 className="h-5 w-5 text-secondary shrink-0" fill="currentColor" stroke="white" />
+                                <CheckCircle2
+                                  className="h-5 w-5 text-secondary shrink-0"
+                                  fill="currentColor"
+                                  stroke="white"
+                                />
                               ) : (
                                 <div className="h-5 w-5 rounded-full border border-gray-200 shrink-0" />
                               )}
                             </div>
-                            <div className="flex justify-between items-end border-t border-gray-100 pt-3 mt-1">
-                              <div>
-                                <span className="text-[10px] text-gray-400">Prima Anual</span>
-                                <p className="text-xs font-semibold text-body">{formatCurrency(plan.totalPrime || 0)} / año</p>
-                              </div>
+                            <div className="text-[10px] text-gray-400">
+                              Suma asegurada: {formatCurrency(plan.assuredSum || 0)}
                             </div>
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   </div>
@@ -144,8 +171,12 @@ export function Step3PlanSelection({
               </div>
               <div className="flex justify-between items-center bg-secondary/5 rounded-2xl border border-secondary/15 p-4 mt-2">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Prima Total Estimada</p>
-                  <p className="text-xs text-body-muted mt-0.5">Prima anual del plan seleccionado</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">
+                    Prima Total Estimada
+                  </p>
+                  <p className="text-xs text-body-muted mt-0.5">
+                    Prima anual del plan seleccionado
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-black text-secondary">{formatCurrency(totalPrime)}</p>
@@ -172,5 +203,5 @@ export function Step3PlanSelection({
         </div>
       )}
     </div>
-  );
+  )
 }

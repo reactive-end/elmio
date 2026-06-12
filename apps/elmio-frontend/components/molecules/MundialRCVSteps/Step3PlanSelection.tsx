@@ -9,7 +9,7 @@
 import { Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button/Button'
 import { Toggle } from '@/components/atoms/Toggle/Toggle'
-import type { MundialPlan } from '@/src/hooks/pages/useMundialConsultaRCV'
+import { MUNDIAL_RCV_TERMS_PDF, type MundialPlan } from '@/src/hooks/pages/useMundialConsultaRCV'
 
 interface Step3PlanSelectionProps {
   plans: MundialPlan[]
@@ -70,14 +70,14 @@ export function Step3PlanSelection({
                 <div
                   key={plan.id}
                   onClick={() => setSelectedPlanId(plan.id)}
-                  className={`p-5 rounded-2xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
+                  className={`p-5 rounded-2xl border text-left flex flex-col gap-2 transition-all cursor-pointer ${
                     isSelected
                       ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                       : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50'
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <h4 className="text-base font-bold text-body">{plan.title}</h4>
                       <p className="text-xs text-body-muted mt-0.5">{plan.description}</p>
                     </div>
@@ -91,21 +91,21 @@ export function Step3PlanSelection({
                       <div className="h-5 w-5 rounded-full border border-gray-200 shrink-0" />
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 mt-1">
-                    <div>
-                      <span className="text-[10px] text-gray-400 uppercase font-semibold">
-                        Suma Asegurada
+                  <div className="flex items-end justify-between gap-3 border-t border-gray-100 pt-3 mt-1">
+                    <div className="min-w-0">
+                      <span className="text-[10px] uppercase font-semibold text-gray-400">
+                        Prima Anual
                       </span>
-                      <p className="text-base font-bold text-body">
-                        {formatCurrency(plan.assuredSum)}
+                      <p className="text-2xl font-black leading-tight text-secondary">
+                        {formatCurrency(plan.totalPrime)}
                       </p>
                     </div>
                     <div className="text-right">
                       <span className="text-[10px] text-gray-400 uppercase font-semibold">
-                        Prima Anual
+                        Suma Asegurada
                       </span>
-                      <p className="text-lg font-black text-secondary">
-                        {formatCurrency(plan.totalPrime)}
+                      <p className="text-sm font-semibold text-body">
+                        {formatCurrency(plan.assuredSum)}
                       </p>
                     </div>
                   </div>
@@ -125,8 +125,9 @@ export function Step3PlanSelection({
                   <span>
                     Acepto los{' '}
                     <a
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
+                      href={MUNDIAL_RCV_TERMS_PDF}
+                      target="_blank"
+                      rel="noreferrer"
                       className="font-semibold text-secondary hover:underline"
                     >
                       Términos y Condiciones Generales
