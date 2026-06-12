@@ -54,7 +54,9 @@ export class NotificationService implements NotificationSenderPort {
         return { success: true, channel: 'whatsapp' };
       } catch (error: unknown) {
         const errorMessage =
-          error instanceof Error ? error.message : 'Error desconocido en WhatsApp';
+          error instanceof Error
+            ? error.message
+            : 'Error desconocido en WhatsApp';
         this.logger.warn(
           `Fallo envio por WhatsApp a ${recipient.phone}: ${errorMessage}. Intentando por email...`,
         );

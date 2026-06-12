@@ -57,12 +57,16 @@ export class AuthSeedService implements OnApplicationBootstrap {
         user.requirePasswordChange = false;
 
         await this.userRepo.save(user);
-        this.logger.log(`Administrador por defecto creado con éxito: ${admin.name} ${admin.lastName} (${admin.email})`);
+        this.logger.log(
+          `Administrador por defecto creado con éxito: ${admin.name} ${admin.lastName} (${admin.email})`,
+        );
       }
 
       // Asegurar que el perfil de persona exista con su telefono correspondiente
       try {
-        const existingProfile = await profileRepo.findOne({ where: { email: emailLower } });
+        const existingProfile = await profileRepo.findOne({
+          where: { email: emailLower },
+        });
 
         if (!existingProfile) {
           const profile = new PersonProfileEntity();
@@ -121,15 +125,21 @@ export class AuthSeedService implements OnApplicationBootstrap {
           profile.createdAt = new Date().toISOString();
 
           await profileRepo.save(profile);
-          this.logger.log(`Perfil de persona creado con éxito para ${admin.name} ${admin.lastName} con teléfono ${admin.phone}`);
+          this.logger.log(
+            `Perfil de persona creado con éxito para ${admin.name} ${admin.lastName} con teléfono ${admin.phone}`,
+          );
         } else {
           // Si el perfil ya existe, actualizamos el teléfono para asegurarnos de que tenga el teléfono correcto provisto
           existingProfile.phone = admin.phone;
           await profileRepo.save(existingProfile);
-          this.logger.log(`Teléfono actualizado para el perfil de ${admin.name} ${admin.lastName}: ${admin.phone}`);
+          this.logger.log(
+            `Teléfono actualizado para el perfil de ${admin.name} ${admin.lastName}: ${admin.phone}`,
+          );
         }
       } catch (err) {
-        this.logger.warn(`No se pudo crear o actualizar el perfil de persona para ${admin.name}: ${(err as Error).message}`);
+        this.logger.warn(
+          `No se pudo crear o actualizar el perfil de persona para ${admin.name}: ${(err as Error).message}`,
+        );
       }
     }
   }

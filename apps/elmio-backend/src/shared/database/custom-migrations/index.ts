@@ -9,6 +9,7 @@ import { CreateDisbursementTableMigration } from './0007_create_disbursement_tab
 import { AddProductIdToLoanRequestsMigration } from './0008_add_product_id_to_loan_requests';
 import { CreateRolePermissionsTableMigration } from './0009_create_role_permissions_table';
 import { AddIsActiveToUsersMigration } from './0010_add_is_active_to_users';
+import { AddPaymentAndDelinquencyFieldsMigration } from './0011_add_payment_and_delinquency_fields';
 
 export const customMigrations: CustomMigration[] = [
   new AddActionsToProductsMigration(),
@@ -21,7 +22,5 @@ export const customMigrations: CustomMigration[] = [
   new AddProductIdToLoanRequestsMigration(),
   new CreateRolePermissionsTableMigration(),
   new AddIsActiveToUsersMigration(),
+  new AddPaymentAndDelinquencyFieldsMigration(),
 ];
-
-
-

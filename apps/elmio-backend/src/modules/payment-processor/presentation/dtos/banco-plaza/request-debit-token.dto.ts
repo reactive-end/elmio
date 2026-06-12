@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer'
+import { Transform } from 'class-transformer';
 import {
   IsString,
   IsNumber,
@@ -8,7 +8,7 @@ import {
   Length,
   IsNotEmpty,
   IsUUID,
-} from 'class-validator'
+} from 'class-validator';
 
 /**
  * Tipos de validación disponibles al solicitar un token de débito.
@@ -30,34 +30,34 @@ export class RequestDebitTokenDto {
   @Transform(({ value }) => (value === '' ? undefined : value))
   @IsOptional()
   @IsUUID()
-  companyAccountId?: string
+  companyAccountId?: string;
 
   /** Proveedor de pasarela (ej.: "PLAZA"). */
   @IsString()
   @IsNotEmpty()
-  provider: string
+  provider: string;
 
   /** Tipo de validación a utilizar: `C` = cuenta, `T` = teléfono. */
   @IsEnum(DebitValidationType)
-  validationType: DebitValidationType
+  validationType: DebitValidationType;
 
   /** Identificador del pagador (ej.: V12345678). Longitud: 10-12. */
   @IsString()
   @Length(10, 12)
-  payerId: string
+  payerId: string;
 
   /** Código del banco del pagador (ej.: '0134'). */
   @IsString()
-  payerBankCode: string
+  payerBankCode: string;
 
   /** Monto asociado a la solicitud de token. */
   @IsNumber()
-  amount: number
+  amount: number;
 
   /** IP origen para auditoría (opcional). */
   @IsOptional()
   @IsString()
-  ipAddress?: string
+  ipAddress?: string;
 
   /**
    * Número de cuenta del pagador (obligatorio cuando `validationType` = `CUENTA`).
@@ -66,7 +66,7 @@ export class RequestDebitTokenDto {
   @ValidateIf((o) => o.validationType === DebitValidationType.CUENTA)
   @IsString()
   @Length(20, 20)
-  payerAccount?: string
+  payerAccount?: string;
 
   /**
    * Teléfono del pagador (obligatorio cuando `validationType` = `TELEFONO`).
@@ -74,5 +74,5 @@ export class RequestDebitTokenDto {
    */
   @ValidateIf((o) => o.validationType === DebitValidationType.TELEFONO)
   @IsString()
-  payerPhone?: string
+  payerPhone?: string;
 }

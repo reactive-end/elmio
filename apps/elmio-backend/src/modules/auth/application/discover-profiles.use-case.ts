@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { UserRole } from '../domain/user';
 import {
   AUTH_REPOSITORY_PORT,
@@ -35,7 +40,9 @@ export class DiscoverProfilesUseCase {
       throw new BadRequestException('Correo o telefono es obligatorio.');
     }
 
-    const users = await this.repository.findAllByEmail(identifier.trim().toLowerCase());
+    const users = await this.repository.findAllByEmail(
+      identifier.trim().toLowerCase(),
+    );
 
     if (users.length === 0) {
       throw new UnauthorizedException('No se encontraron perfiles asociados.');

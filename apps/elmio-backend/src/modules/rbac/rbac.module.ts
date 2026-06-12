@@ -12,7 +12,15 @@ import { RbacAdminController } from '@/modules/rbac/presentation/http/rbac-admin
 import { AuthModule } from '@/modules/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RolePermissionEntity, UserEntity, PersonProfileEntity, EnterpriseEntity]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      RolePermissionEntity,
+      UserEntity,
+      PersonProfileEntity,
+      EnterpriseEntity,
+    ]),
+    AuthModule,
+  ],
   controllers: [RbacAdminController],
   providers: [
     { provide: RBAC_REPOSITORY_PORT, useClass: DbRbacRepositoryService },

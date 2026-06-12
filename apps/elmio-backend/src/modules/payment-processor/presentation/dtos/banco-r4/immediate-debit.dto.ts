@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsNumber, IsString, Matches } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsString, Matches } from 'class-validator';
 
 /**
  * DTO de entrada para Debito Inmediato en Banco R4.
@@ -12,7 +12,7 @@ export class ImmediateDebitRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  companyAccountId!: string
+  companyAccountId!: string;
 
   @ApiProperty({
     example: '0134',
@@ -22,7 +22,7 @@ export class ImmediateDebitRequestDto {
   @Matches(/^\d{3,4}$/, {
     message: 'bankCode debe contener 3 o 4 digitos',
   })
-  bankCode!: string
+  bankCode!: string;
 
   @ApiProperty({
     example: 150.75,
@@ -30,7 +30,7 @@ export class ImmediateDebitRequestDto {
       'Monto de la operacion. Se formatea a 2 decimales en la estrategia.',
   })
   @IsNumber({}, { message: 'amount debe ser un numero valido' })
-  amount!: number
+  amount!: number;
 
   @ApiProperty({
     example: '04141234567',
@@ -40,7 +40,7 @@ export class ImmediateDebitRequestDto {
   @Matches(/^\d{11}$/, {
     message: 'phoneNumber debe contener exactamente 11 digitos',
   })
-  phoneNumber!: string
+  phoneNumber!: string;
 
   @ApiProperty({
     example: '12345678',
@@ -48,7 +48,7 @@ export class ImmediateDebitRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  nationalId!: string
+  nationalId!: string;
 
   @ApiProperty({
     example: 'Juan Perez',
@@ -56,7 +56,7 @@ export class ImmediateDebitRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  fullName!: string
+  fullName!: string;
 
   @ApiProperty({
     example: '123456',
@@ -64,7 +64,7 @@ export class ImmediateDebitRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  otp!: string
+  otp!: string;
 
   @ApiProperty({
     example: 'Pago de servicio',
@@ -72,7 +72,7 @@ export class ImmediateDebitRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  concept!: string
+  concept!: string;
 }
 
 /**
@@ -80,21 +80,21 @@ export class ImmediateDebitRequestDto {
  */
 export class ImmediateDebitResponseDto {
   @ApiProperty({ example: 'ACCP' })
-  code!: string
+  code!: string;
 
   @ApiProperty({ example: 'Operacion Aceptada' })
-  message!: string
+  message!: string;
 
   @ApiProperty({ example: '16142940' })
-  reference!: string
+  reference!: string;
 
   @ApiProperty({ example: '6785d97e-2092-49f0-9f7d-3d5921f0b13f' })
-  id!: string
+  id!: string;
 
   @ApiProperty({
     type: 'object',
     additionalProperties: true,
     description: 'Respuesta original enviada por Banco R4.',
   })
-  rawResponse!: any
+  rawResponse!: any;
 }

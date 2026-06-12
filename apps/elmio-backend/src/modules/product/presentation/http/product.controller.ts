@@ -53,7 +53,8 @@ export class ProductController {
       const alliedMarketplaceIds = marketplaces.map((m) => m.id);
 
       return allProducts.filter(
-        (p) => p.marketplaceId && alliedMarketplaceIds.includes(p.marketplaceId),
+        (p) =>
+          p.marketplaceId && alliedMarketplaceIds.includes(p.marketplaceId),
       );
     }
 
@@ -81,13 +82,17 @@ export class ProductController {
 
     if (session.role === 'ALLIED') {
       if (!body.marketplaceId) {
-        throw new ForbiddenException('Debes asociar el producto a uno de tus marketplaces.');
+        throw new ForbiddenException(
+          'Debes asociar el producto a uno de tus marketplaces.',
+        );
       }
       const m = await this.dataSource
         .getRepository(MarketplaceEntity)
         .findOne({ where: { id: body.marketplaceId } });
       if (!m || m.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para agregar productos a este marketplace.');
+        throw new ForbiddenException(
+          'No tienes permisos para agregar productos a este marketplace.',
+        );
       }
     }
 
@@ -111,13 +116,17 @@ export class ProductController {
     if (session.role === 'ALLIED') {
       const prod = await this.getProductById.execute(id);
       if (!prod.marketplaceId) {
-        throw new ForbiddenException('No tienes permisos para modificar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para modificar este producto.',
+        );
       }
       const m = await this.dataSource
         .getRepository(MarketplaceEntity)
         .findOne({ where: { id: prod.marketplaceId } });
       if (!m || m.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para modificar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para modificar este producto.',
+        );
       }
     }
 
@@ -140,13 +149,17 @@ export class ProductController {
     if (session.role === 'ALLIED') {
       const prod = await this.getProductById.execute(id);
       if (!prod.marketplaceId) {
-        throw new ForbiddenException('No tienes permisos para eliminar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para eliminar este producto.',
+        );
       }
       const m = await this.dataSource
         .getRepository(MarketplaceEntity)
         .findOne({ where: { id: prod.marketplaceId } });
       if (!m || m.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para eliminar este producto.');
+        throw new ForbiddenException(
+          'No tienes permisos para eliminar este producto.',
+        );
       }
     }
 

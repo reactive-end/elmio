@@ -4,17 +4,17 @@ import {
   IsOptional,
   IsNotEmpty,
   IsString,
-} from 'class-validator'
+} from 'class-validator';
 
 /**
  * DTO para solicitar la tasa de cambio del BCV desde Banco R4.
  */
-const currencies = ['USD', 'EUR', 'CNY', 'TRY', 'RUB'] as const
+const currencies = ['USD', 'EUR', 'CNY', 'TRY', 'RUB'] as const;
 
 export class GetExchangeRateDto {
   @IsOptional()
   @IsString()
-  companyAccountId?: string
+  companyAccountId?: string;
 
   /**
    * Fecha para consultar la tasa en formato YYYY-MM-DD.
@@ -22,7 +22,7 @@ export class GetExchangeRateDto {
    */
   @IsDateString()
   @IsNotEmpty()
-  date: string
+  date: string;
 
   /**
    * Código de la moneda a consultar.
@@ -33,5 +33,5 @@ export class GetExchangeRateDto {
   @IsEnum(currencies, {
     message: `La moneda solicitada debe ser entre ${currencies.join(', ')}`,
   })
-  currency: string
+  currency: string;
 }

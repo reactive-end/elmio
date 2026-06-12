@@ -42,7 +42,9 @@ export class UploadGalleryImagesUseCase {
     return Promise.all(
       input.files.map((file) => {
         // Corregir mala codificacion de caracteres UTF-8 interpretados como Latin-1 por Multer
-        const correctedName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        const correctedName = Buffer.from(file.originalname, 'latin1').toString(
+          'utf8',
+        );
         return this.galleryStoragePort.save({
           tenantDirectory: input.tenantDirectory,
           name: correctedName,

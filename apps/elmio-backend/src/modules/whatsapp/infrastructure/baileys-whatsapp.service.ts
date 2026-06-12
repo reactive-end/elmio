@@ -1,4 +1,9 @@
-import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import makeWASocket, {
   useMultiFileAuthState,
@@ -134,7 +139,9 @@ export class BaileysWhatsAppService
 
   private async initSocket(): Promise<void> {
     if (this.isConnecting) {
-      this.logger.warn('Ya se está inicializando una conexión de WhatsApp. Ignorando llamada duplicada.');
+      this.logger.warn(
+        'Ya se está inicializando una conexión de WhatsApp. Ignorando llamada duplicada.',
+      );
       return;
     }
 
@@ -148,7 +155,7 @@ export class BaileysWhatsAppService
 
       const sock = makeWASocket({
         auth: state,
-        logger: pino({ level: 'silent' }) as ReturnType<typeof pino>,
+        logger: pino({ level: 'silent' }),
         printQRInTerminal: false,
       });
 
@@ -158,9 +165,7 @@ export class BaileysWhatsAppService
 
       this.logger.log('Socket de WhatsApp inicializado.');
     } catch (error) {
-      this.logger.error(
-        `Error al inicializar el socket: ${String(error)}`,
-      );
+      this.logger.error(`Error al inicializar el socket: ${String(error)}`);
       this.updateStatus(WhatsAppStatus.ERROR);
     } finally {
       this.isConnecting = false;
@@ -250,7 +255,9 @@ export class BaileysWhatsAppService
       lastDisconnect?.error as { output?: { statusCode?: number } }
     )?.output?.statusCode;
 
-    this.logger.warn(`Conexión cerrada. Código de estado: ${statusCode ?? 'desconocido'}`);
+    this.logger.warn(
+      `Conexión cerrada. Código de estado: ${statusCode ?? 'desconocido'}`,
+    );
 
     // Limpiamos siempre el socket huérfano para evitar colisiones concurrentes
     this.closeSocket();

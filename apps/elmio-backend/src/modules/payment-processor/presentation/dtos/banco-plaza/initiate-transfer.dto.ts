@@ -5,7 +5,7 @@ import {
   IsOptional,
   ValidateIf,
   IsUUID,
-} from 'class-validator'
+} from 'class-validator';
 
 /**
  * DTO para iniciar una transferencia.
@@ -16,49 +16,49 @@ export class InitiateTransferDto {
   /** Id interno de la cuenta de empresa (cuenta origen para este endpoint). */
   @IsUUID()
   @IsNotEmpty()
-  companyAccountId: string
+  companyAccountId: string;
 
   /**
    * Proveedor de pago (por ejemplo: "PLAZA").
    */
   @IsString()
   @IsNotEmpty()
-  provider: string
+  provider: string;
 
   /**
    * Nombre del beneficiario.
    */
   @IsString()
   @IsNotEmpty()
-  beneficiaryName: string
+  beneficiaryName: string;
 
   /**
    * Identificación del beneficiario (por ejemplo: V123456).
    */
   @IsString()
   @IsNotEmpty()
-  beneficiaryId: string
+  beneficiaryId: string;
 
   /**
    * Código del banco beneficiario (por ejemplo: 0102, 0105).
    */
   @IsString()
   @IsNotEmpty()
-  beneficiaryBankCode: string
+  beneficiaryBankCode: string;
 
   /**
    * Monto a transferir.
    */
   @IsNumber()
   @IsNotEmpty()
-  amount: number
+  amount: number;
 
   /**
    * Concepto o descripción de la transferencia.
    */
   @IsString()
   @IsNotEmpty()
-  concept: string
+  concept: string;
 
   /**
    * Número de cuenta destino. Requerido si no se proporciona `beneficiaryPhone`.
@@ -66,7 +66,7 @@ export class InitiateTransferDto {
   @ValidateIf((o) => !o.beneficiaryPhone)
   @IsString()
   @IsNotEmpty()
-  beneficiaryAccount?: string
+  beneficiaryAccount?: string;
 
   /**
    * Teléfono del beneficiario. Requerido si no se proporciona `beneficiaryAccount`.
@@ -74,12 +74,12 @@ export class InitiateTransferDto {
   @ValidateIf((o) => !o.beneficiaryAccount)
   @IsString()
   @IsNotEmpty()
-  beneficiaryPhone?: string
+  beneficiaryPhone?: string;
 
   /**
    * IP del usuario que origina la petición (opcional).
    */
   @IsString()
   @IsOptional()
-  userIp?: string
+  userIp?: string;
 }

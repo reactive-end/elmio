@@ -70,7 +70,9 @@ export class GalleryController {
     }
 
     if (!session.owner?.trim()) {
-      throw new BadRequestException('Sesion de aliado invalida, falta identificador de propietario.');
+      throw new BadRequestException(
+        'Sesion de aliado invalida, falta identificador de propietario.',
+      );
     }
 
     return session.owner.trim().toLowerCase();
@@ -87,7 +89,10 @@ export class GalleryController {
     return `gallery/${cleanTenant}/images`;
   }
 
-  private toResponseDto(image: GalleryDomainImage, tenant: string): GalleryImageResponseDto {
+  private toResponseDto(
+    image: GalleryDomainImage,
+    tenant: string,
+  ): GalleryImageResponseDto {
     return {
       ...image,
       previewUrl: `/api/gallery/${image.id}/file?tenant=${tenant}`,
@@ -109,7 +114,8 @@ export class GalleryController {
   ): Promise<GalleryImageResponseDto[]> {
     const tenant = this.resolveTenant(session, query);
     const physicalDirectory = this.getPhysicalDirectory(tenant);
-    const images = await this.listGalleryImagesUseCase.execute(physicalDirectory);
+    const images =
+      await this.listGalleryImagesUseCase.execute(physicalDirectory);
 
     return images.map((image) => this.toResponseDto(image, tenant));
   }
@@ -177,7 +183,9 @@ export class GalleryController {
     @Param('imageId') imageId: string,
     @Res() response: Response,
   ): Promise<void> {
-    const tenant = query.tenant?.trim() ? query.tenant.trim().toLowerCase() : 'elmio';
+    const tenant = query.tenant?.trim()
+      ? query.tenant.trim().toLowerCase()
+      : 'elmio';
     const physicalDirectory = this.getPhysicalDirectory(tenant);
     const { image, absolutePath, publicUrl } =
       await this.getGalleryImageFileUseCase.execute(physicalDirectory, imageId);
@@ -197,4 +205,3 @@ export class GalleryController {
     response.sendFile(absolutePath);
   }
 }
-

@@ -68,7 +68,11 @@ export interface SavePaymentQuotesDto {
 export interface SavePaymentDto {
   shopcartId: string;
   clientId?: string;
-  paymentMethod: 'debito' | 'domiciliacion_tarjeta' | 'domiciliacion_cuenta' | 'none';
+  paymentMethod:
+    | 'debito'
+    | 'domiciliacion_tarjeta'
+    | 'domiciliacion_cuenta'
+    | 'none';
   payerDocType?: string;
   payerDocNumber?: string;
   payerFirstName?: string;
@@ -297,7 +301,11 @@ export interface VehicleSnapshot extends Record<string, unknown> {
 }
 
 export interface PaymentSnapshot extends Record<string, unknown> {
-  paymentMethod?: 'debito' | 'domiciliacion_tarjeta' | 'domiciliacion_cuenta' | 'none';
+  paymentMethod?:
+    | 'debito'
+    | 'domiciliacion_tarjeta'
+    | 'domiciliacion_cuenta'
+    | 'none';
   payerDocType?: string | null;
   payerDocNumber?: string | null;
   payerFirstName?: string | null;
@@ -426,7 +434,11 @@ export interface EmulatedPayment {
   id: string;
   shopcartId: string;
   clientId: string | null;
-  paymentMethod: 'debito' | 'domiciliacion_tarjeta' | 'domiciliacion_cuenta' | 'none';
+  paymentMethod:
+    | 'debito'
+    | 'domiciliacion_tarjeta'
+    | 'domiciliacion_cuenta'
+    | 'none';
   payerDocType: string | null;
   payerDocNumber: string | null;
   payerFirstName: string | null;
@@ -462,7 +474,9 @@ export class MercantilStorageService {
   /**
    * Mapea un registro InsuranceOrder al formato de cliente emulado compatible.
    */
-  private mapToEmulatedClient(order: InsuranceOrderEntity | null): EmulatedClient | null {
+  private mapToEmulatedClient(
+    order: InsuranceOrderEntity | null,
+  ): EmulatedClient | null {
     if (!order || !order.clientSnapshot) return null;
     const client = order.clientSnapshot as ClientSnapshot;
     return {
@@ -484,7 +498,8 @@ export class MercantilStorageService {
       phoneNumber: client.phoneNumber ?? null,
       addressCountryId: client.addressCountryId ?? null,
       addressAdministrativeAreaId: client.addressAdministrativeAreaId ?? null,
-      addressSubadministrativeAreaId: client.addressSubadministrativeAreaId ?? null,
+      addressSubadministrativeAreaId:
+        client.addressSubadministrativeAreaId ?? null,
       addressLocalityId: client.addressLocalityId ?? null,
       addressZoneId: client.addressZoneId ?? null,
       addressPostalCode: client.addressPostalCode ?? null,
@@ -498,10 +513,12 @@ export class MercantilStorageService {
   /**
    * Mapea el snapshot de vehículo al formato emulado.
    */
-  private mapToEmulatedVehicle(order: InsuranceOrderEntity | null): EmulatedVehicle | null {
+  private mapToEmulatedVehicle(
+    order: InsuranceOrderEntity | null,
+  ): EmulatedVehicle | null {
     if (!order || !order.vehicleSnapshot) return null;
     const vehicle = order.vehicleSnapshot as VehicleSnapshot;
-    const client = order.clientSnapshot as ClientSnapshot | undefined | null;
+    const client = order.clientSnapshot;
     return {
       id: order.id,
       shopcartId: order.shopcartId,
@@ -532,10 +549,12 @@ export class MercantilStorageService {
   /**
    * Mapea el snapshot de pago al formato emulado.
    */
-  private mapToEmulatedPayment(order: InsuranceOrderEntity | null): EmulatedPayment | null {
+  private mapToEmulatedPayment(
+    order: InsuranceOrderEntity | null,
+  ): EmulatedPayment | null {
     if (!order || !order.paymentSnapshot) return null;
     const payment = order.paymentSnapshot as PaymentSnapshot;
-    const client = order.clientSnapshot as ClientSnapshot | undefined | null;
+    const client = order.clientSnapshot;
     return {
       id: order.id,
       shopcartId: order.shopcartId,
@@ -595,7 +614,8 @@ export class MercantilStorageService {
       phoneNumber: dto.phone?.number ?? null,
       addressCountryId: dto.address?.countryId ?? null,
       addressAdministrativeAreaId: dto.address?.administrativeAreaId ?? null,
-      addressSubadministrativeAreaId: dto.address?.subadministrativeAreaId ?? null,
+      addressSubadministrativeAreaId:
+        dto.address?.subadministrativeAreaId ?? null,
       addressLocalityId: dto.address?.localityId ?? null,
       addressZoneId: dto.address?.zoneId ?? null,
       addressPostalCode: dto.address?.postalCode ?? null,
@@ -611,7 +631,9 @@ export class MercantilStorageService {
     return mapped;
   }
 
-  async savePaymentQuotes(dto: SavePaymentQuotesDto): Promise<PaymentQuoteSnapshot[]> {
+  async savePaymentQuotes(
+    dto: SavePaymentQuotesDto,
+  ): Promise<PaymentQuoteSnapshot[]> {
     let order = await this.orderRepo.findOne({
       where: { shopcartId: dto.shopcartId },
     });
@@ -624,7 +646,10 @@ export class MercantilStorageService {
       order.status = 'draft';
     }
 
-    const currentPoliciesSnapshot = (order.policiesSnapshot as PoliciesSnapshot | undefined | null) ?? { policies: [] };
+    const currentPoliciesSnapshot = (order.policiesSnapshot as
+      | PoliciesSnapshot
+      | undefined
+      | null) ?? { policies: [] };
     const policiesList = Array.isArray(currentPoliciesSnapshot.policies)
       ? currentPoliciesSnapshot.policies
       : [];
@@ -689,24 +714,36 @@ export class MercantilStorageService {
     return emulatedQuotes;
   }
 
-  async getClientByShopcart(shopcartId: string): Promise<EmulatedClient | null> {
+  async getClientByShopcart(
+    shopcartId: string,
+  ): Promise<EmulatedClient | null> {
     const order = await this.orderRepo.findOne({ where: { shopcartId } });
     return this.mapToEmulatedClient(order);
   }
 
-  async resolveExistingClient(dto: ResolveClientDto): Promise<EmulatedClient | null> {
+  async resolveExistingClient(
+    dto: ResolveClientDto,
+  ): Promise<EmulatedClient | null> {
     if (dto.clientId?.trim()) {
-      const order = await this.orderRepo.createQueryBuilder('o')
-        .where("o.\"clientSnapshot\"->>'clientId' = :clientId", { clientId: dto.clientId.trim() })
+      const order = await this.orderRepo
+        .createQueryBuilder('o')
+        .where('o."clientSnapshot"->>\'clientId\' = :clientId', {
+          clientId: dto.clientId.trim(),
+        })
         .orderBy('o.updatedAt', 'DESC')
         .getOne();
       if (order) return this.mapToEmulatedClient(order);
     }
 
     if (dto.dniType?.trim() && dto.dniNumber?.trim()) {
-      const order = await this.orderRepo.createQueryBuilder('o')
-        .where("o.\"clientSnapshot\"->>'dniType' = :dniType", { dniType: dto.dniType.trim() })
-        .andWhere("o.\"clientSnapshot\"->>'dniNumber' = :dniNumber", { dniNumber: dto.dniNumber.trim() })
+      const order = await this.orderRepo
+        .createQueryBuilder('o')
+        .where('o."clientSnapshot"->>\'dniType\' = :dniType', {
+          dniType: dto.dniType.trim(),
+        })
+        .andWhere('o."clientSnapshot"->>\'dniNumber\' = :dniNumber', {
+          dniNumber: dto.dniNumber.trim(),
+        })
         .orderBy('o.updatedAt', 'DESC')
         .getOne();
       if (order) return this.mapToEmulatedClient(order);
@@ -715,11 +752,14 @@ export class MercantilStorageService {
     return null;
   }
 
-  async getQuotesByShopcart(shopcartId: string): Promise<PaymentQuoteSnapshot[]> {
+  async getQuotesByShopcart(
+    shopcartId: string,
+  ): Promise<PaymentQuoteSnapshot[]> {
     const order = await this.orderRepo.findOne({ where: { shopcartId } });
     if (!order || !order.policiesSnapshot) return [];
 
-    const policiesList = (order.policiesSnapshot as PoliciesSnapshot).policies ?? [];
+    const policiesList =
+      (order.policiesSnapshot as PoliciesSnapshot).policies ?? [];
     const allQuotes: PaymentQuoteSnapshot[] = [];
     for (const p of policiesList) {
       if (Array.isArray(p.paymentQuotes)) {
@@ -730,12 +770,16 @@ export class MercantilStorageService {
   }
 
   async getQuotesByPolicy(policyId: string): Promise<PaymentQuoteSnapshot[]> {
-    const order = await this.orderRepo.createQueryBuilder('o')
-      .where("o.policiesSnapshot::text LIKE :policyId", { policyId: `%${policyId}%` })
+    const order = await this.orderRepo
+      .createQueryBuilder('o')
+      .where('o.policiesSnapshot::text LIKE :policyId', {
+        policyId: `%${policyId}%`,
+      })
       .getOne();
 
     if (!order || !order.policiesSnapshot) return [];
-    const policiesList = (order.policiesSnapshot as PoliciesSnapshot).policies ?? [];
+    const policiesList =
+      (order.policiesSnapshot as PoliciesSnapshot).policies ?? [];
     const policy = policiesList.find((p) => p.policyId === policyId);
     return Array.isArray(policy?.paymentQuotes) ? policy.paymentQuotes : [];
   }
@@ -783,7 +827,9 @@ export class MercantilStorageService {
     return mapped;
   }
 
-  async getPaymentByShopcart(shopcartId: string): Promise<EmulatedPayment | null> {
+  async getPaymentByShopcart(
+    shopcartId: string,
+  ): Promise<EmulatedPayment | null> {
     const order = await this.orderRepo.findOne({ where: { shopcartId } });
     return this.mapToEmulatedPayment(order);
   }
@@ -809,13 +855,18 @@ export class MercantilStorageService {
 
     order.status = 'emitted';
 
-    const currentPoliciesSnapshot = (order.policiesSnapshot as PoliciesSnapshot | undefined | null) ?? { policies: [] };
+    const currentPoliciesSnapshot = (order.policiesSnapshot as
+      | PoliciesSnapshot
+      | undefined
+      | null) ?? { policies: [] };
     const existingList = Array.isArray(currentPoliciesSnapshot.policies)
       ? currentPoliciesSnapshot.policies
       : [];
 
     const emulatedPolicies = dto.policies.map((p) => {
-      const existingPolicy = existingList.find((ex) => ex.policyId === p.policyId);
+      const existingPolicy = existingList.find(
+        (ex) => ex.policyId === p.policyId,
+      );
       return {
         id: randomUUID(),
         shopcartId: dto.shopcartId,
@@ -869,7 +920,9 @@ export class MercantilStorageService {
     return this.traceRepo.save(entity);
   }
 
-  async getTracesByShopcart(shopcartId: string): Promise<InsurancePaymentTraceEntity[]> {
+  async getTracesByShopcart(
+    shopcartId: string,
+  ): Promise<InsurancePaymentTraceEntity[]> {
     return this.traceRepo.find({
       where: { shopcartId },
       order: { createdAt: 'DESC' },
@@ -885,26 +938,39 @@ export class MercantilStorageService {
     const page = Math.max(1, dto.page ?? 1);
     const perPage = Math.min(100, Math.max(1, dto.perPage ?? 20));
 
-    const qb = this.orderRepo.createQueryBuilder('o')
-      .where("o.\"clientSnapshot\" IS NOT NULL");
+    const qb = this.orderRepo
+      .createQueryBuilder('o')
+      .where('o."clientSnapshot" IS NOT NULL');
 
     if (dto.clientId?.trim()) {
-      qb.andWhere("o.\"clientSnapshot\"->>'clientId' = :clientId", { clientId: dto.clientId.trim() });
+      qb.andWhere('o."clientSnapshot"->>\'clientId\' = :clientId', {
+        clientId: dto.clientId.trim(),
+      });
     }
     if (dto.dniType?.trim()) {
-      qb.andWhere("o.\"clientSnapshot\"->>'dniType' = :dniType", { dniType: dto.dniType.trim() });
+      qb.andWhere('o."clientSnapshot"->>\'dniType\' = :dniType', {
+        dniType: dto.dniType.trim(),
+      });
     }
     if (dto.dniNumber?.trim()) {
-      qb.andWhere("o.\"clientSnapshot\"->>'dniNumber' LIKE :dniNumber", { dniNumber: `%${dto.dniNumber.trim()}%` });
+      qb.andWhere('o."clientSnapshot"->>\'dniNumber\' LIKE :dniNumber', {
+        dniNumber: `%${dto.dniNumber.trim()}%`,
+      });
     }
     if (dto.name?.trim()) {
-      qb.andWhere("LOWER(o.\"clientSnapshot\"->>'firstName') LIKE :name", { name: `%${dto.name.trim().toLowerCase()}%` });
+      qb.andWhere('LOWER(o."clientSnapshot"->>\'firstName\') LIKE :name', {
+        name: `%${dto.name.trim().toLowerCase()}%`,
+      });
     }
     if (dto.lastName?.trim()) {
-      qb.andWhere("LOWER(o.\"clientSnapshot\"->>'lastName') LIKE :lastName", { lastName: `%${dto.lastName.trim().toLowerCase()}%` });
+      qb.andWhere('LOWER(o."clientSnapshot"->>\'lastName\') LIKE :lastName', {
+        lastName: `%${dto.lastName.trim().toLowerCase()}%`,
+      });
     }
     if (dto.email?.trim()) {
-      qb.andWhere("LOWER(o.\"clientSnapshot\"->>'email') LIKE :email", { email: `%${dto.email.trim().toLowerCase()}%` });
+      qb.andWhere('LOWER(o."clientSnapshot"->>\'email\') LIKE :email', {
+        email: `%${dto.email.trim().toLowerCase()}%`,
+      });
     }
 
     qb.orderBy('o.updatedAt', 'DESC')
@@ -916,7 +982,9 @@ export class MercantilStorageService {
     const items: MercantilClientListItemDto[] = [];
     for (const order of orders) {
       const client = order.clientSnapshot as ClientSnapshot;
-      const policies = (order.policiesSnapshot as PoliciesSnapshot | undefined | null)?.policies ?? [];
+      const policies =
+        (order.policiesSnapshot as PoliciesSnapshot | undefined | null)
+          ?.policies ?? [];
 
       const allQuotes: PaymentQuoteSnapshot[] = [];
       for (const p of policies) {
@@ -998,21 +1066,25 @@ export class MercantilStorageService {
     return mapped;
   }
 
-  async getVehicleByShopcart(shopcartId: string): Promise<EmulatedVehicle | null> {
+  async getVehicleByShopcart(
+    shopcartId: string,
+  ): Promise<EmulatedVehicle | null> {
     const order = await this.orderRepo.findOne({ where: { shopcartId } });
     return this.mapToEmulatedVehicle(order);
   }
 
   async markQuoteAsPaid(id: string): Promise<void> {
-    const order = await this.orderRepo.createQueryBuilder('o')
-      .where("o.policiesSnapshot::text LIKE :id", { id: `%${id}%` })
+    const order = await this.orderRepo
+      .createQueryBuilder('o')
+      .where('o.policiesSnapshot::text LIKE :id', { id: `%${id}%` })
       .getOne();
 
     if (!order || !order.policiesSnapshot) {
       throw new NotFoundException('Cuota no encontrada');
     }
 
-    const policiesList = (order.policiesSnapshot as PoliciesSnapshot).policies ?? [];
+    const policiesList =
+      (order.policiesSnapshot as PoliciesSnapshot).policies ?? [];
     let found = false;
     for (const p of policiesList) {
       if (Array.isArray(p.paymentQuotes)) {
@@ -1040,20 +1112,28 @@ export class MercantilStorageService {
     dniNumber?: string;
   }): Promise<MercantilClientProfileDto | null> {
     const hasClientId = Boolean(filters.clientId?.trim());
-    const hasDni = Boolean(filters.dniType?.trim() && filters.dniNumber?.trim());
+    const hasDni = Boolean(
+      filters.dniType?.trim() && filters.dniNumber?.trim(),
+    );
 
     if (!hasClientId && !hasDni) {
       return null;
     }
 
-    const qb = this.orderRepo.createQueryBuilder('o')
-      .where("o.\"clientSnapshot\" IS NOT NULL");
+    const qb = this.orderRepo
+      .createQueryBuilder('o')
+      .where('o."clientSnapshot" IS NOT NULL');
 
     if (hasClientId) {
-      qb.andWhere("o.\"clientSnapshot\"->>'clientId' = :clientId", { clientId: filters.clientId!.trim() });
+      qb.andWhere('o."clientSnapshot"->>\'clientId\' = :clientId', {
+        clientId: filters.clientId!.trim(),
+      });
     } else {
-      qb.andWhere("o.\"clientSnapshot\"->>'dniType' = :dniType", { dniType: filters.dniType!.trim() })
-        .andWhere("o.\"clientSnapshot\"->>'dniNumber' = :dniNumber", { dniNumber: filters.dniNumber!.trim() });
+      qb.andWhere('o."clientSnapshot"->>\'dniType\' = :dniType', {
+        dniType: filters.dniType!.trim(),
+      }).andWhere('o."clientSnapshot"->>\'dniNumber\' = :dniNumber', {
+        dniNumber: filters.dniNumber!.trim(),
+      });
     }
 
     const order = await qb.orderBy('o.updatedAt', 'DESC').getOne();
@@ -1062,7 +1142,9 @@ export class MercantilStorageService {
     }
 
     const client = order.clientSnapshot as ClientSnapshot;
-    const policies = (order.policiesSnapshot as PoliciesSnapshot | undefined | null)?.policies ?? [];
+    const policies =
+      (order.policiesSnapshot as PoliciesSnapshot | undefined | null)
+        ?.policies ?? [];
 
     const allQuotes: PaymentQuoteSnapshot[] = [];
     for (const p of policies) {
@@ -1093,18 +1175,20 @@ export class MercantilStorageService {
         annualPremium: policy.annualPremium,
         startDate: policy.startDate,
         endDate: policy.endDate,
-        quotes: Array.isArray(policy.paymentQuotes) ? policy.paymentQuotes.map((quote) => ({
-          id: quote.id,
-          quote: quote.quote,
-          agreement: quote.agreement,
-          receipt: quote.receipt,
-          receiptStatus: quote.receiptStatus,
-          quoteStatus: quote.quoteStatus,
-          isPaid: quote.isPaid,
-          isNextDuePayment: quote.isNextDuePayment,
-          amount: quote.amount,
-          expirationDate: quote.expirationDate,
-        })) : [],
+        quotes: Array.isArray(policy.paymentQuotes)
+          ? policy.paymentQuotes.map((quote) => ({
+              id: quote.id,
+              quote: quote.quote,
+              agreement: quote.agreement,
+              receipt: quote.receipt,
+              receiptStatus: quote.receiptStatus,
+              quoteStatus: quote.quoteStatus,
+              isPaid: quote.isPaid,
+              isNextDuePayment: quote.isNextDuePayment,
+              amount: quote.amount,
+              expirationDate: quote.expirationDate,
+            }))
+          : [],
       };
     });
 
@@ -1134,26 +1218,28 @@ export class MercantilStorageService {
         pendingQuotes: Math.max(0, allQuotes.length - paidQuotes),
       },
       policies: formattedPolicies,
-      vehicle: emulatedVehicle ? {
-        id: emulatedVehicle.id,
-        shopcartId: emulatedVehicle.shopcartId,
-        year: emulatedVehicle.year,
-        brandCode: emulatedVehicle.brandCode,
-        brandName: emulatedVehicle.brandName,
-        modelCode: emulatedVehicle.modelCode,
-        modelName: emulatedVehicle.modelName,
-        versionCode: emulatedVehicle.versionCode,
-        versionName: emulatedVehicle.versionName,
-        vehicleTypeId: emulatedVehicle.vehicleTypeId,
-        commonLocationId: emulatedVehicle.commonLocationId,
-        commonLocationName: emulatedVehicle.commonLocationName,
-        isArmored: emulatedVehicle.isArmored,
-        plate: emulatedVehicle.plate,
-        colorId: emulatedVehicle.colorId,
-        colorName: emulatedVehicle.colorName,
-        chassisSerial: emulatedVehicle.chassisSerial,
-        engineSerial: emulatedVehicle.engineSerial,
-      } : null,
+      vehicle: emulatedVehicle
+        ? {
+            id: emulatedVehicle.id,
+            shopcartId: emulatedVehicle.shopcartId,
+            year: emulatedVehicle.year,
+            brandCode: emulatedVehicle.brandCode,
+            brandName: emulatedVehicle.brandName,
+            modelCode: emulatedVehicle.modelCode,
+            modelName: emulatedVehicle.modelName,
+            versionCode: emulatedVehicle.versionCode,
+            versionName: emulatedVehicle.versionName,
+            vehicleTypeId: emulatedVehicle.vehicleTypeId,
+            commonLocationId: emulatedVehicle.commonLocationId,
+            commonLocationName: emulatedVehicle.commonLocationName,
+            isArmored: emulatedVehicle.isArmored,
+            plate: emulatedVehicle.plate,
+            colorId: emulatedVehicle.colorId,
+            colorName: emulatedVehicle.colorName,
+            chassisSerial: emulatedVehicle.chassisSerial,
+            engineSerial: emulatedVehicle.engineSerial,
+          }
+        : null,
     };
   }
 }

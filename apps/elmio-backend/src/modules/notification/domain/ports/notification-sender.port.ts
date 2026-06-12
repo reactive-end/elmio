@@ -14,5 +14,8 @@ export interface NotificationSenderPort {
    * @param code - Codigo OTP a enviar.
    * @returns Resultado del envio indicando el canal utilizado.
    */
-  sendRecoveryCode(recipient: NotificationRecipient, code: string): Promise<NotificationResult>;
+  sendRecoveryCode(
+    recipient: NotificationRecipient,
+    code: string,
+  ): Promise<NotificationResult>;
 }

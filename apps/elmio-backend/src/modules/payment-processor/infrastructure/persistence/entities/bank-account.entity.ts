@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Entity,
   PrimaryColumn,
@@ -8,11 +8,11 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
-} from 'typeorm'
-import { Payment } from './payment.entity'
-import { Currency } from './currency.entity'
-import { BankAccountType } from './bank-account-type.entity'
-import { Bank } from './bank.entity'
+} from 'typeorm';
+import { Payment } from './payment.entity';
+import { Currency } from './currency.entity';
+import { BankAccountType } from './bank-account-type.entity';
+import { Bank } from './bank.entity';
 
 @Entity({ name: 'bank_account' })
 /**
@@ -23,14 +23,14 @@ import { Bank } from './bank.entity'
  */
 export class BankAccount {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @ManyToOne(() => Bank, (bank) => bank.bankAccounts, {
     nullable: false,
     eager: false,
   })
   @JoinColumn({ name: 'bank_id' })
-  bank: Bank
+  bank: Bank;
 
   @Column({
     name: 'numero_cuenta',
@@ -38,13 +38,13 @@ export class BankAccount {
     length: 20,
     nullable: true,
   })
-  accountNumber: string
+  accountNumber: string;
 
   @Column({ name: 'tipo_documento', type: 'char', length: 1 })
-  documentType: string
+  documentType: string;
 
   @Column({ name: 'documento', type: 'varchar', length: 20 })
-  documentNumber: string
+  documentNumber: string;
 
   @Column({
     name: 'telefono_pago_movil',
@@ -53,7 +53,7 @@ export class BankAccount {
     nullable: true,
     comment: 'Teléfono para pago móvil',
   })
-  phoneNumber: string
+  phoneNumber: string;
 
   @Column({
     name: 'telefono_validacion',
@@ -62,7 +62,7 @@ export class BankAccount {
     nullable: true,
     comment: 'Teléfono usado para validación adicional',
   })
-  phoneValidationNumber: string
+  phoneValidationNumber: string;
 
   @Column({
     name: 'razon_social',
@@ -71,7 +71,7 @@ export class BankAccount {
     nullable: true,
     comment: 'Razón social del titular (nombre o razón social)',
   })
-  businessName: string
+  businessName: string;
 
   @ManyToOne(() => BankAccountType, (accountType) => accountType.bankAccounts, {
     nullable: true,
@@ -81,29 +81,29 @@ export class BankAccount {
     name: 'account_type_id',
     foreignKeyConstraintName: 'FK_bank_account_account_type_id',
   })
-  accountType: BankAccountType
+  accountType: BankAccountType;
 
   @Column({ name: 'descripcion', type: 'text', nullable: true })
-  description: string
+  description: string;
 
   @OneToMany(() => Payment, (payment) => payment.internalSourceAccount)
-  outgoingPayments: Payment[]
+  outgoingPayments: Payment[];
 
   @OneToMany(() => Payment, (payment) => payment.internalDestinationAccount)
-  incomingPayments: Payment[]
+  incomingPayments: Payment[];
 
   @ManyToOne(() => Currency, (currency) => currency.bankAccounts, {
     nullable: false,
   })
   @JoinColumn({ name: 'currency_id' })
-  currency: Currency
+  currency: Currency;
 
   @Column({ name: 'role', type: 'varchar', length: 20, default: 'RECEPTOR' })
-  role: string
+  role: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

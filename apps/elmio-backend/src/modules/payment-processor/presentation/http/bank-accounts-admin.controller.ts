@@ -10,21 +10,27 @@ import {
   Post,
   UseGuards,
   OnModuleInit,
-} from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { UserRole } from '../../../auth/domain/user'
-import { AuthGuard } from '../../../auth/presentation/guards/auth.guard'
-import { Roles } from '../../../auth/presentation/guards/roles.decorator'
-import { RolesGuard } from '../../../auth/presentation/guards/roles.guard'
-import { BankAccount } from '../../infrastructure/persistence/entities/bank-account.entity'
-import { Bank } from '../../infrastructure/persistence/entities/bank.entity'
-import { Currency } from '../../infrastructure/persistence/entities/currency.entity'
-import { BankAccountType } from '../../infrastructure/persistence/entities/bank-account-type.entity'
-import { ExchangeRate } from '../../infrastructure/persistence/entities/exchange-rate.entity'
-import { ApiKey } from '../../infrastructure/persistence/entities/api-key.entity'
-import { ApiKeyCipher } from '../../infrastructure/persistence/api-key-cipher.util'
-import { CreateBankAccountDto, UpdateBankAccountDto, CreateCurrencyDto, UpdateCurrencyDto, UpsertBankAccountApiKeyDto } from './dtos/bank-accounts-admin.dto'
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserRole } from '../../../auth/domain/user';
+import { AuthGuard } from '../../../auth/presentation/guards/auth.guard';
+import { Roles } from '../../../auth/presentation/guards/roles.decorator';
+import { RolesGuard } from '../../../auth/presentation/guards/roles.guard';
+import { BankAccount } from '../../infrastructure/persistence/entities/bank-account.entity';
+import { Bank } from '../../infrastructure/persistence/entities/bank.entity';
+import { Currency } from '../../infrastructure/persistence/entities/currency.entity';
+import { BankAccountType } from '../../infrastructure/persistence/entities/bank-account-type.entity';
+import { ExchangeRate } from '../../infrastructure/persistence/entities/exchange-rate.entity';
+import { ApiKey } from '../../infrastructure/persistence/entities/api-key.entity';
+import { ApiKeyCipher } from '../../infrastructure/persistence/api-key-cipher.util';
+import {
+  CreateBankAccountDto,
+  UpdateBankAccountDto,
+  CreateCurrencyDto,
+  UpdateCurrencyDto,
+  UpsertBankAccountApiKeyDto,
+} from './dtos/bank-accounts-admin.dto';
 
 /**
  * Controlador administrativo para la gestión de cuentas bancarias y catálogos asociados.
@@ -76,47 +82,52 @@ export class BankAccountsAdminController implements OnModuleInit {
       { bankCode: '0172', bankName: 'Bancamiga' },
       { bankCode: '0173', bankName: 'Banco Internacional de Desarrollo' },
       { bankCode: '0174', bankName: 'Banplus' },
-      { bankCode: '0175', bankName: 'Banco Digital de los Trabajadores / Bicentenario' },
+      {
+        bankCode: '0175',
+        bankName: 'Banco Digital de los Trabajadores / Bicentenario',
+      },
       { bankCode: '0177', bankName: 'Banfanb' },
       { bankCode: '0178', bankName: 'N58 Banco Digital' },
       { bankCode: '0191', bankName: 'Banco Nacional de Crédito' },
-    ]
+    ];
 
     for (const sb of seedBanks) {
-      const exists = await this.bankRepo.findOneBy({ bankCode: sb.bankCode })
+      const exists = await this.bankRepo.findOneBy({ bankCode: sb.bankCode });
       if (!exists) {
-        const nb = new Bank()
-        nb.bankCode = sb.bankCode
-        nb.bankName = sb.bankName
-        nb.isActive = true
-        await this.bankRepo.save(nb)
+        const nb = new Bank();
+        nb.bankCode = sb.bankCode;
+        nb.bankName = sb.bankName;
+        nb.isActive = true;
+        await this.bankRepo.save(nb);
       }
     }
 
     const seedCurrencies = [
       { code: 'VES', name: 'Bolívares', symbol: 'Bs.' },
       { code: 'USD', name: 'Dólares', symbol: '$' },
-    ]
+    ];
 
     for (const sc of seedCurrencies) {
-      const exists = await this.currencyRepo.findOneBy({ code: sc.code })
+      const exists = await this.currencyRepo.findOneBy({ code: sc.code });
       if (!exists) {
-        const nc = new Currency()
-        nc.code = sc.code
-        nc.name = sc.name
-        nc.symbol = sc.symbol
-        nc.isActive = true
-        await this.currencyRepo.save(nc)
+        const nc = new Currency();
+        nc.code = sc.code;
+        nc.name = sc.name;
+        nc.symbol = sc.symbol;
+        nc.isActive = true;
+        await this.currencyRepo.save(nc);
       }
     }
 
-    const seedTypes = ['Corriente', 'Ahorro']
+    const seedTypes = ['Corriente', 'Ahorro'];
     for (const st of seedTypes) {
-      const exists = await this.bankAccountTypeRepo.findOneBy({ accountType: st })
+      const exists = await this.bankAccountTypeRepo.findOneBy({
+        accountType: st,
+      });
       if (!exists) {
-        const nt = new BankAccountType()
-        nt.accountType = st
-        await this.bankAccountTypeRepo.save(nt)
+        const nt = new BankAccountType();
+        nt.accountType = st;
+        await this.bankAccountTypeRepo.save(nt);
       }
     }
   }
@@ -129,7 +140,7 @@ export class BankAccountsAdminController implements OnModuleInit {
     return this.bankAccountRepo.find({
       relations: { bank: true, currency: true, accountType: true },
       order: { createdAt: 'DESC' },
-    })
+    });
   }
 
   /**
@@ -140,48 +151,54 @@ export class BankAccountsAdminController implements OnModuleInit {
     const account = await this.bankAccountRepo.findOne({
       where: { id },
       relations: { bank: true, currency: true, accountType: true },
-    })
+    });
 
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
-    return account
+    return account;
   }
 
   /**
    * Registra una nueva cuenta bancaria corporativa.
    */
   @Post('bank-accounts')
-  async createAccount(@Body() body: CreateBankAccountDto): Promise<BankAccount> {
-    const bank = await this.bankRepo.findOneBy({ id: body.bankId })
-    const currency = await this.currencyRepo.findOneBy({ id: body.currencyId })
-    const accountType = await this.bankAccountTypeRepo.findOneBy({ id: body.accountTypeId })
+  async createAccount(
+    @Body() body: CreateBankAccountDto,
+  ): Promise<BankAccount> {
+    const bank = await this.bankRepo.findOneBy({ id: body.bankId });
+    const currency = await this.currencyRepo.findOneBy({ id: body.currencyId });
+    const accountType = await this.bankAccountTypeRepo.findOneBy({
+      id: body.accountTypeId,
+    });
 
     if (!bank) {
-      throw new BadRequestException('El banco seleccionado no es válido')
+      throw new BadRequestException('El banco seleccionado no es válido');
     }
     if (!currency) {
-      throw new BadRequestException('La moneda seleccionada no es válida')
+      throw new BadRequestException('La moneda seleccionada no es válida');
     }
     if (!accountType) {
-      throw new BadRequestException('El tipo de cuenta seleccionado no es válido')
+      throw new BadRequestException(
+        'El tipo de cuenta seleccionado no es válido',
+      );
     }
 
-    const account = new BankAccount()
-    account.bank = bank
-    account.accountNumber = body.accountNumber
-    account.documentType = body.documentType
-    account.documentNumber = body.documentNumber
-    account.phoneNumber = body.phoneNumber
-    account.phoneValidationNumber = body.phoneValidationNumber ?? ''
-    account.businessName = body.businessName ?? ''
-    account.accountType = accountType
-    account.description = body.description ?? ''
-    account.currency = currency
-    account.role = body.role ?? 'RECEPTOR'
+    const account = new BankAccount();
+    account.bank = bank;
+    account.accountNumber = body.accountNumber;
+    account.documentType = body.documentType;
+    account.documentNumber = body.documentNumber;
+    account.phoneNumber = body.phoneNumber;
+    account.phoneValidationNumber = body.phoneValidationNumber ?? '';
+    account.businessName = body.businessName ?? '';
+    account.accountType = accountType;
+    account.description = body.description ?? '';
+    account.currency = currency;
+    account.role = body.role ?? 'RECEPTOR';
 
-    return this.bankAccountRepo.save(account)
+    return this.bankAccountRepo.save(account);
   }
 
   /**
@@ -195,62 +212,68 @@ export class BankAccountsAdminController implements OnModuleInit {
     const account = await this.bankAccountRepo.findOne({
       where: { id },
       relations: { bank: true, currency: true, accountType: true },
-    })
+    });
 
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
     if (body.bankId) {
-      const bank = await this.bankRepo.findOneBy({ id: body.bankId })
+      const bank = await this.bankRepo.findOneBy({ id: body.bankId });
       if (!bank) {
-        throw new BadRequestException('El banco seleccionado no es válido')
+        throw new BadRequestException('El banco seleccionado no es válido');
       }
-      account.bank = bank
+      account.bank = bank;
     }
 
     if (body.currencyId) {
-      const currency = await this.currencyRepo.findOneBy({ id: body.currencyId })
+      const currency = await this.currencyRepo.findOneBy({
+        id: body.currencyId,
+      });
       if (!currency) {
-        throw new BadRequestException('La moneda seleccionada no es válida')
+        throw new BadRequestException('La moneda seleccionada no es válida');
       }
-      account.currency = currency
+      account.currency = currency;
     }
 
     if (body.accountTypeId) {
-      const accountType = await this.bankAccountTypeRepo.findOneBy({ id: body.accountTypeId })
+      const accountType = await this.bankAccountTypeRepo.findOneBy({
+        id: body.accountTypeId,
+      });
       if (!accountType) {
-        throw new BadRequestException('El tipo de cuenta seleccionado no es válido')
+        throw new BadRequestException(
+          'El tipo de cuenta seleccionado no es válido',
+        );
       }
-      account.accountType = accountType
+      account.accountType = accountType;
     }
 
     if (body.accountNumber !== undefined) {
-      account.accountNumber = body.accountNumber
+      account.accountNumber = body.accountNumber;
     }
     if (body.documentType !== undefined) {
-      account.documentType = body.documentType
+      account.documentType = body.documentType;
     }
     if (body.documentNumber !== undefined) {
-      account.documentNumber = body.documentNumber
+      account.documentNumber = body.documentNumber;
     }
     if (body.phoneNumber !== undefined) {
-      account.phoneNumber = body.phoneNumber
+      account.phoneNumber = body.phoneNumber;
     }
     if (body.phoneValidationNumber !== undefined) {
-      account.phoneValidationNumber = body.phoneValidationNumber ?? ''
+      account.phoneValidationNumber = body.phoneValidationNumber ?? '';
     }
     if (body.businessName !== undefined) {
-      account.businessName = body.businessName ?? ''
+      account.businessName = body.businessName ?? '';
     }
     if (body.description !== undefined) {
-      account.description = body.description
+      account.description = body.description;
     }
     if (body.role !== undefined) {
-      account.role = body.role
+      account.role = body.role;
     }
 
-    return this.bankAccountRepo.save(account)
+    return this.bankAccountRepo.save(account);
   }
 
   /**
@@ -258,14 +281,14 @@ export class BankAccountsAdminController implements OnModuleInit {
    */
   @Delete('bank-accounts/:id')
   async deleteAccount(@Param('id') id: string): Promise<{ success: boolean }> {
-    const account = await this.bankAccountRepo.findOneBy({ id })
+    const account = await this.bankAccountRepo.findOneBy({ id });
 
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
-    await this.bankAccountRepo.remove(account)
-    return { success: true }
+    await this.bankAccountRepo.remove(account);
+    return { success: true };
   }
 
   /**
@@ -276,7 +299,7 @@ export class BankAccountsAdminController implements OnModuleInit {
     return this.bankRepo.find({
       where: { isActive: true },
       order: { bankName: 'ASC' },
-    })
+    });
   }
 
   /**
@@ -287,17 +310,17 @@ export class BankAccountsAdminController implements OnModuleInit {
     const list = await this.currencyRepo.find({
       relations: { exchangeRates: true },
       order: { name: 'ASC' },
-    })
+    });
 
     return list.map((c) => {
-      let lastRate = 1.0
+      let lastRate = 1.0;
       if (c.code === 'VES') {
-        lastRate = 1.0
+        lastRate = 1.0;
       } else if (c.exchangeRates && c.exchangeRates.length > 0) {
         const sorted = c.exchangeRates.sort(
-          (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-        )
-        lastRate = Number(sorted[0].bolivaresPerUsd)
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+        );
+        lastRate = Number(sorted[0].bolivaresPerUsd);
       }
       return {
         id: c.id,
@@ -306,8 +329,8 @@ export class BankAccountsAdminController implements OnModuleInit {
         symbol: c.symbol,
         isActive: c.isActive,
         exchangeRate: lastRate,
-      }
-    })
+      };
+    });
   }
 
   /**
@@ -318,20 +341,20 @@ export class BankAccountsAdminController implements OnModuleInit {
     const currency = await this.currencyRepo.findOne({
       where: { id },
       relations: { exchangeRates: true },
-    })
+    });
 
     if (!currency) {
-      throw new NotFoundException('Moneda no encontrada')
+      throw new NotFoundException('Moneda no encontrada');
     }
 
-    let lastRate = 1.0
+    let lastRate = 1.0;
     if (currency.code === 'VES') {
-      lastRate = 1.0
+      lastRate = 1.0;
     } else if (currency.exchangeRates && currency.exchangeRates.length > 0) {
       const sorted = currency.exchangeRates.sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-      )
-      lastRate = Number(sorted[0].bolivaresPerUsd)
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+      );
+      lastRate = Number(sorted[0].bolivaresPerUsd);
     }
 
     return {
@@ -341,7 +364,7 @@ export class BankAccountsAdminController implements OnModuleInit {
       symbol: currency.symbol,
       isActive: currency.isActive,
       exchangeRate: lastRate,
-    }
+    };
   }
 
   /**
@@ -351,7 +374,7 @@ export class BankAccountsAdminController implements OnModuleInit {
   async listAccountTypes(): Promise<BankAccountType[]> {
     return this.bankAccountTypeRepo.find({
       order: { accountType: 'ASC' },
-    })
+    });
   }
 
   /**
@@ -359,31 +382,36 @@ export class BankAccountsAdminController implements OnModuleInit {
    */
   @Post('currencies')
   async createCurrency(@Body() body: CreateCurrencyDto): Promise<any> {
-    const codeUpper = body.code.trim().toUpperCase()
+    const codeUpper = body.code.trim().toUpperCase();
     if (codeUpper.length !== 3) {
-      throw new BadRequestException('El código ISO de la moneda debe ser exactamente de 3 caracteres (ej. EUR)')
+      throw new BadRequestException(
+        'El código ISO de la moneda debe ser exactamente de 3 caracteres (ej. EUR)',
+      );
     }
 
-    const exists = await this.currencyRepo.findOneBy({ code: codeUpper })
+    const exists = await this.currencyRepo.findOneBy({ code: codeUpper });
     if (exists) {
-      throw new BadRequestException(`La moneda con código ${codeUpper} ya está registrada en el sistema.`)
+      throw new BadRequestException(
+        `La moneda con código ${codeUpper} ya está registrada en el sistema.`,
+      );
     }
 
-    const currency = new Currency()
-    currency.code = codeUpper
-    currency.name = body.name.trim()
-    currency.symbol = body.symbol.trim()
-    currency.isActive = true
+    const currency = new Currency();
+    currency.code = codeUpper;
+    currency.name = body.name.trim();
+    currency.symbol = body.symbol.trim();
+    currency.isActive = true;
 
-    const saved = await this.currencyRepo.save(currency)
+    const saved = await this.currencyRepo.save(currency);
 
-    const rateVal = body.exchangeRate !== undefined ? Number(body.exchangeRate) : 1.0
-    const exchangeRate = new ExchangeRate()
-    exchangeRate.currency = saved
-    exchangeRate.bolivaresPerUsd = rateVal
-    exchangeRate.effectiveDate = new Date()
-    exchangeRate.source = 'manual'
-    await this.exchangeRateRepo.save(exchangeRate)
+    const rateVal =
+      body.exchangeRate !== undefined ? Number(body.exchangeRate) : 1.0;
+    const exchangeRate = new ExchangeRate();
+    exchangeRate.currency = saved;
+    exchangeRate.bolivaresPerUsd = rateVal;
+    exchangeRate.effectiveDate = new Date();
+    exchangeRate.source = 'manual';
+    await this.exchangeRateRepo.save(exchangeRate);
 
     return {
       id: saved.id,
@@ -392,7 +420,7 @@ export class BankAccountsAdminController implements OnModuleInit {
       symbol: saved.symbol,
       isActive: saved.isActive,
       exchangeRate: rateVal,
-    }
+    };
   }
 
   /**
@@ -403,45 +431,49 @@ export class BankAccountsAdminController implements OnModuleInit {
     @Param('id') id: string,
     @Body() body: UpdateCurrencyDto,
   ): Promise<any> {
-    const currency = await this.currencyRepo.findOneBy({ id })
+    const currency = await this.currencyRepo.findOneBy({ id });
     if (!currency) {
-      throw new NotFoundException('Moneda no encontrada')
+      throw new NotFoundException('Moneda no encontrada');
     }
 
     if (currency.code === 'USD' || currency.code === 'VES') {
       if (currency.code === 'VES') {
-        throw new BadRequestException('La moneda Bolívares (VES) está totalmente protegida y no puede ser modificada.')
+        throw new BadRequestException(
+          'La moneda Bolívares (VES) está totalmente protegida y no puede ser modificada.',
+        );
       }
       if (body.name !== undefined || body.symbol !== undefined) {
-        throw new BadRequestException('El nombre y símbolo de la moneda Dólares (USD) están protegidos y no pueden ser modificados.')
+        throw new BadRequestException(
+          'El nombre y símbolo de la moneda Dólares (USD) están protegidos y no pueden ser modificados.',
+        );
       }
     }
 
     if (body.name !== undefined) {
-      currency.name = body.name.trim()
+      currency.name = body.name.trim();
     }
     if (body.symbol !== undefined) {
-      currency.symbol = body.symbol.trim()
+      currency.symbol = body.symbol.trim();
     }
 
-    const saved = await this.currencyRepo.save(currency)
+    const saved = await this.currencyRepo.save(currency);
 
-    let rateVal = 1.0
+    let rateVal = 1.0;
     if (body.exchangeRate !== undefined) {
-      rateVal = Number(body.exchangeRate)
-      const exchangeRate = new ExchangeRate()
-      exchangeRate.currency = saved
-      exchangeRate.bolivaresPerUsd = rateVal
-      exchangeRate.effectiveDate = new Date()
-      exchangeRate.source = 'manual'
-      await this.exchangeRateRepo.save(exchangeRate)
+      rateVal = Number(body.exchangeRate);
+      const exchangeRate = new ExchangeRate();
+      exchangeRate.currency = saved;
+      exchangeRate.bolivaresPerUsd = rateVal;
+      exchangeRate.effectiveDate = new Date();
+      exchangeRate.source = 'manual';
+      await this.exchangeRateRepo.save(exchangeRate);
     } else {
       const rates = await this.exchangeRateRepo.find({
         where: { currency: { id: saved.id } },
         order: { createdAt: 'DESC' },
-      })
+      });
       if (rates.length > 0) {
-        rateVal = Number(rates[0].bolivaresPerUsd)
+        rateVal = Number(rates[0].bolivaresPerUsd);
       }
     }
 
@@ -452,7 +484,7 @@ export class BankAccountsAdminController implements OnModuleInit {
       symbol: saved.symbol,
       isActive: saved.isActive,
       exchangeRate: rateVal,
-    }
+    };
   }
 
   /**
@@ -460,17 +492,19 @@ export class BankAccountsAdminController implements OnModuleInit {
    */
   @Delete('currencies/:id')
   async deleteCurrency(@Param('id') id: string): Promise<{ success: boolean }> {
-    const currency = await this.currencyRepo.findOneBy({ id })
+    const currency = await this.currencyRepo.findOneBy({ id });
     if (!currency) {
-      throw new NotFoundException('Moneda no encontrada')
+      throw new NotFoundException('Moneda no encontrada');
     }
 
     if (currency.code === 'USD' || currency.code === 'VES') {
-      throw new BadRequestException('Las monedas primordiales (USD, VES) están protegidas y no pueden ser eliminadas.')
+      throw new BadRequestException(
+        'Las monedas primordiales (USD, VES) están protegidas y no pueden ser eliminadas.',
+      );
     }
 
-    await this.currencyRepo.remove(currency)
-    return { success: true }
+    await this.currencyRepo.remove(currency);
+    return { success: true };
   }
 
   /* ── API Key endpoints ─────────────────────────────────────────────── */
@@ -480,21 +514,23 @@ export class BankAccountsAdminController implements OnModuleInit {
    * No expone los valores planos por seguridad.
    */
   @Get('bank-accounts/:id/api-key')
-  async getApiKeyMeta(@Param('id') id: string): Promise<{ exists: boolean; isActive: boolean }> {
-    const account = await this.bankAccountRepo.findOneBy({ id })
+  async getApiKeyMeta(
+    @Param('id') id: string,
+  ): Promise<{ exists: boolean; isActive: boolean }> {
+    const account = await this.bankAccountRepo.findOneBy({ id });
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
     const key = await this.apiKeyRepo.findOne({
       where: { bankAccount: { id } },
       order: { createdAt: 'DESC' },
-    })
+    });
 
     return {
       exists: !!key,
       isActive: key?.isActive ?? false,
-    }
+    };
   }
 
   /**
@@ -506,51 +542,54 @@ export class BankAccountsAdminController implements OnModuleInit {
     @Param('id') id: string,
     @Body() body: UpsertBankAccountApiKeyDto,
   ): Promise<{ success: boolean }> {
-    const account = await this.bankAccountRepo.findOneBy({ id })
+    const account = await this.bankAccountRepo.findOneBy({ id });
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
     // Desactivar cualquier key previa
-    await this.apiKeyRepo.update(
-      { bankAccount: { id } },
-      { isActive: false },
-    )
+    await this.apiKeyRepo.update({ bankAccount: { id } }, { isActive: false });
 
-    const key = new ApiKey()
-    key.bankAccount = account
-    key.commerceKey = ApiKeyCipher.encrypt(body.commerceKey)
-    key.secretKey = body.secretKey ? ApiKeyCipher.encrypt(body.secretKey) : null
-    key.extraKey = body.extraKey ? ApiKeyCipher.encrypt(body.extraKey) : null
-    key.isActive = true
+    const key = new ApiKey();
+    key.bankAccount = account;
+    key.commerceKey = ApiKeyCipher.encrypt(body.commerceKey);
+    key.secretKey = body.secretKey
+      ? ApiKeyCipher.encrypt(body.secretKey)
+      : null;
+    key.extraKey = body.extraKey ? ApiKeyCipher.encrypt(body.extraKey) : null;
+    key.isActive = true;
 
-    await this.apiKeyRepo.save(key)
-    return { success: true }
+    await this.apiKeyRepo.save(key);
+    return { success: true };
   }
 
   /**
    * Activa o desactiva la API key más reciente de una cuenta bancaria.
    */
   @Patch('bank-accounts/:id/api-key/toggle')
-  async toggleApiKey(@Param('id') id: string): Promise<{ success: boolean; isActive: boolean }> {
-    const account = await this.bankAccountRepo.findOneBy({ id })
+  async toggleApiKey(
+    @Param('id') id: string,
+  ): Promise<{ success: boolean; isActive: boolean }> {
+    const account = await this.bankAccountRepo.findOneBy({ id });
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
     const key = await this.apiKeyRepo.findOne({
       where: { bankAccount: { id } },
       order: { createdAt: 'DESC' },
-    })
+    });
 
     if (!key) {
-      throw new NotFoundException('No hay credenciales API asociadas a esta cuenta')
+      throw new NotFoundException(
+        'No hay credenciales API asociadas a esta cuenta',
+      );
     }
 
-    key.isActive = !key.isActive
-    await this.apiKeyRepo.save(key)
+    key.isActive = !key.isActive;
+    await this.apiKeyRepo.save(key);
 
-    return { success: true, isActive: key.isActive }
+    return { success: true, isActive: key.isActive };
   }
 
   /**
@@ -558,13 +597,12 @@ export class BankAccountsAdminController implements OnModuleInit {
    */
   @Delete('bank-accounts/:id/api-key')
   async deleteApiKey(@Param('id') id: string): Promise<{ success: boolean }> {
-    const account = await this.bankAccountRepo.findOneBy({ id })
+    const account = await this.bankAccountRepo.findOneBy({ id });
     if (!account) {
-      throw new NotFoundException('Cuenta bancaria no encontrada')
+      throw new NotFoundException('Cuenta bancaria no encontrada');
     }
 
-    await this.apiKeyRepo.delete({ bankAccount: { id } })
-    return { success: true }
+    await this.apiKeyRepo.delete({ bankAccount: { id } });
+    return { success: true };
   }
 }
-

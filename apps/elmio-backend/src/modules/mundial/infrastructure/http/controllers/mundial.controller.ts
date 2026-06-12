@@ -11,7 +11,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MundialService, MulterFile } from '../../../application/services/mundial.service';
+import {
+  MundialService,
+  MulterFile,
+} from '../../../application/services/mundial.service';
 import { MundialStorageService } from '../../../application/services/mundial-storage.service';
 import { BucketService } from '../../../../bucket/application/services/bucket.service';
 
@@ -179,11 +182,7 @@ export class MundialController {
 
     const resolvedFileName = fileName?.trim() || `mundial-dni-${Date.now()}`;
 
-    return this.bucketService.uploadFile(
-      file,
-      resolvedFileName,
-      'mundial-dni',
-    );
+    return this.bucketService.uploadFile(file, resolvedFileName, 'mundial-dni');
   }
 
   @Post('storage/vehicle-property-upload')
@@ -193,10 +192,13 @@ export class MundialController {
     @Body('fileName') fileName?: string,
   ) {
     if (!file) {
-      throw new BadRequestException('El archivo vehiclePropertyFile es requerido');
+      throw new BadRequestException(
+        'El archivo vehiclePropertyFile es requerido',
+      );
     }
 
-    const resolvedFileName = fileName?.trim() || `mundial-vehicle-property-${Date.now()}`;
+    const resolvedFileName =
+      fileName?.trim() || `mundial-vehicle-property-${Date.now()}`;
 
     return this.bucketService.uploadFile(
       file,
@@ -241,7 +243,8 @@ export class MundialController {
         email: body.client.email || '',
         dniType: body.client.dniType || 'V',
         dniNumber: body.client.dniNumber || '',
-        dniVenNationality: body.client.dniVenNationality || body.client.dniType || 'V',
+        dniVenNationality:
+          body.client.dniVenNationality || body.client.dniType || 'V',
         birthDate: body.client.birthDate || '',
         genderId: body.client.genderId || 'M',
         civilStateId: body.client.civilStateId || 'S',
@@ -254,7 +257,9 @@ export class MundialController {
     if (body.vehicle) {
       const vehicleRawData = {
         ...(body.vehicle.rawData || body.vehicle),
-        ...(body.vehiclePropertyDocument ? { vehiclePropertyDocument: body.vehiclePropertyDocument } : {}),
+        ...(body.vehiclePropertyDocument
+          ? { vehiclePropertyDocument: body.vehiclePropertyDocument }
+          : {}),
       };
 
       await this.mundialStorageService.saveVehicle({

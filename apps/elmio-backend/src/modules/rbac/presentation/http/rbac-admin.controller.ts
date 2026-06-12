@@ -85,10 +85,7 @@ export class RbacAdminController {
 
   /** PUT /api/rbac/users/:id */
   @Put('users/:id')
-  async updateUser(
-    @Param('id') id: string,
-    @Body() body: UpdateUserInput,
-  ) {
+  async updateUser(@Param('id') id: string, @Body() body: UpdateUserInput) {
     return this.manageUsers.update(id, body);
   }
 

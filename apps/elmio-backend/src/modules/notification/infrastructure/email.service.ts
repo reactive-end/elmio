@@ -24,7 +24,10 @@ export class EmailService {
     this.smtpPort = this.configService.get<number>('SMTP_PORT', 587);
     this.smtpUser = this.configService.get<string>('SMTP_USER', '');
     this.smtpPass = this.configService.get<string>('SMTP_PASS', '');
-    this.smtpFrom = this.configService.get<string>('SMTP_FROM', 'noreply@elmio.com');
+    this.smtpFrom = this.configService.get<string>(
+      'SMTP_FROM',
+      'noreply@elmio.com',
+    );
   }
 
   /**
@@ -54,7 +57,11 @@ export class EmailService {
    * @param name - Nombre del destinatario para personalizar el saludo.
    * @param code - Codigo OTP de 6 digitos.
    */
-  async sendRecoveryEmail(to: string, name: string, code: string): Promise<void> {
+  async sendRecoveryEmail(
+    to: string,
+    name: string,
+    code: string,
+  ): Promise<void> {
     const html = this.buildRecoveryTemplate(name, code);
 
     const mailOptions: SMTPTransport.MailOptions = {

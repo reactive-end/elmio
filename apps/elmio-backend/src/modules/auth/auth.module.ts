@@ -37,7 +37,11 @@ import { FinanceUsersAdminController } from './presentation/http/finance-users-a
       }),
     }),
   ],
-  controllers: [AuthController, AlliesAdminController, FinanceUsersAdminController],
+  controllers: [
+    AuthController,
+    AlliesAdminController,
+    FinanceUsersAdminController,
+  ],
   providers: [
     LoginUseCase,
     DiscoverProfilesUseCase,

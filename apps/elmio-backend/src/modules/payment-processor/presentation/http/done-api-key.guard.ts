@@ -3,16 +3,16 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common'
+} from '@nestjs/common';
 
 @Injectable()
 export class DoneApiKeyGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest()
-    const expectedApiKey = process.env.DONE_API_KEY?.trim()
+    const request = context.switchToHttp().getRequest();
+    const expectedApiKey = process.env.DONE_API_KEY?.trim();
 
     if (!expectedApiKey) {
-      throw new UnauthorizedException('Configuracion de API key no disponible')
+      throw new UnauthorizedException('Configuracion de API key no disponible');
     }
 
     const rawApiKey =
@@ -20,14 +20,14 @@ export class DoneApiKeyGuard implements CanActivate {
       request.headers?.['apikey'] ??
       request.headers?.['api-key'] ??
       request.query?.apiKey ??
-      request.query?.apikey
+      request.query?.apikey;
 
-    const providedApiKey = Array.isArray(rawApiKey) ? rawApiKey[0] : rawApiKey
+    const providedApiKey = Array.isArray(rawApiKey) ? rawApiKey[0] : rawApiKey;
 
     if (!providedApiKey || String(providedApiKey).trim() !== expectedApiKey) {
-      throw new UnauthorizedException('API key invalida')
+      throw new UnauthorizedException('API key invalida');
     }
 
-    return true
+    return true;
   }
 }

@@ -11,8 +11,6 @@ export class AddRoleToBankAccountMigration implements CustomMigration {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "bank_account" DROP COLUMN "role"`,
-    );
+    await queryRunner.query(`ALTER TABLE "bank_account" DROP COLUMN "role"`);
   }
 }

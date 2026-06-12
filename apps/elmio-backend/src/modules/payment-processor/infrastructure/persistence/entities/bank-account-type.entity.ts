@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Entity,
   PrimaryColumn,
@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-} from 'typeorm'
-import { BankAccount } from './bank-account.entity'
+} from 'typeorm';
+import { BankAccount } from './bank-account.entity';
 
 @Entity({ name: 'bank_account_type' })
 /**
@@ -18,7 +18,7 @@ import { BankAccount } from './bank-account.entity'
  */
 export class BankAccountType {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @Column({
     name: 'tipo_cuenta',
@@ -27,14 +27,14 @@ export class BankAccountType {
     unique: true,
     comment: 'Tipo de cuenta bancaria (ej. Corriente, Ahorro)',
   })
-  accountType: string
+  accountType: string;
 
   @OneToMany(() => BankAccount, (account) => account.accountType)
-  bankAccounts: BankAccount[]
+  bankAccounts: BankAccount[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

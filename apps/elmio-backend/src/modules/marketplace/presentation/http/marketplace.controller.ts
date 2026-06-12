@@ -81,7 +81,9 @@ export class MarketplaceController {
   ): Promise<Marketplace> {
     const marketplace = await this.getMarketplaceByIdUseCase.execute(id);
     if (session.role === 'ALLIED' && marketplace.owner !== session.owner) {
-      throw new ForbiddenException('No tienes permisos para acceder a este marketplace.');
+      throw new ForbiddenException(
+        'No tienes permisos para acceder a este marketplace.',
+      );
     }
     return marketplace;
   }
@@ -129,7 +131,7 @@ export class MarketplaceController {
 
     return this.createMarketplaceUseCase.execute({
       ...body,
-      slug: slug!,
+      slug: slug,
       owner: body.owner || session.owner,
     });
   }
@@ -149,7 +151,10 @@ export class MarketplaceController {
     @CurrentUser() session: UserSession,
   ): Promise<Marketplace> {
     console.log('[MarketplaceController] UPDATE ID:', id);
-    console.log('[MarketplaceController] UPDATE BODY WHATSAPP:', JSON.stringify(body.whatsapp, null, 2));
+    console.log(
+      '[MarketplaceController] UPDATE BODY WHATSAPP:',
+      JSON.stringify(body.whatsapp, null, 2),
+    );
 
     if (session.role === 'COMPANY') {
       throw new ForbiddenException(
@@ -160,12 +165,14 @@ export class MarketplaceController {
     if (session.role === 'ALLIED') {
       const existing = await this.getMarketplaceByIdUseCase.execute(id);
       if (existing.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para modificar este marketplace.');
+        throw new ForbiddenException(
+          'No tienes permisos para modificar este marketplace.',
+        );
       }
     }
 
     const isAdmin = session.role === 'ADMIN';
-    return this.updateMarketplaceUseCase.execute(id, body as any, isAdmin);
+    return this.updateMarketplaceUseCase.execute(id, body, isAdmin);
   }
 
   /**
@@ -188,7 +195,9 @@ export class MarketplaceController {
     if (session.role === 'ALLIED') {
       const existing = await this.getMarketplaceByIdUseCase.execute(id);
       if (existing.owner !== session.owner) {
-        throw new ForbiddenException('No tienes permisos para eliminar este marketplace.');
+        throw new ForbiddenException(
+          'No tienes permisos para eliminar este marketplace.',
+        );
       }
     }
 

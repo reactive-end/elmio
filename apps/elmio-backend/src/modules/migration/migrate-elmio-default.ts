@@ -10,7 +10,11 @@ import * as dotenv from 'dotenv';
 
 // Entidades del backend
 import { GalleryImageEntity } from '../gallery/infrastructure/entities/gallery-image.entity';
-import type { MarketplaceSection, SectionStyle, SectionType } from '../marketplace/domain/marketplace';
+import type {
+  MarketplaceSection,
+  SectionStyle,
+  SectionType,
+} from '../marketplace/domain/marketplace';
 
 interface OldSection {
   id: string;
@@ -38,7 +42,9 @@ async function bootstrap() {
   dotenv.config();
 
   const logger = new Logger('MigrateElmioDefaultCli');
-  logger.log('Iniciando contexto de aplicación NestJS para migrar marketplace default de ElMio...');
+  logger.log(
+    'Iniciando contexto de aplicación NestJS para migrar marketplace default de ElMio...',
+  );
 
   const app = await NestFactory.createApplicationContext(AppModule);
 
@@ -63,11 +69,15 @@ async function bootstrap() {
     }
 
     if (!oldJsonPath) {
-      throw new Error(`No se encontró el archivo marketplace-default.json en ninguna de las rutas intentadas: ${JSON.stringify(possiblePaths, null, 2)}`);
+      throw new Error(
+        `No se encontró el archivo marketplace-default.json en ninguna de las rutas intentadas: ${JSON.stringify(possiblePaths, null, 2)}`,
+      );
     }
 
     logger.log(`Cargando archivo JSON desde: ${oldJsonPath}`);
-    const oldMarketplaceData = JSON.parse(fs.readFileSync(oldJsonPath, 'utf8')) as OldMarketplace;
+    const oldMarketplaceData = JSON.parse(
+      fs.readFileSync(oldJsonPath, 'utf8'),
+    ) as OldMarketplace;
 
     // 2. Inicializar cliente GCS
     const bucketName = process.env.GCS_BUCKET_NAME || '';
@@ -75,7 +85,9 @@ async function bootstrap() {
     const credentialsPath = process.env.GCS_CREDENTIALS_JSON_PATH?.trim();
 
     if (!bucketName) {
-      throw new Error('La variable de entorno GCS_BUCKET_NAME no está configurada.');
+      throw new Error(
+        'La variable de entorno GCS_BUCKET_NAME no está configurada.',
+      );
     }
 
     let storageClient: Storage;
@@ -93,7 +105,9 @@ async function bootstrap() {
     const tenantSlug = 'elmio';
     const newTenantDir = `gallery/${tenantSlug}/images`;
 
-    logger.log(`Conectado a bucket GCS: ${bucketName}. Procesando imágenes para el tenant: ${tenantSlug}...`);
+    logger.log(
+      `Conectado a bucket GCS: ${bucketName}. Procesando imágenes para el tenant: ${tenantSlug}...`,
+    );
 
     let imagesCopiedCount = 0;
 
@@ -102,7 +116,9 @@ async function bootstrap() {
       if (typeof obj === 'string') {
         if (obj.includes('/marketplace/')) {
           // Extraer la ruta física del archivo en el bucket
-          const match = obj.match(/https:\/\/storage\.googleapis\.com\/[^\/]+\/(.+)/);
+          const match = obj.match(
+            /https:\/\/storage\.googleapis\.com\/[^\/]+\/(.+)/,
+          );
           if (match) {
             const oldPathInBucket = decodeURIComponent(match[1]);
 
@@ -113,7 +129,9 @@ async function bootstrap() {
                 const [exists] = await sourceFile.exists();
 
                 if (!exists) {
-                  logger.warn(`Imagen física no encontrada en el bucket viejo: ${oldPathInBucket}`);
+                  logger.warn(
+                    `Imagen física no encontrada en el bucket viejo: ${oldPathInBucket}`,
+                  );
                   return obj;
                 }
 
@@ -121,13 +139,15 @@ async function bootstrap() {
                 const parts = oldPathInBucket.split('/');
                 const originalName = parts[parts.length - 1];
                 const extension = originalName.includes('.')
-                  ? originalName.split('.').pop()?.toLowerCase() ?? 'png'
+                  ? (originalName.split('.').pop()?.toLowerCase() ?? 'png')
                   : 'png';
 
                 const newFileName = `${randomUUID()}.${extension}`;
                 const newObjectKey = `${newTenantDir}/${newFileName}`;
 
-                logger.log(`Copiando imagen en GCS: ${oldPathInBucket} -> ${newObjectKey}`);
+                logger.log(
+                  `Copiando imagen en GCS: ${oldPathInBucket} -> ${newObjectKey}`,
+                );
 
                 // Copiar en GCS
                 const destFile = bucket.file(newObjectKey);
@@ -136,10 +156,14 @@ async function bootstrap() {
                 // Obtener metadatos de la imagen copiada
                 const [metadata] = await destFile.getMetadata();
                 const size = parseInt(String(metadata.size || '0'), 10);
-                const mimeType = metadata.contentType || `image/${extension === 'svg' ? 'svg+xml' : extension}`;
+                const mimeType =
+                  metadata.contentType ||
+                  `image/${extension === 'svg' ? 'svg+xml' : extension}`;
 
                 // Generar el storagePath consistente
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const timestamp = new Date()
+                  .toISOString()
+                  .replace(/[:.]/g, '-');
                 const safeName = originalName
                   .trim()
                   .toLowerCase()
@@ -159,7 +183,9 @@ async function bootstrap() {
 
                 await galleryRepo.save(galleryImage);
                 imagesCopiedCount++;
-                logger.log(`Imagen registrada en DB con ID: ${galleryImage.id}`);
+                logger.log(
+                  `Imagen registrada en DB con ID: ${galleryImage.id}`,
+                );
 
                 // Devolver nueva URL pública
                 const publicBaseUrl = process.env.GCS_PUBLIC_BASE_URL?.trim();
@@ -168,7 +194,9 @@ async function bootstrap() {
                 }
                 return `https://storage.googleapis.com/${bucketName}/${newObjectKey}`;
               } catch (imgErr) {
-                logger.error(`Error al procesar la imagen física ${oldPathInBucket}: ${(imgErr as Error).message}`);
+                logger.error(
+                  `Error al procesar la imagen física ${oldPathInBucket}: ${(imgErr as Error).message}`,
+                );
               }
             }
           }
@@ -183,7 +211,9 @@ async function bootstrap() {
       } else if (obj !== null && typeof obj === 'object') {
         const newObj: Record<string, unknown> = {};
         for (const key of Object.keys(obj)) {
-          newObj[key] = await processObjectImages((obj as Record<string, unknown>)[key]);
+          newObj[key] = await processObjectImages(
+            (obj as Record<string, unknown>)[key],
+          );
         }
         return newObj;
       }
@@ -191,9 +221,15 @@ async function bootstrap() {
     };
 
     // 3. Procesar imágenes recursivamente en las secciones
-    logger.log('Iniciando copia física de imágenes en GCS y actualización de URLs...');
-    const migratedRawSections = (await processObjectImages(oldMarketplaceData.sections)) as OldSection[];
-    logger.log(`Se migraron exitosamente ${imagesCopiedCount} imágenes en GCS.`);
+    logger.log(
+      'Iniciando copia física de imágenes en GCS y actualización de URLs...',
+    );
+    const migratedRawSections = (await processObjectImages(
+      oldMarketplaceData.sections,
+    )) as OldSection[];
+    logger.log(
+      `Se migraron exitosamente ${imagesCopiedCount} imágenes en GCS.`,
+    );
 
     // Helper para obtener el nombre amigable de la sección según su tipo
     const getSectionFriendlyName = (type: string): string => {
@@ -258,34 +294,41 @@ async function bootstrap() {
     });
 
     // 4. Mapear y reestructurar secciones al nuevo formato
-    logger.log('Reestructurando secciones del marketplace al nuevo formato de MarketplaceSection...');
-    const migratedSections: MarketplaceSection[] = migratedRawSections.map((sec) => {
-      const type = sec.type as SectionType;
-      
-      // Mapear styles a style (singular)
-      const rawStyle = sec.styles || sec.style || {};
-      const style = {
-        ...getBaseStyle(),
-        ...rawStyle,
-      } as SectionStyle;
+    logger.log(
+      'Reestructurando secciones del marketplace al nuevo formato de MarketplaceSection...',
+    );
+    const migratedSections: MarketplaceSection[] = migratedRawSections.map(
+      (sec) => {
+        const type = sec.type as SectionType;
 
-      return {
-        id: sec.id,
-        name: getSectionFriendlyName(sec.type),
-        type,
-        visible: true,
-        order: sec.order,
-        content: sec.content as any, // Hacemos cast a any para compatibilidad de tipos
-        style,
-      };
-    });
+        // Mapear styles a style (singular)
+        const rawStyle = sec.styles || sec.style || {};
+        const style = {
+          ...getBaseStyle(),
+          ...rawStyle,
+        };
+
+        return {
+          id: sec.id,
+          name: getSectionFriendlyName(sec.type),
+          type,
+          visible: true,
+          order: sec.order,
+          content: sec.content as any, // Hacemos cast a any para compatibilidad de tipos
+          style,
+        };
+      },
+    );
 
     // 5. Mapear el Marketplace completo al nuevo formato
     logger.log('Mapeando el marketplace default al nuevo formato completo...');
     const headerSection = migratedSections.find((s) => s.type === 'header');
-    
+
     // Obtener el logo del header
-    const logoUrl = headerSection?.content?.logoUrl || (headerSection?.content as any)?.logo || '';
+    const logoUrl =
+      headerSection?.content?.logoUrl ||
+      (headerSection?.content as any)?.logo ||
+      '';
 
     const newMarketplace = {
       id: oldMarketplaceData.id,
@@ -304,22 +347,49 @@ async function bootstrap() {
     };
 
     // 6. Guardar en el subdirectorio local del backend
-    const targetLocalDir = path.join(rootDir, 'src', 'modules', 'marketplace', 'infrastructure', 'data');
+    const targetLocalDir = path.join(
+      rootDir,
+      'src',
+      'modules',
+      'marketplace',
+      'infrastructure',
+      'data',
+    );
     if (!fs.existsSync(targetLocalDir)) {
       fs.mkdirSync(targetLocalDir, { recursive: true });
     }
 
-    const targetLocalPath = path.join(targetLocalDir, 'marketplace-default.json');
-    logger.log(`Guardando JSON migrado en la ruta local del módulo del backend: ${targetLocalPath}`);
-    fs.writeFileSync(targetLocalPath, JSON.stringify(newMarketplace, null, 2), 'utf8');
+    const targetLocalPath = path.join(
+      targetLocalDir,
+      'marketplace-default.json',
+    );
+    logger.log(
+      `Guardando JSON migrado en la ruta local del módulo del backend: ${targetLocalPath}`,
+    );
+    fs.writeFileSync(
+      targetLocalPath,
+      JSON.stringify(newMarketplace, null, 2),
+      'utf8',
+    );
 
     // 7. Actualizar el archivo en la raíz del proyecto para mantenerlo sincronizado
-    logger.log(`Guardando JSON migrado sincronizado en la raíz del proyecto: ${oldJsonPath}`);
-    fs.writeFileSync(oldJsonPath, JSON.stringify(newMarketplace, null, 2), 'utf8');
+    logger.log(
+      `Guardando JSON migrado sincronizado en la raíz del proyecto: ${oldJsonPath}`,
+    );
+    fs.writeFileSync(
+      oldJsonPath,
+      JSON.stringify(newMarketplace, null, 2),
+      'utf8',
+    );
 
-    logger.log('✅ ¡Proceso de migración del marketplace default finalizado con éxito!');
+    logger.log(
+      '✅ ¡Proceso de migración del marketplace default finalizado con éxito!',
+    );
   } catch (error) {
-    logger.error('❌ Error durante la migración del marketplace default:', error);
+    logger.error(
+      '❌ Error durante la migración del marketplace default:',
+      error,
+    );
     process.exit(1);
   } finally {
     await app.close();

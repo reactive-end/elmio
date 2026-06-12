@@ -18,7 +18,11 @@ export class AddAlternativeBankAccountAndActionsToProductsMigration implements C
 
   async down(queryRunner: QueryRunner): Promise<void> {
     // Revertir los cambios eliminando las columnas de forma segura
-    await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "alternativeBankAccountId"`);
-    await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "actions"`);
+    await queryRunner.query(
+      `ALTER TABLE "products" DROP COLUMN IF EXISTS "alternativeBankAccountId"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "products" DROP COLUMN IF EXISTS "actions"`,
+    );
   }
 }

@@ -1,4 +1,9 @@
-import { Injectable, Inject, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   RBAC_REPOSITORY_PORT,
   type RbacRepositoryPort,
@@ -79,7 +84,9 @@ export class ManageUsersUseCase {
     return this.stripUser(user);
   }
 
-  async create(input: CreateUserInput): Promise<ReturnType<typeof this.stripUser>> {
+  async create(
+    input: CreateUserInput,
+  ): Promise<ReturnType<typeof this.stripUser>> {
     const user = await this.repository.createUser({
       name: input.name,
       email: input.email,
@@ -131,9 +138,7 @@ export class ManageUsersUseCase {
     const cc = user.countryCode || '+58';
 
     const displayPhone =
-      rawPhone && !rawPhone.startsWith('+')
-        ? `${cc}${rawPhone}`
-        : rawPhone;
+      rawPhone && !rawPhone.startsWith('+') ? `${cc}${rawPhone}` : rawPhone;
 
     return {
       id: user.id,

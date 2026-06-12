@@ -16,7 +16,7 @@ export class AddFinancingAndLegalRepsMigration implements CustomMigration {
 
     // 2. Verificar si existen las columnas antiguas
     const columnsCheck = await queryRunner.query(
-      `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'paymentMode'`
+      `SELECT column_name FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'paymentMode'`,
     );
     const hasOldColumns = columnsCheck.length > 0;
 
@@ -33,8 +33,14 @@ export class AddFinancingAndLegalRepsMigration implements CustomMigration {
             name: 'Plan Predeterminado',
             paymentMode: p.paymentMode || 'cash',
             paymentPeriod: p.paymentPeriod || 'monthly',
-            maxQuotas: p.maxQuotas !== undefined && p.maxQuotas !== null ? Number(p.maxQuotas) : 1,
-            initialPayment: p.initialPayment !== undefined && p.initialPayment !== null ? Number(p.initialPayment) : 0,
+            maxQuotas:
+              p.maxQuotas !== undefined && p.maxQuotas !== null
+                ? Number(p.maxQuotas)
+                : 1,
+            initialPayment:
+              p.initialPayment !== undefined && p.initialPayment !== null
+                ? Number(p.initialPayment)
+                : 0,
           },
         ];
 
@@ -45,18 +51,30 @@ export class AddFinancingAndLegalRepsMigration implements CustomMigration {
       }
 
       // 3. Eliminar columnas redundantes antiguas de products
-      await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "paymentMode"`);
-      await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "paymentPeriod"`);
-      await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "maxQuotas"`);
-      await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "initialPayment"`);
+      await queryRunner.query(
+        `ALTER TABLE "products" DROP COLUMN IF EXISTS "paymentMode"`,
+      );
+      await queryRunner.query(
+        `ALTER TABLE "products" DROP COLUMN IF EXISTS "paymentPeriod"`,
+      );
+      await queryRunner.query(
+        `ALTER TABLE "products" DROP COLUMN IF EXISTS "maxQuotas"`,
+      );
+      await queryRunner.query(
+        `ALTER TABLE "products" DROP COLUMN IF EXISTS "initialPayment"`,
+      );
     } else {
-      // Si ya no existen las columnas antiguas (porque TypeORM synchronize las borró), 
+      // Si ya no existen las columnas antiguas (porque TypeORM synchronize las borró),
       // aseguramos que todos los productos tengan al menos un esquema predeterminado si está vacío o nulo
       const products = await queryRunner.query(
         `SELECT "id", "financingSchemes" FROM "products"`,
       );
       for (const p of products) {
-        if (!p.financingSchemes || p.financingSchemes === '[]' || p.financingSchemes === 'null') {
+        if (
+          !p.financingSchemes ||
+          p.financingSchemes === '[]' ||
+          p.financingSchemes === 'null'
+        ) {
           const schemes = [
             {
               id: randomUUID(),
@@ -120,7 +138,11 @@ export class AddFinancingAndLegalRepsMigration implements CustomMigration {
     }
 
     // 3. Eliminar las nuevas columnas
-    await queryRunner.query(`ALTER TABLE "products" DROP COLUMN IF EXISTS "financingSchemes"`);
-    await queryRunner.query(`ALTER TABLE "enterprises" DROP COLUMN IF EXISTS "additionalLegalReps"`);
+    await queryRunner.query(
+      `ALTER TABLE "products" DROP COLUMN IF EXISTS "financingSchemes"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "enterprises" DROP COLUMN IF EXISTS "additionalLegalReps"`,
+    );
   }
 }

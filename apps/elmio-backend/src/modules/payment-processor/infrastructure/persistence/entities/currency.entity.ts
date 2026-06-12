@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 import {
   Entity,
   PrimaryColumn,
@@ -6,10 +6,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-} from 'typeorm'
-import { BankAccount } from './bank-account.entity'
-import { Payment } from './payment.entity'
-import { ExchangeRate } from './exchange-rate.entity'
+} from 'typeorm';
+import { BankAccount } from './bank-account.entity';
+import { Payment } from './payment.entity';
+import { ExchangeRate } from './exchange-rate.entity';
 
 @Entity({ name: 'currency' })
 /**
@@ -19,7 +19,7 @@ import { ExchangeRate } from './exchange-rate.entity'
  */
 export class Currency {
   @PrimaryColumn('uuid')
-  id: string = randomUUID()
+  id: string = randomUUID();
 
   @Column({
     name: 'name',
@@ -27,7 +27,7 @@ export class Currency {
     length: 50,
     comment: 'Nombre visible de la moneda (ej. Dólar, Bolívar)',
   })
-  name: string
+  name: string;
 
   @Column({
     name: 'code',
@@ -36,7 +36,7 @@ export class Currency {
     unique: true,
     comment: 'Código ISO de la moneda (ej. USD, VES)',
   })
-  code: string
+  code: string;
 
   @Column({
     name: 'symbol',
@@ -44,23 +44,23 @@ export class Currency {
     length: 5,
     comment: 'Símbolo de la moneda (ej. $, Bs.)',
   })
-  symbol: string
+  symbol: string;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive: boolean
+  isActive: boolean;
 
   @OneToMany(() => BankAccount, (account) => account.currency)
-  bankAccounts: BankAccount[]
+  bankAccounts: BankAccount[];
 
   @OneToMany(() => Payment, (payment) => payment.currency)
-  payments: Payment[]
+  payments: Payment[];
 
   @OneToMany(() => ExchangeRate, (exchangeRate) => exchangeRate.currency)
-  exchangeRates: ExchangeRate[]
+  exchangeRates: ExchangeRate[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date
+  updatedAt: Date;
 }

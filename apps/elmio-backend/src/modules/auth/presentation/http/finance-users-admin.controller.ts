@@ -80,7 +80,9 @@ export class FinanceUsersAdminController {
       where: { email: emailLower, role: UserRole.FINANCE },
     });
     if (existingEmail) {
-      throw new ConflictException('Este correo electrónico ya está registrado para un usuario de finanzas.');
+      throw new ConflictException(
+        'Este correo electrónico ya está registrado para un usuario de finanzas.',
+      );
     }
 
     // Validar cédula única dentro del rol FINANCE (usamos la columna slug)
@@ -88,7 +90,9 @@ export class FinanceUsersAdminController {
       where: { slug: cedulaClean, role: UserRole.FINANCE },
     });
     if (existingCedula) {
-      throw new ConflictException('La cédula ingresada ya está registrada para otro usuario de finanzas.');
+      throw new ConflictException(
+        'La cédula ingresada ya está registrada para otro usuario de finanzas.',
+      );
     }
 
     const userId = randomUUID();
@@ -131,14 +135,18 @@ export class FinanceUsersAdminController {
       where: { email: emailLower, role: UserRole.FINANCE },
     });
     if (existingWithEmail && existingWithEmail.id !== id) {
-      throw new ConflictException('Este correo electrónico ya está registrado para otro usuario de finanzas.');
+      throw new ConflictException(
+        'Este correo electrónico ya está registrado para otro usuario de finanzas.',
+      );
     }
 
     const existingWithCedula = await this.userRepo.findOne({
       where: { slug: cedulaClean, role: UserRole.FINANCE },
     });
     if (existingWithCedula && existingWithCedula.id !== id) {
-      throw new ConflictException('La cédula ingresada ya está registrada para otro usuario de finanzas.');
+      throw new ConflictException(
+        'La cédula ingresada ya está registrada para otro usuario de finanzas.',
+      );
     }
 
     user.name = body.name.trim();

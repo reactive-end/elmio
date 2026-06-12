@@ -16,10 +16,7 @@ import { GalleryController } from './presentation/http/gallery.controller';
  * Modulo que agrupa la feature de galeria de imagenes del dashboard.
  */
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forFeature([GalleryImageEntity]),
-  ],
+  imports: [AuthModule, TypeOrmModule.forFeature([GalleryImageEntity])],
   controllers: [GalleryController],
   providers: [
     ListGalleryImagesUseCase,
@@ -41,7 +38,9 @@ import { GalleryController } from './presentation/http/gallery.controller';
           process.env.GCS_CREDENTIALS_JSON_PATH?.trim(),
         );
         const hasBucketName = Boolean(process.env.GCS_BUCKET_NAME?.trim());
-        const hasDefaultProject = Boolean(process.env.GOOGLE_CLOUD_PROJECT?.trim());
+        const hasDefaultProject = Boolean(
+          process.env.GOOGLE_CLOUD_PROJECT?.trim(),
+        );
 
         if (
           hasBucketName &&
@@ -57,4 +56,3 @@ import { GalleryController } from './presentation/http/gallery.controller';
   ],
 })
 export class GalleryModule {}
-

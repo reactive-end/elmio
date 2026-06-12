@@ -1,24 +1,24 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator'
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class GenerateOtpDto {
   @IsString()
   @IsNotEmpty()
-  companyAccountId: string
+  companyAccountId: string;
 
   @IsString()
   @Length(4, 4) // validar longitud exacta
   @IsNotEmpty()
-  bankCode: string
+  bankCode: string;
 
   @IsString()
   @IsNotEmpty()
-  amount: number
+  amount: number;
 
   @IsString()
   @IsNotEmpty()
-  phoneNumber: string
+  phoneNumber: string;
 
   @IsString()
   @IsNotEmpty()
-  nationalId: string
+  nationalId: string;
 }

@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Post,
-  Sse,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Inject, Post, Sse, UseGuards } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { AuthGuard } from '../../auth/presentation/guards/auth.guard';
 import { RolesGuard } from '../../auth/presentation/guards/roles.guard';

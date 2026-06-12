@@ -5,10 +5,18 @@
  * @module bucket/application/services
  */
 
-import { Injectable, Logger, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Storage, Bucket } from '@google-cloud/storage';
-import { BucketFileResponseDto, UploadFileResponseDto } from '../dto/bucket.dto';
+import {
+  BucketFileResponseDto,
+  UploadFileResponseDto,
+} from '../dto/bucket.dto';
 
 const HIDDEN_FOLDERS = ['mercantil-dni'];
 
@@ -92,7 +100,10 @@ export class BucketService {
         .filter((file) => !this.isHiddenPath(file.name))
         .map((file) => this.mapFileToDto(file));
     } catch (error) {
-      this.logger.error(`Error al listar archivos: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al listar archivos: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException(
         `Error al listar archivos: ${error.message}`,
       );
@@ -107,7 +118,11 @@ export class BucketService {
    */
   async listFolders(parentFolder?: string): Promise<string[]> {
     try {
-      const options: { prefix?: string; delimiter: string; autoPaginate: boolean } = {
+      const options: {
+        prefix?: string;
+        delimiter: string;
+        autoPaginate: boolean;
+      } = {
         delimiter: '/',
         autoPaginate: false,
       };
@@ -129,7 +144,10 @@ export class BucketService {
         .map((p: string) => p.replace(/\/$/, ''))
         .filter((path) => !this.isHiddenPath(path));
     } catch (error) {
-      this.logger.error(`Error al listar carpetas: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al listar carpetas: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException(
         `Error al listar carpetas: ${error.message}`,
       );
@@ -185,7 +203,10 @@ export class BucketService {
         folder: folder || '',
       };
     } catch (error) {
-      this.logger.error(`Error al subir archivo: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al subir archivo: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException(
         `Error al subir archivo: ${error.message}`,
       );
@@ -207,7 +228,9 @@ export class BucketService {
 
       if (!exists) {
         this.logger.warn(`Archivo no encontrado: ${filePath}`);
-        throw new NotFoundException(`El archivo '${filePath}' no existe en el bucket`);
+        throw new NotFoundException(
+          `El archivo '${filePath}' no existe en el bucket`,
+        );
       }
 
       await file.delete();
@@ -217,7 +240,10 @@ export class BucketService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error al eliminar archivo: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al eliminar archivo: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException(
         `Error al eliminar el archivo: ${error.message}`,
       );
@@ -246,13 +272,18 @@ export class BucketService {
     };
   }
 
-  async moveFolder(fromPath: string, toPath: string): Promise<{ moved: number }> {
+  async moveFolder(
+    fromPath: string,
+    toPath: string,
+  ): Promise<{ moved: number }> {
     try {
       const fromPrefix = this.normalizeFolder(fromPath);
       const toPrefix = this.normalizeFolder(toPath);
 
       if (!fromPrefix || !toPrefix) {
-        throw new InternalServerErrorException('Las carpetas origen y destino son requeridas');
+        throw new InternalServerErrorException(
+          'Las carpetas origen y destino son requeridas',
+        );
       }
 
       if (fromPrefix === toPrefix) {
@@ -274,7 +305,10 @@ export class BucketService {
 
       return { moved: realFiles.length };
     } catch (error) {
-      this.logger.error(`Error al mover carpeta: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al mover carpeta: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException(
         `Error al mover carpeta: ${error.message}`,
       );
@@ -287,6 +321,9 @@ export class BucketService {
 
   private isHiddenPath(path: string): boolean {
     const normalizedPath = path.replace(/^\/+|\/+$/g, '');
-    return HIDDEN_FOLDERS.some((folder) => normalizedPath === folder || normalizedPath.startsWith(`${folder}/`));
+    return HIDDEN_FOLDERS.some(
+      (folder) =>
+        normalizedPath === folder || normalizedPath.startsWith(`${folder}/`),
+    );
   }
 }

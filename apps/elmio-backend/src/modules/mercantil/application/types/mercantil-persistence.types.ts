@@ -15,7 +15,11 @@ export type MercantilPolicyStatus =
 
 export type MercantilQuoteStatus = 'paid' | 'upcoming_payment' | 'coming_soon';
 
-export type MercantilPaymentFrequency = 'monthly' | 'quarterly' | 'biannual' | 'yearly';
+export type MercantilPaymentFrequency =
+  | 'monthly'
+  | 'quarterly'
+  | 'biannual'
+  | 'yearly';
 
 export type MercantilTraceStage =
   | 'emit'

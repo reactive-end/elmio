@@ -77,7 +77,8 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     const { role, page, perPage, search, includeInactive } = params;
     const skip = (page - 1) * perPage;
 
-    const qb = this.userRepo.createQueryBuilder('user')
+    const qb = this.userRepo
+      .createQueryBuilder('user')
       .leftJoinAndMapOne(
         'user.profile',
         PersonProfileEntity,
@@ -103,9 +104,7 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
       );
     }
 
-    qb.orderBy('user.createdAt', 'DESC')
-      .skip(skip)
-      .take(perPage);
+    qb.orderBy('user.createdAt', 'DESC').skip(skip).take(perPage);
 
     const [rawItems, total] = await qb.getManyAndCount();
 
@@ -117,7 +116,7 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
         ...user,
         profilePhone: profile?.phone ?? null,
         enterprisePhone: enterprise?.phone ?? null,
-      } as EnrichedUser;
+      };
     });
 
     return { items, total };
@@ -132,11 +131,8 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
     return this.userRepo.save(entity);
   }
 
-  async updateUser(
-    id: string,
-    data: Partial<UserEntity>,
-  ): Promise<UserEntity> {
-    await this.userRepo.update(id, data as Record<string, unknown>);
+  async updateUser(id: string, data: Partial<UserEntity>): Promise<UserEntity> {
+    await this.userRepo.update(id, data);
     const updated = await this.userRepo.findOne({ where: { id } });
     if (!updated) {
       throw new Error('Usuario no encontrado después de actualizar.');
@@ -145,7 +141,7 @@ export class DbRbacRepositoryService implements RbacRepositoryPort {
   }
 
   async deactivateUser(id: string): Promise<void> {
-    await this.userRepo.update(id, { isActive: false } as Record<string, unknown>);
+    await this.userRepo.update(id, { isActive: false });
   }
 
   private permToDomain(entity: RolePermissionEntity): RolePermission {

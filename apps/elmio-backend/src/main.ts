@@ -13,7 +13,10 @@ async function bootstrap() {
     : [];
 
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       // Permitir solicitudes sin origen (como Postman o curl)
       if (!origin) {
         callback(null, true);

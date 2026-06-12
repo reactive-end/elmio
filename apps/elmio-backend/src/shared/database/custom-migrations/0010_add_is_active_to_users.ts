@@ -15,8 +15,6 @@ export class AddIsActiveToUsersMigration implements CustomMigration {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP COLUMN "isActive"`,
-    );
+    await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "isActive"`);
   }
 }
