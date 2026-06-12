@@ -518,7 +518,7 @@ export class MercantilStorageService {
   ): EmulatedVehicle | null {
     if (!order || !order.vehicleSnapshot) return null;
     const vehicle = order.vehicleSnapshot as VehicleSnapshot;
-    const client = order.clientSnapshot;
+    const client = order.clientSnapshot as ClientSnapshot;
     return {
       id: order.id,
       shopcartId: order.shopcartId,
@@ -554,7 +554,7 @@ export class MercantilStorageService {
   ): EmulatedPayment | null {
     if (!order || !order.paymentSnapshot) return null;
     const payment = order.paymentSnapshot as PaymentSnapshot;
-    const client = order.clientSnapshot;
+    const client = order.clientSnapshot as ClientSnapshot;
     return {
       id: order.id,
       shopcartId: order.shopcartId,
