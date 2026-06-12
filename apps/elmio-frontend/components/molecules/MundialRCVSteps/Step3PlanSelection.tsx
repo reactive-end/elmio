@@ -63,48 +63,50 @@ export function Step3PlanSelection({
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             {plans.map((plan) => {
               const isSelected = selectedPlanId === plan.id
               return (
                 <div
                   key={plan.id}
                   onClick={() => setSelectedPlanId(plan.id)}
-                  className={`p-5 rounded-2xl border text-left flex flex-col gap-2 transition-all cursor-pointer ${
+                  className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                     isSelected
                       ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                       : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h4 className="text-base font-bold text-body">{plan.title}</h4>
-                      <p className="text-xs text-body-muted mt-0.5">{plan.description}</p>
+                      <h4 className="text-sm font-bold text-body leading-tight">{plan.title}</h4>
+                      <p className="text-[11px] text-body-muted mt-0.5 line-clamp-2">
+                        {plan.description}
+                      </p>
                     </div>
                     {isSelected ? (
                       <CheckCircle2
-                        className="h-5 w-5 text-secondary shrink-0"
+                        className="h-4 w-4 text-secondary shrink-0"
                         fill="currentColor"
                         stroke="white"
                       />
                     ) : (
-                      <div className="h-5 w-5 rounded-full border border-gray-200 shrink-0" />
+                      <div className="h-4 w-4 rounded-full border border-gray-200 shrink-0" />
                     )}
                   </div>
-                  <div className="flex items-end justify-between gap-3 border-t border-gray-100 pt-3 mt-1">
+                  <div className="flex items-end justify-between gap-2 border-t border-gray-100 pt-2 mt-0.5">
                     <div className="min-w-0">
-                      <span className="text-[10px] uppercase font-semibold text-gray-400">
+                      <span className="text-[9px] uppercase font-semibold tracking-wider text-gray-400">
                         Prima Anual
                       </span>
-                      <p className="text-2xl font-black leading-tight text-secondary">
+                      <p className="text-base font-black leading-tight text-secondary">
                         {formatCurrency(plan.totalPrime)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] text-gray-400 uppercase font-semibold">
-                        Suma Asegurada
+                      <span className="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">
+                        Suma
                       </span>
-                      <p className="text-sm font-semibold text-body">
+                      <p className="text-xs font-semibold text-body">
                         {formatCurrency(plan.assuredSum)}
                       </p>
                     </div>

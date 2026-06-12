@@ -224,7 +224,7 @@ export default function EnterprisePurchasesPage() {
       {/* Encabezado */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-body tracking-tight">Mis Compras</h1>
+          <h1 className="text-2xl font-bold text-body tracking-tight">Compras</h1>
           <p className="mt-0.5 text-sm text-body-muted">
             Gestiona e inspecciona tus productos y pólizas de seguro adquiridas en el Marketplace.
           </p>

@@ -160,7 +160,7 @@ export default function InsuranceQuotesPage({ params }: InsuranceQuotesPageProps
           onClick={() => router.push('/dashboard/collaborator/purchases')}
           className="flex items-center gap-2 border border-gray-150 hover:bg-gray-50/50 cursor-pointer"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver a Mis Compras
+          <ArrowLeft className="h-4 w-4" /> Volver a Compras
         </Button>
       </div>
 

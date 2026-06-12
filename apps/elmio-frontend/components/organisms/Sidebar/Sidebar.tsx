@@ -55,7 +55,7 @@ function getVisibleChildren(group: NavGroup, role: string | null): NavChild[] {
       },
       {
         key: 'shop-purchases-company',
-        label: 'Mis compras',
+        label: 'Compras',
         href: '/dashboard/enterprise/purchases',
         icon: List,
       },
@@ -72,7 +72,7 @@ function getVisibleChildren(group: NavGroup, role: string | null): NavChild[] {
       },
       {
         key: 'shop-purchases-employee',
-        label: 'Mis compras',
+        label: 'Compras',
         href: '/dashboard/collaborator/purchases',
         icon: List,
       },
@@ -96,7 +96,7 @@ const NAV: NavGroup[] = [
     children: [
       {
         key: 'enterprise-onboarding',
-        label: 'Configuracion',
+        label: 'Expediente',
         href: '/dashboard/enterprise/onboarding',
         icon: Landmark,
       },
@@ -277,12 +277,12 @@ const NAV: NavGroup[] = [
   },
   {
     key: 'client-purchases',
-    label: 'Mis Compras',
+    label: 'Compras',
     icon: ShoppingBag,
     children: [
       {
         key: 'client-purchases-list',
-        label: 'Mis compras',
+        label: 'Compras',
         href: '/dashboard/collaborator/purchases',
         icon: List,
       },
@@ -295,7 +295,6 @@ const NAV: NavGroup[] = [
     ],
   },
 ]
-
 
 /**
  * Organismo de barra lateral con logo, navegacion colapsable y grupos expandibles.
@@ -409,7 +408,14 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
           }
 
           // Ocultar sección de Empresa en el menú lateral para administradores (ADMIN), colaboradores (EMPLOYEE), aliados (ALLIED) y clientes (CLIENT)
-          if (group.key === 'enterprise' && (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'ALLIED' || role === 'CLIENT' || role === 'FINANCE')) {
+          if (
+            group.key === 'enterprise' &&
+            (role === 'ADMIN' ||
+              role === 'EMPLOYEE' ||
+              role === 'ALLIED' ||
+              role === 'CLIENT' ||
+              role === 'FINANCE')
+          ) {
             return false
           }
 
@@ -432,7 +438,10 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
           }
 
           // Ocultar Galeria para colaboradores, empresas y clientes.
-          if (group.key === 'gallery' && (role === 'EMPLOYEE' || role === 'COMPANY' || role === 'CLIENT')) {
+          if (
+            group.key === 'gallery' &&
+            (role === 'EMPLOYEE' || role === 'COMPANY' || role === 'CLIENT')
+          ) {
             return false
           }
 
@@ -493,25 +502,29 @@ export function Sidebar({ collapsed, onToggleGroup, isGroupOpen, currentPath }: 
                       if (rbacPermissions && child.key in rbacPermissions) {
                         return rbacPermissions[child.key] === true
                       }
-                      if (group.key === 'finance-desk' && child.key === 'config-finance-users' && role !== 'ADMIN') {
+                      if (
+                        group.key === 'finance-desk' &&
+                        child.key === 'config-finance-users' &&
+                        role !== 'ADMIN'
+                      ) {
                         return false
                       }
                       return true
                     })
                     .map((child) => (
-                    <Link
-                      key={child.key}
-                      href={child.href}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
-                        isActive(child.href)
-                          ? 'bg-white/15 text-white font-medium'
-                          : 'text-white/50 hover:text-white hover:bg-white/10'
-                      }`}
-                    >
-                      <child.icon className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />
-                      <span>{child.label}</span>
-                    </Link>
-                  ))}
+                      <Link
+                        key={child.key}
+                        href={child.href}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
+                          isActive(child.href)
+                            ? 'bg-white/15 text-white font-medium'
+                            : 'text-white/50 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        <child.icon className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />
+                        <span>{child.label}</span>
+                      </Link>
+                    ))}
                 </div>
               )}
             </div>

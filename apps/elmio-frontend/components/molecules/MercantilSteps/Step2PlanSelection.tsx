@@ -170,7 +170,7 @@ export function Step2PlanSelection({
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+                    <div className="grid grid-cols-2 gap-2 mt-1">
                       {product.plans?.map((plan) => {
                         const isSelected = selectedPlans.some((sp) => sp.plan.id === plan.id)
                         const draft = selectedPlans.find((sp) => sp.plan.id === plan.id)
@@ -178,7 +178,7 @@ export function Step2PlanSelection({
                           <div
                             key={plan.id}
                             onClick={() => togglePlan(product, plan)}
-                            className={`p-4 rounded-xl border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${
+                            className={`p-3 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                               isSelected
                                 ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                                 : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50'
@@ -187,14 +187,14 @@ export function Step2PlanSelection({
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <span
-                                  className={`text-[10px] font-semibold uppercase tracking-wider ${
+                                  className={`text-[9px] font-semibold uppercase tracking-wider ${
                                     isSelected ? 'text-secondary' : 'text-gray-400'
                                   }`}
                                 >
                                   Prima {FREQUENCY_LABELS[draft?.frequency ?? 'yearly']}
                                 </span>
                                 <p
-                                  className={`text-lg font-bold leading-tight ${
+                                  className={`text-base font-bold leading-tight ${
                                     isSelected ? 'text-secondary' : 'text-body'
                                   }`}
                                 >
@@ -206,26 +206,26 @@ export function Step2PlanSelection({
                               </div>
                               {isSelected ? (
                                 <CheckCircle2
-                                  className="h-5 w-5 text-secondary shrink-0"
+                                  className="h-4 w-4 text-secondary shrink-0"
                                   fill="currentColor"
                                   stroke="white"
                                 />
                               ) : (
-                                <div className="h-5 w-5 rounded-full border border-gray-200 shrink-0" />
+                                <div className="h-4 w-4 rounded-full border border-gray-200 shrink-0" />
                               )}
                             </div>
 
                             <div className="text-[10px] text-gray-400">
-                              Suma asegurada: {formatCurrency(plan.assuredSum || 0)}
+                              Suma: {formatCurrency(plan.assuredSum || 0)}
                             </div>
 
                             {isSelected && draft && (
                               <div
-                                className="flex flex-col gap-1 items-start border-t border-gray-100 pt-2 mt-1"
+                                className="flex flex-col gap-1 items-start border-t border-gray-100 pt-1.5 mt-0.5"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <span className="text-[10px] text-gray-400 font-semibold">
-                                  Frecuencia de pago
+                                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">
+                                  Frecuencia
                                 </span>
                                 <Select
                                   value={draft.frequency}
@@ -240,7 +240,7 @@ export function Step2PlanSelection({
                                       label: `${FREQUENCY_LABELS[key]} (${formatCurrency(divCost)})`,
                                     }
                                   })}
-                                  className="text-xs w-full"
+                                  className="text-[11px] w-full"
                                 />
                               </div>
                             )}

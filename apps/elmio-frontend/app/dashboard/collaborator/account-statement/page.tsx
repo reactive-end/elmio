@@ -10,6 +10,7 @@ import {
   Package,
   Shield,
   Landmark,
+  TrendingUp,
 } from 'lucide-react'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
@@ -90,8 +91,12 @@ export default function CollaboratorAccountStatementPage() {
         </div>
         {loanSummary && (
           <div className="flex items-center gap-2.5 bg-secondary/5 border border-secondary/15 rounded-2xl px-4 py-2.5 w-fit">
-            <span className="text-xs font-semibold text-secondary uppercase tracking-wider select-none">Tasa de Interés:</span>
-            <span className={`text-sm font-bold ${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? 'text-secondary' : 'text-gray-400'}`}>
+            <span className="text-xs font-semibold text-secondary uppercase tracking-wider select-none">
+              Tasa de Interés:
+            </span>
+            <span
+              className={`text-sm font-bold ${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? 'text-secondary' : 'text-gray-400'}`}
+            >
               {getInterestText(loanSummary)}
             </span>
           </div>
@@ -99,25 +104,17 @@ export default function CollaboratorAccountStatementPage() {
       </div>
 
       {loanSummary && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            label="Beneficios en Efectivo"
+            label="Beneficio Efectivo"
             value={fmt(loanSummary.totalLoanAmount)}
             sub={`${loanSummary.totalLoans} beneficios`}
-            icon={Wallet}
+            icon={TrendingUp}
             iconBg="bg-blue-50"
             iconColor="text-blue-600"
           />
           <KpiCard
-            label="Beneficios de Productos"
-            value={fmt(productBenefitsSummary.totalAmount)}
-            sub={`${productBenefitsSummary.totalCount} compras registradas`}
-            icon={Package}
-            iconBg="bg-cyan-50"
-            iconColor="text-cyan-700"
-          />
-          <KpiCard
-            label="Beneficios de Seguro"
+            label="Beneficio Seguros"
             value={fmt(insuranceBenefitsSummary.totalAmount)}
             sub={`${insuranceBenefitsSummary.totalCount} beneficios registrados`}
             icon={Shield}
@@ -125,22 +122,15 @@ export default function CollaboratorAccountStatementPage() {
             iconColor="text-emerald-700"
           />
           <KpiCard
-            label="Total pagado"
-            value={fmt(loanSummary.totalPaid)}
-            icon={CheckCircle2}
-            iconBg="bg-green-50"
-            iconColor="text-green-600"
+            label="Beneficio Productos"
+            value={fmt(productBenefitsSummary.totalAmount)}
+            sub={`${productBenefitsSummary.totalCount} compras registradas`}
+            icon={Package}
+            iconBg="bg-cyan-50"
+            iconColor="text-cyan-700"
           />
           <KpiCard
-            label="Saldo pendiente"
-            value={fmt(loanSummary.balance)}
-            sub={`Solicitudes aprobadas: ${benefitedRequestsCount}`}
-            icon={DollarSign}
-            iconBg="bg-amber-50"
-            iconColor="text-amber-600"
-          />
-          <KpiCard
-            label="Disponible de tu maximo mensual"
+            label="Disponible del mes"
             value={fmt(remainingMonthlyLimit)}
             sub={`Limite mensual: ${fmt(profile?.maxLoanLimit ?? 0)}`}
             icon={Landmark}
@@ -251,15 +241,15 @@ function KpiCard({
   sub?: string
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3">
-      <div className="mb-3 flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}>
-          <Icon className={`h-5 w-5 ${iconColor}`} strokeWidth={1.5} />
+    <div className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm shadow-black/3">
+      <div className="mb-2 flex items-center gap-2">
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBg}`}>
+          <Icon className={`h-4 w-4 ${iconColor}`} strokeWidth={1.5} />
         </div>
-        <span className="text-sm font-medium text-body-muted">{label}</span>
+        <span className="text-xs font-medium leading-tight text-body-muted">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-body">{value}</p>
-      {sub && <p className="mt-1 text-xs text-body-muted">{sub}</p>}
+      <p className="text-base font-bold leading-tight text-body">{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] leading-tight text-body-muted">{sub}</p>}
     </div>
   )
 }

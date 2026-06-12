@@ -158,9 +158,9 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
   },
   {
     key: 'client-purchases',
-    label: 'Mis Compras',
+    label: 'Compras',
     children: [
-      { key: 'client-purchases-list', label: 'Mis compras' },
+      { key: 'client-purchases-list', label: 'Compras' },
       { key: 'client-bank', label: 'Mis datos bancarios' },
     ],
   },

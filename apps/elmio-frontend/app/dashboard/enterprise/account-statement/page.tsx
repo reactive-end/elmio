@@ -8,10 +8,9 @@ import {
   XCircle,
   TrendingUp,
   Filter,
-  Percent,
   Package,
   Shield,
-  Users,
+  Wallet,
 } from 'lucide-react'
 import { Spinner } from '@/components/atoms/Spinner/Spinner'
 import { Alert } from '@/components/atoms/Alert/Alert'
@@ -92,8 +91,12 @@ export default function AccountStatementPage() {
         </div>
         {loanSummary && (
           <div className="flex items-center gap-2.5 bg-secondary/5 border border-secondary/15 rounded-2xl px-4 py-2.5 w-fit">
-            <span className="text-xs font-semibold text-secondary uppercase tracking-wider select-none">Tasa de Interés Activa:</span>
-            <span className={`text-sm font-bold ${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? 'text-secondary' : 'text-gray-400'}`}>
+            <span className="text-xs font-semibold text-secondary uppercase tracking-wider select-none">
+              Tasa de Interés Activa:
+            </span>
+            <span
+              className={`text-sm font-bold ${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? 'text-secondary' : 'text-gray-400'}`}
+            >
               {getInterestText(loanSummary)}
             </span>
           </div>
@@ -101,77 +104,42 @@ export default function AccountStatementPage() {
       </div>
 
       {loanSummary && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             icon={TrendingUp}
             iconBg="bg-blue-50"
             iconColor="text-blue-600"
-            label="Beneficios en Efectivo"
+            label="Beneficio Efectivo"
             value={fmt(loanSummary.totalLoanAmount)}
             sub={`${loanSummary.totalLoans} beneficios`}
-          />
-          <KpiCard
-            icon={Package}
-            iconBg="bg-cyan-50"
-            iconColor="text-cyan-700"
-            label="Beneficios de Productos"
-            value={fmt(productBenefitsSummary.totalAmount)}
-            sub={`${productBenefitsSummary.totalCount} compras registradas`}
           />
           <KpiCard
             icon={Shield}
             iconBg="bg-emerald-50"
             iconColor="text-emerald-700"
-            label="Beneficios de Seguro"
+            label="Beneficio Seguros"
             value={fmt(insuranceBenefitsSummary.totalAmount)}
             sub={`${insuranceBenefitsSummary.totalCount} beneficios registrados`}
           />
           <KpiCard
-            icon={Percent}
-            iconBg="bg-purple-50"
-            iconColor="text-purple-600"
-            label="Gastos Administrativos (Beneficios en Efectivo)"
-            value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? loanSummary.interestRate : loanSummary.serviceFeePercent}% sobre intereses`}
+            icon={Package}
+            iconBg="bg-cyan-50"
+            iconColor="text-cyan-700"
+            label="Beneficio Productos"
+            value={fmt(productBenefitsSummary.totalAmount)}
+            sub={`${productBenefitsSummary.totalCount} compras registradas`}
           />
           <KpiCard
-            icon={Percent}
-            iconBg="bg-purple-50"
-            iconColor="text-purple-600"
-            label="Gastos Administrativos (Beneficios de Productos)"
-            value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? loanSummary.interestRate : loanSummary.serviceFeePercent}% sobre intereses`}
-          />
-          <KpiCard
-            icon={Percent}
-            iconBg="bg-purple-50"
-            iconColor="text-purple-600"
-            label="Gastos Administrativos (Beneficios de Seguro)"
-            value={fmt(loanSummary.serviceFeeAmount)}
-            sub={`${loanSummary.interestIsActive && loanSummary.interestType !== 'none' ? loanSummary.interestRate : loanSummary.serviceFeePercent}% sobre intereses`}
-          />
-          <KpiCard
-            icon={CheckCircle2}
-            iconBg="bg-green-50"
-            iconColor="text-green-600"
-            label="Total pagado"
-            value={fmt(loanSummary.totalPaid)}
-          />
-          <KpiCard
-            icon={AlertTriangle}
-            iconBg="bg-amber-50"
-            iconColor="text-amber-600"
-            label="Saldo pendiente"
-            value={fmt(loanSummary.balance)}
-            sub={`Total pagado: ${fmt(loanSummary.totalPaid)}`}
-          />
-          <KpiCard
-            icon={Users}
-            iconBg="bg-rose-50"
-            iconColor="text-rose-700"
-            label="Colaboradores beneficiados"
-            value={String(benefitedCollaboratorsCount)}
-            sub="Con beneficios aprobados"
+            icon={Wallet}
+            iconBg="bg-secondary/10"
+            iconColor="text-secondary"
+            label="Total"
+            value={fmt(
+              loanSummary.totalLoanAmount +
+                insuranceBenefitsSummary.totalAmount +
+                productBenefitsSummary.totalAmount,
+            )}
+            sub="Suma de los 3 beneficios"
           />
         </div>
       )}
@@ -277,15 +245,15 @@ function KpiCard({
   sub?: string
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm shadow-black/3">
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
-          <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={1.5} />
+    <div className="bg-white rounded-2xl border border-gray-100 p-3 shadow-sm shadow-black/3">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
+          <Icon className={`w-4 h-4 ${iconColor}`} strokeWidth={1.5} />
         </div>
-        <span className="text-sm text-body-muted font-medium">{label}</span>
+        <span className="text-xs text-body-muted font-medium leading-tight">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-body">{value}</p>
-      {sub && <p className="text-xs text-body-muted mt-1">{sub}</p>}
+      <p className="text-base font-bold text-body leading-tight">{value}</p>
+      {sub && <p className="text-[11px] text-body-muted mt-0.5 leading-tight">{sub}</p>}
     </div>
   )
 }

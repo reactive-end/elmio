@@ -168,7 +168,7 @@ export default function CollaboratorPurchasesPage() {
       {/* Encabezado */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-body tracking-tight">Mis Compras</h1>
+          <h1 className="text-2xl font-bold text-body tracking-tight">Compras</h1>
           <p className="mt-0.5 text-sm text-body-muted">
             Consulta los productos y seguros que has adquirido en el Marketplace que ya poseen visto bueno de tu empresa.
           </p>
