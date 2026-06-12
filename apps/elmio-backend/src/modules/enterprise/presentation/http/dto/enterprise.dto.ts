@@ -4,9 +4,7 @@ import type {
   BankAccount,
   AdditionalLegalRep,
 } from '../../../domain/enterprise';
-import type {
-  PersonalReference,
-} from '../../../domain/person-profile';
+import type { PersonalReference } from '../../../domain/person-profile';
 
 // ── Enterprise DTOs ──────────────────────────────────────────────────────────
 
@@ -219,3 +217,29 @@ export class NotifyInsurancePaymentDto {
   reference?: string;
 }
 
+/**
+ * DTO para registrar un abono parcial sobre un Purchase.
+ * Aceptado por COMPANY (sobre su empresa) o por FINANCE/ADMIN (sobre cualquiera).
+ */
+export class RegisterPartialPaymentBodyDto {
+  amountUsd!: number;
+  paymentMethod!: 'r4_immediate_debit' | 'r4_transfer' | 'manual' | 'cash';
+  paymentReference?: string;
+}
+
+/**
+ * DTO para confirmar el comprobante de una transferencia bancaria.
+ * El comprobante debe estar ya subido al bucket y se pasa la URL.
+ */
+export class ConfirmBankTransferDto {
+  receiptUrl!: string;
+  reference!: string;
+  bankCode!: string;
+}
+
+/**
+ * DTO para que finanzas concilie una transferencia ya registrada.
+ */
+export class ConciliateBankTransferDto {
+  notes?: string;
+}

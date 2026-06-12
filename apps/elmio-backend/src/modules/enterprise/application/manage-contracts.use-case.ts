@@ -28,7 +28,8 @@ export class ManageContractsUseCase {
    * Lista los contratos de una empresa con sus archivos.
    */
   async list(enterpriseId: string): Promise<ContractWithFiles[]> {
-    const contracts = await this.repository.findContractsByEnterprise(enterpriseId);
+    const contracts =
+      await this.repository.findContractsByEnterprise(enterpriseId);
     return Promise.all(
       contracts.map(async (contract) => ({
         ...contract,
@@ -56,7 +57,9 @@ export class ManageContractsUseCase {
     }
 
     if (files.length === 0) {
-      throw new BadRequestException('Debes subir al menos un archivo de contrato.');
+      throw new BadRequestException(
+        'Debes subir al menos un archivo de contrato.',
+      );
     }
 
     const createdAt = new Date().toISOString();
@@ -67,7 +70,11 @@ export class ManageContractsUseCase {
       createdAt,
     });
 
-    const savedFiles = await this.saveFiles(contract.id, enterprise.taxId, files);
+    const savedFiles = await this.saveFiles(
+      contract.id,
+      enterprise.taxId,
+      files,
+    );
 
     return {
       ...contract,
@@ -88,7 +95,9 @@ export class ManageContractsUseCase {
       throw new NotFoundException('Contrato no encontrado.');
     }
 
-    const enterprise = await this.repository.findEnterpriseById(contract.enterpriseId);
+    const enterprise = await this.repository.findEnterpriseById(
+      contract.enterpriseId,
+    );
     if (!enterprise) {
       throw new NotFoundException('Empresa no encontrada.');
     }
@@ -121,14 +130,22 @@ export class ManageContractsUseCase {
       throw new NotFoundException('Contrato no encontrado.');
     }
 
-    const enterprise = await this.repository.findEnterpriseById(contract.enterpriseId);
+    const enterprise = await this.repository.findEnterpriseById(
+      contract.enterpriseId,
+    );
     if (!enterprise) {
       throw new NotFoundException('Empresa no encontrada.');
     }
 
-    const files = await this.repository.findContractFilesByContract(contract.id);
+    const files = await this.repository.findContractFilesByContract(
+      contract.id,
+    );
     for (const file of files) {
-      await this.documentStorage.deleteDocument(enterprise.taxId, file.fileName, 'contracts');
+      await this.documentStorage.deleteDocument(
+        enterprise.taxId,
+        file.fileName,
+        'contracts',
+      );
       await this.repository.deleteContractFile(file.id);
     }
 
@@ -144,7 +161,9 @@ export class ManageContractsUseCase {
       throw new NotFoundException('Contrato no encontrado.');
     }
 
-    const enterprise = await this.repository.findEnterpriseById(contract.enterpriseId);
+    const enterprise = await this.repository.findEnterpriseById(
+      contract.enterpriseId,
+    );
     if (!enterprise) {
       throw new NotFoundException('Empresa no encontrada.');
     }
@@ -154,7 +173,11 @@ export class ManageContractsUseCase {
       throw new NotFoundException('Archivo de contrato no encontrado.');
     }
 
-    await this.documentStorage.deleteDocument(enterprise.taxId, file.fileName, 'contracts');
+    await this.documentStorage.deleteDocument(
+      enterprise.taxId,
+      file.fileName,
+      'contracts',
+    );
     await this.repository.deleteContractFile(file.id);
   }
 

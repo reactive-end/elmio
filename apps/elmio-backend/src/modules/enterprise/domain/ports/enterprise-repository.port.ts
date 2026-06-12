@@ -84,7 +84,9 @@ export interface EnterpriseRepositoryPort {
    * @param personProfileId ID del perfil.
    * @returns Lista de cuentas bancarias.
    */
-  findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]>;
+  findBankAccountsByPersonProfileId(
+    personProfileId: string,
+  ): Promise<PersonBankAccount[]>;
 
   /**
    * Busca una cuenta bancaria por su ID.
@@ -120,7 +122,9 @@ export interface EnterpriseRepositoryPort {
    * @param loanRequestId ID de la solicitud.
    * @returns Desembolso o null.
    */
-  findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null>;
+  findDisbursementByLoanRequestId(
+    loanRequestId: string,
+  ): Promise<Disbursement | null>;
 
   // --- Purchases ---
 
@@ -155,6 +159,19 @@ export interface EnterpriseRepositoryPort {
     purchaserType: Purchase['purchaserType'],
     purchaserId: string,
   ): Promise<Purchase[]>;
+
+  /**
+   * Recalcula y persiste el bucket de morosidad de un purchase.
+   * Usado por el job CRON diario (Fase 1 - buckets).
+   * @param purchaseId ID del purchase a actualizar.
+   * @param bucket Nuevo bucket (o null para limpiar).
+   * @param overdueSince Fecha desde la cual esta vencido (o null).
+   */
+  updateDelinquencyBucket(
+    purchaseId: string,
+    bucket: Purchase['delinquencyBucket'],
+    overdueSince: string | null,
+  ): Promise<void>;
 
   // --- Loan Requests ---
 
@@ -288,13 +305,12 @@ export interface EnterpriseRepositoryPort {
    * @returns Transaccion guardada.
    */
   saveTransaction(transaction: Transaction): Promise<Transaction>;
-  
+
   /**
    * Recupera todas las transacciones del sistema.
    * @returns Lista de todas las transacciones.
    */
   findAllTransactions(): Promise<Transaction[]>;
-
 
   // --- Platform Config ---
 

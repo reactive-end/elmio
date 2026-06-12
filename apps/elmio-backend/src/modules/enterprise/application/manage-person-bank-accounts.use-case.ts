@@ -1,7 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { PersonBankAccount } from '../domain/person-bank-account';
-import { ENTERPRISE_REPOSITORY_PORT, type EnterpriseRepositoryPort } from '../domain/ports/enterprise-repository.port';
+import {
+  ENTERPRISE_REPOSITORY_PORT,
+  type EnterpriseRepositoryPort,
+} from '../domain/ports/enterprise-repository.port';
 
 /**
  * DTO para crear/actualizar una cuenta bancaria de persona.
@@ -31,7 +34,9 @@ export class ManagePersonBankAccountsUseCase {
    * @param personProfileId ID del perfil de persona.
    * @returns Lista de cuentas bancarias.
    */
-  async listByPersonProfile(personProfileId: string): Promise<PersonBankAccount[]> {
+  async listByPersonProfile(
+    personProfileId: string,
+  ): Promise<PersonBankAccount[]> {
     return this.repository.findBankAccountsByPersonProfileId(personProfileId);
   }
 
@@ -45,10 +50,12 @@ export class ManagePersonBankAccountsUseCase {
     personProfileId: string,
     dto: CreatePersonBankAccountDto,
   ): Promise<PersonBankAccount> {
-    const existingAccounts = await this.repository.findBankAccountsByPersonProfileId(personProfileId);
+    const existingAccounts =
+      await this.repository.findBankAccountsByPersonProfileId(personProfileId);
 
     // Si es la primera cuenta, forzar como primaria
-    const isPrimary = existingAccounts.length === 0 ? true : (dto.isPrimary ?? false);
+    const isPrimary =
+      existingAccounts.length === 0 ? true : (dto.isPrimary ?? false);
 
     // Si la nueva cuenta es primaria, desmarcar las demás
     if (isPrimary) {
@@ -96,14 +103,19 @@ export class ManagePersonBankAccountsUseCase {
 
     if (dto.bankCode !== undefined) account.bankCode = dto.bankCode;
     if (dto.bankName !== undefined) account.bankName = dto.bankName;
-    if (dto.accountNumber !== undefined) account.accountNumber = dto.accountNumber;
+    if (dto.accountNumber !== undefined)
+      account.accountNumber = dto.accountNumber;
     if (dto.phoneNumber !== undefined) account.phoneNumber = dto.phoneNumber;
     if (dto.documentId !== undefined) account.documentId = dto.documentId;
-    if (dto.documentPhoto !== undefined) account.documentPhoto = dto.documentPhoto ?? null;
+    if (dto.documentPhoto !== undefined)
+      account.documentPhoto = dto.documentPhoto ?? null;
 
     // Manejar cambio de cuenta primaria
     if (dto.isPrimary === true && !account.isPrimary) {
-      const existingAccounts = await this.repository.findBankAccountsByPersonProfileId(personProfileId);
+      const existingAccounts =
+        await this.repository.findBankAccountsByPersonProfileId(
+          personProfileId,
+        );
       for (const acc of existingAccounts) {
         if (acc.id !== accountId && acc.isPrimary) {
           acc.isPrimary = false;

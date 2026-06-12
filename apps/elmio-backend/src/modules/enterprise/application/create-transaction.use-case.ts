@@ -19,6 +19,12 @@ interface CreateTransactionInput {
   status?: 'paid' | 'pending' | 'failed';
   date?: string;
   productId?: string | null;
+  /**
+   * Modulo de cobranza (migracion 0011).
+   * Opcionales: si no se pasan, quedan null (comportamiento pre-cobranza).
+   */
+  paymentMethod?: 'r4_immediate_debit' | 'r4_transfer' | null;
+  paymentReference?: string | null;
 }
 
 /**
@@ -63,7 +69,10 @@ export class CreateTransactionUseCase {
       const collaborator = await this.repository.findCollaboratorById(
         input.collaboratorId,
       );
-      if (!collaborator || (enterpriseId && collaborator.enterpriseId !== enterpriseId)) {
+      if (
+        !collaborator ||
+        (enterpriseId && collaborator.enterpriseId !== enterpriseId)
+      ) {
         throw new BadRequestException(
           'El colaborador indicado no pertenece a la empresa especificada.',
         );
@@ -73,7 +82,10 @@ export class CreateTransactionUseCase {
     }
 
     const transactionId = randomUUID();
-    const isMarketplacePurchase = collaboratorId && input.kind === 'charge' && concept.startsWith('Compra marketplace:');
+    const isMarketplacePurchase =
+      collaboratorId &&
+      input.kind === 'charge' &&
+      concept.startsWith('Compra marketplace:');
 
     const savedTx = await this.repository.saveTransaction({
       id: transactionId,
@@ -84,6 +96,12 @@ export class CreateTransactionUseCase {
       amount: Math.round(input.amount * 100) / 100,
       status: input.status ?? 'pending',
       date: input.date ?? new Date().toISOString(),
+      // Cobranza: defaults para transactions nuevas pre-migracion 0011.
+      paymentMethod: input.paymentMethod ?? null,
+      paymentReference: input.paymentReference ?? null,
+      transferReceiptUrl: null,
+      transferVerifiedAt: null,
+      appliedToPurchaseId: null,
     });
 
     if (isMarketplacePurchase && collaboratorId && enterpriseId) {

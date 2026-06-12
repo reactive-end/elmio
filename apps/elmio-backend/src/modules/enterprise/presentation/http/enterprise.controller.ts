@@ -36,10 +36,20 @@ import { ManageLoanRequestsUseCase } from '../../application/manage-loan-request
 import { GetAccountStatementUseCase } from '../../application/get-account-statement.use-case';
 import { CreateTransactionUseCase } from '../../application/create-transaction.use-case';
 import { ManageContractsUseCase } from '../../application/manage-contracts.use-case';
-import { ExecuteBillingCutoffUseCase, type BillingCutoffResult } from '../../application/execute-billing-cutoff.use-case';
+import {
+  ExecuteBillingCutoffUseCase,
+  type BillingCutoffResult,
+} from '../../application/execute-billing-cutoff.use-case';
 import { ManageDisburseUseCase } from '../../application/manage-disburse.use-case';
 import { ManageVueltoUseCase } from '../../application/manage-vuelto.use-case';
 import { ManagePurchasesUseCase } from '../../application/manage-purchases.use-case';
+import { RegisterPartialPaymentUseCase } from '../../application/register-partial-payment.use-case';
+import {
+  ConfirmBankTransferUseCase,
+  type ConfirmBankTransferResult,
+} from '../../application/confirm-bank-transfer.use-case';
+import { ConciliateBankTransferUseCase } from '../../application/concile-bank-transfer.use-case';
+import { RecalculateDelinquencyBucketsUseCase } from '../../application/recalculate-delinquency-buckets.use-case';
 import type { LoanRequest } from '../../domain/enterprise';
 import {
   CreateEnterpriseDto,
@@ -52,6 +62,9 @@ import {
   UpdateContractDto,
   CreatePurchaseDto,
   NotifyInsurancePaymentDto,
+  RegisterPartialPaymentBodyDto,
+  ConfirmBankTransferDto,
+  ConciliateBankTransferDto,
 } from './dto/enterprise.dto';
 import {
   ENTERPRISE_REPOSITORY_PORT,
@@ -86,6 +99,10 @@ export class EnterpriseController {
     private readonly manageDisburse: ManageDisburseUseCase,
     private readonly manageVuelto: ManageVueltoUseCase,
     private readonly managePurchases: ManagePurchasesUseCase,
+    private readonly registerPartialPayment: RegisterPartialPaymentUseCase,
+    private readonly confirmBankTransfer: ConfirmBankTransferUseCase,
+    private readonly concilieBankTransfer: ConciliateBankTransferUseCase,
+    private readonly recalculateDelinquencyBuckets: RecalculateDelinquencyBucketsUseCase,
     @Inject(ENTERPRISE_REPOSITORY_PORT)
     private readonly enterpriseRepository: EnterpriseRepositoryPort,
     @Inject(PRODUCT_REPOSITORY_PORT)
@@ -244,11 +261,18 @@ export class EnterpriseController {
   @Roles(UserRole.FINANCE)
   @Get('requests/finance-pending')
   async listFinancePendingRequests() {
-    const requests = await this.enterpriseRepository.findAllRequests('company_approved');
+    const requests =
+      await this.enterpriseRepository.findAllRequests('company_approved');
 
     // Resolver si cada solicitud requiere desembolso manual (manual_disburse)
     // segun la configuracion del producto asociado.
-    const productIds = [...new Set(requests.map((r: LoanRequest) => r.productId).filter(Boolean) as string[])];
+    const productIds = [
+      ...new Set(
+        requests
+          .map((r: LoanRequest) => r.productId)
+          .filter(Boolean) as string[],
+      ),
+    ];
     const products = await Promise.all(
       productIds.map((id: string) => this.productRepository.findById(id)),
     );
@@ -258,23 +282,38 @@ export class EnterpriseController {
 
     // Buscar si hay desembolsos asociados
     const disbursements = await Promise.all(
-      requests.map((r: LoanRequest) => this.enterpriseRepository.findDisbursementByLoanRequestId(r.id))
+      requests.map((r: LoanRequest) =>
+        this.enterpriseRepository.findDisbursementByLoanRequestId(r.id),
+      ),
     );
     const disbursementMap = new Map<string, any>(
-      disbursements.filter((d): d is any => d !== null).map((d) => [d.loanRequestId, d])
+      disbursements
+        .filter((d): d is any => d !== null)
+        .map((d) => [d.loanRequestId, d]),
     );
 
     return requests.map((req: LoanRequest) => {
       const product = req.productId ? productMap.get(req.productId) : undefined;
       const requiresManualDisburse =
-        product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'manual_disburse' && a.active) ?? false;
+        product?.actions?.some(
+          (a: { type: string; active: boolean }) =>
+            a.type === 'manual_disburse' && a.active,
+        ) ?? false;
       const requiresR4Vuelto =
-        product?.actions?.some((a: { type: string; active: boolean }) => a.type === 'r4_vuelto' && a.active) ?? false;
+        product?.actions?.some(
+          (a: { type: string; active: boolean }) =>
+            a.type === 'r4_vuelto' && a.active,
+        ) ?? false;
 
       const disbursement = disbursementMap.get(req.id);
       const hasPendingDisbursement = disbursement?.status === 'pending';
 
-      return { ...req, requiresManualDisburse, requiresR4Vuelto, hasPendingDisbursement };
+      return {
+        ...req,
+        requiresManualDisburse,
+        requiresR4Vuelto,
+        hasPendingDisbursement,
+      };
     });
   }
 
@@ -304,20 +343,22 @@ export class EnterpriseController {
     @Param('reqId') reqId: string,
     @Body('force') force?: boolean,
   ) {
-    const session = req.session!
-    return this.manageDisburse.execute(reqId, {
-      financeUserId: session.userId,
-      financeUserName: session.email || 'Usuario Finanzas',
-    }, force);
+    const session = req.session!;
+    return this.manageDisburse.execute(
+      reqId,
+      {
+        financeUserId: session.userId,
+        financeUserName: session.email || 'Usuario Finanzas',
+      },
+      force,
+    );
   }
 
   /** POST /api/enterprises/requests/:reqId/disburse/verify - Verifica el resultado de un desembolso pendiente (R4 AC00). */
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('requests/:reqId/disburse/verify')
-  async verifyDisburseRequest(
-    @Param('reqId') reqId: string,
-  ) {
+  async verifyDisburseRequest(@Param('reqId') reqId: string) {
     return this.manageDisburse.verifyDisburse(reqId);
   }
 
@@ -325,9 +366,7 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('requests/:reqId/disburse/complete-manual')
-  async completeManualDisburseRequest(
-    @Param('reqId') reqId: string,
-  ) {
+  async completeManualDisburseRequest(@Param('reqId') reqId: string) {
     return this.manageDisburse.completeManual(reqId);
   }
 
@@ -339,7 +378,7 @@ export class EnterpriseController {
     @Req() req: Request,
     @Param('reqId') reqId: string,
   ) {
-    const session = req.session!
+    const session = req.session!;
     return this.manageVuelto.execute(reqId, {
       financeUserId: session.userId,
       financeUserName: session.email || 'Usuario Finanzas',
@@ -386,7 +425,7 @@ export class EnterpriseController {
   @Get('finance/purchases')
   async listAllFinancePurchases() {
     const transactions = await this.enterpriseRepository.findAllTransactions();
-    
+
     // 1. Filtrar las transacciones de tipo 'charge' que comiencen con 'Compra marketplace:'
     const chargeTxs = transactions.filter(
       (t) => t.kind === 'charge' && t.concept.startsWith('Compra marketplace:'),
@@ -401,7 +440,9 @@ export class EnterpriseController {
       let email = '—';
 
       if (tx.collaboratorId) {
-        const collab = await this.enterpriseRepository.findCollaboratorById(tx.collaboratorId);
+        const collab = await this.enterpriseRepository.findCollaboratorById(
+          tx.collaboratorId,
+        );
         if (collab) {
           collaboratorName = `${collab.name} ${collab.lastName}`.trim();
           documentId = collab.documentId || '—';
@@ -412,7 +453,9 @@ export class EnterpriseController {
       // 3. Buscar la empresa
       let enterpriseName = 'Consumidor Directo / Sistema';
       if (tx.enterpriseId) {
-        const enterprise = await this.enterpriseRepository.findEnterpriseById(tx.enterpriseId);
+        const enterprise = await this.enterpriseRepository.findEnterpriseById(
+          tx.enterpriseId,
+        );
         if (enterprise) {
           enterpriseName = enterprise.companyName;
         }
@@ -448,11 +491,15 @@ export class EnterpriseController {
           // Seguros de mercantil (Salud, Vida, etc.): Consultar las cuotas reales por su shopcartId
           try {
             if (email !== '—') {
-              const clientSearchResult = await this.mercantilStorageService.searchClients({ email });
+              const clientSearchResult =
+                await this.mercantilStorageService.searchClients({ email });
               const userOrders = clientSearchResult?.items || [];
               if (userOrders.length > 0) {
                 const shopcartId = userOrders[0].shopcartId;
-                const quotes = await this.mercantilStorageService.getQuotesByShopcart(shopcartId);
+                const quotes =
+                  await this.mercantilStorageService.getQuotesByShopcart(
+                    shopcartId,
+                  );
                 if (quotes && quotes.length > 0) {
                   totalQuotes = quotes.length;
                   const paidList = quotes.filter(
@@ -463,7 +510,7 @@ export class EnterpriseController {
                   );
                   paidQuotes = paidList.length;
                   pendingQuotes = Math.max(0, totalQuotes - paidQuotes);
-                  
+
                   // Calcular el monto pendiente acumulando el total de las cuotas no pagadas
                   const unpaidList = quotes.filter(
                     (cuota) =>
@@ -473,12 +520,18 @@ export class EnterpriseController {
                         cuota.quoteStatus?.toLowerCase() === 'paid'
                       ),
                   );
-                  pendingAmount = unpaidList.reduce((sum, q) => sum + (q.amount ?? 0), 0);
+                  pendingAmount = unpaidList.reduce(
+                    (sum, q) => sum + (q.amount ?? 0),
+                    0,
+                  );
                 }
               }
             }
           } catch (err) {
-            console.error('Error calculando cuotas de seguro mercantil en backend:', err);
+            console.error(
+              'Error calculando cuotas de seguro mercantil en backend:',
+              err,
+            );
           }
         }
       } else {
@@ -549,13 +602,16 @@ export class EnterpriseController {
     @Param('transactionId') transactionId: string,
     @Body() body: NotifyInsurancePaymentDto,
   ) {
-    const transaction = await this.enterpriseRepository.findTransactionById(transactionId);
+    const transaction =
+      await this.enterpriseRepository.findTransactionById(transactionId);
     if (!transaction) {
       throw new NotFoundException('Transacción no encontrada.');
     }
 
     if (transaction.kind !== 'charge') {
-      throw new BadRequestException('La transacción no corresponde a un cargo.');
+      throw new BadRequestException(
+        'La transacción no corresponde a un cargo.',
+      );
     }
 
     // Conciliación local: Marcar la transacción como pagada
@@ -577,7 +633,6 @@ export class EnterpriseController {
       purchase,
     };
   }
-
 
   // --- Account Statement ---
 
@@ -662,7 +717,11 @@ export class EnterpriseController {
     @Param('fileName') fileName: string,
     @Res() res: Response,
   ) {
-    const doc = await this.documentStorage.getDocument(taxId, fileName, 'contracts');
+    const doc = await this.documentStorage.getDocument(
+      taxId,
+      fileName,
+      'contracts',
+    );
     if (!doc) {
       throw new NotFoundException('Archivo de contrato no encontrado.');
     }
@@ -675,7 +734,99 @@ export class EnterpriseController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.FINANCE, UserRole.ADMIN)
   @Post('billing/execute-cutoff')
-  async executeCutoff(@Body('date') date?: string): Promise<BillingCutoffResult> {
+  async executeCutoff(
+    @Body('date') date?: string,
+  ): Promise<BillingCutoffResult> {
     return this.executeBillingCutoff.execute(date);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Modulo de cobranza (migracion 0011)
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * POST /api/enterprises/:id/purchases/:purchaseId/partial-payment
+   * Registra un abono parcial sobre un Purchase pendiente o parcialmente
+   * pagado. Accesible por COMPANY (sobre su propia empresa) o
+   * FINANCE/ADMIN (sobre cualquier empresa).
+   */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.COMPANY, UserRole.FINANCE, UserRole.ADMIN)
+  @Post(':id/purchases/:purchaseId/partial-payment')
+  async registerPartialPaymentEndpoint(
+    @Req() req: Request,
+    @Param('id') enterpriseId: string,
+    @Param('purchaseId') purchaseId: string,
+    @Body() body: RegisterPartialPaymentBodyDto,
+  ) {
+    const role = req.session!.role;
+    return this.registerPartialPayment.execute({
+      enterpriseId,
+      purchaseId,
+      registeredByUserId: req.session!.userId,
+      registeredByRole: role as 'COMPANY' | 'FINANCE' | 'ADMIN',
+      amountUsd: body.amountUsd,
+      paymentMethod: body.paymentMethod,
+      paymentReference: body.paymentReference ?? null,
+    });
+  }
+
+  /**
+   * POST /api/enterprises/:id/transactions/:txId/confirm-transfer
+   * Sube el comprobante de una transferencia bancaria. La transaction
+   * queda en 'pending' hasta conciliacion manual por finanzas.
+   * Accesible por COMPANY o FINANCE/ADMIN.
+   */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.COMPANY, UserRole.FINANCE, UserRole.ADMIN)
+  @Post(':id/transactions/:txId/confirm-transfer')
+  async confirmBankTransferEndpoint(
+    @Req() req: Request,
+    @Param('id') enterpriseId: string,
+    @Param('txId') txId: string,
+    @Body() body: ConfirmBankTransferDto,
+  ): Promise<ConfirmBankTransferResult> {
+    return this.confirmBankTransfer.execute({
+      transactionId: txId,
+      receiptUrl: body.receiptUrl,
+      reference: body.reference,
+      bankCode: body.bankCode,
+      uploadedByUserId: req.session!.userId,
+    });
+  }
+
+  /**
+   * POST /api/enterprises/:id/transactions/:txId/concile
+   * Concilia manualmente una transferencia ya registrada. Solo FINANCE
+   * y ADMIN pueden hacerlo.
+   */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post(':id/transactions/:txId/concile')
+  async concilieBankTransferEndpoint(
+    @Req() req: Request,
+    @Param('id') enterpriseId: string,
+    @Param('txId') txId: string,
+    @Body() body: ConciliateBankTransferDto,
+  ): Promise<{ ok: true }> {
+    await this.concilieBankTransfer.execute({
+      transactionId: txId,
+      financeUserId: req.session!.userId,
+      notes: body.notes ?? null,
+    });
+    return { ok: true };
+  }
+
+  /**
+   * POST /api/enterprises/admin/recalculate-delinquency
+   * Dispara manualmente el recalculo de buckets de morosidad (util en
+   * QA o despues de una carga masiva). Solo FINANCE/ADMIN.
+   */
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.FINANCE, UserRole.ADMIN)
+  @Post('admin/recalculate-delinquency')
+  async recalculateDelinquencyEndpoint(): Promise<{ updated: number }> {
+    const updated = await this.recalculateDelinquencyBuckets.execute();
+    return { updated };
   }
 }

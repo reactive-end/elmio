@@ -6,7 +6,11 @@ import { join, resolve } from 'node:path';
 
 @Injectable()
 export class DocumentStorageService {
-  private readonly storageRoot = resolve(process.cwd(), 'storage', 'enterprise');
+  private readonly storageRoot = resolve(
+    process.cwd(),
+    'storage',
+    'enterprise',
+  );
   private readonly bucketName = process.env.GCS_BUCKET_NAME ?? '';
   private readonly storageClient = this.createStorageClient();
 
@@ -60,7 +64,10 @@ export class DocumentStorageService {
     return join(this.storageRoot, taxId, folder);
   }
 
-  private async ensureLocalDirectory(taxId: string, folder = 'documentos'): Promise<void> {
+  private async ensureLocalDirectory(
+    taxId: string,
+    folder = 'documentos',
+  ): Promise<void> {
     await mkdir(this.getLocalPath(taxId, folder), { recursive: true });
   }
 
@@ -75,7 +82,10 @@ export class DocumentStorageService {
     mimeType: string,
     folder = 'documentos',
   ): Promise<string> {
-    const cleanTaxId = taxId.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
+    const cleanTaxId = taxId
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '');
     const extension = originalName.includes('.')
       ? `.${originalName.split('.').pop()?.toLowerCase() ?? 'bin'}`
       : '';
@@ -111,7 +121,10 @@ export class DocumentStorageService {
     fileName: string,
     folder = 'documentos',
   ): Promise<{ buffer: Buffer; mimeType: string } | null> {
-    const cleanTaxId = taxId.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
+    const cleanTaxId = taxId
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '');
     const cleanFileName = fileName.trim();
 
     if (this.isGcsEnabled()) {
@@ -123,7 +136,8 @@ export class DocumentStorageService {
         if (!exists) return null;
 
         const [metadata] = await file.getMetadata();
-        const mimeType = (metadata.contentType as string) || 'application/octet-stream';
+        const mimeType =
+          (metadata.contentType as string) || 'application/octet-stream';
         const [buffer] = await file.download();
 
         return { buffer, mimeType };
@@ -131,7 +145,10 @@ export class DocumentStorageService {
         return null;
       }
     } else {
-      const filePath = join(this.getLocalPath(cleanTaxId, folder), cleanFileName);
+      const filePath = join(
+        this.getLocalPath(cleanTaxId, folder),
+        cleanFileName,
+      );
       try {
         await stat(filePath);
         const buffer = await readFile(filePath);
@@ -139,7 +156,11 @@ export class DocumentStorageService {
         // Intentar inferir un tipo MIME básico o usar binario
         let mimeType = 'application/octet-stream';
         if (cleanFileName.endsWith('.pdf')) mimeType = 'application/pdf';
-        else if (cleanFileName.endsWith('.jpg') || cleanFileName.endsWith('.jpeg')) mimeType = 'image/jpeg';
+        else if (
+          cleanFileName.endsWith('.jpg') ||
+          cleanFileName.endsWith('.jpeg')
+        )
+          mimeType = 'image/jpeg';
         else if (cleanFileName.endsWith('.png')) mimeType = 'image/png';
 
         return { buffer, mimeType };
@@ -157,7 +178,10 @@ export class DocumentStorageService {
     fileName: string,
     folder = 'documentos',
   ): Promise<void> {
-    const cleanTaxId = taxId.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '');
+    const cleanTaxId = taxId
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '');
     const cleanFileName = fileName.trim();
 
     if (this.isGcsEnabled()) {

@@ -118,7 +118,9 @@ export class ProfileController {
     @Body('productId') productId: string,
   ) {
     if (!productId) {
-      throw new BadRequestException('El productId es requerido para adquirir la solicitud.');
+      throw new BadRequestException(
+        'El productId es requerido para adquirir la solicitud.',
+      );
     }
     return this.manageRequests.acquire(requestId, productId);
   }
@@ -126,8 +128,13 @@ export class ProfileController {
   /** GET /api/profile/me/purchases - Lista las compras/ordenes del usuario autenticado. */
   @Get('me/purchases')
   async listMyPurchases(@Req() req: Request) {
-    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
-    return this.enterpriseRepository.findPurchasesByPurchaser('collaborator', profile.id);
+    const profile = await this.manageProfile.getOrCreateProfile(
+      req.session!.userId,
+    );
+    return this.enterpriseRepository.findPurchasesByPurchaser(
+      'collaborator',
+      profile.id,
+    );
   }
 
   // ── Person Bank Accounts ────────────────────────────────────────────────────
@@ -135,7 +142,9 @@ export class ProfileController {
   /** GET /api/profile/me/bank-accounts - Lista las cuentas bancarias del usuario autenticado. */
   @Get('me/bank-accounts')
   async listMyBankAccounts(@Req() req: Request) {
-    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    const profile = await this.manageProfile.getOrCreateProfile(
+      req.session!.userId,
+    );
     return this.manageBankAccounts.listByPersonProfile(profile.id);
   }
 
@@ -145,7 +154,9 @@ export class ProfileController {
     @Req() req: Request,
     @Body() dto: CreatePersonBankAccountDto,
   ) {
-    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    const profile = await this.manageProfile.getOrCreateProfile(
+      req.session!.userId,
+    );
     return this.manageBankAccounts.create(profile.id, dto);
   }
 
@@ -156,7 +167,9 @@ export class ProfileController {
     @Param('accountId') accountId: string,
     @Body() dto: Partial<CreatePersonBankAccountDto>,
   ) {
-    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    const profile = await this.manageProfile.getOrCreateProfile(
+      req.session!.userId,
+    );
     return this.manageBankAccounts.update(accountId, profile.id, dto);
   }
 
@@ -166,7 +179,9 @@ export class ProfileController {
     @Req() req: Request,
     @Param('accountId') accountId: string,
   ) {
-    const profile = await this.manageProfile.getOrCreateProfile(req.session!.userId);
+    const profile = await this.manageProfile.getOrCreateProfile(
+      req.session!.userId,
+    );
     return this.manageBankAccounts.delete(accountId, profile.id);
   }
 }

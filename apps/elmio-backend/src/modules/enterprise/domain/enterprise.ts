@@ -120,7 +120,13 @@ export interface LoanRequest {
   type: 'advance' | 'loan' | 'permission' | 'other';
   amount: number;
   description: string;
-  status: 'pending' | 'company_approved' | 'approved' | 'acquired' | 'disbursed' | 'denied';
+  status:
+    | 'pending'
+    | 'company_approved'
+    | 'approved'
+    | 'acquired'
+    | 'disbursed'
+    | 'denied';
   denialReason: string | null;
   createdAt: string;
   updatedAt: string;
@@ -131,6 +137,13 @@ export interface LoanRequest {
 
 /**
  * Transaccion registrada en el estado de cuenta de la empresa.
+ *
+ * A partir de la migracion 0011 soporta el modulo de cobranza:
+ *  - paymentMethod / paymentReference: trazabilidad del metodo de pago
+ *  - transferReceiptUrl / transferVerifiedAt: comprobante de transferencia
+ *    y timestamp de conciliacion por finanzas
+ *  - appliedToPurchaseId: cuando es un abono parcial, FK logica al
+ *    purchase que esta saldando
  */
 export interface Transaction {
   id: string;
@@ -141,6 +154,11 @@ export interface Transaction {
   amount: number;
   status: 'paid' | 'pending' | 'failed';
   date: string;
+  paymentMethod: 'r4_immediate_debit' | 'r4_transfer' | null;
+  paymentReference: string | null;
+  transferReceiptUrl: string | null;
+  transferVerifiedAt: string | null;
+  appliedToPurchaseId: string | null;
 }
 
 /**

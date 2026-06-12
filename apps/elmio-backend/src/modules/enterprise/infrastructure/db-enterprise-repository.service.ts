@@ -280,6 +280,13 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
       amount: entity.amount,
       status: entity.status,
       date: entity.date,
+      paymentMethod: entity.paymentMethod,
+      paymentReference: entity.paymentReference,
+      transferReceiptUrl: entity.transferReceiptUrl,
+      transferVerifiedAt: entity.transferVerifiedAt
+        ? entity.transferVerifiedAt.toISOString()
+        : null,
+      appliedToPurchaseId: entity.appliedToPurchaseId,
     };
   }
 
@@ -293,6 +300,13 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     entity.amount = domain.amount;
     entity.status = domain.status;
     entity.date = domain.date;
+    entity.paymentMethod = domain.paymentMethod;
+    entity.paymentReference = domain.paymentReference;
+    entity.transferReceiptUrl = domain.transferReceiptUrl;
+    entity.transferVerifiedAt = domain.transferVerifiedAt
+      ? new Date(domain.transferVerifiedAt)
+      : null;
+    entity.appliedToPurchaseId = domain.appliedToPurchaseId;
     return entity;
   }
 
@@ -411,7 +425,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return entity ? this.requestToDomain(entity) : null;
   }
 
-  async findAllRequests(status?: LoanRequest['status']): Promise<LoanRequest[]> {
+  async findAllRequests(
+    status?: LoanRequest['status'],
+  ): Promise<LoanRequest[]> {
     const query: { status?: LoanRequest['status'] } = {};
     if (status) {
       query.status = status;
@@ -465,7 +481,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     await this.contractRepo.delete({ id });
   }
 
-  async findContractFilesByContract(contractId: string): Promise<ContractFile[]> {
+  async findContractFilesByContract(
+    contractId: string,
+  ): Promise<ContractFile[]> {
     const entities = await this.contractFileRepo.find({
       where: { contractId },
       order: { createdAt: 'DESC' },
@@ -524,7 +542,6 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return entities.map((entity) => this.transactionToDomain(entity));
   }
 
-
   // --- Platform Config ---
 
   async getPlatformConfig(): Promise<PlatformConfig> {
@@ -549,7 +566,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
 
   // --- Mapeadores de PersonBankAccount ---
 
-  private bankAccountToDomain(entity: PersonBankAccountEntity): PersonBankAccount {
+  private bankAccountToDomain(
+    entity: PersonBankAccountEntity,
+  ): PersonBankAccount {
     return {
       id: entity.id,
       personProfileId: entity.personProfileId,
@@ -565,7 +584,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     };
   }
 
-  private bankAccountToPersistence(domain: PersonBankAccount): PersonBankAccountEntity {
+  private bankAccountToPersistence(
+    domain: PersonBankAccount,
+  ): PersonBankAccountEntity {
     const entity = new PersonBankAccountEntity();
     entity.id = domain.id;
     entity.personProfileId = domain.personProfileId;
@@ -581,7 +602,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
 
   // --- Person Bank Accounts ---
 
-  async findBankAccountsByPersonProfileId(personProfileId: string): Promise<PersonBankAccount[]> {
+  async findBankAccountsByPersonProfileId(
+    personProfileId: string,
+  ): Promise<PersonBankAccount[]> {
     const entities = await this.personBankAccountRepo.find({
       where: { personProfileId },
       order: { isPrimary: 'DESC', createdAt: 'DESC' },
@@ -594,7 +617,9 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     return entity ? this.bankAccountToDomain(entity) : null;
   }
 
-  async saveBankAccount(account: PersonBankAccount): Promise<PersonBankAccount> {
+  async saveBankAccount(
+    account: PersonBankAccount,
+  ): Promise<PersonBankAccount> {
     const entity = this.bankAccountToPersistence(account);
     await this.personBankAccountRepo.save(entity);
     return account;
@@ -625,39 +650,41 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
       bankOperationId: entity.bankOperationId,
       status: entity.status,
       createdAt: entity.createdAt.toISOString(),
-    }
+    };
   }
 
   // --- Disbursements ---
 
   async saveDisbursement(disbursement: Disbursement): Promise<Disbursement> {
-    const entity = new DisbursementEntity()
-    entity.id = disbursement.id
-    entity.loanRequestId = disbursement.loanRequestId
-    entity.paymentId = disbursement.paymentId
-    entity.financeUserId = disbursement.financeUserId
-    entity.financeUserName = disbursement.financeUserName
-    entity.amountUsd = disbursement.amountUsd
-    entity.amountBs = disbursement.amountBs
-    entity.exchangeRate = disbursement.exchangeRate
-    entity.bankCode = disbursement.bankCode
-    entity.accountNumber = disbursement.accountNumber
-    entity.phoneNumber = disbursement.phoneNumber
-    entity.documentId = disbursement.documentId
-    entity.concept = disbursement.concept
-    entity.bankReference = disbursement.bankReference
-    entity.bankOperationId = disbursement.bankOperationId
-    entity.status = disbursement.status
-    await this.disbursementRepo.save(entity)
-    return disbursement
+    const entity = new DisbursementEntity();
+    entity.id = disbursement.id;
+    entity.loanRequestId = disbursement.loanRequestId;
+    entity.paymentId = disbursement.paymentId;
+    entity.financeUserId = disbursement.financeUserId;
+    entity.financeUserName = disbursement.financeUserName;
+    entity.amountUsd = disbursement.amountUsd;
+    entity.amountBs = disbursement.amountBs;
+    entity.exchangeRate = disbursement.exchangeRate;
+    entity.bankCode = disbursement.bankCode;
+    entity.accountNumber = disbursement.accountNumber;
+    entity.phoneNumber = disbursement.phoneNumber;
+    entity.documentId = disbursement.documentId;
+    entity.concept = disbursement.concept;
+    entity.bankReference = disbursement.bankReference;
+    entity.bankOperationId = disbursement.bankOperationId;
+    entity.status = disbursement.status;
+    await this.disbursementRepo.save(entity);
+    return disbursement;
   }
 
-  async findDisbursementByLoanRequestId(loanRequestId: string): Promise<Disbursement | null> {
+  async findDisbursementByLoanRequestId(
+    loanRequestId: string,
+  ): Promise<Disbursement | null> {
     const entity = await this.disbursementRepo.findOne({
       where: { loanRequestId },
       order: { createdAt: 'DESC' },
-    })
-    return entity ? this.disbursementToDomain(entity) : null
+    });
+    return entity ? this.disbursementToDomain(entity) : null;
   }
 
   // --- Purchases ---
@@ -677,65 +704,88 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
       marketplaceName: entity.marketplaceName,
       amountUsd: Number(entity.amountUsd),
       amountVes: entity.amountVes !== null ? Number(entity.amountVes) : null,
-      exchangeRate: entity.exchangeRate !== null ? Number(entity.exchangeRate) : null,
+      exchangeRate:
+        entity.exchangeRate !== null ? Number(entity.exchangeRate) : null,
       isFinanced: entity.isFinanced,
       installments: entity.installments,
-      interestRate: entity.interestRate !== null ? Number(entity.interestRate) : null,
+      interestRate:
+        entity.interestRate !== null ? Number(entity.interestRate) : null,
       channel: entity.channel,
       transactionId: entity.transactionId,
       loanRequestId: entity.loanRequestId,
       disbursementId: entity.disbursementId,
       status: entity.status,
+      amountDue: entity.amountDue !== null ? Number(entity.amountDue) : null,
+      amountPaid: Number(entity.amountPaid),
+      dueDate: entity.dueDate ? entity.dueDate.toISOString() : null,
+      delinquencyBucket: entity.delinquencyBucket,
+      overdueSince: entity.overdueSince
+        ? entity.overdueSince.toISOString()
+        : null,
       createdAt: entity.createdAt.toISOString(),
       updatedAt: entity.updatedAt.toISOString(),
-    }
+    };
   }
 
   private purchaseToEntity(purchase: Purchase): PurchaseEntity {
-    const entity = new PurchaseEntity()
-    entity.id = purchase.id
-    entity.purchaserType = purchase.purchaserType
-    entity.purchaserId = purchase.purchaserId
-    entity.purchaserName = purchase.purchaserName
-    entity.purchaserEmail = purchase.purchaserEmail
-    entity.purchaserDocument = purchase.purchaserDocument
-    entity.productId = purchase.productId
-    entity.productName = purchase.productName
-    entity.productSku = purchase.productSku
-    entity.marketplaceId = purchase.marketplaceId
-    entity.marketplaceName = purchase.marketplaceName
-    entity.amountUsd = purchase.amountUsd
-    entity.amountVes = purchase.amountVes
-    entity.exchangeRate = purchase.exchangeRate
-    entity.isFinanced = purchase.isFinanced
-    entity.installments = purchase.installments
-    entity.interestRate = purchase.interestRate
-    entity.channel = purchase.channel
-    entity.transactionId = purchase.transactionId
-    entity.loanRequestId = purchase.loanRequestId
-    entity.disbursementId = purchase.disbursementId
-    entity.status = purchase.status
-    return entity
+    const entity = new PurchaseEntity();
+    entity.id = purchase.id;
+    entity.purchaserType = purchase.purchaserType;
+    entity.purchaserId = purchase.purchaserId;
+    entity.purchaserName = purchase.purchaserName;
+    entity.purchaserEmail = purchase.purchaserEmail;
+    entity.purchaserDocument = purchase.purchaserDocument;
+    entity.productId = purchase.productId;
+    entity.productName = purchase.productName;
+    entity.productSku = purchase.productSku;
+    entity.marketplaceId = purchase.marketplaceId;
+    entity.marketplaceName = purchase.marketplaceName;
+    entity.amountUsd = purchase.amountUsd;
+    entity.amountVes = purchase.amountVes;
+    entity.exchangeRate = purchase.exchangeRate;
+    entity.isFinanced = purchase.isFinanced;
+    entity.installments = purchase.installments;
+    entity.interestRate = purchase.interestRate;
+    entity.channel = purchase.channel;
+    entity.transactionId = purchase.transactionId;
+    entity.loanRequestId = purchase.loanRequestId;
+    entity.disbursementId = purchase.disbursementId;
+    entity.status = purchase.status;
+    return entity;
   }
 
   async savePurchase(purchase: Purchase): Promise<Purchase> {
-    const entity = this.purchaseToEntity(purchase)
-    const saved = await this.purchaseRepo.save(entity)
-    return this.purchaseToDomain(saved)
+    const entity = this.purchaseToEntity(purchase);
+    const saved = await this.purchaseRepo.save(entity);
+    return this.purchaseToDomain(saved);
+  }
+
+  async updateDelinquencyBucket(
+    purchaseId: string,
+    bucket: Purchase['delinquencyBucket'],
+    overdueSince: string | null,
+  ): Promise<void> {
+    await this.purchaseRepo.update(
+      { id: purchaseId },
+      {
+        delinquencyBucket: bucket,
+        overdueSince: overdueSince ? new Date(overdueSince) : null,
+      },
+    );
   }
 
   async findPurchaseById(id: string): Promise<Purchase | null> {
-    const entity = await this.purchaseRepo.findOne({ where: { id } })
-    return entity ? this.purchaseToDomain(entity) : null
+    const entity = await this.purchaseRepo.findOne({ where: { id } });
+    return entity ? this.purchaseToDomain(entity) : null;
   }
 
   async findAllPurchases(channel?: Purchase['channel']): Promise<Purchase[]> {
-    const where = channel ? { channel } : {}
+    const where = channel ? { channel } : {};
     const entities = await this.purchaseRepo.find({
       where,
       order: { createdAt: 'DESC' },
-    })
-    return entities.map((e) => this.purchaseToDomain(e))
+    });
+    return entities.map((e) => this.purchaseToDomain(e));
   }
 
   async findPurchasesByPurchaser(
@@ -745,7 +795,7 @@ export class DbEnterpriseRepositoryService implements EnterpriseRepositoryPort {
     const entities = await this.purchaseRepo.find({
       where: { purchaserType, purchaserId },
       order: { createdAt: 'DESC' },
-    })
-    return entities.map((e) => this.purchaseToDomain(e))
+    });
+    return entities.map((e) => this.purchaseToDomain(e));
   }
 }

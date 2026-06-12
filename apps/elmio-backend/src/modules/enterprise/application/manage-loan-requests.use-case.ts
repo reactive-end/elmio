@@ -12,7 +12,10 @@ import {
   ENTERPRISE_REPOSITORY_PORT,
   type EnterpriseRepositoryPort,
 } from '../domain/ports/enterprise-repository.port';
-import { PRODUCT_REPOSITORY_PORT, type ProductRepositoryPort } from '../../product/domain/ports/product-repository.port';
+import {
+  PRODUCT_REPOSITORY_PORT,
+  type ProductRepositoryPort,
+} from '../../product/domain/ports/product-repository.port';
 import { PaymentProcessorService } from '../../payment-processor/application/services/payment-processor.service';
 
 /**
@@ -208,7 +211,9 @@ export class ManageLoanRequestsUseCase {
       const product = await this.productRepository.findById(productId);
       if (product && product.actions) {
         const disburseAction = product.actions.find(
-          (act) => (act.type === 'manual_disburse' || act.type === 'disburse_funds') && act.active,
+          (act) =>
+            (act.type === 'manual_disburse' || act.type === 'disburse_funds') &&
+            act.active,
         );
 
         if (disburseAction) {
@@ -218,20 +223,27 @@ export class ManageLoanRequestsUseCase {
           );
 
           if (!profile) {
-            throw new Error('No se encontró el perfil del colaborador para procesar el desembolso.');
+            throw new Error(
+              'No se encontró el perfil del colaborador para procesar el desembolso.',
+            );
           }
 
-          const bankAccounts = await this.repository.findBankAccountsByPersonProfileId(profile.id);
-          const primaryAccount = bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
+          const bankAccounts =
+            await this.repository.findBankAccountsByPersonProfileId(profile.id);
+          const primaryAccount =
+            bankAccounts.find((acc) => acc.isPrimary) || bankAccounts[0];
 
           if (!primaryAccount) {
-            throw new Error('El colaborador no posee datos de cuenta bancaria registrados en su perfil.');
+            throw new Error(
+              'El colaborador no posee datos de cuenta bancaria registrados en su perfil.',
+            );
           }
 
           // Obtener exchange rate
           let exchangeRate = 1;
           try {
-            const rateObj = await this.paymentProcessorService.getLastExchangeRate();
+            const rateObj =
+              await this.paymentProcessorService.getLastExchangeRate();
             if (rateObj && rateObj.bolivaresPerUsd) {
               exchangeRate = Number(rateObj.bolivaresPerUsd);
             }
@@ -240,7 +252,9 @@ export class ManageLoanRequestsUseCase {
           }
 
           // Determinar el monto en USD (de la acción o de la solicitud como fallback)
-          const amountUsd = Number(disburseAction.config.amountUsd ?? request.amount);
+          const amountUsd = Number(
+            disburseAction.config.amountUsd ?? request.amount,
+          );
           const amountVES = Number((amountUsd * exchangeRate).toFixed(2));
 
           // Generar idSesion de 16 caracteres: aaaaMMddhhmmSSss
@@ -255,17 +269,21 @@ export class ManageLoanRequestsUseCase {
             (now.getMilliseconds() % 100).toString().padStart(2, '0');
 
           // Desembolso mediante Banco Plaza por defecto
-          await this.paymentProcessorService.initiateTransfer({
-            companyAccountId: product.alternativeBankAccountId || 'GLOBAL_R4_FALLBACK',
-            provider: 'PLAZA',
-            beneficiaryName: `${profile.name} ${profile.lastName}`,
-            beneficiaryId: `${profile.documentType || 'V'}${profile.documentId}`,
-            beneficiaryBankCode: primaryAccount.bankCode,
-            amount: amountVES,
-            concept: `Desembolso prestamo: ${product.name}`,
-            beneficiaryAccount: primaryAccount.accountNumber,
-            userIp: '127.0.0.1',
-          }, { sub: 'elmio-system' } as any);
+          await this.paymentProcessorService.initiateTransfer(
+            {
+              companyAccountId:
+                product.alternativeBankAccountId || 'GLOBAL_R4_FALLBACK',
+              provider: 'PLAZA',
+              beneficiaryName: `${profile.name} ${profile.lastName}`,
+              beneficiaryId: `${profile.documentType || 'V'}${profile.documentId}`,
+              beneficiaryBankCode: primaryAccount.bankCode,
+              amount: amountVES,
+              concept: `Desembolso prestamo: ${product.name}`,
+              beneficiaryAccount: primaryAccount.accountNumber,
+              userIp: '127.0.0.1',
+            },
+            { sub: 'elmio-system' },
+          );
 
           // Registrar Disbursement para trazabilidad (Plaza no se registraba antes).
           const disbursement: Disbursement = {
@@ -286,8 +304,8 @@ export class ManageLoanRequestsUseCase {
             bankOperationId: null,
             status: 'success',
             createdAt: new Date().toISOString(),
-          }
-          await this.repository.saveDisbursement(disbursement)
+          };
+          await this.repository.saveDisbursement(disbursement);
 
           // Registrar Purchase para trazabilidad de orden.
           const purchase: Purchase = {
@@ -313,14 +331,22 @@ export class ManageLoanRequestsUseCase {
             loanRequestId: requestId,
             disbursementId: disbursement.id,
             status: 'disbursed',
+            amountDue: amountUsd,
+            amountPaid: amountUsd,
+            dueDate: null,
+            delinquencyBucket: 'current',
+            overdueSince: null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-          }
-          await this.repository.savePurchase(purchase)
+          };
+          await this.repository.savePurchase(purchase);
         }
       }
     } catch (error) {
-      console.error('Error al ejecutar la acción de postventa disburse_funds:', error);
+      console.error(
+        'Error al ejecutar la acción de postventa disburse_funds:',
+        error,
+      );
     }
 
     return savedRequest;

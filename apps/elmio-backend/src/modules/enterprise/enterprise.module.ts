@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from '../auth/auth.module';
 import {
   GetOrCreateEnterpriseUseCase,
@@ -18,6 +19,10 @@ import { ManageDisburseUseCase } from './application/manage-disburse.use-case';
 import { ManageVueltoUseCase } from './application/manage-vuelto.use-case';
 import { ManagePurchasesUseCase } from './application/manage-purchases.use-case';
 import { ExecuteBillingCutoffUseCase } from './application/execute-billing-cutoff.use-case';
+import { RecalculateDelinquencyBucketsUseCase } from './application/recalculate-delinquency-buckets.use-case';
+import { RegisterPartialPaymentUseCase } from './application/register-partial-payment.use-case';
+import { ConfirmBankTransferUseCase } from './application/confirm-bank-transfer.use-case';
+import { ConciliateBankTransferUseCase } from './application/concile-bank-transfer.use-case';
 import { ENTERPRISE_REPOSITORY_PORT } from './domain/ports/enterprise-repository.port';
 import { DbEnterpriseRepositoryService } from './infrastructure/db-enterprise-repository.service';
 import { DocumentStorageService } from './infrastructure/document-storage.service';
@@ -50,6 +55,9 @@ import { ProductModule } from '../product/product.module';
     MundialModule,
     PaymentProcessorModule,
     ProductModule,
+    // Habilita el decorador @Cron en RecalculateDelinquencyBucketsUseCase
+    // (Fase 1 del modulo de cobranza).
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       EnterpriseEntity,
       PersonProfileEntity,
@@ -81,6 +89,10 @@ import { ProductModule } from '../product/product.module';
     ManageVueltoUseCase,
     ManagePurchasesUseCase,
     ExecuteBillingCutoffUseCase,
+    RecalculateDelinquencyBucketsUseCase,
+    RegisterPartialPaymentUseCase,
+    ConfirmBankTransferUseCase,
+    ConciliateBankTransferUseCase,
     DbEnterpriseRepositoryService,
     DocumentStorageService,
     {

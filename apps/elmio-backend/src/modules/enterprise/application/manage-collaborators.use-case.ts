@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { PersonProfile } from '../domain/person-profile';
 import {
@@ -72,7 +78,8 @@ export class ManageCollaboratorsUseCase {
     if (!enterprise) throw new NotFoundException('Empresa no encontrada.');
 
     const profiles: PersonProfile[] = [];
-    const existingCollaborators = await this.repository.findCollaboratorsByEnterprise(enterpriseId);
+    const existingCollaborators =
+      await this.repository.findCollaboratorsByEnterprise(enterpriseId);
 
     for (const input of inputs) {
       const email = input.email.trim().toLowerCase();
@@ -80,8 +87,7 @@ export class ManageCollaboratorsUseCase {
 
       const existingCollab = existingCollaborators.find(
         (c) =>
-          c.documentId === documentId ||
-          c.email.trim().toLowerCase() === email,
+          c.documentId === documentId || c.email.trim().toLowerCase() === email,
       );
 
       if (existingCollab) {
@@ -125,7 +131,11 @@ export class ManageCollaboratorsUseCase {
           await this.authRepository.create(newUser);
         }
 
-        const profile = this.buildProfile(enterpriseId, input, existingUser?.id ?? userId);
+        const profile = this.buildProfile(
+          enterpriseId,
+          input,
+          existingUser?.id ?? userId,
+        );
         const saved = await this.repository.saveCollaborator(profile);
         profiles.push(saved);
       }
