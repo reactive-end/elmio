@@ -26,9 +26,24 @@ const STATUS_BADGE: Record<
   Transaction['status'],
   { bg: string; text: string; icon: React.ComponentType<{ className?: string }>; label: string }
 > = {
-  pending: { bg: 'bg-amber-50 text-amber-700 border-amber-100', text: 'text-amber-700', icon: Clock, label: 'Pendiente' },
-  paid: { bg: 'bg-green-50 text-green-700 border-green-100', text: 'text-green-700', icon: CheckCircle2, label: 'Pagado' },
-  failed: { bg: 'bg-red-50 text-red-700 border-red-100', text: 'text-red-700', icon: XCircle, label: 'Fallido' },
+  pending: {
+    bg: 'bg-amber-50 text-amber-700 border-amber-100',
+    text: 'text-amber-700',
+    icon: Clock,
+    label: 'Pendiente',
+  },
+  paid: {
+    bg: 'bg-green-50 text-green-700 border-green-100',
+    text: 'text-green-700',
+    icon: CheckCircle2,
+    label: 'Pagado',
+  },
+  failed: {
+    bg: 'bg-red-50 text-red-700 border-red-100',
+    text: 'text-red-700',
+    icon: XCircle,
+    label: 'Fallido',
+  },
 }
 
 const FILTERS: { value: Transaction['status'] | 'all'; label: string }[] = [
@@ -50,7 +65,7 @@ export default function EnterprisePurchasesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  
+
   const [purchases, setPurchases] = useState<Transaction[]>([])
   const [insurances, setInsurances] = useState<Transaction[]>([])
   const [activeTab, setActiveTab] = useState<'products' | 'insurances'>('products')
@@ -67,7 +82,7 @@ export default function EnterprisePurchasesPage() {
         setError(null)
         const enterprise = await enterpriseService.getMe()
         const txs = await enterpriseService.listTransactions(enterprise.id)
-        
+
         // Filtrar transacciones de cargo que corresponden a compras de marketplace
         const marketplaceCharges = txs.filter(
           (t) => t.kind === 'charge' && t.concept.startsWith('Compra marketplace:'),
@@ -76,12 +91,20 @@ export default function EnterprisePurchasesPage() {
         // Separar entre Seguros y Productos
         const segs = marketplaceCharges.filter((t) => {
           const conceptLower = t.concept.toLowerCase()
-          return conceptLower.includes('seguro') || conceptLower.includes('póliza') || conceptLower.includes('poliza')
+          return (
+            conceptLower.includes('seguro') ||
+            conceptLower.includes('póliza') ||
+            conceptLower.includes('poliza')
+          )
         })
 
         const prods = marketplaceCharges.filter((t) => {
           const conceptLower = t.concept.toLowerCase()
-          return !conceptLower.includes('seguro') && !conceptLower.includes('póliza') && !conceptLower.includes('poliza')
+          return (
+            !conceptLower.includes('seguro') &&
+            !conceptLower.includes('póliza') &&
+            !conceptLower.includes('poliza')
+          )
         })
 
         setInsurances(segs)
@@ -109,8 +132,12 @@ export default function EnterprisePurchasesPage() {
     const allItems = [...purchases, ...insurances]
     const totalCount = allItems.length
     const totalAmount = allItems.reduce((sum, p) => sum + p.amount, 0)
-    const paidAmount = allItems.filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0)
-    const pendingAmount = allItems.filter((p) => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0)
+    const paidAmount = allItems
+      .filter((p) => p.status === 'paid')
+      .reduce((sum, p) => sum + p.amount, 0)
+    const pendingAmount = allItems
+      .filter((p) => p.status === 'pending')
+      .reduce((sum, p) => sum + p.amount, 0)
 
     return { totalCount, totalAmount, paidAmount, pendingAmount }
   }, [purchases, insurances])
@@ -147,14 +174,14 @@ export default function EnterprisePurchasesPage() {
     const numCuotas = isRCV ? 1 : 6 // Pólizas RCV se pagan en una sola cuota (anual). Otros en 6 cuotas.
     const totalAmount = insurance.amount
     const cuotaAmount = Math.round((totalAmount / numCuotas) * 100) / 100
-    
+
     const baseDate = new Date(insurance.date)
     const items: PolicyCuotaSimulada[] = []
 
     for (let i = 1; i <= numCuotas; i++) {
       const dueDate = new Date(baseDate)
       dueDate.setMonth(baseDate.getMonth() + i)
-      
+
       let status: PolicyCuotaSimulada['status'] = 'pending'
       if (insurance.status === 'paid') {
         status = 'paid'
@@ -242,7 +269,11 @@ export default function EnterprisePurchasesPage() {
         />
         <CardResumen
           title="Porcentaje de Pago"
-          value={metrics.totalAmount > 0 ? `${Math.round((metrics.paidAmount / metrics.totalAmount) * 100)}%` : '0%'}
+          value={
+            metrics.totalAmount > 0
+              ? `${Math.round((metrics.paidAmount / metrics.totalAmount) * 100)}%`
+              : '0%'
+          }
           description="Progreso de liquidación"
           icon={Percent}
           bgIcon="bg-blue-50"
@@ -293,7 +324,7 @@ export default function EnterprisePurchasesPage() {
             )}
             {activeTab === 'products' ? 'Productos Adquiridos' : 'Pólizas de Seguro en Cuotas'}
           </h2>
-          
+
           {/* Filtros */}
           <div className="flex flex-wrap items-center gap-1.5">
             <Filter className="h-4 w-4 text-body-muted" strokeWidth={1.5} />
@@ -322,7 +353,9 @@ export default function EnterprisePurchasesPage() {
               <Shield className="mx-auto mb-4 h-12 w-12 text-gray-300" strokeWidth={1.5} />
             )}
             <h3 className="text-base font-medium text-body">
-              {activeTab === 'products' ? 'No se encontraron productos' : 'No se encontraron seguros'}
+              {activeTab === 'products'
+                ? 'No se encontraron productos'
+                : 'No se encontraron seguros'}
             </h3>
             <p className="mt-1 text-sm text-body-muted max-w-xs">
               {filterStatus === 'all'
@@ -390,13 +423,9 @@ export default function EnterprisePurchasesPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-body-muted">
-                        {fmtDate(item.date)}
-                      </td>
+                      <td className="px-5 py-4 text-body-muted">{fmtDate(item.date)}</td>
                       <td className="px-5 py-4 text-right">
-                        <span className="font-bold text-body font-mono">
-                          {fmt(item.amount)}
-                        </span>
+                        <span className="font-bold text-body font-mono">{fmt(item.amount)}</span>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex justify-center">
@@ -442,13 +471,19 @@ export default function EnterprisePurchasesPage() {
                   <Shield className="h-5 w-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">Plan de Financiamiento</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                    Plan de Financiamiento
+                  </span>
                   <h3 className="text-xl font-bold text-body mt-0.5">
                     {getProductName(selectedInsurance.concept)}
                   </h3>
                 </div>
               </div>
-              <Button variant="ghost" onClick={() => setSelectedInsurance(null)} className="h-8 py-0">
+              <Button
+                variant="ghost"
+                onClick={() => setSelectedInsurance(null)}
+                className="h-8 py-0"
+              >
                 Cerrar
               </Button>
             </div>
@@ -457,7 +492,9 @@ export default function EnterprisePurchasesPage() {
             <div className="grid grid-cols-3 gap-4 my-5 rounded-2xl bg-gray-50 p-4 text-sm">
               <div>
                 <span className="text-[11px] text-body-muted block">Monto de la Póliza</span>
-                <span className="font-bold text-body font-mono text-base">{fmt(selectedInsurance.amount)}</span>
+                <span className="font-bold text-body font-mono text-base">
+                  {fmt(selectedInsurance.amount)}
+                </span>
               </div>
               <div>
                 <span className="text-[11px] text-body-muted block">Frecuencia de Pago</span>
@@ -465,9 +502,13 @@ export default function EnterprisePurchasesPage() {
               </div>
               <div>
                 <span className="text-[11px] text-body-muted block">Estado General</span>
-                <span className={`font-semibold inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded text-xs ${
-                  selectedInsurance.status === 'paid' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                }`}>
+                <span
+                  className={`font-semibold inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded text-xs ${
+                    selectedInsurance.status === 'paid'
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-amber-50 text-amber-700'
+                  }`}
+                >
                   {selectedInsurance.status === 'paid' ? 'Liquidado' : 'Con saldo en cuotas'}
                 </span>
               </div>
@@ -497,18 +538,26 @@ export default function EnterprisePurchasesPage() {
                       <td className="px-4 py-3 text-left text-body-muted">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                          {new Intl.DateTimeFormat('es-VE', { dateStyle: 'medium' }).format(new Date(cuota.dueDate))}
+                          {new Intl.DateTimeFormat('es-VE', { dateStyle: 'medium' }).format(
+                            new Date(cuota.dueDate),
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          cuota.status === 'paid'
-                            ? 'bg-green-50 text-green-700'
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            cuota.status === 'paid'
+                              ? 'bg-green-50 text-green-700'
+                              : cuota.status === 'failed'
+                                ? 'bg-red-50 text-red-700'
+                                : 'bg-amber-50 text-amber-700'
+                          }`}
+                        >
+                          {cuota.status === 'paid'
+                            ? 'Pagado'
                             : cuota.status === 'failed'
-                            ? 'bg-red-50 text-red-700'
-                            : 'bg-amber-50 text-amber-700'
-                        }`}>
-                          {cuota.status === 'paid' ? 'Pagado' : cuota.status === 'failed' ? 'Fallido' : 'Pendiente'}
+                              ? 'Fallido'
+                              : 'Pendiente'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -532,7 +581,7 @@ export default function EnterprisePurchasesPage() {
 
             <div className="mt-6 flex justify-end">
               <Button onClick={() => setSelectedInsurance(null)} variant="primary">
-                Entendido
+                Aceptar
               </Button>
             </div>
           </div>
@@ -551,7 +600,14 @@ interface CardResumenProps {
   colorIcon: string
 }
 
-function CardResumen({ title, value, description, icon: Icon, bgIcon, colorIcon }: CardResumenProps) {
+function CardResumen({
+  title,
+  value,
+  description,
+  icon: Icon,
+  bgIcon,
+  colorIcon,
+}: CardResumenProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm shadow-black/3 transition-all hover:shadow-md hover:shadow-black/5">
       <div className="flex items-center justify-between">

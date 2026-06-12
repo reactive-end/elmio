@@ -573,7 +573,7 @@ export default function EnterpriseShopPage() {
               onClick={() => setRequestSuccess(null)}
               className="py-3 font-semibold mt-2"
             >
-              Entendido
+              Aceptar
             </Button>
           </div>
         </div>

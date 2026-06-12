@@ -2,7 +2,16 @@
 
 import { useState } from 'react'
 import { Select } from '@/components/atoms/Select/Select'
-import { Save, KeyRound, Eye, EyeOff, Pencil, ShieldCheck, ShieldOff, ShieldAlert } from 'lucide-react'
+import {
+  Save,
+  KeyRound,
+  Eye,
+  EyeOff,
+  Pencil,
+  ShieldCheck,
+  ShieldOff,
+  ShieldAlert,
+} from 'lucide-react'
 import { useIntegrationApiKeysConfig } from '@/src/hooks/pages/useIntegrationApiKeysConfig'
 
 const BANK_OPTIONS = [
@@ -78,13 +87,17 @@ export default function ApiKeysConfigPage() {
               <h2 className="text-lg font-bold text-gray-900">
                 {editingId ? 'Editar credencial' : 'Nueva credencial'}
               </h2>
-              <p className="text-xs text-gray-500">Configura el banco, ambiente y las llaves de seguridad de integración.</p>
+              <p className="text-xs text-gray-500">
+                Configura el banco, ambiente y las llaves de seguridad de integración.
+              </p>
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 select-none">Banco de Integración</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 select-none">
+                Banco de Integración
+              </label>
               <Select
                 options={BANK_OPTIONS}
                 value={form.bank}
@@ -92,7 +105,9 @@ export default function ApiKeysConfigPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 select-none">Ambiente</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 select-none">
+                Ambiente
+              </label>
               <Select
                 options={ENVIRONMENT_OPTIONS}
                 value={form.environment}
@@ -100,10 +115,14 @@ export default function ApiKeysConfigPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 select-none">Nombre descriptivo</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 select-none">
+                Nombre descriptivo
+              </label>
               <input
                 value={form.name}
-                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, name: event.target.value }))
+                }
                 placeholder="Ej: API Key de Producción"
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
               />
@@ -114,17 +133,27 @@ export default function ApiKeysConfigPage() {
               </label>
               <input
                 value={form.value}
-                onChange={(event) => setForm((current) => ({ ...current, value: event.target.value }))}
-                placeholder={editingId ? 'Ingresa un nuevo valor solo para rotar el secreto' : 'Ingresa la API Key o llave secreta'}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, value: event.target.value }))
+                }
+                placeholder={
+                  editingId
+                    ? 'Ingresa un nuevo valor solo para rotar el secreto'
+                    : 'Ingresa la API Key o llave secreta'
+                }
                 className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
               />
             </div>
 
             <div className="md:col-span-2 flex items-center justify-between gap-3 bg-gray-50/50 rounded-2xl p-4 border border-gray-100/50">
-              <label className="text-sm font-medium text-body flex-1 select-none cursor-pointer" onClick={() => setForm((c) => ({ ...c, isActive: !c.isActive }))}>
+              <label
+                className="text-sm font-medium text-body flex-1 select-none cursor-pointer"
+                onClick={() => setForm((c) => ({ ...c, isActive: !c.isActive }))}
+              >
                 ¿Dejar activa esta credencial?
                 <span className="block text-xs text-gray-400 font-normal mt-0.5">
-                  Si activas esta key, reemplazará automáticamente cualquier otra activa del mismo banco y ambiente.
+                  Si activas esta key, reemplazará automáticamente cualquier otra activa del mismo
+                  banco y ambiente.
                 </span>
               </label>
               <button
@@ -177,7 +206,9 @@ export default function ApiKeysConfigPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-900">Credenciales registradas</h2>
-              <p className="text-xs text-gray-500">Mercantil usa internamente la integracion `ally-api`.</p>
+              <p className="text-xs text-gray-500">
+                Mercantil usa internamente la integracion `ally-api`.
+              </p>
             </div>
             <input
               value={revealKey}
@@ -191,12 +222,24 @@ export default function ApiKeysConfigPage() {
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Banco / Nombre</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ambiente</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Valor Secreto</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Última Rotación</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Acciones</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Banco / Nombre
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Ambiente
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Valor Secreto
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Última Rotación
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -212,11 +255,13 @@ export default function ApiKeysConfigPage() {
                     </td>
                     <td className="px-6 py-5">
                       {item.environment ? (
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          item.environment === 'production' 
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200/30' 
-                            : 'bg-indigo-50 text-indigo-700 border border-indigo-200/30'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                            item.environment === 'production'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200/30'
+                              : 'bg-indigo-50 text-indigo-700 border border-indigo-200/30'
+                          }`}
+                        >
                           {item.environment === 'production' ? 'Producción' : 'Desarrollo'}
                         </span>
                       ) : (
@@ -229,17 +274,26 @@ export default function ApiKeysConfigPage() {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                        item.isActive
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
-                          : 'bg-gray-100 text-gray-600 border border-gray-200/50'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          item.isActive
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
+                            : 'bg-gray-100 text-gray-600 border border-gray-200/50'
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                        />
                         {item.isActive ? 'Activa' : 'Inactiva'}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-xs text-gray-500">
-                      {item.lastRotatedAt ? new Date(item.lastRotatedAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'Sin registro'}
+                      {item.lastRotatedAt
+                        ? new Date(item.lastRotatedAt).toLocaleString('es-ES', {
+                            dateStyle: 'short',
+                            timeStyle: 'short',
+                          })
+                        : 'Sin registro'}
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -265,11 +319,13 @@ export default function ApiKeysConfigPage() {
                             type="button"
                             onClick={() => {
                               if (!revealKey.trim()) {
-                                setAlertMessage('Por favor, ingresa la "Clave de revelado" en el campo de texto ubicado arriba a la derecha para poder descifrar y visualizar este secreto.');
-                                setShowAlert(true);
-                                return;
+                                setAlertMessage(
+                                  'Por favor, ingresa la "Clave de revelado" en el campo de texto ubicado arriba a la derecha para poder descifrar y visualizar este secreto.',
+                                )
+                                setShowAlert(true)
+                                return
                               }
-                              void reveal(item.id);
+                              void reveal(item.id)
                             }}
                             disabled={revealingId === item.id}
                             className="p-2 rounded-xl text-gray-400 hover:text-secondary hover:bg-secondary/5 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:bg-transparent transition-all border border-transparent hover:border-secondary/10 cursor-pointer"
@@ -283,13 +339,17 @@ export default function ApiKeysConfigPage() {
                           onClick={() => void toggleActive(item)}
                           disabled={saving}
                           className={`p-2 rounded-xl border border-transparent transition-all cursor-pointer ${
-                            item.isActive 
+                            item.isActive
                               ? 'text-amber-500 hover:text-amber-700 hover:bg-amber-50 hover:border-amber-100'
                               : 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-100'
                           }`}
                           title={item.isActive ? 'Desactivar' : 'Activar'}
                         >
-                          {item.isActive ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                          {item.isActive ? (
+                            <ShieldOff className="h-4 w-4" />
+                          ) : (
+                            <ShieldCheck className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -308,12 +368,8 @@ export default function ApiKeysConfigPage() {
               <ShieldAlert className="h-7 w-7" strokeWidth={1.5} />
             </div>
             <div className="text-center">
-              <h3 className="text-base font-bold text-gray-900">
-                Clave Requerida
-              </h3>
-              <p className="mt-2 text-xs text-gray-500 leading-relaxed px-1">
-                {alertMessage}
-              </p>
+              <h3 className="text-base font-bold text-gray-900">Clave Requerida</h3>
+              <p className="mt-2 text-xs text-gray-500 leading-relaxed px-1">{alertMessage}</p>
             </div>
             <div className="mt-6">
               <button
@@ -321,7 +377,7 @@ export default function ApiKeysConfigPage() {
                 onClick={() => setShowAlert(false)}
                 className="w-full rounded-2xl bg-secondary px-4 py-3.5 text-xs font-semibold text-white transition hover:bg-secondary-dark cursor-pointer shadow-lg shadow-secondary/15"
               >
-                Entendido
+                Aceptar
               </button>
             </div>
           </div>

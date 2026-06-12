@@ -33,23 +33,16 @@ export function BlockedAccessModal({ isOpen, onClose }: BlockedAccessModalProps)
         </div>
 
         <div className="text-center">
-          <h3 className="text-base font-bold text-body tracking-tight">
-            Acceso no disponible
-          </h3>
+          <h3 className="text-base font-bold text-body tracking-tight">Acceso no disponible</h3>
           <p className="mt-2 text-xs font-medium text-body-muted leading-relaxed px-1">
-            Este producto solo puede ser adquirido por clientes naturales o colaboradores.
-            Tu cuenta actual no tiene un perfil compatible.
+            Este producto solo puede ser adquirido por clientes naturales o colaboradores. Tu cuenta
+            actual no tiene un perfil compatible.
           </p>
         </div>
 
         <div className="mt-6">
-          <Button
-            type="button"
-            onClick={onClose}
-            fullWidth
-            className="text-xs py-2 h-10"
-          >
-            Entendido
+          <Button type="button" onClick={onClose} fullWidth className="text-xs py-2 h-10">
+            Aceptar
           </Button>
         </div>
       </div>
