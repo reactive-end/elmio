@@ -6,7 +6,7 @@ import { gsap } from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { formatPhoneDisplay, stripPhoneFormat } from '@/src/utils/phoneFormat'
 import { authService } from '@/src/services/auth.service'
-import { recoveryService } from '@/src/services/recovery.service'
+import { recoveryService, RECOVERY_UNAVAILABLE_MESSAGE } from '@/src/services/recovery.service'
 import type { CountryCode, OperatorPrefix } from '@/components/molecules/PhoneInput/PhoneInput.d'
 
 gsap.registerPlugin(useGSAP)
@@ -126,7 +126,7 @@ export function useLoginForm(onLoginSuccess?: () => void) {
       }
 
       // Descubrir perfiles
-      const res = await authService.discoverProfiles(loginVal) as { profiles: ProfileItem[] }
+      const res = (await authService.discoverProfiles(loginVal)) as { profiles: ProfileItem[] }
 
       if (res.profiles.length > 1) {
         setProfiles(res.profiles)
@@ -193,7 +193,7 @@ export function useLoginForm(onLoginSuccess?: () => void) {
         if (redirect) {
           const session = authService.getSession()
           const isEmployee = session?.role === 'EMPLOYEE'
-          
+
           if (isEmployee && redirect.includes('/dashboard/enterprise/shop')) {
             try {
               const dummyUrl = new URL(redirect, window.location.origin)
@@ -230,6 +230,18 @@ export function useLoginForm(onLoginSuccess?: () => void) {
     setIsLoading(true)
 
     try {
+      // Verificar disponibilidad de los canales de recuperacion (WhatsApp / email)
+      // antes de transicionar a la pantalla OTP. Si ninguno esta operativo,
+      // se evita la pantalla y se muestra una alerta informativa.
+      const availability = await recoveryService.checkAvailability()
+      if (!availability.available) {
+        setAlert({
+          type: 'warning',
+          message: RECOVERY_UNAVAILABLE_MESSAGE,
+        })
+        return
+      }
+
       const res = await recoveryService.request(selectedProfile.email)
       setRecoveryChannel(res.channel)
       setOtpCode('')
@@ -242,8 +254,8 @@ export function useLoginForm(onLoginSuccess?: () => void) {
       })
     } catch (error) {
       setAlert({
-        type: 'error',
-        message: error instanceof Error ? error.message : 'Fallo al solicitar código.',
+        type: 'warning',
+        message: RECOVERY_UNAVAILABLE_MESSAGE,
       })
     } finally {
       setIsLoading(false)
@@ -299,7 +311,7 @@ export function useLoginForm(onLoginSuccess?: () => void) {
 
     try {
       await recoveryService.reset(resetToken, newPassword)
-      
+
       // Volver a la modal de contraseña para ingresar con la nueva contrasena
       setSelectorStage('password')
       setPassword('')
