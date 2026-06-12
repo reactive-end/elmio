@@ -30,11 +30,14 @@ import { useMarketplaceAction } from '@/src/providers/MarketplaceActionProvider'
 /** Roles que puede tener un usuario segun el backend. Espejo de auth.service. */
 export type UserRole = 'ADMIN' | 'COMPANY' | 'EMPLOYEE' | 'CLIENT' | 'ALLIED' | 'FINANCE'
 
-/** Roles compatibles para comprar seguros. */
+/** Roles compatibles para comprar seguros en línea. */
 export type CompatibleRole = 'CLIENT' | 'EMPLOYEE'
 
-/** Roles que NO pueden comprar seguros en línea. */
-const INCOMPATIBLE_ROLES: ReadonlyArray<UserRole> = ['ADMIN', 'COMPANY', 'FINANCE', 'ALLIED']
+/** Roles que deben ser redirigidos al shop de la empresa para gestionar la compra. */
+export type CompanyShoppingRole = 'COMPANY'
+
+/** Roles que NO pueden comprar seguros en línea (ni siquiera redirigidos). */
+const INCOMPATIBLE_ROLES: ReadonlyArray<UserRole> = ['ADMIN', 'FINANCE', 'ALLIED']
 
 /** Resumen de un perfil de usuario (compatible o no). */
 export interface ProfileSummary {
@@ -49,6 +52,12 @@ export interface ConsultationContext {
   productSku?: string
   marketplaceId?: string
   marketplaceName?: string
+  /**
+   * Ruta base del shop destino cuando el rol es redirigido (EMPLOYEE o
+   * COMPANY). Lo completa el hook segun el rol; las pages no lo setean.
+   * Default: `/dashboard/collaborator/shop`.
+   */
+  basePath?: string
 }
 
 /** Estado de la vista que la page debe renderizar. */
@@ -67,6 +76,13 @@ interface ConsultationAuthOptions {
   onResolved: (profile: ProfileSummary) => void
   /** Callback cuando el usuario es EMPLOYEE: debe redirigir al shop con highlight. */
   onEmployeeRedirect: (profile: ProfileSummary, context: ConsultationContext) => void
+  /**
+   * Callback opcional cuando el usuario es COMPANY: debe redirigir al shop
+   * de la empresa (no al del colaborador) para que gestione la compra
+   * con cargo a su estado de cuenta. Si no se provee, se reusa
+   * `onEmployeeRedirect` apuntando al shop de empresa.
+   */
+  onCompanyRedirect?: (profile: ProfileSummary, context: ConsultationContext) => void
 }
 
 interface ConsultationAuthReturn {
@@ -117,10 +133,14 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
    * Notifica al parent (cuando la consulta está embebida) que debe redirigir
    * al shop con highlight al producto del pilar.
    * @param context Contexto del producto.
+   * @param basePath Ruta base del shop destino (colaborador o empresa).
    */
-  const notifyEmployeeRedirectEmbedded = (context: ConsultationContext) => {
+  const notifyEmployeeRedirectEmbedded = (
+    context: ConsultationContext,
+    basePath: string = '/dashboard/collaborator/shop',
+  ) => {
     if (typeof window === 'undefined') return
-    const url = buildShopRedirect(context)
+    const url = buildShopRedirect(context, basePath)
     window.parent.postMessage(
       { source: 'mercantil-consulta', type: 'redirect-external', url },
       window.location.origin,
@@ -139,7 +159,7 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
     sessionEmail: string,
     context: ConsultationContext,
   ): Promise<boolean> => {
-    // 1. Sesión EMPLOYEE directa → redirigir al shop.
+    // 1. Sesión EMPLOYEE directa → redirigir al shop del colaborador.
     if (sessionRole === 'EMPLOYEE') {
       const profile: ProfileSummary = {
         userId: authService.getSession()?.userId ?? '',
@@ -149,9 +169,33 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
       resolvedProfileRef.current = profile
       setView({ kind: 'resolved', profile })
       if (options.isEmbedded) {
-        notifyEmployeeRedirectEmbedded(context)
+        notifyEmployeeRedirectEmbedded(context, '/dashboard/collaborator/shop')
       } else {
         options.onEmployeeRedirect(profile, context)
+      }
+      return false
+    }
+
+    // 1b. Sesión COMPANY directa → redirigir al shop de la empresa.
+    // Las empresas pueden comprar seguros pero el cargo se registra
+    // contra su estado de cuenta, por lo que el flujo correcto es
+    // guiarlas al shop de empresa con el producto destacado.
+    if (sessionRole === 'COMPANY') {
+      const profile: ProfileSummary = {
+        userId: authService.getSession()?.userId ?? '',
+        name: '',
+        role: 'COMPANY',
+      }
+      resolvedProfileRef.current = profile
+      setView({ kind: 'resolved', profile })
+      if (options.isEmbedded) {
+        notifyEmployeeRedirectEmbedded(context, '/dashboard/enterprise/shop')
+      } else if (options.onCompanyRedirect) {
+        options.onCompanyRedirect(profile, context)
+      } else {
+        // Fallback: reutiliza el callback de EMPLOYEE con un context anotado
+        // para que la page pueda redirigir al shop de empresa.
+        options.onEmployeeRedirect(profile, { ...context, basePath: '/dashboard/enterprise/shop' })
       }
       return false
     }
@@ -167,9 +211,7 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
       // para mostrar el selector de multi-perfil.
       try {
         const result = await authService.discoverProfiles(sessionEmail)
-        const compatible = (result.profiles ?? []).filter((p) =>
-          isCompatibleRole(p.role),
-        )
+        const compatible = (result.profiles ?? []).filter((p) => isCompatibleRole(p.role))
         if (compatible.length >= 2) {
           setView({
             kind: 'profile_selector',
@@ -192,9 +234,7 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
       setView({ kind: 'resolving' })
       try {
         const result = await authService.discoverProfiles(sessionEmail)
-        const compatible = (result.profiles ?? []).filter((p) =>
-          isCompatibleRole(p.role),
-        )
+        const compatible = (result.profiles ?? []).filter((p) => isCompatibleRole(p.role))
         if (compatible.length === 0) {
           setView({ kind: 'blocked', reason: 'incompatible' })
           return false
@@ -222,7 +262,11 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
       pendingReturnToRef.current = returnTo
 
       // Si ya hay un login modal abierto o un selector pendiente, no hacer nada.
-      if (view.kind === 'login_modal' || view.kind === 'profile_selector' || view.kind === 'resolving') {
+      if (
+        view.kind === 'login_modal' ||
+        view.kind === 'profile_selector' ||
+        view.kind === 'resolving'
+      ) {
         return false
       }
 
@@ -271,9 +315,27 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
         resolvedProfileRef.current = profile
         setView({ kind: 'resolved', profile })
         if (options.isEmbedded && context) {
-          notifyEmployeeRedirectEmbedded(context)
+          notifyEmployeeRedirectEmbedded(context, '/dashboard/collaborator/shop')
         } else if (context) {
           options.onEmployeeRedirect(profile, context)
+        }
+        return
+      }
+
+      if (profile.role === 'COMPANY') {
+        resolvedProfileRef.current = profile
+        setView({ kind: 'resolved', profile })
+        if (options.isEmbedded && context) {
+          notifyEmployeeRedirectEmbedded(context, '/dashboard/enterprise/shop')
+        } else if (context) {
+          if (options.onCompanyRedirect) {
+            options.onCompanyRedirect(profile, context)
+          } else {
+            options.onEmployeeRedirect(profile, {
+              ...context,
+              basePath: '/dashboard/enterprise/shop',
+            })
+          }
         }
         return
       }
@@ -281,7 +343,8 @@ export function useConsultationAuth(options: ConsultationAuthOptions): Consultat
       // Perfil CLIENT → autorizar y continuar (o reautenticar si el actual
       // no coincide, vía redirección a /login con userId para re-login).
       if (profile.userId && session.userId !== profile.userId) {
-        const returnTo = pendingReturnToRef.current ?? (typeof window !== 'undefined' ? window.location.href : '/')
+        const returnTo =
+          pendingReturnToRef.current ?? (typeof window !== 'undefined' ? window.location.href : '/')
         const params = new URLSearchParams({
           redirect: returnTo,
           userId: profile.userId,
@@ -329,13 +392,23 @@ export function buildReturnTo(pathname: string, searchParams: URLSearchParams): 
 }
 
 /**
- * Construye la URL del shop del colaborador con el producto destacado.
+ * Construye la URL del shop destino con el producto destacado.
  * El query param `highlight` (gemelo de `product`) marca explícitamente
  * que el producto debe recibir scroll + ring visual.
+ *
+ * El `basePath` permite redirigir al shop apropiado segun el rol:
+ *  - EMPLOYEE -> `/dashboard/collaborator/shop`
+ *  - COMPANY  -> `/dashboard/enterprise/shop`
+ *  - sin param -> default al shop del colaborador
+ *
  * @param context Contexto del producto.
+ * @param basePath Ruta base del shop a redirigir (default: colaborador).
  * @returns URL del shop con query params de highlight.
  */
-export function buildShopRedirect(context: ConsultationContext): string {
+export function buildShopRedirect(
+  context: ConsultationContext,
+  basePath: string = '/dashboard/collaborator/shop',
+): string {
   const params = new URLSearchParams()
   if (context.productId) {
     params.set('product', context.productId)
@@ -345,5 +418,5 @@ export function buildShopRedirect(context: ConsultationContext): string {
     params.set('marketplace', context.marketplaceId)
   }
   const query = params.toString()
-  return query ? `/dashboard/collaborator/shop?${query}` : '/dashboard/collaborator/shop'
+  return query ? `${basePath}?${query}` : basePath
 }

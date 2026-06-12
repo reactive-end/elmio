@@ -69,7 +69,9 @@ export function useMundialConsultaRCV(params?: {
     },
     onEmployeeRedirect: (_profile, context) => {
       if (typeof window !== 'undefined') {
-        window.location.href = buildShopRedirect(context)
+        // El hook anota context.basePath segun el rol: EMPLOYEE -> collaborator
+        // shop, COMPANY -> enterprise shop. Si no viene, default al colaborador.
+        window.location.href = buildShopRedirect(context, context.basePath)
       }
     },
   })
