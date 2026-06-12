@@ -28,13 +28,6 @@ import { authService } from '@/src/services/auth.service'
  * @returns Vista de catalogo y modal de compra para empresas.
  */
 export default function EnterpriseShopPage() {
-  const PRODUCT_TYPE_LABELS = {
-    PRODUCT: 'Producto',
-    SERVICE: 'Servicio',
-    KIT: 'Kit',
-    LOAN: 'Prestamo',
-  } as const
-
   const router = useRouter()
   const session = authService.getSession()
   const {
@@ -57,7 +50,11 @@ export default function EnterpriseShopPage() {
     closeEmbeddedForm,
   } = useEnterpriseShop()
 
-  const { highlightedProductId: highlightProductId, cardDomId, isActive: highlightActive } = useProductHighlight(!loading)
+  const {
+    highlightedProductId: highlightProductId,
+    cardDomId,
+    isActive: highlightActive,
+  } = useProductHighlight(!loading)
 
   const [selectedProductForScheme, setSelectedProductForScheme] = useState<any | null>(null)
   const [showSchemeSelectorModal, setShowSchemeSelectorModal] = useState(false)
@@ -73,11 +70,9 @@ export default function EnterpriseShopPage() {
       const hasQueryWindow = product.windows?.some(
         (w: any) =>
           w.type === 'custom-form' &&
-          [
-            'mercantil-query-form',
-            'mercantil-rcv-query-form',
-            'mundial-rcv-query-form',
-          ].includes(w.config?.redirectUrl),
+          ['mercantil-query-form', 'mercantil-rcv-query-form', 'mundial-rcv-query-form'].includes(
+            w.config?.redirectUrl,
+          ),
       )
       if (hasQueryWindow) {
         // startPurchase crea el draft; nextPurchaseStep abre la modal
@@ -137,11 +132,13 @@ export default function EnterpriseShopPage() {
       }
 
       setRequestSuccess(
-        `¡Solicitud enviada! Se ha generado tu solicitud de compra para "${product.name}". Una vez aprobada por tu empresa y finanzas, podrás proceder a completarla desde tu panel.`
+        `¡Solicitud enviada! Se ha generado tu solicitud de compra para "${product.name}". Una vez aprobada por tu empresa y finanzas, podrás proceder a completarla desde tu panel.`,
       )
     } catch (err) {
       console.error(err)
-      setRequestError(err instanceof Error ? err.message : 'Error al enviar la solicitud de compra.')
+      setRequestError(
+        err instanceof Error ? err.message : 'Error al enviar la solicitud de compra.',
+      )
     } finally {
       setRequestSending(false)
     }
@@ -164,21 +161,6 @@ export default function EnterpriseShopPage() {
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(n)
-
-  const PAYMENT_MODE_LABELS = {
-    cash: 'Contado',
-    quota: 'Cuotas',
-    mixed: 'Mixto',
-  } as const
-
-  const resolveCategoryName = (categoryIdOrName: string) => {
-    if (!categoryIdOrName) return '—'
-    const found = categories.find((category) => category.id === categoryIdOrName)
-    return found?.name ?? categoryIdOrName
-  }
-
-  const resolvePaymentModeLabel = (paymentMode: keyof typeof PAYMENT_MODE_LABELS) =>
-    PAYMENT_MODE_LABELS[paymentMode] ?? paymentMode
 
   const orderedWindows = purchaseDraft
     ? [...purchaseDraft.product.windows].sort((a, b) => a.order - b.order)
@@ -237,105 +219,72 @@ export default function EnterpriseShopPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => {
             const price = product.priceLists[0]?.amount ?? 0
             return (
               <article
                 id={cardDomId(product.id)}
                 key={product.id}
-                className={`flex flex-row items-stretch overflow-hidden rounded-2xl border bg-white shadow-sm shadow-black/3 transition-all duration-300 ${
+                className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 ${
                   highlightProductId === product.id && highlightActive
                     ? 'border-secondary/60 ring-4 ring-secondary/30 scale-[1.01] shadow-md shadow-secondary/15'
                     : highlightProductId === product.id
                       ? 'border-secondary/40'
                       : 'border-gray-100'
-                } ${
-                  !product.active ? 'opacity-65 bg-gray-50/30' : ''
-                }`}
+                } ${!product.active ? 'opacity-65 bg-gray-50/30' : ''}`}
               >
-                {product.images && product.images[0] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="h-32 w-32 shrink-0 self-stretch object-cover"
-                  />
-                ) : (
-                  <div className="flex h-32 w-32 shrink-0 items-center justify-center bg-gray-50 text-gray-300">
-                    <Package className="h-8 w-8" strokeWidth={1.5} />
-                  </div>
-                )}
-                <div className="p-5 flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">
-                        {PRODUCT_TYPE_LABELS[product.type] ?? product.type}
-                      </span>
-                      {product.windows.length > 0 && (
-                        <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700">
-                          {product.windows.length} acciones
-                        </span>
-                      )}
-                      {!product.active && (
-                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">
-                          Desactivado
-                        </span>
-                      )}
+                <div className="relative flex-shrink-0 bg-gray-50 aspect-square">
+                  {product.images && product.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-gray-300">
+                      <Package className="h-10 w-10" strokeWidth={1.5} />
                     </div>
-                    <h2 className="text-lg font-semibold text-body">{product.name}</h2>
-                    <p className="mt-1 text-sm text-body-muted">
-                      {product.description || 'Sin descripcion.'}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-gray-50 px-4 py-3 text-right">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-body-muted">
-                      Precio
-                    </p>
-                    {product.usesThirdPartyPricing ? (
-                      <span className="mt-2 inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                        Precio por consulta
-                      </span>
-                    ) : (
-                      <p className="mt-1 text-lg font-bold text-body">{fmt(price)}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2 text-xs text-body-muted">
-                  <span className="rounded-lg bg-gray-100 px-2.5 py-1">SKU: {product.sku}</span>
-                  <span className="rounded-lg bg-gray-100 px-2.5 py-1">
-                    Categoria: {resolveCategoryName(product.category)}
-                  </span>
-                  {!product.usesThirdPartyPricing && product.financingSchemes && (
-                    <span className="rounded-lg bg-gray-100 px-2.5 py-1">
-                      Modo de pago:{' '}
-                      {Array.from(new Set(product.financingSchemes.map((s: any) => resolvePaymentModeLabel(s.paymentMode as any)))).join(' / ')}
+                  )}
+                  {product.usesThirdPartyPricing ? (
+                    <span className="absolute left-3 top-3 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                      Precio por consulta
+                    </span>
+                  ) : (
+                    <span className="absolute left-3 top-3 rounded-full bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-secondary">
+                      {fmt(price)}
+                    </span>
+                  )}
+                  {!product.active && (
+                    <span className="absolute right-3 top-3 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">
+                      Inactivo
                     </span>
                   )}
                 </div>
-
-                <div className="mt-5 flex items-center justify-between gap-4">
-                  <p className="text-xs text-body-muted">
-                    {product.active
-                      ? 'La compra se cargara a tu estado de cuenta.'
-                      : 'Este producto no está disponible temporalmente.'}
-                  </p>
-                  <Button
-                    onClick={() => handleStartPurchaseClick(product)}
-                    disabled={!product.active}
-                    variant={product.active ? 'primary' : 'ghost'}
-                  >
-                    {product.active ? (
-                      <>
-                        <ShoppingCart className="h-4 w-4" strokeWidth={1.5} /> Comprar
-                      </>
-                    ) : (
-                      'No disponible'
-                    )}
-                  </Button>
-                </div>
+                <div className="flex flex-1 flex-col justify-between p-4">
+                  <div>
+                    <h2 className="text-sm font-semibold text-body line-clamp-2">{product.name}</h2>
+                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                      {product.description || 'Sin descripcion.'}
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => handleStartPurchaseClick(product)}
+                      disabled={!product.active}
+                      variant={product.active ? 'primary' : 'ghost'}
+                      fullWidth
+                    >
+                      {product.active ? (
+                        <>
+                          <ShoppingCart className="h-4 w-4" strokeWidth={1.5} /> Comprar
+                        </>
+                      ) : (
+                        'No disponible'
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </article>
             )
@@ -486,34 +435,36 @@ export default function EnterpriseShopPage() {
       )}
       {showSchemeSelectorModal && selectedProductForScheme && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/35 backdrop-blur-sm" onClick={() => {
-            setShowSchemeSelectorModal(false)
-            setSelectedProductForScheme(null)
-          }} />
+          <div
+            className="absolute inset-0 bg-black/35 backdrop-blur-sm"
+            onClick={() => {
+              setShowSchemeSelectorModal(false)
+              setSelectedProductForScheme(null)
+            }}
+          />
           <div className="relative z-10 w-full max-w-lg rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.18)] animate-in fade-in zoom-in-95 duration-200">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400">
                 Selección de Pago
               </p>
-              <h3 className="mt-2 text-xl font-bold text-body">
-                Selecciona la modalidad de pago
-              </h3>
+              <h3 className="mt-2 text-xl font-bold text-body">Selecciona la modalidad de pago</h3>
               <p className="mt-1 text-xs text-body-muted">
-                Este producto ofrece múltiples planes de financiamiento. Elige el de tu preferencia para continuar.
+                Este producto ofrece múltiples planes de financiamiento. Elige el de tu preferencia
+                para continuar.
               </p>
             </div>
 
             <div className="mt-4 flex flex-col gap-3 max-h-[50vh] overflow-y-auto pr-1">
               {selectedProductForScheme.financingSchemes.map((scheme: any) => {
                 const isCash = scheme.paymentMode === 'cash'
-                
+
                 const basePrice = selectedProductForScheme.priceLists?.[0]?.amount ?? 0
-                
+
                 let finalPrice = basePrice
-                const isMercantil = 
-                  selectedProductForScheme.globalThirdPartyProvider?.includes('mercantil') || 
+                const isMercantil =
+                  selectedProductForScheme.globalThirdPartyProvider?.includes('mercantil') ||
                   selectedProductForScheme.name.toLowerCase().includes('mercantil')
-                                    
+
                 if (!isCash && !isMercantil) {
                   const interestType = selectedProductForScheme.interestType ?? 'none'
                   const interestRate = selectedProductForScheme.interestRate ?? 0
@@ -523,7 +474,7 @@ export default function EnterpriseShopPage() {
                     finalPrice = basePrice + interestRate
                   }
                 }
-                
+
                 const initialPct = scheme.initialPayment ?? 0
                 const initialAmount = (finalPrice * initialPct) / 100
                 const remainingAmount = finalPrice - initialAmount
@@ -546,12 +497,11 @@ export default function EnterpriseShopPage() {
                       </span>
                     </div>
                     <span className="text-xs text-body-muted leading-relaxed">
-                      {isCash 
+                      {isCash
                         ? `Pago único completo e inmediato de ${fmt(finalPrice)}.`
                         : `Financiamiento de ${fmt(finalPrice)} en ${scheme.maxQuotas} cuotas de ${fmt(quotaAmount)} ${
                             scheme.paymentPeriod === 'monthly' ? 'mensuales' : 'periódicas'
-                          }${scheme.initialPayment > 0 ? ` con inicial de ${scheme.initialPayment}% (${fmt(initialAmount)})` : ''}.`
-                      }
+                          }${scheme.initialPayment > 0 ? ` con inicial de ${scheme.initialPayment}% (${fmt(initialAmount)})` : ''}.`}
                     </span>
                   </button>
                 )
@@ -559,10 +509,14 @@ export default function EnterpriseShopPage() {
             </div>
 
             <div className="mt-6">
-              <Button variant="ghost" fullWidth onClick={() => {
-                setShowSchemeSelectorModal(false)
-                setSelectedProductForScheme(null)
-              }}>
+              <Button
+                variant="ghost"
+                fullWidth
+                onClick={() => {
+                  setShowSchemeSelectorModal(false)
+                  setSelectedProductForScheme(null)
+                }}
+              >
                 Cancelar
               </Button>
             </div>
@@ -601,16 +555,17 @@ export default function EnterpriseShopPage() {
 
       {requestSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setRequestSuccess(null)} />
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setRequestSuccess(null)}
+          />
           <div className="relative z-10 w-full max-w-md rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col items-center gap-5">
             <div className="p-4 bg-green-50 text-green-500 rounded-full shadow-sm">
               <Sparkles className="h-10 w-10 text-green-500" strokeWidth={1.5} />
             </div>
             <div>
               <h3 className="text-xl font-bold text-body">¡Solicitud de Compra Enviada!</h3>
-              <p className="mt-2 text-sm text-body-muted leading-relaxed">
-                {requestSuccess}
-              </p>
+              <p className="mt-2 text-sm text-body-muted leading-relaxed">{requestSuccess}</p>
             </div>
             <Button
               variant="primary"
