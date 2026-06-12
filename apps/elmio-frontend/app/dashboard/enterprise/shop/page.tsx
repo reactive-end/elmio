@@ -219,14 +219,14 @@ export default function EnterpriseShopPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredProducts.map((product) => {
             const price = product.priceLists[0]?.amount ?? 0
             return (
               <article
                 id={cardDomId(product.id)}
                 key={product.id}
-                className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 ${
+                className={`flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-300 ${
                   highlightProductId === product.id && highlightActive
                     ? 'border-secondary/60 ring-4 ring-secondary/30 scale-[1.01] shadow-md shadow-secondary/15'
                     : highlightProductId === product.id
@@ -234,7 +234,7 @@ export default function EnterpriseShopPage() {
                       : 'border-gray-100'
                 } ${!product.active ? 'opacity-65 bg-gray-50/30' : ''}`}
               >
-                <div className="relative flex-shrink-0 bg-gray-50 aspect-square">
+                <div className="relative flex-shrink-0 bg-gray-50" style={{ height: '140px' }}>
                   {product.images && product.images[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -244,41 +244,44 @@ export default function EnterpriseShopPage() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-gray-300">
-                      <Package className="h-10 w-10" strokeWidth={1.5} />
+                      <Package className="h-8 w-8" strokeWidth={1.5} />
                     </div>
                   )}
                   {product.usesThirdPartyPricing ? (
-                    <span className="absolute left-3 top-3 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-                      Precio por consulta
+                    <span className="absolute left-2 top-2 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                      Consulta
                     </span>
                   ) : (
-                    <span className="absolute left-3 top-3 rounded-full bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-secondary">
+                    <span className="absolute left-2 top-2 rounded-full bg-secondary/10 px-2 py-0.5 text-[10px] font-semibold text-secondary">
                       {fmt(price)}
                     </span>
                   )}
                   {!product.active && (
-                    <span className="absolute right-3 top-3 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">
+                    <span className="absolute right-2 top-2 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">
                       Inactivo
                     </span>
                   )}
                 </div>
-                <div className="flex flex-1 flex-col justify-between p-4">
+                <div className="flex flex-1 flex-col justify-between p-3">
                   <div>
-                    <h2 className="text-sm font-semibold text-body line-clamp-2">{product.name}</h2>
-                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                    <h2 className="text-xs font-semibold text-body line-clamp-2 leading-tight">
+                      {product.name}
+                    </h2>
+                    <p className="mt-1 text-[11px] text-gray-500 line-clamp-2 leading-tight">
                       {product.description || 'Sin descripcion.'}
                     </p>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <Button
                       onClick={() => handleStartPurchaseClick(product)}
                       disabled={!product.active}
                       variant={product.active ? 'primary' : 'ghost'}
                       fullWidth
+                      className="!py-2 !text-xs"
                     >
                       {product.active ? (
                         <>
-                          <ShoppingCart className="h-4 w-4" strokeWidth={1.5} /> Comprar
+                          <ShoppingCart className="h-3.5 w-3.5" strokeWidth={1.5} /> Comprar
                         </>
                       ) : (
                         'No disponible'
