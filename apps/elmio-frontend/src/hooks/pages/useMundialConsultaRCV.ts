@@ -38,6 +38,16 @@ export interface MundialPlan {
   description: string
 }
 
+/**
+ * Path absoluto al PDF del Condicionado General de Seguros de
+ * Responsabilidad Civil de Vehiculos de La Mundial de Seguros.
+ * Se sirve desde `apps/elmio-frontend/public/mundial/`.
+ * Replicado como constante para que el step 3 (seleccion de plan)
+ * lo enlace de forma consistente y evitar URLs rotas.
+ */
+export const MUNDIAL_RCV_TERMS_PDF =
+  '/mundial/CondicionadoGeneral_SegurosdeResponsabilidadCivildeVehiculos-.pdf'
+
 export function useMundialConsultaRCV(params?: {
   productId?: string
   productSku?: string
@@ -69,7 +79,11 @@ export function useMundialConsultaRCV(params?: {
   }, [])
 
   // --- Banco R4 States ---
-  const [paymentData, setPaymentData] = useState<{ reference: string; transactionId: string; bankCode: string } | null>(null)
+  const [paymentData, setPaymentData] = useState<{
+    reference: string
+    transactionId: string
+    bankCode: string
+  } | null>(null)
   const [exchangeRate, setExchangeRate] = useState<number>(1)
   const [loadingExchangeRate, setLoadingExchangeRate] = useState<boolean>(false)
   const [finishingPurchase, setFinishingPurchase] = useState<boolean>(false)
@@ -396,7 +410,9 @@ export function useMundialConsultaRCV(params?: {
       setStates(statesList.map((s) => ({ label: s.xestado, value: String(s.cestado) })))
 
       const civList = await mundialService.getValrepList('EDOCIVIL')
-      setCivilStates(civList.map((c) => ({ label: c.xestado_civil || '', value: c.iestado_civil || '' })))
+      setCivilStates(
+        civList.map((c) => ({ label: c.xestado_civil || '', value: c.iestado_civil || '' })),
+      )
 
       const sexList = await mundialService.getValrepList('SEXO')
       setGenders(sexList.map((g) => ({ label: g.xsexo || '', value: g.isexo || '' })))
@@ -544,7 +560,11 @@ export function useMundialConsultaRCV(params?: {
             birthDate: insured.birthDate,
             genderId: insured.genderId,
             civilStateId,
-            phone: { countryId: '29', areaCode: phoneDigits.slice(0, 3), number: phoneDigits.slice(3) },
+            phone: {
+              countryId: '29',
+              areaCode: phoneDigits.slice(0, 3),
+              number: phoneDigits.slice(3),
+            },
             address: {
               countryId: '29',
               administrativeAreaId: selectedStateId,
@@ -619,7 +639,9 @@ export function useMundialConsultaRCV(params?: {
         setEmissionStatus('completed')
         setStep(7)
       } else {
-        throw new Error(res?.result?.message || res?.message || 'Error desconocido al emitir la póliza.')
+        throw new Error(
+          res?.result?.message || res?.message || 'Error desconocido al emitir la póliza.',
+        )
       }
     } catch (error) {
       setEmissionStatus('error')
@@ -686,7 +708,11 @@ export function useMundialConsultaRCV(params?: {
    * Callback ejecutado tras pago C2P exitoso. Registra la compra/transacción pendiente y avanza a confirmación.
    * @param {object} result - Datos de la transacción de pago.
    */
-  const handlePaymentSuccess = async (result: { reference: string; transactionId: string; bankCode: string }) => {
+  const handlePaymentSuccess = async (result: {
+    reference: string
+    transactionId: string
+    bankCode: string
+  }) => {
     setPaymentData(result)
     await handleFinishPurchase(result)
     setStep(8)
@@ -696,7 +722,11 @@ export function useMundialConsultaRCV(params?: {
    * Registra localmente la transacción de cobro y la compra (Purchase) en estado pendiente para conciliación posterior.
    * @param {object} pay - Datos del pago C2P.
    */
-  const handleFinishPurchase = async (pay: { reference: string; transactionId: string; bankCode: string }) => {
+  const handleFinishPurchase = async (pay: {
+    reference: string
+    transactionId: string
+    bankCode: string
+  }) => {
     setFinishingPurchase(true)
     try {
       const profile = await enterpriseService.getMyProfile()
